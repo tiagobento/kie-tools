@@ -16,35 +16,34 @@
 
 package org.kie.kogito.dmn.form;
 
-import java.io.IOException;
-import java.util.Objects;
+import static org.junit.Assert.assertEquals;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.io.IOException;
+import java.util.Objects;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
 
 public class FormSchemaGeneratorTest {
 
-    private FormSchemaGenerator tested = new FormSchemaGenerator();
+  private FormSchemaGenerator tested = new FormSchemaGenerator();
 
-    @Test
-    public void testGenerate() throws IOException {
-        final String dmnFile = Objects.requireNonNull(this.getClass().getResource("/test.dmn")).getFile();
-        final ObjectNode expectedFormSchema = parseJsonFromFile("/formSchema.json");
-        final Form form = tested.execute(dmnFile, "formUrl", "modelUrl", "swaggerUIUrl");
+  @Test
+  public void testGenerate() throws IOException {
+    final String dmnFile = Objects.requireNonNull(this.getClass().getResource("/test.dmn")).getFile();
+    final ObjectNode expectedFormSchema = parseJsonFromFile("/formSchema.json");
+    final Form form = tested.execute(dmnFile, "formUrl", "modelUrl", "swaggerUIUrl");
 
-        assertEquals(expectedFormSchema, form.getSchema());
-        assertEquals("test.dmn", form.getFilename());
-        assertEquals("xls2dmn", form.getModelName());
-        assertEquals("formUrl", form.getFormUrl());
-        assertEquals("modelUrl", form.getModelUrl());
-        assertEquals("swaggerUIUrl", form.getSwaggerUIUrl());
-    }
+    assertEquals(expectedFormSchema, form.getSchema());
+    assertEquals("test.dmn", form.getFilename());
+    assertEquals("xls2dmn", form.getModelName());
+    assertEquals("formUrl", form.getFormUrl());
+    assertEquals("modelUrl", form.getModelUrl());
+    assertEquals("swaggerUIUrl", form.getSwaggerUIUrl());
+  }
 
-    private ObjectNode parseJsonFromFile(final String filePath) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.readTree(Objects.requireNonNull(this.getClass().getResourceAsStream(filePath))).deepCopy();
-    }
+  private ObjectNode parseJsonFromFile(final String filePath) throws IOException {
+    ObjectMapper mapper = new ObjectMapper();
+    return mapper.readTree(Objects.requireNonNull(this.getClass().getResourceAsStream(filePath))).deepCopy();
+  }
 }

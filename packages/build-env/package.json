@@ -15,8 +15,12 @@
     "url": "https://github.com/kiegroup/kogito-tooling.git"
   },
   "scripts": {
+    "powershell": "@powershell -NoProfile -ExecutionPolicy Unrestricted -Command",
     "print-build-env": "rimraf dist && build-env --print-cli-tools-check && build-env --print-env && build-env --print-config && build-env --build-graph",
-    "build:dev": "yarn print-build-env",
-    "build:prod": "yarn print-build-env"
+    "build:parent-pom": "run-script-os",
+    "build:parent-pom:win32": "yarn powershell mvn clean install -f ..\\..\\config/kogito-tooling-parent-pom.xml `-DKOGITO_RUNTIME_VERSION=$(build-env kogitoRuntime.version)",
+    "build:parent-pom:linux:darwin": "mvn clean install -f ../../config/kogito-tooling-parent-pom.xml -DKOGITO_RUNTIME_VERSION=$(build-env kogitoRuntime.version)",
+    "build:dev": "yarn print-build-env && yarn build:parent-pom",
+    "build:prod": "yarn print-build-env && yarn build:parent-pom"
   }
 }

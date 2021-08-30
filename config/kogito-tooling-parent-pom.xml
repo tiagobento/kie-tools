@@ -1,0 +1,206 @@
+<?xml version="1.0" ?>
+<!--
+  ~ Copyright 2021 Red Hat, Inc. and/or its affiliates.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~       http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<project
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+>
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.kie.kogito.tooling</groupId>
+    <artifactId>kogito-tooling-parent-pom</artifactId>
+    <version>0.0.0</version>
+    <packaging>pom</packaging>
+
+    <name>Kogito Tooling :: Parent POM</name>
+
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.parameters>true</maven.compiler.parameters>
+        <compiler-plugin.version>3.8.1</compiler-plugin.version>
+
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <version.org.kie.kogito>${KOGITO_RUNTIME_VERSION}</version.org.kie.kogito>
+        <version.org.slf4j>1.7.30</version.org.slf4j>
+        <version.jar.plugin>3.1.0</version.jar.plugin>
+        <version.shade.plugin>3.2.4</version.shade.plugin>
+        <version.junit>4.13.1</version.junit>
+        <version.jakarta.enterprise.cdi-api>2.0.2</version.jakarta.enterprise.cdi-api>
+        <version.jakarta.ws.rs-api>2.1.6</version.jakarta.ws.rs-api>
+        <version.quarkus-plugin>1.7.0.Final</version.quarkus-plugin>
+        <version.quarkus.platform>1.7.0.Final</version.quarkus.platform>
+        <version.surefire-plugin>2.22.1</version.surefire-plugin>
+        <version.jandex-maven-plugin>1.0.7</version.jandex-maven-plugin>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.kie.kogito</groupId>
+                <artifactId>kogito-kie7-bom</artifactId>
+                <version>${version.org.kie.kogito}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${version.org.slf4j}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-simple</artifactId>
+                <version>${version.org.slf4j}</version>
+            </dependency>
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${version.junit}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.enterprise</groupId>
+                <artifactId>jakarta.enterprise.cdi-api</artifactId>
+                <version>${version.jakarta.enterprise.cdi-api}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.ws.rs</groupId>
+                <artifactId>jakarta.ws.rs-api</artifactId>
+                <version>${version.jakarta.ws.rs-api}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-universe-bom</artifactId>
+                <version>${version.quarkus.platform}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>${version.jar.plugin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-shade-plugin</artifactId>
+                    <version>${version.shade.plugin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>io.quarkus</groupId>
+                    <artifactId>quarkus-maven-plugin</artifactId>
+                    <version>${version.quarkus-plugin}</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${compiler-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${version.surefire-plugin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.jboss.jandex</groupId>
+                    <artifactId>jandex-maven-plugin</artifactId>
+                    <version>${version.jandex-maven-plugin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.sonatype.plugins</groupId>
+                    <artifactId>nexus-staging-maven-plugin</artifactId>
+                    <version>1.6.8</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>3.0.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>3.2.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <version>1.6</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <repositories>
+        <repository>
+            <id>jboss-public-repository-group</id>
+            <name>JBoss Public Repository Group</name>
+            <url>https://repository.jboss.org/nexus/content/groups/public/</url>
+            <layout>default</layout>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>daily</updatePolicy>
+            </snapshots>
+        </repository>
+    </repositories>
+
+    <distributionManagement>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+    <url>https://github.com/kiegroup/kogito-tooling</url>
+
+    <inceptionYear>2020</inceptionYear>
+
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Kie Tooling</name>
+            <email>kietooling@gmail.com</email>
+            <organization>io.github.kiegroup</organization>
+            <organizationUrl>https://github.com/kiegroup</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git://github.com/kiegroup/kogito-tooling.git</connection>
+        <developerConnection>scm:git:ssh://github.com:kiegroup/kogito-tooling.git</developerConnection>
+        <url>https://github.com/kiegroup/kogito-tooling/tree/main</url>
+    </scm>
+</project>
