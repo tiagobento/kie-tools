@@ -24,7 +24,7 @@ The, to build, execute the following commands from root path. Please use the one
 - `make win`
 - `make linux`
 
-The binaries are going to appear in the `build` folder. To run it, execute the binaries directory or run `make run`.
+The binaries are going to appear in the `dist` folder. To run it, execute the binaries directory or run `make run`.
 
 ## Fedora
 
