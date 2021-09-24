@@ -18,10 +18,12 @@ import * as React from "react";
 import { useCallback, useLayoutEffect, useMemo, useState } from "react";
 import { Spinner } from "@patternfly/react-core/dist/js/components/Spinner";
 import { Title } from "@patternfly/react-core/dist/js/components/Title";
+import { Label } from "@patternfly/react-core/dist/js/components/Label";
 import { Bullseye } from "@patternfly/react-core/dist/js/layouts/Bullseye";
 import { useEditorEnvelopeI18nContext } from "../i18n";
+import { LoadingStyle } from "../../api";
 
-export function LoadingScreen(props: { loading: boolean }) {
+export function LoadingScreen(props: { loading: boolean; loadingStyle: LoadingStyle }) {
   const [mustRender, setMustRender] = useState(true);
   const { i18n } = useEditorEnvelopeI18nContext();
 
@@ -46,22 +48,48 @@ export function LoadingScreen(props: { loading: boolean }) {
 
   return (
     (mustRender && (
-      <div id="loading-screen" className="kogito-tooling--loading-screen">
-        <div
-          className={`kogito-tooling--loading-screen ${loadingScreenClassName}`}
-          onAnimationEnd={onAnimationEnd}
-          data-testid={"loading-screen-div"}
-        >
-          <Bullseye>
-            <div className={"kogito-tooling--loading-screen-spinner"}>
-              <div>
-                <Spinner />
-              </div>
-              <Title headingLevel={"h5"}>{i18n.loadingScreen.loading}</Title>
+      <>
+        {props.loadingStyle === LoadingStyle.NONE && <></>}
+        {props.loadingStyle === LoadingStyle.DISCRETE && (
+          <>
+            <div
+              style={{
+                zIndex: 99,
+                textAlign: "center",
+                position: "fixed",
+                pointerEvents: "none",
+                width: "100%",
+                bottom: "20px",
+              }}
+              className={loadingScreenClassName}
+              onAnimationEnd={onAnimationEnd}
+            >
+              <Label>
+                <Spinner size={"sm"} />
+                &nbsp;&nbsp;{i18n.loadingScreen.loading}&nbsp;
+              </Label>
             </div>
-          </Bullseye>
-        </div>
-      </div>
+          </>
+        )}
+        {props.loadingStyle === LoadingStyle.OVERLAY && (
+          <div id="loading-screen" className="kogito-tooling--loading-screen">
+            <div
+              className={`kogito-tooling--loading-screen ${loadingScreenClassName}`}
+              onAnimationEnd={onAnimationEnd}
+              data-testid={"loading-screen-div"}
+            >
+              <Bullseye>
+                <div className={"kogito-tooling--loading-screen-spinner"}>
+                  <div>
+                    <Spinner />
+                  </div>
+                  <Title headingLevel={"h5"}>{i18n.loadingScreen.loading}</Title>
+                </div>
+              </Bullseye>
+            </div>
+          </div>
+        )}
+      </>
     )) || <></>
   );
 }

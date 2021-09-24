@@ -20,6 +20,7 @@ import {
   EditorEnvelopeLocator,
   KogitoEditorChannelApi,
   KogitoEditorEnvelopeApi,
+  LoadingStyle,
 } from "../../api";
 import { useSyncedKeyboardEvents } from "@kie-tooling-core/keyboard-shortcuts/dist/channel";
 import { useGuidedTourPositionProvider } from "@kie-tooling-core/guided-tour/dist/channel";
@@ -128,7 +129,10 @@ const RefForwardingEmbeddedEditor: React.ForwardRefRenderFunction<EmbeddedEditor
 
   useEffectAfterFirstRender(() => {
     props.file.getFileContents().then((content) => {
-      envelopeServer.envelopeApi.requests.kogitoEditor_contentChanged({ content: content! });
+      envelopeServer.envelopeApi.requests.kogitoEditor_contentChanged(
+        { content: content! },
+        { loadingStyle: LoadingStyle.DISCRETE }
+      );
     });
   }, [props.file.getFileContents]);
 

@@ -15,10 +15,10 @@
  */
 
 import * as React from "react";
-import { Editor } from "../api";
+import { useImperativeHandle, useState } from "react";
+import { Editor, LoadingStyle } from "../api";
 import { LoadingScreen } from "./LoadingScreen";
 import { KeyBindingsHelpOverlay } from "./KeyBindingsHelpOverlay";
-import { useCallback, useImperativeHandle, useState } from "react";
 
 interface Props {
   setLocale: React.Dispatch<string>;
@@ -27,7 +27,7 @@ interface Props {
 export interface EditorEnvelopeViewApi<E extends Editor> {
   getEditor: () => E | undefined;
   setEditor: (editor: E) => void;
-  setLoading: () => void;
+  setLoading: (loadingStyle: LoadingStyle) => void;
   setLoadingFinished: () => void;
   setLocale: (locale: string) => void;
 }
@@ -38,6 +38,7 @@ export const EditorEnvelopeViewRef: React.ForwardRefRenderFunction<EditorEnvelop
 ) => {
   const [editor, setEditor] = useState<Editor | undefined>(undefined);
   const [loading, setLoading] = useState(true);
+  const [loadingStyle, setLoadingStyle] = useState<LoadingStyle>(LoadingStyle.OVERLAY);
 
   useImperativeHandle(
     forwardingRef,
@@ -45,7 +46,10 @@ export const EditorEnvelopeViewRef: React.ForwardRefRenderFunction<EditorEnvelop
       return {
         getEditor: () => editor,
         setEditor: (newEditor) => setEditor(newEditor),
-        setLoading: () => setLoading(true),
+        setLoading: (loadingStyle) => {
+          setLoading(true);
+          setLoadingStyle(loadingStyle);
+        },
         setLoadingFinished: () => setLoading(false),
         setLocale: (locale) => props.setLocale(locale),
       };
@@ -56,7 +60,7 @@ export const EditorEnvelopeViewRef: React.ForwardRefRenderFunction<EditorEnvelop
   return (
     <>
       {!loading && <KeyBindingsHelpOverlay />}
-      <LoadingScreen loading={loading} />
+      <LoadingScreen loading={loading} loadingStyle={loadingStyle} />
       <div style={{ position: "absolute", width: "100vw", height: "100vh", top: "0", left: "0" }}>
         {editor && editor.af_isReact && editor.af_componentRoot()}
       </div>

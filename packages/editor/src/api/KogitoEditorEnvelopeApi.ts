@@ -20,6 +20,12 @@ import { GuidedTourEnvelopeApi } from "@kie-tooling-core/guided-tour/dist/api";
 import { I18nEnvelopeApi } from "@kie-tooling-core/i18n/dist/api";
 import { Notification } from "@kie-tooling-core/notifications/dist/api";
 
+export enum LoadingStyle {
+  NONE,
+  DISCRETE,
+  OVERLAY,
+}
+
 export interface Association {
   origin: string;
   envelopeServerId: string;
@@ -43,7 +49,7 @@ export interface EditorInitArgs {
 }
 
 export interface KogitoEditorEnvelopeApi extends KeyboardShortcutsEnvelopeApi, GuidedTourEnvelopeApi, I18nEnvelopeApi {
-  kogitoEditor_contentChanged(content: EditorContent): Promise<void>;
+  kogitoEditor_contentChanged(content: EditorContent, args?: { loadingStyle: LoadingStyle }): Promise<void>;
   kogitoEditor_editorUndo(): void;
   kogitoEditor_editorRedo(): void;
   kogitoEditor_initRequest(association: Association, editorInit: EditorInitArgs): Promise<void>;

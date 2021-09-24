@@ -24,6 +24,7 @@ import {
   KogitoEditorChannelApi,
   KogitoEditorEnvelopeApi,
   KogitoEditorEnvelopeContextType,
+  LoadingStyle,
   StateControlCommand,
 } from "../api";
 import { EnvelopeApiFactoryArgs } from "@kie-tooling-core/envelope";
@@ -83,7 +84,7 @@ export class KogitoEditorEnvelopeApiImpl<
     this.editor.af_onStartup?.();
     this.editor.af_onOpen?.();
 
-    this.args.view().setLoading();
+    this.args.view().setLoading(LoadingStyle.OVERLAY);
 
     const editorContent = await this.args.envelopeContext.channelApi.requests.kogitoEditor_contentRequest();
 
@@ -97,8 +98,8 @@ export class KogitoEditorEnvelopeApiImpl<
     this.args.envelopeContext.channelApi.notifications.kogitoEditor_ready();
   };
 
-  public kogitoEditor_contentChanged = (editorContent: EditorContent) => {
-    this.args.view().setLoading();
+  public kogitoEditor_contentChanged = (editorContent: EditorContent, args?: { loadingStyle: LoadingStyle }) => {
+    this.args.view().setLoading(args?.loadingStyle ?? LoadingStyle.OVERLAY);
     return this.editor
       .setContent(editorContent.path ?? "", editorContent.content)
       .catch((e) => {
