@@ -103,12 +103,7 @@ export function open(args: {
   args.container.appendChild(iframe);
   envelopeServer.startInitPolling();
 
-  const editor = createEditor(
-    <EnvelopeServer<KogitoEditorChannelApi, KogitoEditorEnvelopeApi>>(<unknown>envelopeServer),
-    stateControl,
-    listener,
-    iframe
-  );
+  const editor = createEditor(envelopeServer.envelopeApi, stateControl, listener, iframe);
 
   return {
     ...editor,
