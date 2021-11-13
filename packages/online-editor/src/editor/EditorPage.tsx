@@ -135,12 +135,12 @@ export function EditorPage(props: Props) {
   );
 
   // auto-save
-  const uniqueIdentifierOfFile = workspaceFilePromise.data
+  const uniqueFileId = workspaceFilePromise.data
     ? workspaces.getUniqueFileIdentifier(workspaceFilePromise.data)
     : undefined;
 
-  const prev = usePrevious(uniqueIdentifierOfFile);
-  if (prev !== uniqueIdentifierOfFile) {
+  const prevUniqueFileId = usePrevious(uniqueFileId);
+  if (prevUniqueFileId !== uniqueFileId) {
     lastContent.current = undefined;
   }
 
@@ -188,7 +188,7 @@ export function EditorPage(props: Props) {
   useEffect(() => {
     setFileBroken(false);
     setContentErrorAlert.close();
-  }, [uniqueIdentifierOfFile]);
+  }, [uniqueFileId]);
 
   useEffect(() => {
     if (!editor?.isReady || !workspaceFilePromise.data) {
@@ -249,6 +249,8 @@ export function EditorPage(props: Props) {
     }, 200);
   }, [workspaceFilePromise, editor, i18n, editorPageDock]);
 
+  const [inEditorNavigationStack, setInEditorNavigationStack] = useState<string[]>([]);
+
   const handleOpenFile = useCallback(
     async (relativePath: string) => {
       if (!workspaceFilePromise.data) {
@@ -265,6 +267,14 @@ export function EditorPage(props: Props) {
         throw new Error(`Can't find ${relativePath} on Workspace '${workspaceFilePromise.data.workspaceId}'`);
       }
 
+      setInEditorNavigationStack((prev) => {
+        if (prev.length === 0) {
+          return [workspaceFilePromise.data.relativePath, relativePath];
+        } else {
+          return [...prev, relativePath];
+        }
+      });
+
       history.push({
         pathname: globals.routes.workspaceWithFilePath.path({
           workspaceId: file.workspaceId,
@@ -280,6 +290,23 @@ export function EditorPage(props: Props) {
     setFileBroken(true);
     setContentErrorAlert.show();
   }, [setContentErrorAlert]);
+
+  useEffect(() => {
+    if (!workspaceFilePromise.data) {
+      return;
+    }
+
+    setInEditorNavigationStack((prev) => {
+      // When the open file is not a part of an in-editor navigation, we know the user has let go, so we reset.
+      if (!prev.includes(workspaceFilePromise.data.relativePath)) {
+        return [];
+      }
+
+      // Control of how to display the breadcrumb is done at EditorToolbar, so we don't ever need to shrink the array.
+      // This also makes sure that the breadcrumb keeps working with back/forward buttons :)
+      return prev;
+    });
+  }, [workspaceFilePromise]);
 
   return (
     <OnlineEditorPage>
@@ -307,6 +334,7 @@ export function EditorPage(props: Props) {
                   alerts={alerts}
                   alertsRef={alertsRef}
                   editorPageDock={editorPageDock}
+                  inEditorNavigationStack={inEditorNavigationStack}
                 />
                 <Divider />
                 <PageSection hasOverflowScroll={true} padding={{ default: "noPadding" }}>

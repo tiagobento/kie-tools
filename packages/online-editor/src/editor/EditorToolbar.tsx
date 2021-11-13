@@ -81,6 +81,7 @@ import { useNavigationBlockersBypass, useNavigationStatus, useNavigationStatusTo
 import { ExternalLinkAltIcon } from "@patternfly/react-icons/dist/js/icons/external-link-alt-icon";
 import { CreateGitHubRepositoryModal } from "./CreateGitHubRepositoryModal";
 import { useGitHubAuthInfo } from "../github/Hooks";
+import { InEditorNavigationBreadcrumb } from "./InEditorNavigationBreadcrumb";
 
 export interface Props {
   alerts: AlertsController | undefined;
@@ -88,6 +89,7 @@ export interface Props {
   editor: EmbeddedEditorRef | undefined;
   workspaceFile: WorkspaceFile;
   editorPageDock: EditorPageDockDrawerRef | undefined;
+  inEditorNavigationStack: string[];
 }
 
 const showWhenSmall: ToolbarItemProps["visibility"] = {
@@ -1428,6 +1430,13 @@ If you are, it means that creating this Gist failed and it can safely be deleted
                 </Toolbar>
               </FlexItem>
             </Flex>
+          </PageSection>
+          <PageSection>
+            <InEditorNavigationBreadcrumb
+              inEditorNavigationStack={props.inEditorNavigationStack}
+              currentFile={props.workspaceFile}
+              workspace={workspace}
+            />
           </PageSection>
           <EmbedModal
             workspace={workspace.descriptor}
