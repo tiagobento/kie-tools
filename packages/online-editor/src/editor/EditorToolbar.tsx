@@ -90,6 +90,7 @@ export interface Props {
   workspaceFile: WorkspaceFile;
   editorPageDock: EditorPageDockDrawerRef | undefined;
   inEditorNavigationStack: string[];
+  setInEditorNavigationStack: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
 const showWhenSmall: ToolbarItemProps["visibility"] = {
@@ -1056,6 +1057,10 @@ If you are, it means that creating this Gist failed and it can safely be deleted
     }, [])
   );
 
+  const shouldDisplayInEditorNavigationBreadcrumb = useMemo(() => {
+    return props.inEditorNavigationStack.length > 1;
+  }, [props.inEditorNavigationStack]);
+
   return (
     <PromiseStateWrapper
       promise={workspacePromise}
@@ -1075,6 +1080,7 @@ If you are, it means that creating this Gist failed and it can safely be deleted
                   </Button>
                   &nbsp;&nbsp;
                   <WorkspaceLabel descriptor={workspace.descriptor} />
+                  &nbsp;&nbsp;
                   <div data-testid={"toolbar-title-workspace"} className={"kogito--editor__toolbar-name-container"}>
                     <Title
                       aria-label={"EmbeddedEditorFile name"}
@@ -1171,7 +1177,11 @@ If you are, it means that creating this Gist failed and it can safely be deleted
               </Flex>
             )}
           </PageSection>
-          <PageSection type={"nav"} variant={"light"} style={{ paddingTop: 0, paddingBottom: "16px" }}>
+          <PageSection
+            type={"nav"}
+            variant={"light"}
+            style={{ paddingTop: 0, paddingBottom: shouldDisplayInEditorNavigationBreadcrumb ? 0 : "8px" }}
+          >
             <Flex
               justifyContent={{ default: "justifyContentSpaceBetween" }}
               alignItems={{ default: "alignItemsCenter" }}
@@ -1431,13 +1441,16 @@ If you are, it means that creating this Gist failed and it can safely be deleted
               </FlexItem>
             </Flex>
           </PageSection>
-          <PageSection>
-            <InEditorNavigationBreadcrumb
-              inEditorNavigationStack={props.inEditorNavigationStack}
-              currentFile={props.workspaceFile}
-              workspace={workspace}
-            />
-          </PageSection>
+          {shouldDisplayInEditorNavigationBreadcrumb && (
+            <PageSection type={"nav"} variant={"light"} style={{ paddingTop: 0, paddingBottom: "8px" }}>
+              <InEditorNavigationBreadcrumb
+                inEditorNavigationStack={props.inEditorNavigationStack}
+                setInEditorNavigationStack={props.setInEditorNavigationStack}
+                currentFile={props.workspaceFile}
+                workspace={workspace}
+              />
+            </PageSection>
+          )}
           <EmbedModal
             workspace={workspace.descriptor}
             workspaceFile={props.workspaceFile}

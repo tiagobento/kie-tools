@@ -268,9 +268,19 @@ export function EditorPage(props: Props) {
       }
 
       setInEditorNavigationStack((prev) => {
+        // First navigation
         if (prev.length === 0) {
           return [workspaceFilePromise.data.relativePath, relativePath];
-        } else {
+        }
+
+        // This is for recursive paths. We should treat the recursive navigation as going back,
+        // so we never have cycles.
+        else if (prev.includes(relativePath)) {
+          return [...prev.slice(0, prev.indexOf(workspaceFilePromise.data.relativePath) + 1), relativePath];
+        }
+
+        // Normally navigating to a different file.
+        else {
           return [...prev, relativePath];
         }
       });
@@ -335,6 +345,7 @@ export function EditorPage(props: Props) {
                   alertsRef={alertsRef}
                   editorPageDock={editorPageDock}
                   inEditorNavigationStack={inEditorNavigationStack}
+                  setInEditorNavigationStack={setInEditorNavigationStack}
                 />
                 <Divider />
                 <PageSection hasOverflowScroll={true} padding={{ default: "noPadding" }}>
