@@ -85,6 +85,7 @@ import { Location } from "history";
 import { ExternalLinkAltIcon } from "@patternfly/react-icons/dist/js/icons/external-link-alt-icon";
 import { CreateGitHubRepositoryModal } from "./CreateGitHubRepositoryModal";
 import { useGitHubAuthInfo } from "../github/Hooks";
+import { dirname, join } from "path";
 import { useEditorEnvelopeLocator } from "../envelopeLocator/EditorEnvelopeLocatorContext";
 import { useCancelableEffect } from "../reactExt/Hooks";
 import type { RestEndpointMethodTypes as OctokitRestEndpointMethodTypes } from "@octokit/plugin-rest-endpoint-methods/dist-types/generated/parameters-and-response-types";
@@ -147,6 +148,9 @@ export function EditorToolbar(props: Props) {
     useState<OctokitRestEndpointMethodTypes["gists"]["get"]["response"]["data"] | undefined>(undefined);
   const workspaceImportableUrl = useImportableUrl(workspacePromise.data?.descriptor.origin.url?.toString());
 
+  const [isStartersDropdownOpen, setStartersDropdownOpen] = useState(false);
+  const [showStartersDropdown, setShowStartersDropdown] = useState(false);
+
   const githubAuthInfo = useGitHubAuthInfo();
   const canPushToGitRepository = useMemo(() => !!githubAuthInfo, [githubAuthInfo]);
   const navigationBlockersBypass = useNavigationBlockersBypass();
@@ -177,6 +181,24 @@ export function EditorToolbar(props: Props) {
       [gitHubGist, workspaceImportableUrl, settingsDispatch.github.octokit.gists]
     )
   );
+
+  useEffect(() => {
+    if (!workspacePromise.data || workspacePromise.data.descriptor.origin.kind !== WorkspaceKind.LOCAL) {
+      setShowStartersDropdown(false);
+      return;
+    }
+
+    workspaces.fsService.getWorkspaceFs(props.workspaceFile.workspaceId).then(async (fs) => {
+      const files = await workspaces.getFiles({
+        fs: fs,
+        workspaceId: props.workspaceFile.workspaceId,
+      });
+
+      setShowStartersDropdown(
+        files.every((f) => f.extension === "dmn" || f.extension === "bpmn" || f.extension === "pmml")
+      );
+    });
+  }, [props.workspaceFile.workspaceId, workspacePromise.data, workspaces]);
 
   const successfullyCreateGistAlert = useAlert(
     props.alerts,
@@ -645,6 +667,138 @@ If you are, it means that creating this Gist failed and it can safely be deleted
   );
 
   const [isCreateGitHubRepositoryModalOpen, setCreateGitHubRepositoryModalOpen] = useState(false);
+
+  const creatingQuarkusSkeletonAlert = useAlert(
+    props.alerts,
+    useCallback(({ close }) => {
+      return (
+        <Alert
+          variant="info"
+          title={
+            <>
+              <Spinner size={"sm"} />
+              &nbsp;&nbsp; {"Creating Quarkus Project..."}
+            </>
+          }
+        />
+      );
+    }, [])
+  );
+
+  const onQuarkusStarterClicked = useCallback(async () => {
+    const kogitoQuarkusSkeleton = {
+      url: "https://github.com/kiegroup/kie-sandbox-quarkus-template",
+      remoteName: "KOGITO_QUARKUS_SKELETON",
+      branch: "template",
+    };
+    const resourcesFolder = "/src/main/resources";
+    const gitAuthorConfig = {
+      name: "Unknown",
+      email: "unknown@email.com",
+    };
+
+    try {
+      creatingQuarkusSkeletonAlert.show();
+
+      const fs = await workspaces.fsService.getWorkspaceFs(props.workspaceFile.workspaceId);
+      const workspaceRootDirPath = workspaces.getAbsolutePath({ workspaceId: props.workspaceFile.workspaceId });
+
+      const files = await workspaces.getFiles({
+        fs: fs,
+        workspaceId: props.workspaceFile.workspaceId,
+      });
+
+      await workspaces.gitService.addRemote({
+        fs: fs,
+        dir: workspaceRootDirPath,
+        url: kogitoQuarkusSkeleton.url,
+        name: kogitoQuarkusSkeleton.remoteName,
+        force: true,
+      });
+
+      await workspaces.gitService.fetch({
+        fs: fs,
+        dir: workspaceRootDirPath,
+        remote: kogitoQuarkusSkeleton.remoteName,
+        ref: kogitoQuarkusSkeleton.branch,
+      });
+
+      let currentFileAfterMoving: WorkspaceFile | undefined;
+      for (const file of files) {
+        const movedFile = await workspaces.service.moveFile({
+          fs: fs,
+          file: file,
+          newDirPath: join(resourcesFolder, dirname(file.relativePath)),
+          broadcastArgs: {
+            broadcast: false,
+          },
+        });
+
+        if (file.relativePath === props.workspaceFile.relativePath) {
+          currentFileAfterMoving = movedFile;
+        }
+      }
+
+      if (!currentFileAfterMoving) {
+        throw new Error("Failed to find current file after moving.");
+      }
+
+      await workspaces.gitService.checkout({
+        fs: fs,
+        dir: workspaceRootDirPath,
+        ref: kogitoQuarkusSkeleton.branch,
+        remote: kogitoQuarkusSkeleton.remoteName,
+      });
+
+      const files2 = await workspaces.getFiles({
+        fs: fs,
+        workspaceId: props.workspaceFile.workspaceId,
+      });
+
+      console.log(files2);
+
+      await workspaces.gitService.deleteRemote({
+        fs,
+        dir: workspaceRootDirPath,
+        name: kogitoQuarkusSkeleton.remoteName,
+      });
+
+      await workspaces.createSavePoint({
+        fs: fs,
+        workspaceId: props.workspaceFile.workspaceId,
+        gitConfig: gitAuthorConfig,
+      });
+
+      history.replace({
+        pathname: routes.workspaceWithFilePath.path({
+          extension: props.workspaceFile.extension,
+          workspaceId: props.workspaceFile.workspaceId,
+          fileRelativePath: currentFileAfterMoving.relativePathWithoutExtension,
+        }),
+      });
+    } catch (e) {
+      console.log(e);
+    } finally {
+      creatingQuarkusSkeletonAlert.close();
+    }
+  }, [creatingQuarkusSkeletonAlert, routes.workspaceWithFilePath, history, props.workspaceFile, workspaces]);
+
+  const startersDropdownItems = useMemo(
+    () => [
+      <DropdownItem
+        onClick={onQuarkusStarterClicked}
+        key={"starters-quarkus-item"}
+        ouiaId="starters-quarkus-item"
+        icon={<img style={{ width: "14px" }} alt="quarkus-logo" src={routes.static.images.quarkusLogo.path({})} />}
+      >
+        Quarkus
+      </DropdownItem>,
+      <DropdownItem key={"starters-other-item"} ouiaId="starters-other-item">
+        Other...
+      </DropdownItem>,
+    ],
+    [routes.static.images.quarkusLogo, onQuarkusStarterClicked]
+  );
 
   const shareDropdownItems = useMemo(
     () => [
@@ -1640,6 +1794,25 @@ If you are, it means that creating this Gist failed and it can safely be deleted
                               </Tooltip>
                             </DropdownGroup>,
                           ]}
+                        />
+                      </ToolbarItem>
+                    )}
+                    {showStartersDropdown && (
+                      <ToolbarItem visibility={hideWhenSmall}>
+                        <Dropdown
+                          onSelect={() => setStartersDropdownOpen(false)}
+                          isOpen={isStartersDropdownOpen}
+                          dropdownItems={startersDropdownItems}
+                          position={DropdownPosition.right}
+                          toggle={
+                            <DropdownToggle
+                              id={"starters-dropdown"}
+                              data-testid={"starters-dropdown"}
+                              onToggle={(isOpen) => setStartersDropdownOpen(isOpen)}
+                            >
+                              Accelerators
+                            </DropdownToggle>
+                          }
                         />
                       </ToolbarItem>
                     )}

@@ -136,6 +136,7 @@ export const routes = {
   static: {
     sample: new Route<{ pathParams: "type" }>(({ type }) => `samples/Sample.${type}`),
     images: {
+      quarkusLogo: new Route<{}>(() => `images/quarkus-logo.svg`),
       vscodeLogoBlue: new Route<{}>(() => `images/vscode.svg`),
       vscodeLogoWhite: new Route<{}>(() => `images/vscode-alt.svg`),
       kogitoLogoWhite: new Route<{}>(() => `images/kogito_logo_white.png`),
