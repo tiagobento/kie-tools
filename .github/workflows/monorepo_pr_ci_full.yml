@@ -81,7 +81,7 @@ jobs:
 
       - name: "Upload build artifacts"
         uses: actions/upload-artifact@v2
-        if: always() && !cancelled() && check_diff_paths.should_run
+        if: always() && !cancelled() && steps.check_diff_paths.should_run
         with:
           name: artifacts-${{ matrix.os }}
           if-no-files-found: warn
@@ -92,7 +92,7 @@ jobs:
 
       - name: "Upload IT Tests artifacts"
         uses: actions/upload-artifact@v2
-        if: always() && !cancelled() && check_diff_paths.should_run
+        if: always() && !cancelled() && steps.check_diff_paths.should_run
         with:
           name: it-tests-artifacts-${{ matrix.os }}
           if-no-files-found: warn
