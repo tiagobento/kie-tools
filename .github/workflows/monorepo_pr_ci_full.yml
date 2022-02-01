@@ -51,8 +51,11 @@ jobs:
             echo '`CI` is already running, no need to run this one.'
             echo "::set-output name=should_run::false"
           else
+            echo '`CI :: Full` will run.'
             echo "::set-output name=should_run::true"
           fi
+
+          echo "Checked"
 
       - name: "Setup environment"
         if: steps.check_diff_paths.should_run

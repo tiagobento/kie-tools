@@ -43,11 +43,14 @@ jobs:
           read -r -a PATHS <<< $(git diff --name-only ${{ github.base_ref }} HEAD -- ':!packages' ':!examples')
 
           if [ ${#PATHS[@]} -eq 0 ]; then
+            echo '`CI will run.'
             echo "::set-output name=should_run::true"
           else
             echo '`CI :: Full` is already running, no need to run this one.'
             echo "::set-output name=should_run::false"
           fi
+
+          echo "Checked"
 
       - name: "Setup environment"
         if: steps.check_diff_paths.should_run
