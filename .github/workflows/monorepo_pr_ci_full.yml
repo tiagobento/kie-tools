@@ -42,9 +42,12 @@ jobs:
           # If there are no changed files outside `packages` or `examples`,
           # we don't need to run the full CI.
 
-          read -r -a PATHS <<< $(git diff --name-only ${{ github.base_ref }} ${{ github.head_ref }} -- ':!packages' ':!examples')
+          read -r -a PATHS <<< $(git diff --name-only ${{ github.base_ref }} HEAD -- ':!packages' ':!examples')
 
-          if [ ${#PATHS[@]} -eq 0 ]; then
+          if [ ${{ github.event.push }} ]; then
+            echo 'Push to the main branch happened, should run'
+            echo "::set-output name=should_run::true"
+          elif [ ${#PATHS[@]} -eq 0 ]; then
             echo '`CI` is already running, no need to run this one.'
             echo "::set-output name=should_run::false"
           else
