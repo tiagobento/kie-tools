@@ -31,6 +31,7 @@ jobs:
         uses: ./.github/actions/setup-kie-tools-bot
 
       - name: "Merge PR changes"
+        id: merge_changes
         uses: ./.github/actions/merge-pr-changes
 
       - name: "Check if should run or not"
@@ -40,9 +41,9 @@ jobs:
           # If there are no changed files in dirs that are not `packages` or `examples`,
           # it means that all changed files are in either `packages` or `examples`, so we should run the normal CI.
 
-          git diff --name-only ${{ github.base_ref }} HEAD -- ':!packages' ':!examples'
+          git diff --name-only ${{ steps.merge_changes.outputs.base_sha }} ${{ steps.merge_changes.outputs.head_sha }} -- ':!packages' ':!examples'
 
-          read -r -a DIFF_PATHS <<< $(git diff --name-only ${{ github.base_ref }} HEAD -- ':!packages' ':!examples')
+          read -r -a DIFF_PATHS <<< $(git diff --name-only ${{ steps.merge_changes.outputs.base_sha }} ${{ steps.merge_changes.outputs.head_sha }} -- ':!packages' ':!examples')
           echo $DIFF_PATHS
           echo ${#DIFF_PATHS[@]}
 
@@ -57,13 +58,13 @@ jobs:
           echo "Checked"
 
       - name: "Setup environment"
-        if: steps.check_diff_paths.outputs.should_run
+        if: steps.check_diff_paths.outputs.should_run == 'true'
         uses: ./.github/actions/setup-env
         with:
           os: ${{ matrix.os }}
 
       - name: "Build dependencies"
-        if: steps.check_diff_paths.outputs.should_run
+        if: steps.check_diff_paths.outputs.should_run == 'true'
         shell: bash
         env:
           KIE_TOOLS_BUILD_examples: "true"
@@ -76,7 +77,7 @@ jobs:
             --else "lerna run --stream build:dev $SCOPE"
 
       - name: "Build changed and dependents"
-        if: steps.check_diff_paths.outputs.should_run
+        if: steps.check_diff_paths.outputs.should_run == 'true'
         env:
           WEBPACK__minimize: "false"
           KIE_TOOLS_BUILD_lint: "true"
@@ -90,7 +91,7 @@ jobs:
           lerna run build:prod --stream --since ${{ github.base_ref }}
 
       - name: "Check generated resources (you should commit those!)"
-        if: steps.check_diff_paths.outputs.should_run
+        if: steps.check_diff_paths.outputs.should_run == 'true'
         shell: bash
         run: |
           git diff
@@ -98,7 +99,7 @@ jobs:
 
       - name: "Upload build artifacts"
         uses: actions/upload-artifact@v2
-        if: always() && !cancelled() && steps.check_diff_paths.outputs.should_run
+        if: always() && !cancelled() && steps.check_diff_paths.outputs.should_run == 'true'
         with:
           name: artifacts-${{ matrix.os }}
           if-no-files-found: warn
@@ -109,7 +110,7 @@ jobs:
 
       - name: "Upload IT Tests artifacts"
         uses: actions/upload-artifact@v2
-        if: always() && !cancelled() && steps.check_diff_paths.outputs.should_run
+        if: always() && !cancelled() && steps.check_diff_paths.outputs.should_run == 'true'
         with:
           name: it-tests-artifacts-${{ matrix.os }}
           if-no-files-found: warn
