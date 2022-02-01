@@ -42,6 +42,8 @@ jobs:
           # If there are no changed files outside `packages` or `examples`,
           # we don't need to run the full CI.
 
+          git diff --name-only ${{ github.base_ref }} HEAD -- ':!packages' ':!examples'
+
           read -r -a DIFF_PATHS <<< $(git diff --name-only ${{ github.base_ref }} HEAD -- ':!packages' ':!examples')
           echo $DIFF_PATHS
           echo ${#DIFF_PATHS[@]}

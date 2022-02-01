@@ -40,6 +40,8 @@ jobs:
           # If there are no changed files in dirs that are not `packages` or `examples`,
           # it means that all changed files are in either `packages` or `examples`, so we should run the normal CI.
 
+          git diff --name-only ${{ github.base_ref }} HEAD -- ':!packages' ':!examples'
+
           read -r -a DIFF_PATHS <<< $(git diff --name-only ${{ github.base_ref }} HEAD -- ':!packages' ':!examples')
           echo $DIFF_PATHS
           echo ${#DIFF_PATHS[@]}
