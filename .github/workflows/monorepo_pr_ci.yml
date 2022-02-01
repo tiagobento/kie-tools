@@ -3,8 +3,6 @@ name: "CI :: Monorepo"
 on:
   pull_request:
     branches: "**"
-    paths:
-      - "packages/**"
 
 concurrency:
   group: monorepo-pr-ci-${{ github.event.pull_request.number }}
@@ -35,12 +33,30 @@ jobs:
       - name: "Merge PR changes"
         uses: ./.github/actions/merge-pr-changes
 
+      - name: "Check if should run or not"
+        id: check_diff_paths
+        shell: bash
+        run: |
+          # If there are no changed files in dirs that are not `packages` or `examples`,
+          # it means that all changed files are in either `packages` or `examples`, so we should run the normal CI.
+
+          read -r -a PATHS <<< $(git diff --name-only ${{ github.base_ref }} ${{ github.head_ref }} -- ':!packages' ':!examples')
+
+          if [ ${#PATHS[@]} -eq 0 ]; then
+            echo "::set-output name=should_run::true"
+          else
+            echo '`CI :: Full` is already running, no need to run this one.'
+            echo "::set-output name=should_run::false"
+          fi
+
       - name: "Setup environment"
+        if: check_diff_paths.should_run
         uses: ./.github/actions/setup-env
         with:
           os: ${{ matrix.os }}
 
       - name: "Build dependencies"
+        if: check_diff_paths.should_run
         shell: bash
         env:
           KIE_TOOLS_BUILD_examples: "true"
@@ -53,6 +69,7 @@ jobs:
             --else "lerna run --stream build:dev $SCOPE"
 
       - name: "Build changed and dependents"
+        if: check_diff_paths.should_run
         env:
           WEBPACK__minimize: "false"
           KIE_TOOLS_BUILD_lint: "true"
@@ -66,6 +83,7 @@ jobs:
           lerna run build:prod --stream --since ${{ github.base_ref }}
 
       - name: "Check generated resources (you should commit those!)"
+        if: check_diff_paths.should_run
         shell: bash
         run: |
           git diff
@@ -73,7 +91,7 @@ jobs:
 
       - name: "Upload build artifacts"
         uses: actions/upload-artifact@v2
-        if: always() && !cancelled()
+        if: always() && !cancelled() && check_diff_paths.should_run
         with:
           name: artifacts-${{ matrix.os }}
           if-no-files-found: warn
@@ -84,7 +102,7 @@ jobs:
 
       - name: "Upload IT Tests artifacts"
         uses: actions/upload-artifact@v2
-        if: always() && !cancelled()
+        if: always() && !cancelled() && check_diff_paths.should_run
         with:
           name: it-tests-artifacts-${{ matrix.os }}
           if-no-files-found: warn
