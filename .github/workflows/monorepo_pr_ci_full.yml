@@ -52,13 +52,13 @@ jobs:
           fi
 
       - name: "Setup environment"
-        if: check_diff_paths.should_run
+        if: steps.check_diff_paths.should_run
         uses: ./.github/actions/setup-env
         with:
           os: ${{ matrix.os }}
 
       - name: "Build"
-        if: check_diff_paths.should_run
+        if: steps.check_diff_paths.should_run
         env:
           WEBPACK__minimize: "false"
           WEBPACK__tsLoaderTranspileOnly: "false"
@@ -73,7 +73,7 @@ jobs:
           lerna run build:prod --stream --concurrency 1
 
       - name: "Check generated resources (you should commit those!)"
-        if: check_diff_paths.should_run
+        if: steps.check_diff_paths.should_run
         shell: bash
         run: |
           git diff

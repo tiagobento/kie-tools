@@ -50,13 +50,13 @@ jobs:
           fi
 
       - name: "Setup environment"
-        if: check_diff_paths.should_run
+        if: steps.check_diff_paths.should_run
         uses: ./.github/actions/setup-env
         with:
           os: ${{ matrix.os }}
 
       - name: "Build dependencies"
-        if: check_diff_paths.should_run
+        if: steps.check_diff_paths.should_run
         shell: bash
         env:
           KIE_TOOLS_BUILD_examples: "true"
@@ -69,7 +69,7 @@ jobs:
             --else "lerna run --stream build:dev $SCOPE"
 
       - name: "Build changed and dependents"
-        if: check_diff_paths.should_run
+        if: steps.check_diff_paths.should_run
         env:
           WEBPACK__minimize: "false"
           KIE_TOOLS_BUILD_lint: "true"
@@ -83,7 +83,7 @@ jobs:
           lerna run build:prod --stream --since ${{ github.base_ref }}
 
       - name: "Check generated resources (you should commit those!)"
-        if: check_diff_paths.should_run
+        if: steps.check_diff_paths.should_run
         shell: bash
         run: |
           git diff
