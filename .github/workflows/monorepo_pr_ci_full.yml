@@ -42,12 +42,14 @@ jobs:
           # If there are no changed files outside `packages` or `examples`,
           # we don't need to run the full CI.
 
-          read -r -a PATHS <<< $(git diff --name-only ${{ github.base_ref }} HEAD -- ':!packages' ':!examples')
+          read -r -a DIFF_PATHS <<< $(git diff --name-only ${{ github.base_ref }} HEAD -- ':!packages' ':!examples')
+          echo $DIFF_PATHS
+          echo ${#DIFF_PATHS[@]}
 
           if [ ${{ github.event.push }} ]; then
             echo 'Push to the main branch happened, should run'
             echo "::set-output name=should_run::true"
-          elif [ ${#PATHS[@]} -eq 0 ]; then
+          elif [ ${#DIFF_PATHS[@]} -eq 0 ]; then
             echo '`CI` is already running, no need to run this one.'
             echo "::set-output name=should_run::false"
           else
@@ -58,13 +60,13 @@ jobs:
           echo "Checked"
 
       - name: "Setup environment"
-        if: steps.check_diff_paths.should_run
+        if: steps.check_diff_paths.outputs.should_run
         uses: ./.github/actions/setup-env
         with:
           os: ${{ matrix.os }}
 
       - name: "Build"
-        if: steps.check_diff_paths.should_run
+        if: steps.check_diff_paths.outputs.should_run
         env:
           WEBPACK__minimize: "false"
           WEBPACK__tsLoaderTranspileOnly: "false"
@@ -79,7 +81,7 @@ jobs:
           lerna run build:prod --stream --concurrency 1
 
       - name: "Check generated resources (you should commit those!)"
-        if: steps.check_diff_paths.should_run
+        if: steps.check_diff_paths.outputs.should_run
         shell: bash
         run: |
           git diff
@@ -87,7 +89,7 @@ jobs:
 
       - name: "Upload build artifacts"
         uses: actions/upload-artifact@v2
-        if: always() && !cancelled() && steps.check_diff_paths.should_run
+        if: always() && !cancelled() && steps.check_diff_paths.outputs.should_run
         with:
           name: artifacts-${{ matrix.os }}
           if-no-files-found: warn
@@ -98,7 +100,7 @@ jobs:
 
       - name: "Upload IT Tests artifacts"
         uses: actions/upload-artifact@v2
-        if: always() && !cancelled() && steps.check_diff_paths.should_run
+        if: always() && !cancelled() && steps.check_diff_paths.outputs.should_run
         with:
           name: it-tests-artifacts-${{ matrix.os }}
           if-no-files-found: warn
