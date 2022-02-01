@@ -22,7 +22,7 @@ runs:
       id: merge_changes
       shell: bash
       run: |
-        echo "STEP: Merge changes"
+        echo "STEP: Merge changes 123"
         cd ${{ inputs.path }}
         if [ ${{ github.event.pull_request }} ]; then
           user=$(node -e "console.log('${{ github.event.pull_request.head.label }}'.match(/(.+)\:(.+)$/)[1])")
