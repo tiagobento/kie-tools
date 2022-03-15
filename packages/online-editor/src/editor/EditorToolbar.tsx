@@ -677,7 +677,7 @@ If you are, it means that creating this Gist failed and it can safely be deleted
           title={
             <>
               <Spinner size={"sm"} />
-              &nbsp;&nbsp; {"Creating Quarkus Project..."}
+              &nbsp;&nbsp; {"Creating KIE Project..."}
             </>
           }
         />
@@ -791,7 +791,7 @@ If you are, it means that creating this Gist failed and it can safely be deleted
         ouiaId="starters-quarkus-item"
         icon={<img style={{ width: "14px" }} alt="quarkus-logo" src={routes.static.images.quarkusLogo.path({})} />}
       >
-        Quarkus
+        KIE Project
       </DropdownItem>,
       <DropdownItem key={"starters-other-item"} ouiaId="starters-other-item">
         Other...
