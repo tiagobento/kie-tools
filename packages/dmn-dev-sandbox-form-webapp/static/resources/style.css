@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+
 .pf-c-page__header {
   /* this adjusts the max specifically for our logo */
   --pf-c-page__header-brand-link--c-brand--MaxHeight: 39px;
