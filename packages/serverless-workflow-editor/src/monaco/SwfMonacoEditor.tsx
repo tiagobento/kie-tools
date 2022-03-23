@@ -73,7 +73,7 @@ const RefForwardingSwfMonacoEditor: React.ForwardRefRenderFunction<SwfMonacoEdit
     const instance = controller.show(container.current, theme);
     const commands = initAugmentationCommands(instance, editorEnvelopeCtx.channelApi);
 
-    initJsonCompletion(commands);
+    initJsonCompletion(commands, editorEnvelopeCtx.channelApi);
     initJsonCodeLenses(commands, channelType, editorEnvelopeCtx.operatingSystem);
 
     // TODO: Add support to YAML
