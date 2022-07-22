@@ -23,7 +23,7 @@ module.exports = (env) => {
   const transpileOnly = webpackEnv.transpileOnly;
   const minimize = webpackEnv.minimize;
   const sourceMaps = webpackEnv.sourceMaps;
-  const mode = webpackEnv.mode;
+  const mode = env.dev ? "development" : "production";
   const live = env.live;
 
   console.info(`Webpack :: ts-loader :: transpileOnly: ${transpileOnly}`);

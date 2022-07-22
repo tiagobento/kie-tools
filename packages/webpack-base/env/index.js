@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-const { varsWithName, get, str2bool } = require("@kie-tools/build-env");
+const { varsWithName, get, str2bool, safeEnv } = require("@kie-tools/build-env");
 
-module.exports = {
+module.exports = safeEnv({
   vars: varsWithName({
     WEBPACK__minimize: {
       default: undefined,
@@ -30,10 +30,6 @@ module.exports = {
       default: undefined,
       description: "",
     },
-    WEBPACK__mode: {
-      default: undefined,
-      description: "",
-    },
   }),
   get env() {
     return {
@@ -42,15 +38,13 @@ module.exports = {
           minimize: str2bool(get(this.vars.WEBPACK__minimize) ?? `${false}`),
           transpileOnly: str2bool(get(this.vars.WEBPACK__tsLoaderTranspileOnly) ?? `${false}`),
           sourceMaps: str2bool(get(this.vars.WEBPACK__sourceMaps) ?? `${true}`),
-          mode: get(this.vars.WEBPACK__mode) ?? "development",
         },
         prod: {
           minimize: str2bool(get(this.vars.WEBPACK__minimize) ?? `${true}`),
           transpileOnly: str2bool(get(this.vars.WEBPACK__tsLoaderTranspileOnly) ?? `${false}`),
           sourceMaps: str2bool(get(this.vars.WEBPACK__sourceMaps) ?? `${false}`),
-          mode: get(this.vars.WEBPACK__mode) ?? "production",
         },
       },
     };
   },
-};
+});

@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-export type EnvAndVarsWithName<T> = { vars: { [K in keyof T]: VarWithName }; env: object };
+export type EnvAndVarsWithName<T> = {
+  vars: { [K in keyof T]: VarWithName };
+  env: Record<string, string | Record<string, string>>;
+};
 
 export type Var = {
   default: string | undefined;
@@ -46,8 +49,34 @@ export function varsWithName<T>(obj: { [K in keyof T]: Var }) {
 }
 
 export function composeEnv<T>(deps: EnvAndVarsWithName<any>[], obj: EnvAndVarsWithName<T>) {
-  return {
+  return safeEnv({
     vars: { ...obj.vars, ...deps.reduce((acc, d) => ({ ...acc, ...d.vars }), {}) },
     env: { ...obj.env, ...deps.reduce((acc, d) => ({ ...acc, ...d.env }), {}) },
+  });
+}
+
+export function safeEnv<T>(obj: { vars: { [K in keyof T]: VarWithName }; env: Record<string, any> }) {
+  return {
+    vars: obj.vars,
+    env: safeEnvDeep(undefined, obj.env),
   };
+}
+
+function safeEnvDeep<T>(start: string | undefined, env: Record<string, any>) {
+  return new Proxy(env, {
+    get(target, p, receiver): any {
+      const accessor = p as string;
+      const envPropertyValue = target[accessor];
+      const accumulatedAccessor = start ? `${start}.${accessor}` : `${accessor}`;
+
+      if (envPropertyValue === undefined || envPropertyValue === null || envPropertyValue === "") {
+        console.error(`[build-env] Can't access unset env '${accumulatedAccessor}'.`);
+        process.exit(1);
+      }
+
+      return typeof envPropertyValue === "object"
+        ? safeEnvDeep(accumulatedAccessor, envPropertyValue) //
+        : envPropertyValue;
+    },
+  });
 }
