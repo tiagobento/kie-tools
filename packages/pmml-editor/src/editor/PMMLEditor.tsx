@@ -60,7 +60,7 @@ interface Props {
   ready: () => void;
 
   /**
-   * Delegation for WorkspaceChannelApi.kogitoWorkspace_newEdit(edit) to signal to the Channel
+   * Delegation for WorkspaceChannelApi.kogitoWorkspace_onNewEdit(edit) to signal to the Channel
    * that a change has taken place. Increases the decoupling of the PMMLEditor from the Channel.
    * @param edit An object representing the unique change.
    */

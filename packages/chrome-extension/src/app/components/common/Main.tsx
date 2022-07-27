@@ -23,7 +23,7 @@ import { KogitoMenu } from "./KogitoMenu";
 import { Dependencies } from "../../Dependencies";
 import { kogitoMenuContainer } from "../../utils";
 import { ExternalEditorManager } from "../../../ExternalEditorManager";
-import { ResourceContentServiceFactory } from "./ChromeResourceContentService";
+import { ChromeExtensionWorkspaceChannelFsServiceFactory } from "./ChromeExtensionWorkspaceChannelFsServiceImpl";
 import { EditorEnvelopeLocator } from "@kie-tools-core/editor/dist/api";
 import { I18nDictionariesProvider } from "@kie-tools-core/i18n/dist/react-components";
 import { chromeExtensionI18nDictionaries, chromeExtensionI18nDefaults, ChromeExtensionI18nContext } from "../../i18n";
@@ -35,7 +35,7 @@ export interface Globals {
   dependencies: Dependencies;
   githubAuthTokenCookieName: string;
   extensionIconUrl: string;
-  resourceContentServiceFactory: ResourceContentServiceFactory;
+  chromeExtensionWorkspaceChannelFsServiceFactory: ChromeExtensionWorkspaceChannelFsServiceFactory;
   externalEditorManager?: ExternalEditorManager;
 }
 
@@ -70,7 +70,7 @@ export const Main: React.FunctionComponent<Globals> = (props) => {
           envelopeLocator: props.editorEnvelopeLocator,
           githubAuthTokenCookieName: props.githubAuthTokenCookieName,
           extensionIconUrl: props.extensionIconUrl,
-          resourceContentServiceFactory: props.resourceContentServiceFactory,
+          chromeExtensionWorkspaceChannelFsServiceFactory: props.chromeExtensionWorkspaceChannelFsServiceFactory,
           externalEditorManager: props.externalEditorManager,
         }}
       >

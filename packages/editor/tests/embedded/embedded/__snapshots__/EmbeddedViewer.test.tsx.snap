@@ -11,7 +11,7 @@ exports[`EmbeddedViewer::ONLINE EmbeddedViewer::defaults 1`] = `
 />
 `;
 
-exports[`EmbeddedViewer::ONLINE EmbeddedViewer::onResourceContentRequest 1`] = `
+exports[`EmbeddedViewer::ONLINE EmbeddedViewer::onWorkspaceRequestContent 1`] = `
 <iframe
   data-envelope-channel="ONLINE"
   data-testid="kogito-iframe"
@@ -22,7 +22,7 @@ exports[`EmbeddedViewer::ONLINE EmbeddedViewer::onResourceContentRequest 1`] = `
 />
 `;
 
-exports[`EmbeddedViewer::ONLINE EmbeddedViewer::onResourceListRequest 1`] = `
+exports[`EmbeddedViewer::ONLINE EmbeddedViewer::onWorkspaceFindPaths 1`] = `
 <iframe
   data-envelope-channel="ONLINE"
   data-testid="kogito-iframe"

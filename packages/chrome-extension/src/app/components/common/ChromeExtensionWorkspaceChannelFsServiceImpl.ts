@@ -14,20 +14,13 @@
  * limitations under the License.
  */
 
-import {
-  ContentType,
-  ResourceContent,
-  ResourceContentOptions,
-  ResourceContentService,
-  ResourceListOptions,
-  ResourcesList,
-} from "@kie-tools-core/workspace/dist/api";
 import { fetchFile } from "../../github/api";
 import * as minimatch from "minimatch";
 import { RepoInfo } from "./RepoInfo";
 import { Octokit } from "@octokit/rest";
+import { FindPathsOpts, WorkspaceChannelFsService } from "@kie-tools-core/workspace/dist/api";
 
-class ChromeResourceContentService implements ResourceContentService {
+class ChromeExtensionWorkspaceChannelFsServiceImpl implements WorkspaceChannelFsService {
   private readonly repoInfo: RepoInfo;
   private readonly octokit: Octokit;
 
@@ -36,10 +29,9 @@ class ChromeResourceContentService implements ResourceContentService {
     this.repoInfo = repoInfo;
   }
 
-  public get(path: string, opts?: ResourceContentOptions): Promise<ResourceContent | undefined> {
-    opts = opts ?? { type: ContentType.TEXT };
-    return fetchFile(this.octokit, this.repoInfo.owner, this.repoInfo.repo, this.repoInfo.gitref, path, opts!.type)
-      .then((resourceContent) => new ResourceContent(path, resourceContent, opts!.type))
+  public requestContent(path: string): Promise<Uint8Array | undefined> {
+    return fetchFile(this.octokit, this.repoInfo.owner, this.repoInfo.repo, this.repoInfo.gitref, path)
+      .then((content) => (content ? Buffer.from(content) : undefined))
       .catch((e) => {
         console.debug(e);
         console.debug(`Error retrieving content from URI ${path}`);
@@ -47,7 +39,7 @@ class ChromeResourceContentService implements ResourceContentService {
       });
   }
 
-  public list(pattern: string, opts?: ResourceListOptions): Promise<ResourcesList> {
+  public findPaths(pattern: string, opts?: FindPathsOpts): Promise<string[]> {
     return this.octokit.git
       .getTree({
         recursive: "1",
@@ -56,18 +48,17 @@ class ChromeResourceContentService implements ResourceContentService {
       })
       .then((v) => {
         const filteredPaths = v.data.tree.filter((file) => file.type === "blob").map((file) => file.path!);
-        const result = minimatch.match(filteredPaths, pattern);
-        return new ResourcesList(pattern, result);
+        return minimatch.match(filteredPaths, pattern);
       })
       .catch((e) => {
         console.debug(`Error retrieving file list for pattern ${pattern}`);
-        return new ResourcesList(pattern, []);
+        return [];
       });
   }
 }
 
-export class ResourceContentServiceFactory {
+export class ChromeExtensionWorkspaceChannelFsServiceFactory {
   public createNew(octokit: Octokit, repoInfo: RepoInfo) {
-    return new ChromeResourceContentService(octokit, repoInfo);
+    return new ChromeExtensionWorkspaceChannelFsServiceImpl(octokit, repoInfo);
   }
 }

@@ -26,7 +26,7 @@ import "../resources/style.css";
 import { Logger } from "./Logger";
 import { Globals } from "./app/components/common/Main";
 import { ExternalEditorManager } from "./ExternalEditorManager";
-import { ResourceContentServiceFactory } from "./app/components/common/ChromeResourceContentService";
+import { ChromeExtensionWorkspaceChannelFsServiceFactory } from "./app/components/common/ChromeExtensionWorkspaceChannelFsServiceImpl";
 import { renderOpenRepoInExternalEditorApp } from "./app/components/openRepoInExternalEditor/openRepoInExternalEditorApp";
 
 /**
@@ -46,7 +46,7 @@ export function startExtension(args: {
   externalEditorManager?: ExternalEditorManager;
 }) {
   const logger = new Logger(args.name);
-  const resourceContentServiceFactory = new ResourceContentServiceFactory();
+  const chromeExtensionWorkspaceChannelFsServiceFactory = new ChromeExtensionWorkspaceChannelFsServiceFactory();
   const dependencies = new Dependencies();
 
   const runInit = () =>
@@ -57,7 +57,7 @@ export function startExtension(args: {
       githubAuthTokenCookieName: args.githubAuthTokenCookieName,
       extensionIconUrl: args.extensionIconUrl,
       editorEnvelopeLocator: args.editorEnvelopeLocator,
-      resourceContentServiceFactory: resourceContentServiceFactory,
+      chromeExtensionWorkspaceChannelFsServiceFactory,
       externalEditorManager: args.externalEditorManager,
     });
 

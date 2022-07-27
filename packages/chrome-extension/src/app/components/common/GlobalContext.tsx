@@ -18,7 +18,7 @@ import * as React from "react";
 import { EditorEnvelopeLocator } from "@kie-tools-core/editor/dist/api";
 import { Logger } from "../../../Logger";
 import { ExternalEditorManager } from "../../../ExternalEditorManager";
-import { ResourceContentServiceFactory } from "./ChromeResourceContentService";
+import { ChromeExtensionWorkspaceChannelFsServiceFactory } from "./ChromeExtensionWorkspaceChannelFsServiceImpl";
 import { Dependencies } from "../../Dependencies";
 
 export interface GlobalContextType {
@@ -28,7 +28,7 @@ export interface GlobalContextType {
   logger: Logger;
   dependencies: Dependencies;
   extensionIconUrl: string;
-  resourceContentServiceFactory: ResourceContentServiceFactory;
+  chromeExtensionWorkspaceChannelFsServiceFactory: ChromeExtensionWorkspaceChannelFsServiceFactory;
   externalEditorManager?: ExternalEditorManager;
 }
 

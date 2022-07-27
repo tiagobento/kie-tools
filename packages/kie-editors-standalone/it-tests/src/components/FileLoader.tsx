@@ -16,11 +16,10 @@
 
 import * as React from "react";
 import { SetStateAction, useRef } from "react";
-import { ContentType, ResourceContent } from "@kie-tools-core/workspace/dist/api";
 
 export interface UploadedFile {
   name: string;
-  value: ResourceContent;
+  value: Uint8Array;
 }
 
 interface Props {
@@ -41,10 +40,7 @@ export const FileLoader: React.FC<Props> = (props: Props) => {
     if (fileInput!.current!.files!.length > 0) {
       Array.from(fileInput!.current!.files!).forEach((file) => {
         readUploadedFileAsText(file).then((fileContent) =>
-          props.setFiles((files) => [
-            ...files,
-            { name: file.name, value: { path: file.name, type: ContentType.TEXT, content: fileContent } },
-          ])
+          props.setFiles((files) => [...files, { name: file.name, value: Buffer.from(fileContent) }])
         );
       });
       fileInput.current!.value = "";
@@ -60,7 +56,7 @@ export const FileLoader: React.FC<Props> = (props: Props) => {
   };
 
   const download = (resource: UploadedFile) => {
-    alert(resource.value.content);
+    alert(resource.value);
   };
 
   const view = (resource: UploadedFile) => {

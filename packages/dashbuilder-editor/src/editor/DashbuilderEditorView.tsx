@@ -62,7 +62,7 @@ export class DashbuilderEditorView implements Editor {
         channelType={this.initArgs.channel}
         onReady={() => this.envelopeContext.channelApi.notifications.kogitoEditor_ready.send()}
         onNewEdit={(edit) => {
-          this.envelopeContext.channelApi.notifications.kogitoWorkspace_newEdit.send(edit);
+          this.envelopeContext.channelApi.notifications.kogitoWorkspace_onNewEdit.send(edit);
         }}
         setNotifications={(path, notifications) =>
           this.envelopeContext.channelApi.notifications.kogitoNotifications_setNotifications.send(path, notifications)

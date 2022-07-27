@@ -25,7 +25,7 @@ type ChannelApiMethodsThatAreNoOpOnEmbeddedViewer =
   | "kogitoEditor_setContentError"
   | "kogitoEditor_ready"
   | "kogitoWorkspace_openFile"
-  | "kogitoWorkspace_newEdit"
+  | "kogitoWorkspace_onNewEdit"
   | "kogitoEditor_stateControlCommandUpdate";
 
 type EmbeddedViewerChannelApiOverrides = Partial<

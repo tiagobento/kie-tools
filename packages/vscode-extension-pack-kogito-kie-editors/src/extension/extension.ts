@@ -19,7 +19,6 @@ import { registerTestScenarioRunnerCommand, VsCodeBackendProxy } from "@kie-tool
 import { EditorEnvelopeLocator, EnvelopeMapping } from "@kie-tools-core/editor/dist/api";
 import { I18n } from "@kie-tools-core/i18n/dist/core";
 import * as KogitoVsCode from "@kie-tools-core/vscode-extension";
-import { VsCodeWorkspaceChannelApiImpl } from "@kie-tools-core/workspace/dist/vscode";
 import { VsCodeNotificationsChannelApiImpl } from "@kie-tools-core/notifications/dist/vscode";
 import * as vscode from "vscode";
 
@@ -28,23 +27,21 @@ let backendProxy: VsCodeBackendProxy;
 export async function activate(context: vscode.ExtensionContext) {
   console.info("Extension is alive.");
 
-  const workspaceApi = new VsCodeWorkspaceChannelApiImpl();
   const backendI18n = new I18n(backendI18nDefaults, backendI18nDictionaries, vscode.env.language);
-  const notificationsApi = new VsCodeNotificationsChannelApiImpl(workspaceApi);
+  const notificationsChannelApi = new VsCodeNotificationsChannelApiImpl();
   backendProxy = new VsCodeBackendProxy(context, backendI18n, "kie-group.vscode-extension-backend");
 
   registerTestScenarioRunnerCommand({
     command: "extension.kogito.runTest",
     context: context,
-    backendProxy: backendProxy,
-    backendI18n: backendI18n,
-    workspaceApi: workspaceApi,
-    notificationsApi: notificationsApi,
+    backendProxy,
+    backendI18n,
+    notificationsChannelApi,
   });
 
   KogitoVsCode.startExtension({
     extensionName: "kie-group.vscode-extension-pack-kogito-kie-editors",
-    context: context,
+    context,
     viewType: "kieKogitoWebviewEditors",
     generateSvgCommandId: "extension.kogito.getPreviewSvg",
     silentlyGenerateSvgCommandId: "extension.kogito.silentlyGenerateSvg",
@@ -64,7 +61,7 @@ export async function activate(context: vscode.ExtensionContext) {
       ),
       new EnvelopeMapping("pmml", "**/*.pmml", "dist/webview/PMMLEditorEnvelopeApp.js", "dist/webview/editors/pmml"),
     ]),
-    backendProxy: backendProxy,
+    backendProxy,
   });
 
   console.info("Extension is successfully setup.");

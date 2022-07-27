@@ -16,12 +16,6 @@
 
 import * as React from "react";
 import { createContext, useContext } from "react";
-import {
-  ResourceContent,
-  ResourceContentOptions,
-  ResourceListOptions,
-  ResourcesList,
-} from "@kie-tools-core/workspace/dist/api";
 import { WorkspaceDescriptor } from "./model/WorkspaceDescriptor";
 import { WorkspaceService } from "./services/WorkspaceService";
 import { WorkspaceDescriptorService } from "./services/WorkspaceDescriptorService";
@@ -32,6 +26,7 @@ import { GistOrigin, GitHubOrigin } from "./model/WorkspaceOrigin";
 import { WorkspaceSvgService } from "./services/WorkspaceSvgService";
 import { StorageService } from "./commonServices/StorageService";
 import { BaseFile, BaseFileProps } from "./commonServices/BaseFile";
+import { FindPathsOpts } from "@kie-tools-core/workspace/dist/api";
 
 export interface WorkspaceFileProps extends BaseFileProps {
   workspaceId: string;
@@ -111,19 +106,18 @@ export interface WorkspacesContextType {
   deleteWorkspace(args: { workspaceId: string }): Promise<void>;
   renameWorkspace(args: { workspaceId: string; newName: string }): Promise<void>;
 
-  resourceContentList: (args: {
+  workspaceChannelApiFindPaths: (args: {
     fs: KieSandboxFs;
     workspaceId: string;
     globPattern: string;
-    opts?: ResourceListOptions;
-  }) => Promise<ResourcesList>;
+    opts?: FindPathsOpts;
+  }) => Promise<string[]>;
 
-  resourceContentGet: (args: {
+  workspaceChannelApiRequestContent: (args: {
     fs: KieSandboxFs;
     workspaceId: string;
     relativePath: string;
-    opts?: ResourceContentOptions;
-  }) => Promise<ResourceContent | undefined>;
+  }) => Promise<Uint8Array | undefined>;
 
   //
 

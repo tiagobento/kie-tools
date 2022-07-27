@@ -33,7 +33,7 @@ exports[`EmbeddedEditor::ONLINE EmbeddedEditor::onReady 1`] = `
 />
 `;
 
-exports[`EmbeddedEditor::ONLINE EmbeddedEditor::onResourceContentRequest 1`] = `
+exports[`EmbeddedEditor::ONLINE EmbeddedEditor::onWorkspaceRequestContent 1`] = `
 <iframe
   data-envelope-channel="ONLINE"
   data-testid="kogito-iframe"
@@ -44,7 +44,7 @@ exports[`EmbeddedEditor::ONLINE EmbeddedEditor::onResourceContentRequest 1`] = `
 />
 `;
 
-exports[`EmbeddedEditor::ONLINE EmbeddedEditor::onResourceListRequest 1`] = `
+exports[`EmbeddedEditor::ONLINE EmbeddedEditor::onWorkspaceFindPaths 1`] = `
 <iframe
   data-envelope-channel="ONLINE"
   data-testid="kogito-iframe"

@@ -62,7 +62,7 @@ export class TextEditorView implements Editor {
         ref={this.editorRef}
         isReadOnly={this.initArgs.isReadOnly}
         channelType={this.initArgs.channel}
-        onNewEdit={this.envelopeContext.channelApi.notifications.kogitoWorkspace_newEdit.send}
+        onNewEdit={this.envelopeContext.channelApi.notifications.kogitoWorkspace_onNewEdit.send}
         onStateControlCommandUpdate={
           this.envelopeContext.channelApi.notifications.kogitoEditor_stateControlCommandUpdate.send
         }

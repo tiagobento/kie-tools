@@ -14,11 +14,20 @@
  * limitations under the License.
  */
 
-import { WorkspaceEdit, ResourceContent, ResourceContentRequest, ResourceListRequest, ResourcesList } from "../api";
+import { WorkspaceEdit } from "../api";
 
 export interface WorkspaceChannelApi {
-  kogitoWorkspace_newEdit(edit: WorkspaceEdit): void;
+  kogitoWorkspace_onNewEdit(edit: WorkspaceEdit): void;
   kogitoWorkspace_openFile(path: string): void;
-  kogitoWorkspace_resourceContentRequest(request: ResourceContentRequest): Promise<ResourceContent | undefined>;
-  kogitoWorkspace_resourceListRequest(request: ResourceListRequest): Promise<ResourcesList>;
+  kogitoWorkspace_requestContent(path: string): Promise<Uint8Array | undefined>;
+  kogitoWorkspace_findPaths(globPattern: string, opts?: FindPathsOpts): Promise<string[]>;
+}
+
+export type FindPathsOpts = {
+  searchType: SearchType;
+};
+
+export enum SearchType {
+  TRAVERSAL = "traversal",
+  ASSET_FOLDER = "asset-folder",
 }

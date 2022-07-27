@@ -48,7 +48,7 @@ export class PMMLEditorInterface implements Editor {
       <PMMLEditor
         exposing={(s) => (this.self = s)}
         ready={() => this.envelopeContext.channelApi.notifications.kogitoEditor_ready.send()}
-        newEdit={(edit) => this.envelopeContext.channelApi.notifications.kogitoWorkspace_newEdit.send(edit)}
+        newEdit={(edit) => this.envelopeContext.channelApi.notifications.kogitoWorkspace_onNewEdit.send(edit)}
         setNotifications={(path, notifications) =>
           this.envelopeContext.channelApi.notifications.kogitoNotifications_setNotifications.send(path, notifications)
         }

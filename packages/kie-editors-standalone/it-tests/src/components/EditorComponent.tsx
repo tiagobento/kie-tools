@@ -17,7 +17,6 @@
 import * as React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FileLoader, UploadedFile } from "./FileLoader";
-import { ContentType } from "@kie-tools-core/workspace/dist/api";
 import { Editor, StandaloneEditorApi } from "@kie-tools/kie-editors-standalone/dist/common/Editor";
 
 export interface Props {
@@ -25,7 +24,7 @@ export interface Props {
   initialContent: Promise<string>;
   readOnly: boolean;
   origin: string;
-  resources?: Map<string, { contentType: ContentType; content: Promise<string> }>;
+  resources?: Map<string, Promise<Uint8Array | undefined>>;
 }
 
 export type InternalProps = Props & {

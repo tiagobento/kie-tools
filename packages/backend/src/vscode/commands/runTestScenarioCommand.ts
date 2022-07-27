@@ -29,25 +29,25 @@ import { VsCodeBackendProxy } from "../VsCodeBackendProxy";
  * @param args.context The `vscode.ExtensionContext` provided on the activate method of the extension.
  * @param args.backendProxy The proxy between channels and available backend services.
  * @param args.backendI18n I18n for backend services.
- * @param args.workspaceApi Workspace Channel API.
  */
 export function registerTestScenarioRunnerCommand(args: {
   command: string;
   context: vscode.ExtensionContext;
   backendProxy: VsCodeBackendProxy;
   backendI18n: I18n<BackendI18n>;
-  workspaceApi: WorkspaceChannelApi;
-  notificationsApi: NotificationsChannelApi;
+  notificationsChannelApi: NotificationsChannelApi;
 }) {
   args.context.subscriptions.push(
-    vscode.commands.registerCommand(args.command, () => run(args.backendProxy, args.backendI18n, args.notificationsApi))
+    vscode.commands.registerCommand(args.command, () =>
+      run(args.backendProxy, args.backendI18n, args.notificationsChannelApi)
+    )
   );
 }
 
 async function run(
   backendProxy: VsCodeBackendProxy,
   backendI18n: I18n<BackendI18n>,
-  notificationsApi: NotificationsChannelApi
+  notificationsChannelApi: NotificationsChannelApi
 ) {
   const i18n = backendI18n.getCurrent();
 
@@ -71,7 +71,7 @@ async function run(
     );
 
     if (response.status === CapabilityResponseStatus.NOT_AVAILABLE) {
-      notificationsApi.kogitoNotifications_createNotification({
+      notificationsChannelApi.kogitoNotifications_createNotification({
         message: response.message!,
         severity: "WARNING",
         type: "ALERT",
@@ -86,14 +86,14 @@ async function run(
 
     const testResult: TestResult = response.body;
 
-    notificationsApi.kogitoNotifications_createNotification({
+    notificationsChannelApi.kogitoNotifications_createNotification({
       message: i18n.testScenarioSummary(testResult.tests, testResult.errors, testResult.skipped, testResult.failures),
       severity: "INFO",
       type: "ALERT",
       path: testResult.filePath,
     });
   } catch (e) {
-    notificationsApi.kogitoNotifications_createNotification({
+    notificationsChannelApi.kogitoNotifications_createNotification({
       message: e,
       severity: "ERROR",
       type: "ALERT",

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 import { Notification, NotificationsChannelApi, NotificationType } from "../api";
-import { WorkspaceChannelApi } from "@kie-tools-core/workspace/dist/api";
 import { PopupMessagesNotificationHandler } from "./PopupMessagesNotificationHandler";
 import { ProblemsTabNotificationHandler } from "./ProblemsTabNotificationHandler";
 import { I18n } from "@kie-tools-core/i18n/dist/core";
@@ -29,7 +28,6 @@ export class VsCodeNotificationsChannelApiImpl implements NotificationsChannelAp
   private readonly strategies: NotificationsApiHandlersMap;
 
   constructor(
-    private readonly workspaceApi: WorkspaceChannelApi,
     private readonly i18n = new I18n(
       notificationsApiVsCodeI18nDefaults,
       notificationsApiVsCodeI18nDictionaries,
@@ -38,7 +36,7 @@ export class VsCodeNotificationsChannelApiImpl implements NotificationsChannelAp
   ) {
     this.strategies = {
       PROBLEM: new ProblemsTabNotificationHandler(),
-      ALERT: new PopupMessagesNotificationHandler(this.workspaceApi, this.i18n),
+      ALERT: new PopupMessagesNotificationHandler(this.i18n),
     };
   }
 

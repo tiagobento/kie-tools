@@ -30,7 +30,7 @@ public class ResourceListOptions {
      * @param type
      */
     @JsProperty
-    native void setType(String type);
+    native void setSearchType(String type);
 
     /**
      * Creates an Options instance with traversal search.
@@ -42,7 +42,7 @@ public class ResourceListOptions {
     @JsOverlay
     public static ResourceListOptions traversal() {
         ResourceListOptions options = new ResourceListOptions();
-        options.setType("traversal");
+        options.setSearchType("traversal");
         return options;
     }
 
@@ -56,7 +56,7 @@ public class ResourceListOptions {
     @JsOverlay
     public static ResourceListOptions assetFolder() {
         ResourceListOptions options = new ResourceListOptions();
-        options.setType("asset-folder");
+        options.setSearchType("asset-folder");
         return options;
     }
 

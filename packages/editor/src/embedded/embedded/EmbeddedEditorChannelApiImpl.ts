@@ -14,20 +14,12 @@
  * limitations under the License.
  */
 
-import { StateControl } from "../../channel";
+import { EmbeddedEditorFile, StateControl } from "../../channel";
 import { KogitoGuidedTour } from "@kie-tools-core/guided-tour/dist/channel";
 import { Tutorial, UserInteraction } from "@kie-tools-core/guided-tour/dist/api";
-import { KogitoEditorChannelApi, StateControlCommand, EditorContent } from "../../api";
-import {
-  WorkspaceEdit,
-  ResourceContent,
-  ResourceContentRequest,
-  ResourceListRequest,
-  ResourcesList,
-} from "@kie-tools-core/workspace/dist/api";
-import { EmbeddedEditorFile } from "../../channel";
+import { EditorContent, EditorTheme, KogitoEditorChannelApi, StateControlCommand } from "../../api";
+import { FindPathsOpts, WorkspaceEdit } from "@kie-tools-core/workspace/dist/api";
 import { Notification } from "@kie-tools-core/notifications/dist/api";
-import { EditorTheme } from "../../api";
 
 export class EmbeddedEditorChannelApiImpl implements KogitoEditorChannelApi {
   constructor(
@@ -37,9 +29,9 @@ export class EmbeddedEditorChannelApiImpl implements KogitoEditorChannelApi {
     private readonly overrides: Partial<KogitoEditorChannelApi>
   ) {}
 
-  public kogitoWorkspace_newEdit(edit: WorkspaceEdit) {
+  public kogitoWorkspace_onNewEdit(edit: WorkspaceEdit) {
     this.stateControl.updateCommandStack({ id: edit.id });
-    this.overrides.kogitoWorkspace_newEdit?.(edit);
+    this.overrides.kogitoWorkspace_onNewEdit?.(edit);
   }
 
   public kogitoEditor_stateControlCommandUpdate(command: StateControlCommand) {
@@ -70,14 +62,12 @@ export class EmbeddedEditorChannelApiImpl implements KogitoEditorChannelApi {
     return { content: content ?? "", path: this.file.fileName };
   }
 
-  public async kogitoWorkspace_resourceContentRequest(request: ResourceContentRequest) {
-    return (
-      this.overrides.kogitoWorkspace_resourceContentRequest?.(request) ?? new ResourceContent(request.path, undefined)
-    );
+  public async kogitoWorkspace_requestContent(path: string) {
+    return this.overrides.kogitoWorkspace_requestContent?.(path);
   }
 
-  public async kogitoWorkspace_resourceListRequest(request: ResourceListRequest) {
-    return this.overrides.kogitoWorkspace_resourceListRequest?.(request) ?? new ResourcesList(request.pattern, []);
+  public async kogitoWorkspace_findPaths(globPattern: string, opts?: FindPathsOpts) {
+    return this.overrides.kogitoWorkspace_findPaths?.(globPattern, opts) ?? [];
   }
 
   public kogitoWorkspace_openFile(path: string): void {

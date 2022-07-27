@@ -17,7 +17,7 @@
 import { VsCodeKieEditorChannelApiProducer } from "@kie-tools-core/vscode-extension/dist/VsCodeKieEditorChannelApiProducer";
 import { ServerlessWorkflowEditorChannelApiImpl } from "./ServerlessWorkflowEditorChannelApiImpl";
 import { VsCodeKieEditorController } from "@kie-tools-core/vscode-extension/dist/VsCodeKieEditorController";
-import { ResourceContentService, WorkspaceChannelApi } from "@kie-tools-core/workspace/dist/api";
+import { WorkspaceChannelApi } from "@kie-tools-core/workspace/dist/api";
 import { BackendProxy } from "@kie-tools-core/backend/dist/api";
 import { NotificationsChannelApi } from "@kie-tools-core/notifications/dist/api";
 import { JavaCodeCompletionApi } from "@kie-tools-core/vscode-java-code-completion/dist/api";
@@ -41,8 +41,7 @@ export class ServerlessWorkflowEditorChannelApiProducer implements VsCodeKieEdit
   ) {}
   get(
     editor: VsCodeKieEditorController,
-    resourceContentService: ResourceContentService,
-    workspaceApi: WorkspaceChannelApi,
+    workspaceChannelApi: WorkspaceChannelApi,
     backendProxy: BackendProxy,
     notificationsApi: NotificationsChannelApi,
     javaCodeCompletionApi: JavaCodeCompletionApi,
@@ -54,8 +53,7 @@ export class ServerlessWorkflowEditorChannelApiProducer implements VsCodeKieEdit
 
     return new ServerlessWorkflowEditorChannelApiImpl(
       editor,
-      resourceContentService,
-      workspaceApi,
+      workspaceChannelApi,
       backendProxy,
       notificationsApi,
       javaCodeCompletionApi,

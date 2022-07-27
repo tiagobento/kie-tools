@@ -14,12 +14,6 @@
  * limitations under the License.
  */
 
-import {
-  ContentType,
-  ResourceContent,
-  ResourceContentOptions,
-  ResourcesList,
-} from "@kie-tools-core/workspace/dist/api";
 import * as React from "react";
 import { useCallback, useMemo } from "react";
 import { WorkspaceDescriptor } from "./model/WorkspaceDescriptor";
@@ -29,7 +23,6 @@ import { WorkspaceService } from "./services/WorkspaceService";
 import { LocalFile, WorkspaceFile, WorkspacesContext } from "./WorkspacesContext";
 import { join } from "path";
 import { WorkspaceEvents } from "./hooks/WorkspaceHooks";
-import { Buffer } from "buffer";
 import KieSandboxFs from "@kie-tools/kie-sandbox-fs";
 import { WorkspaceDescriptorService } from "./services/WorkspaceDescriptorService";
 import { WorkspaceFsService } from "./services/WorkspaceFsService";
@@ -38,7 +31,7 @@ import { WorkspaceSvgService } from "./services/WorkspaceSvgService";
 import { DEFAULT_CORS_PROXY_URL } from "../env/EnvContext";
 import { isModel, SupportedFileExtensions } from "../extension";
 import { useSettings } from "../settings/SettingsContext";
-import { decoder, encoder } from "./commonServices/BaseFile";
+import { encoder } from "./commonServices/BaseFile";
 
 const MAX_NEW_FILE_INDEX_ATTEMPTS = 10;
 const NEW_FILE_DEFAULT_NAME = "Untitled";
@@ -388,21 +381,15 @@ export function WorkspacesContextProvider(props: Props) {
     [service]
   );
 
-  const resourceContentGet = useCallback(
-    async (args: { fs: KieSandboxFs; workspaceId: string; relativePath: string; opts?: ResourceContentOptions }) => {
+  const workspaceChannelApiRequestContent = useCallback(
+    async (args: { fs: KieSandboxFs; workspaceId: string; relativePath: string }) => {
       const file = await service.getFile({ descriptorId: args.workspaceId, ...args });
       if (!file) {
         throw new Error(`File '${args.relativePath}' not found in Workspace ${args.workspaceId}`);
       }
 
       try {
-        const content = await file.getFileContents();
-        if (args.opts?.type === "binary") {
-          return new ResourceContent(args.relativePath, Buffer.from(content).toString("base64"), ContentType.BINARY);
-        }
-
-        // "text" is the default
-        return new ResourceContent(args.relativePath, decoder.decode(content), ContentType.TEXT);
+        return await file.getFileContents();
       } catch (e) {
         console.error(e);
         throw e;
@@ -411,11 +398,10 @@ export function WorkspacesContextProvider(props: Props) {
     [service]
   );
 
-  const resourceContentList = useCallback(
+  const workspaceChannelApiFindPaths = useCallback(
     async (args: { fs: KieSandboxFs; workspaceId: string; globPattern: string }) => {
       const files = await service.getFilesWithLazyContent(args.fs, args.workspaceId, args.globPattern);
-      const matchingPaths = files.map((file) => file.relativePath);
-      return new ResourcesList(args.globPattern, matchingPaths);
+      return files.map((file) => file.relativePath);
     },
     [service]
   );
@@ -444,8 +430,8 @@ export function WorkspacesContextProvider(props: Props) {
       svgService,
       descriptorService,
       //
-      resourceContentGet,
-      resourceContentList,
+      workspaceChannelApiRequestContent,
+      workspaceChannelApiFindPaths,
       //
       createWorkspaceFromLocal,
       createWorkspaceFromGitRepository,
@@ -491,8 +477,8 @@ export function WorkspacesContextProvider(props: Props) {
       pull,
       renameFile,
       renameWorkspace,
-      resourceContentGet,
-      resourceContentList,
+      workspaceChannelApiRequestContent,
+      workspaceChannelApiFindPaths,
       service,
       svgService,
       updateFile,

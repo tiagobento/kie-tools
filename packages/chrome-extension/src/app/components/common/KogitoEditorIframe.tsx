@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { ResourceContentRequest, ResourceListRequest } from "@kie-tools-core/workspace/dist/api";
 import { EmbeddedEditor, useEditorRef } from "@kie-tools-core/editor/dist/embedded";
 import { ChannelType } from "@kie-tools-core/editor/dist/api";
 import * as React from "react";
@@ -25,6 +24,7 @@ import { useGlobals } from "./GlobalContext";
 import { IsolatedEditorContext } from "./IsolatedEditorContext";
 import { IsolatedEditorRef } from "./IsolatedEditorRef";
 import { useChromeExtensionI18n } from "../../i18n";
+import { FindPathsOpts } from "@kie-tools-core/workspace/dist/api";
 
 interface Props {
   openFileExtension: string;
@@ -40,23 +40,23 @@ const RefForwardingKogitoEditorIframe: React.ForwardRefRenderFunction<IsolatedEd
 ) => {
   const githubApi = useGitHubApi();
   const { editor, editorRef } = useEditorRef();
-  const { envelopeLocator, resourceContentServiceFactory } = useGlobals();
+  const { envelopeLocator, chromeExtensionWorkspaceChannelFsServiceFactory } = useGlobals();
   const { repoInfo, textMode, fullscreen, onEditorReady } = useContext(IsolatedEditorContext);
   const { locale } = useChromeExtensionI18n();
   const wasOnTextMode = usePrevious(textMode);
 
-  const resourceContentService = useMemo(() => {
-    return resourceContentServiceFactory.createNew(githubApi.octokit(), repoInfo);
+  const workspaceChannelFsService = useMemo(() => {
+    return chromeExtensionWorkspaceChannelFsServiceFactory.createNew(githubApi.octokit(), repoInfo);
   }, [repoInfo]);
 
-  const onResourceContentRequest = useCallback(
-    (request: ResourceContentRequest) => resourceContentService.get(request.path, request.opts),
-    [resourceContentService]
+  const onWorkspaceRequestContent = useCallback(
+    (path: string) => workspaceChannelFsService.requestContent(path),
+    [workspaceChannelFsService]
   );
 
-  const onResourceContentList = useCallback(
-    (request: ResourceListRequest) => resourceContentService.list(request.pattern, request.opts),
-    [resourceContentService]
+  const onWorkspaceChannelApiFindPaths = useCallback(
+    (globPattern: string, opts?: FindPathsOpts) => workspaceChannelFsService.findPaths(globPattern, opts),
+    [workspaceChannelFsService]
   );
 
   // Wrap file content into object for EmbeddedEditor
@@ -118,8 +118,8 @@ const RefForwardingKogitoEditorIframe: React.ForwardRefRenderFunction<IsolatedEd
           file={file}
           channelType={ChannelType.GITHUB}
           kogitoEditor_ready={onEditorReady}
-          kogitoWorkspace_resourceContentRequest={onResourceContentRequest}
-          kogitoWorkspace_resourceListRequest={onResourceContentList}
+          kogitoWorkspace_requestContent={onWorkspaceRequestContent}
+          kogitoWorkspace_findPaths={onWorkspaceChannelApiFindPaths}
           kogitoEditor_setContentError={props.onSetContentError}
           editorEnvelopeLocator={envelopeLocator}
           locale={locale}

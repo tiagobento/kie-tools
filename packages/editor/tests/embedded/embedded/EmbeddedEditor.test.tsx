@@ -174,8 +174,8 @@ describe("EmbeddedEditor::ONLINE", () => {
     expect(container.firstChild).toMatchSnapshot();
   });
 
-  test("EmbeddedEditor::onResourceContentRequest", async () => {
-    const onResourceContentRequest = jest.fn(() => Promise.resolve({} as any));
+  test("EmbeddedEditor::onWorkspaceRequestContent", async () => {
+    const onWorkspaceRequestContent = jest.fn(() => Promise.resolve({} as any));
 
     const { container } = render(
       <EmbeddedEditor
@@ -183,7 +183,7 @@ describe("EmbeddedEditor::ONLINE", () => {
         file={file}
         editorEnvelopeLocator={editorEnvelopeLocator}
         channelType={channelType}
-        kogitoWorkspace_resourceContentRequest={onResourceContentRequest}
+        kogitoWorkspace_requestContent={onWorkspaceRequestContent}
         locale={"en"}
       />
     );
@@ -192,16 +192,16 @@ describe("EmbeddedEditor::ONLINE", () => {
       targetEnvelopeServerId: editorRef.current!.getEnvelopeServer().id,
       requestId: "1",
       purpose: EnvelopeBusMessagePurpose.REQUEST,
-      type: "kogitoWorkspace_resourceContentRequest",
-      data: [{ path: "" }],
+      type: "kogitoWorkspace_requestContent",
+      data: [""],
     });
 
-    expect(onResourceContentRequest).toBeCalled();
+    expect(onWorkspaceRequestContent).toBeCalled();
     expect(container.firstChild).toMatchSnapshot();
   });
 
-  test("EmbeddedEditor::onResourceListRequest", async () => {
-    const onResourceListRequest = jest.fn(() => Promise.resolve({} as any));
+  test("EmbeddedEditor::onWorkspaceFindPaths", async () => {
+    const onWorkspaceFindPaths = jest.fn(() => Promise.resolve({} as any));
 
     const { container } = render(
       <EmbeddedEditor
@@ -209,7 +209,7 @@ describe("EmbeddedEditor::ONLINE", () => {
         file={file}
         editorEnvelopeLocator={editorEnvelopeLocator}
         channelType={channelType}
-        kogitoWorkspace_resourceListRequest={onResourceListRequest}
+        kogitoWorkspace_findPaths={onWorkspaceFindPaths}
         locale={"en"}
       />
     );
@@ -218,11 +218,11 @@ describe("EmbeddedEditor::ONLINE", () => {
       targetEnvelopeServerId: editorRef.current!.getEnvelopeServer().id,
       requestId: "1",
       purpose: EnvelopeBusMessagePurpose.REQUEST,
-      type: "kogitoWorkspace_resourceListRequest",
-      data: [{ pattern: "", paths: [] }],
+      type: "kogitoWorkspace_findPaths",
+      data: ["", []],
     });
 
-    expect(onResourceListRequest).toBeCalled();
+    expect(onWorkspaceFindPaths).toBeCalled();
     expect(container.firstChild).toMatchSnapshot();
   });
 
@@ -235,7 +235,7 @@ describe("EmbeddedEditor::ONLINE", () => {
         file={file}
         editorEnvelopeLocator={editorEnvelopeLocator}
         channelType={channelType}
-        kogitoWorkspace_newEdit={onNewEdit}
+        kogitoWorkspace_onNewEdit={onNewEdit}
         locale={"en"}
       />
     );
@@ -243,7 +243,7 @@ describe("EmbeddedEditor::ONLINE", () => {
     await incomingMessage({
       targetEnvelopeServerId: editorRef.current!.getEnvelopeServer().id,
       purpose: EnvelopeBusMessagePurpose.NOTIFICATION,
-      type: "kogitoWorkspace_newEdit",
+      type: "kogitoWorkspace_onNewEdit",
       data: [new WorkspaceEdit("1")],
     });
 

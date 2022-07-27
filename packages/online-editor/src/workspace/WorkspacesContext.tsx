@@ -14,12 +14,6 @@
  * limitations under the License.
  */
 
-import {
-  ResourceContent,
-  ResourceContentOptions,
-  ResourceListOptions,
-  ResourcesList,
-} from "@kie-tools-core/workspace/dist/api";
 import * as React from "react";
 import { createContext, useContext } from "react";
 import { WorkspaceDescriptor } from "./model/WorkspaceDescriptor";
@@ -32,6 +26,7 @@ import { GitService } from "./services/GitService";
 import { GistOrigin, GitHubOrigin } from "./model/WorkspaceOrigin";
 import { WorkspaceSvgService } from "./services/WorkspaceSvgService";
 import { StorageService } from "./services/StorageService";
+import { FindPathsOpts } from "@kie-tools-core/workspace/dist/api";
 
 export const decoder = new TextDecoder("utf-8");
 export const encoder = new TextEncoder();
@@ -141,19 +136,18 @@ export interface WorkspacesContextType {
   deleteWorkspace(args: { workspaceId: string }): Promise<void>;
   renameWorkspace(args: { workspaceId: string; newName: string }): Promise<void>;
 
-  resourceContentList: (args: {
+  workspaceChannelApiFindPaths: (args: {
     fs: KieSandboxFs;
     workspaceId: string;
     globPattern: string;
-    opts?: ResourceListOptions;
-  }) => Promise<ResourcesList>;
+    opts?: FindPathsOpts;
+  }) => Promise<string[]>;
 
-  resourceContentGet: (args: {
+  workspaceChannelApiRequestContent: (args: {
     fs: KieSandboxFs;
     workspaceId: string;
     relativePath: string;
-    opts?: ResourceContentOptions;
-  }) => Promise<ResourceContent | undefined>;
+  }) => Promise<Uint8Array | undefined>;
 
   //
 

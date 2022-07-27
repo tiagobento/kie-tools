@@ -240,7 +240,7 @@ export const Base64PngEditor = React.forwardRef<EditorApi, Props>((props, forwar
         invert,
       };
       stateControl.updateCommandStack({ id: JSON.stringify(command) });
-      props.envelopeContext.channelApi.notifications.kogitoWorkspace_newEdit.send(command);
+      props.envelopeContext.channelApi.notifications.kogitoWorkspace_onNewEdit.send(command);
     },
     [contrast, brightness, saturate, sepia, grayscale, invert, stateControl]
   );
@@ -265,7 +265,7 @@ export const Base64PngEditor = React.forwardRef<EditorApi, Props>((props, forwar
         invert,
       };
       stateControl.updateCommandStack({ id: JSON.stringify(command) });
-      props.envelopeContext.channelApi.notifications.kogitoWorkspace_newEdit.send(command);
+      props.envelopeContext.channelApi.notifications.kogitoWorkspace_onNewEdit.send(command);
     },
     [contrast, brightness, saturate, sepia, grayscale, invert, stateControl]
   );
@@ -290,7 +290,7 @@ export const Base64PngEditor = React.forwardRef<EditorApi, Props>((props, forwar
         invert,
       };
       stateControl.updateCommandStack({ id: JSON.stringify(command) });
-      props.envelopeContext.channelApi.notifications.kogitoWorkspace_newEdit.send(command);
+      props.envelopeContext.channelApi.notifications.kogitoWorkspace_onNewEdit.send(command);
     },
     [contrast, brightness, saturate, sepia, grayscale, invert, stateControl]
   );
@@ -315,7 +315,7 @@ export const Base64PngEditor = React.forwardRef<EditorApi, Props>((props, forwar
         invert,
       };
       stateControl.updateCommandStack({ id: JSON.stringify(command) });
-      props.envelopeContext.channelApi.notifications.kogitoWorkspace_newEdit.send(command);
+      props.envelopeContext.channelApi.notifications.kogitoWorkspace_onNewEdit.send(command);
     },
     [contrast, brightness, saturate, sepia, grayscale, invert, stateControl]
   );
@@ -340,7 +340,7 @@ export const Base64PngEditor = React.forwardRef<EditorApi, Props>((props, forwar
         invert,
       };
       stateControl.updateCommandStack({ id: JSON.stringify(command) });
-      props.envelopeContext.channelApi.notifications.kogitoWorkspace_newEdit.send(command);
+      props.envelopeContext.channelApi.notifications.kogitoWorkspace_onNewEdit.send(command);
     },
     [contrast, brightness, saturate, sepia, grayscale, invert, stateControl]
   );
@@ -365,7 +365,7 @@ export const Base64PngEditor = React.forwardRef<EditorApi, Props>((props, forwar
         invert: value,
       };
       stateControl.updateCommandStack({ id: JSON.stringify(command) });
-      props.envelopeContext.channelApi.notifications.kogitoWorkspace_newEdit.send(command);
+      props.envelopeContext.channelApi.notifications.kogitoWorkspace_onNewEdit.send(command);
     },
     [contrast, brightness, saturate, sepia, grayscale, invert, stateControl]
   );

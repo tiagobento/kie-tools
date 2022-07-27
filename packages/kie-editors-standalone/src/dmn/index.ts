@@ -16,10 +16,9 @@
 
 import bpmnEnvelopeIndex from "!!raw-loader!../../dist/resources/dmn/dmnEnvelopeIndex.html";
 import { EnvelopeServer } from "@kie-tools-core/envelope-bus/dist/channel";
-import { ChannelType, KogitoEditorChannelApi, KogitoEditorEnvelopeApi } from "@kie-tools-core/editor/dist/api";
+import { ChannelType, KogitoEditorChannelApi } from "@kie-tools-core/editor/dist/api";
 import { StandaloneEditorsEditorChannelApiImpl } from "../envelope/StandaloneEditorsEditorChannelApiImpl";
 import { StateControl } from "@kie-tools-core/editor/dist/channel";
-import { ContentType } from "@kie-tools-core/workspace/dist/api";
 import { createEditor, Editor, StandaloneEditorApi } from "../common/Editor";
 import { DmnEditorEnvelopeApi } from "../../../kie-bc-editors/dist/dmn/api/DmnEditorEnvelopeApi";
 import { DmnEditorDiagramApi } from "../jsdiagram/DmnEditorDiagramApi";
@@ -60,7 +59,7 @@ export function open(args: {
   readOnly?: boolean;
   origin?: string;
   onError?: () => any;
-  resources?: Map<string, { contentType: ContentType; content: Promise<string> }>;
+  resources?: Map<string, Promise<Uint8Array | undefined>>;
 }): StandaloneEditorApi & DmnEditorDiagramApi {
   const iframe = document.createElement("iframe");
   iframe.srcdoc = bpmnEnvelopeIndex;

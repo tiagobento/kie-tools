@@ -42,7 +42,7 @@ export function renderOpenRepoInExternalEditorApp(
       logger={args.logger}
       githubAuthTokenCookieName={args.githubAuthTokenCookieName}
       extensionIconUrl={args.extensionIconUrl}
-      resourceContentServiceFactory={args.resourceContentServiceFactory}
+      chromeExtensionWorkspaceChannelFsServiceFactory={args.chromeExtensionWorkspaceChannelFsServiceFactory}
       externalEditorManager={args.externalEditorManager}
     >
       {ReactDOM.createPortal(

@@ -14,17 +14,13 @@
  * limitations under the License.
  */
 
-import { WorkspaceChannelApi } from "@kie-tools-core/workspace/dist/api";
 import * as vscode from "vscode";
 import { Notification, NotificationsChannelApi, NotificationSeverity } from "../api";
 import { I18n } from "@kie-tools-core/i18n/dist/core";
 import { NotificationsApiVsCodeI18nDictionary } from "./i18n";
 
 export class PopupMessagesNotificationHandler implements NotificationsChannelApi {
-  constructor(
-    private readonly workspaceApi: WorkspaceChannelApi,
-    private readonly i18n: I18n<NotificationsApiVsCodeI18nDictionary>
-  ) {}
+  constructor(private readonly i18n: I18n<NotificationsApiVsCodeI18nDictionary>) {}
 
   public kogitoNotifications_createNotification(notification: Notification): void {
     this.getHandleStrategyForSeverity(notification.severity)(notification.message, notification.path);
@@ -67,7 +63,7 @@ export class PopupMessagesNotificationHandler implements NotificationsChannelApi
             if (!selected) {
               return;
             }
-            this.workspaceApi.kogitoWorkspace_openFile(path);
+            vscode.commands.executeCommand("vscode.open", vscode.Uri.parse(path));
           });
   }
 

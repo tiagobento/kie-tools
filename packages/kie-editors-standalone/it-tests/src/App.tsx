@@ -18,7 +18,6 @@ import * as React from "react";
 import { BrowserRouter as Router, Link, Route, Switch } from "react-router-dom";
 import { DmnEditorComponent } from "./components/DmnEditorComponent";
 import { BpmnEditorComponent } from "./components/BpmnEditorComponent";
-import { ContentType } from "@kie-tools-core/workspace/dist/api";
 import processWithWidDefinition from "raw-loader!./resources/processWithWidDefinition.bpmn2";
 import customWorkItemWid from "raw-loader!./resources/widDefinitions.wid";
 
@@ -97,17 +96,7 @@ export function App() {
                 id="bpmn-workitem"
                 readOnly={false}
                 initialContent={Promise.resolve(processWithWidDefinition)}
-                resources={
-                  new Map([
-                    [
-                      "custom-workitem.wid",
-                      {
-                        contentType: ContentType.TEXT,
-                        content: Promise.resolve(customWorkItemWid),
-                      },
-                    ],
-                  ])
-                }
+                resources={new Map([["custom-workitem.wid", Promise.resolve(new Buffer(customWorkItemWid))]])}
               />
             )}
           />

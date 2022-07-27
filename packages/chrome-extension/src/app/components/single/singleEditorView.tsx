@@ -71,7 +71,7 @@ export function renderSingleEditorReadonlyApp(args: Globals & { fileInfo: FileIn
       dependencies={args.dependencies}
       githubAuthTokenCookieName={args.githubAuthTokenCookieName}
       extensionIconUrl={args.extensionIconUrl}
-      resourceContentServiceFactory={args.resourceContentServiceFactory}
+      chromeExtensionWorkspaceChannelFsServiceFactory={args.chromeExtensionWorkspaceChannelFsServiceFactory}
       externalEditorManager={args.externalEditorManager}
     >
       <SingleEditorViewApp fileInfo={args.fileInfo} openFileExtension={openFileExtension} />

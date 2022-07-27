@@ -27,15 +27,7 @@ import { VsCodeI18n } from "@kie-tools-core/vscode-extension/dist/i18n";
 import { VsCodeKieEditorController } from "@kie-tools-core/vscode-extension/dist/VsCodeKieEditorController";
 import { DefaultVsCodeKieEditorChannelApiImpl } from "@kie-tools-core/vscode-extension/dist/DefaultVsCodeKieEditorChannelApiImpl";
 import { JavaCodeCompletionApi } from "@kie-tools-core/vscode-java-code-completion/dist/api";
-import {
-  WorkspaceEdit,
-  ResourceContent,
-  ResourceContentRequest,
-  ResourceContentService,
-  ResourceListRequest,
-  ResourcesList,
-  WorkspaceChannelApi,
-} from "@kie-tools-core/workspace/dist/api";
+import { WorkspaceChannelApi, WorkspaceEdit } from "@kie-tools-core/workspace/dist/api";
 import { ServerlessWorkflowDiagramEditorChannelApi } from "@kie-tools/serverless-workflow-diagram-editor-envelope/dist/api";
 import {
   SwfServiceCatalogChannelApi,
@@ -47,14 +39,14 @@ import { SharedValueProvider } from "@kie-tools-core/envelope-bus/dist/api";
 import { SwfLanguageServiceChannelApi } from "@kie-tools/serverless-workflow-language-service/dist/api";
 import * as vscode from "vscode";
 import { CodeLens, CompletionItem, Position, Range } from "vscode-languageserver-types";
+import { FindPathsOpts } from "@kie-tools-core/workspace/dist/api";
 
 export class ServerlessWorkflowEditorChannelApiImpl implements ServerlessWorkflowDiagramEditorChannelApi {
   private readonly defaultApiImpl: KogitoEditorChannelApi;
 
   constructor(
     private readonly editor: VsCodeKieEditorController,
-    resourceContentService: ResourceContentService,
-    workspaceApi: WorkspaceChannelApi,
+    workspaceChannelApi: WorkspaceChannelApi,
     backendProxy: BackendProxy,
     notificationsApi: NotificationsChannelApi,
     javaCodeCompletionApi: JavaCodeCompletionApi,
@@ -65,8 +57,7 @@ export class ServerlessWorkflowEditorChannelApiImpl implements ServerlessWorkflo
   ) {
     this.defaultApiImpl = new DefaultVsCodeKieEditorChannelApiImpl(
       editor,
-      resourceContentService,
-      workspaceApi,
+      workspaceChannelApi,
       backendProxy,
       notificationsApi,
       javaCodeCompletionApi,
@@ -125,20 +116,20 @@ export class ServerlessWorkflowEditorChannelApiImpl implements ServerlessWorkflo
     this.defaultApiImpl.kogitoNotifications_setNotifications(path, notifications);
   }
 
-  public kogitoWorkspace_newEdit(edit: WorkspaceEdit): void {
-    this.defaultApiImpl.kogitoWorkspace_newEdit(edit);
+  public kogitoWorkspace_onNewEdit(edit: WorkspaceEdit): void {
+    this.defaultApiImpl.kogitoWorkspace_onNewEdit(edit);
   }
 
   public kogitoWorkspace_openFile(path: string): void {
     this.defaultApiImpl.kogitoWorkspace_openFile(path);
   }
 
-  public kogitoWorkspace_resourceContentRequest(request: ResourceContentRequest): Promise<ResourceContent | undefined> {
-    return this.defaultApiImpl.kogitoWorkspace_resourceContentRequest(request);
+  public kogitoWorkspace_requestContent(path: string): Promise<Uint8Array | undefined> {
+    return this.defaultApiImpl.kogitoWorkspace_requestContent(path);
   }
 
-  public kogitoWorkspace_resourceListRequest(request: ResourceListRequest): Promise<ResourcesList> {
-    return this.defaultApiImpl.kogitoWorkspace_resourceListRequest(request);
+  public kogitoWorkspace_findPaths(globPattern: string, opts?: FindPathsOpts): Promise<string[]> {
+    return this.defaultApiImpl.kogitoWorkspace_findPaths(globPattern, opts);
   }
 
   public kogitoEditor_theme(): SharedValueProvider<EditorTheme> {

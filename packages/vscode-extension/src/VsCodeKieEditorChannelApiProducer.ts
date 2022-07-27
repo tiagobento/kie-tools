@@ -16,7 +16,7 @@
 
 import { KogitoEditorChannelApi } from "@kie-tools-core/editor/dist/api";
 import { VsCodeKieEditorController } from "./VsCodeKieEditorController";
-import { ResourceContentService, WorkspaceChannelApi } from "@kie-tools-core/workspace/dist/api";
+import { WorkspaceChannelApi } from "@kie-tools-core/workspace/dist/api";
 import { BackendProxy } from "@kie-tools-core/backend/dist/api";
 import { NotificationsChannelApi } from "@kie-tools-core/notifications/dist/api";
 import { JavaCodeCompletionApi } from "@kie-tools-core/vscode-java-code-completion/dist/api";
@@ -32,8 +32,7 @@ export interface VsCodeKieEditorChannelApiProducer {
   /**
    * Method to obtain the KogitoEditorChannelApi instance.
    * @param editor
-   * @param resourceContentService
-   * @param workspaceApi
+   * @param workspaceChannelApi
    * @param backendProxy
    * @param notificationsApi
    * @param javaCodeCompletionApi
@@ -42,8 +41,7 @@ export interface VsCodeKieEditorChannelApiProducer {
    */
   get(
     editor: VsCodeKieEditorController,
-    resourceContentService: ResourceContentService,
-    workspaceApi: WorkspaceChannelApi,
+    workspaceChannelApi: WorkspaceChannelApi,
     backendProxy: BackendProxy,
     notificationsApi: NotificationsChannelApi,
     javaCodeCompletionApi: JavaCodeCompletionApi,
@@ -55,20 +53,18 @@ export interface VsCodeKieEditorChannelApiProducer {
 export class DefaultVsCodeEditorChannelApiProducer implements VsCodeKieEditorChannelApiProducer {
   get(
     editor: VsCodeKieEditorController,
-    resourceContentService: ResourceContentService,
-    workspaceApi: WorkspaceChannelApi,
+    workspaceChannelApi: WorkspaceChannelApi,
     backendProxy: BackendProxy,
-    notificationsApi: NotificationsChannelApi,
+    notificationsChannelApi: NotificationsChannelApi,
     javaCodeCompletionApi: JavaCodeCompletionApi,
     viewType: string,
     i18n: I18n<VsCodeI18n>
   ): KogitoEditorChannelApi {
     return new DefaultVsCodeKieEditorChannelApiImpl(
       editor,
-      resourceContentService,
-      workspaceApi,
+      workspaceChannelApi,
       backendProxy,
-      notificationsApi,
+      notificationsChannelApi,
       javaCodeCompletionApi,
       viewType,
       i18n

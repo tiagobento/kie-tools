@@ -14,12 +14,6 @@
  * limitations under the License.
  */
 
-import {
-  ResourceContent,
-  ResourceContentOptions,
-  ResourceListOptions,
-  ResourcesList,
-} from "@kie-tools-core/workspace/dist/api";
 import * as React from "react";
 import { createContext, useContext } from "react";
 import KieSandboxFs from "@kie-tools/kie-sandbox-fs";
@@ -30,6 +24,7 @@ import { StorageService } from "../../commonServices/StorageService";
 import { VirtualServiceRegistryGroup } from "./models/VirtualServiceRegistry";
 import { WorkspaceDescriptor } from "../../model/WorkspaceDescriptor";
 import { ServiceRegistryFile } from "./models/ServiceRegistryFile";
+import { FindPathsOpts } from "@kie-tools-core/workspace/dist/api";
 
 export interface LocalFile {
   path: string;
@@ -55,19 +50,18 @@ export interface VirtualServiceRegistryContextType {
   deleteRegistryGroup(args: { groupId: string }): Promise<void>;
   renameRegistryGroup(args: { groupId: string; newName: string }): Promise<void>;
 
-  resourceContentList: (args: {
+  workspaceChannelApiFindPaths: (args: {
     fs: KieSandboxFs;
     groupId: string;
     globPattern: string;
-    opts?: ResourceListOptions;
-  }) => Promise<ResourcesList>;
+    opts?: FindPathsOpts;
+  }) => Promise<string[]>;
 
-  resourceContentGet: (args: {
+  workspaceChannelApiRequestContent: (args: {
     fs: KieSandboxFs;
     groupId: string;
     relativePath: string;
-    opts?: ResourceContentOptions;
-  }) => Promise<ResourceContent | undefined>;
+  }) => Promise<Uint8Array | undefined>;
 
   getFile(args: { fs: KieSandboxFs; groupId: string; relativePath: string }): Promise<ServiceRegistryFile | undefined>;
 

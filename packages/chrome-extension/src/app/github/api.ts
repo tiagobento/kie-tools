@@ -15,16 +15,14 @@
  */
 
 import { Octokit } from "@octokit/rest";
-import { ContentType } from "@kie-tools-core/workspace/dist/api";
 
 export function fetchFile(
   octokit: Octokit,
   org: string,
   repo: string,
   ref: string,
-  path: string,
-  contentType?: ContentType
-) {
+  path: string
+): Promise<string | undefined> {
   return octokit.repos
     .getContent({
       repo: repo,
@@ -32,7 +30,7 @@ export function fetchFile(
       ref: ref,
       path: path,
     })
-    .then((res) => (contentType === ContentType.BINARY ? (res.data as any).content : atob((res.data as any).content)))
+    .then((res) => (res.data as any).content)
     .catch((e) => {
       console.debug(`Error fetching ${path} with Octokit. Fallback is 'raw.githubusercontent.com'.`);
       return fetch(`https://raw.githubusercontent.com/${org}/${repo}/${ref}/${path}`).then((res) =>

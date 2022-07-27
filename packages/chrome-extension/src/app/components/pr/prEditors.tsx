@@ -43,7 +43,7 @@ export function renderPrEditorsApp(args: Globals) {
       logger={args.logger}
       githubAuthTokenCookieName={args.githubAuthTokenCookieName}
       extensionIconUrl={args.extensionIconUrl}
-      resourceContentServiceFactory={args.resourceContentServiceFactory}
+      chromeExtensionWorkspaceChannelFsServiceFactory={args.chromeExtensionWorkspaceChannelFsServiceFactory}
       externalEditorManager={args.externalEditorManager}
     >
       <PrEditorsApp prInfo={parsePrInfo(args.dependencies)} />

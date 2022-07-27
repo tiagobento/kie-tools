@@ -17,7 +17,6 @@
 import { VsCodeBackendProxy } from "@kie-tools-core/backend/dist/vscode";
 import { EditorEnvelopeLocator } from "@kie-tools-core/editor/dist/api";
 import { I18n } from "@kie-tools-core/i18n/dist/core";
-import { VsCodeWorkspaceChannelApiImpl } from "@kie-tools-core/workspace/dist/vscode";
 import * as vscode from "vscode";
 import { EnvelopeBusMessageBroadcaster } from "./EnvelopeBusMessageBroadcaster";
 import { generateSvg } from "./generateSvg";
@@ -55,10 +54,9 @@ export async function startExtension(args: {
   await args.backendProxy.tryLoadBackendExtension(true);
 
   const i18n = new I18n(vsCodeI18nDefaults, vsCodeI18nDictionaries, vscode.env.language);
-  const workspaceApi = new VsCodeWorkspaceChannelApiImpl();
   const editorStore = new VsCodeKieEditorStore();
   const messageBroadcaster = new EnvelopeBusMessageBroadcaster();
-  const vsCodeNotificationsApi = new VsCodeNotificationsChannelApiImpl(workspaceApi);
+  const vsCodeNotificationsApi = new VsCodeNotificationsChannelApiImpl();
   const vsCodeJavaCodeCompletionChannelApi = new VsCodeJavaCodeCompletionApiImpl();
 
   const editorFactory = new VsCodeKieEditorControllerFactory(
@@ -66,7 +64,6 @@ export async function startExtension(args: {
     editorStore,
     args.editorEnvelopeLocator,
     messageBroadcaster,
-    workspaceApi,
     args.backendProxy,
     vsCodeNotificationsApi,
     vsCodeJavaCodeCompletionChannelApi,
@@ -121,7 +118,6 @@ export async function startExtension(args: {
       vscode.commands.registerCommand(args.generateSvgCommandId, () =>
         generateSvg({
           editorStore: editorStore,
-          workspaceApi: workspaceApi,
           vsCodeI18n: i18n,
           displayNotification: true,
           editorEnvelopeLocator: args.editorEnvelopeLocator,
@@ -135,7 +131,6 @@ export async function startExtension(args: {
       vscode.commands.registerCommand(args.silentlyGenerateSvgCommandId, () =>
         generateSvg({
           editorStore: editorStore,
-          workspaceApi: workspaceApi,
           vsCodeI18n: i18n,
           displayNotification: false,
           editorEnvelopeLocator: args.editorEnvelopeLocator,

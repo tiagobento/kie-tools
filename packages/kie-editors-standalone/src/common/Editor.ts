@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { ContentType } from "@kie-tools-core/workspace/dist/api";
 import { EditorApi, KogitoEditorEnvelopeApi } from "@kie-tools-core/editor/dist/api";
 import { StateControl } from "@kie-tools-core/editor/dist/channel";
 import { MessageBusClientApi } from "@kie-tools-core/envelope-bus/dist/api";
@@ -33,7 +32,7 @@ export interface Editor {
     initialContent: Promise<string>;
     readOnly: boolean;
     origin?: string;
-    resources?: Map<string, { contentType: ContentType; content: Promise<string> }>;
+    resources?: Map<string, Promise<Uint8Array | undefined>>;
   }) => StandaloneEditorApi;
 }
 

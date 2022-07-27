@@ -65,7 +65,7 @@ export class YardEditorView implements Editor {
         onStateControlCommandUpdate={
           this.envelopeContext.channelApi.notifications.kogitoEditor_stateControlCommandUpdate.send
         }
-        onNewEdit={this.envelopeContext.channelApi.notifications.kogitoWorkspace_newEdit.send}
+        onNewEdit={this.envelopeContext.channelApi.notifications.kogitoWorkspace_onNewEdit.send}
         setNotifications={this.envelopeContext.channelApi.notifications.kogitoNotifications_setNotifications.send}
         isReadOnly={this.initArgs.isReadOnly}
       />

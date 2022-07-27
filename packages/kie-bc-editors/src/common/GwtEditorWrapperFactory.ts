@@ -15,7 +15,6 @@
  */
 
 import { Notification } from "@kie-tools-core/notifications/dist/api";
-import { ResourceContentOptions, ResourceListOptions } from "@kie-tools-core/workspace/dist/api";
 import {
   EditorFactory,
   EditorInitArgs,
@@ -40,6 +39,7 @@ import { GwtEditorWrapper } from "./GwtEditorWrapper";
 import { GwtLanguageData, Resource } from "./GwtLanguageData";
 import { GwtStateControlService } from "./gwtStateControl";
 import { kieBcEditorsI18nDefaults, kieBcEditorsI18nDictionaries } from "./i18n";
+import { FindPathsOpts } from "@kie-tools-core/workspace/dist/api";
 
 export interface CustomWindow extends Window {
   startStandaloneEditor?: () => void;
@@ -127,15 +127,13 @@ export class GwtEditorWrapperFactory<E extends GwtEditorWrapper> implements Edit
         },
       },
       resourceContentEditorService: {
-        get(path: string, opts?: ResourceContentOptions) {
-          return envelopeContext.channelApi.requests
-            .kogitoWorkspace_resourceContentRequest({ path, opts })
-            .then((r) => r?.content);
+        async get(path: string) {
+          const content = await envelopeContext.channelApi.requests.kogitoWorkspace_requestContent(path);
+          return ""; //FIXME: tiago wrong type
         },
-        list(pattern: string, opts?: ResourceListOptions) {
-          return envelopeContext.channelApi.requests
-            .kogitoWorkspace_resourceListRequest({ pattern, opts })
-            .then((r) => r.paths.sort());
+        async list(globPattern: string, opts?: FindPathsOpts) {
+          const paths = await envelopeContext.channelApi.requests.kogitoWorkspace_findPaths(globPattern, opts);
+          return paths.sort();
         },
       },
       workspaceService: {

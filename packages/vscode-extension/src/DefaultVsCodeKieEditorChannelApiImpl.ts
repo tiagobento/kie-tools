@@ -15,13 +15,7 @@
  */
 
 import { BackendProxy } from "@kie-tools-core/backend/dist/api";
-import {
-  WorkspaceEdit,
-  ResourceContentRequest,
-  ResourceContentService,
-  ResourceListRequest,
-  WorkspaceChannelApi,
-} from "@kie-tools-core/workspace/dist/api";
+import { FindPathsOpts, WorkspaceChannelApi, WorkspaceEdit } from "@kie-tools-core/workspace/dist/api";
 import { EditorContent, KogitoEditorChannelApi, StateControlCommand } from "@kie-tools-core/editor/dist/api";
 import { Tutorial, UserInteraction } from "@kie-tools-core/guided-tour/dist/api";
 import * as __path from "path";
@@ -40,16 +34,15 @@ import {
 export class DefaultVsCodeKieEditorChannelApiImpl implements KogitoEditorChannelApi, JavaCodeCompletionChannelApi {
   constructor(
     private readonly editor: VsCodeKieEditorController,
-    private readonly resourceContentService: ResourceContentService,
-    private readonly workspaceApi: WorkspaceChannelApi,
+    private readonly workspaceChannelApi: WorkspaceChannelApi,
     private readonly backendProxy: BackendProxy,
-    private readonly notificationsApi: NotificationsChannelApi,
+    private readonly notificationsChannelApi: NotificationsChannelApi,
     private readonly javaCodeCompletionApi: JavaCodeCompletionApi,
     private readonly viewType: string,
     private readonly i18n: I18n<VsCodeI18n>
   ) {}
 
-  public async kogitoWorkspace_newEdit(workspaceEdit: WorkspaceEdit) {
+  public async kogitoWorkspace_onNewEdit(workspaceEdit: WorkspaceEdit) {
     if (this.editor.document.type === "custom") {
       this.editor.document.document.notifyEdit(this.editor, workspaceEdit);
       return;
@@ -87,7 +80,7 @@ export class DefaultVsCodeKieEditorChannelApiImpl implements KogitoEditorChannel
   }
 
   public kogitoWorkspace_openFile(path: string) {
-    this.workspaceApi.kogitoWorkspace_openFile(
+    this.workspaceChannelApi.kogitoWorkspace_openFile(
       __path.isAbsolute(path) ? path : __path.join(__path.dirname(this.editor.document.document.uri.path), path)
     );
   }
@@ -157,12 +150,12 @@ export class DefaultVsCodeKieEditorChannelApiImpl implements KogitoEditorChannel
     /* empty */
   }
 
-  public kogitoWorkspace_resourceContentRequest(request: ResourceContentRequest) {
-    return this.resourceContentService.get(request.path, request.opts);
+  public kogitoWorkspace_requestContent(path: string) {
+    return this.workspaceChannelApi.kogitoWorkspace_requestContent(path);
   }
 
-  public kogitoWorkspace_resourceListRequest(request: ResourceListRequest) {
-    return this.resourceContentService.list(request.pattern, request.opts);
+  public kogitoWorkspace_findPaths(globPattern: string, opts?: FindPathsOpts) {
+    return this.workspaceChannelApi.kogitoWorkspace_findPaths(globPattern, opts);
   }
 
   public kogitoI18n_getLocale(): Promise<string> {
@@ -170,15 +163,15 @@ export class DefaultVsCodeKieEditorChannelApiImpl implements KogitoEditorChannel
   }
 
   public kogitoNotifications_createNotification(notification: Notification): void {
-    this.notificationsApi.kogitoNotifications_createNotification(notification);
+    this.notificationsChannelApi.kogitoNotifications_createNotification(notification);
   }
 
   public kogitoNotifications_setNotifications(path: string, notifications: Notification[]): void {
-    this.notificationsApi.kogitoNotifications_setNotifications(path, notifications);
+    this.notificationsChannelApi.kogitoNotifications_setNotifications(path, notifications);
   }
 
   public kogitoNotifications_removeNotifications(path: string): void {
-    this.notificationsApi.kogitoNotifications_removeNotifications(path);
+    this.notificationsChannelApi.kogitoNotifications_removeNotifications(path);
   }
 
   public kogitoJavaCodeCompletion__getAccessors(fqcn: string, query: string): Promise<JavaCodeCompletionAccessor[]> {

@@ -14,15 +14,8 @@
  * limitations under the License.
  */
 
-import {
-  ContentType,
-  ResourceContent,
-  ResourceContentOptions,
-  ResourcesList,
-} from "@kie-tools-core/workspace/dist/api";
 import * as React from "react";
-import { useCallback, useMemo, useEffect } from "react";
-import { Buffer } from "buffer";
+import { useCallback, useEffect, useMemo } from "react";
 import KieSandboxFs from "@kie-tools/kie-sandbox-fs";
 import { VirtualServiceRegistryContext } from "./VirtualServiceRegistryContext";
 import { VirtualServiceRegistryGroupService } from "./services/VirtualServiceRegistryGroupService";
@@ -38,7 +31,7 @@ import { ServiceRegistryFile } from "./models/ServiceRegistryFile";
 import { WorkspaceDescriptor } from "../../model/WorkspaceDescriptor";
 import { useWorkspaces } from "../../WorkspacesContext";
 import { isServerlessWorkflow, isSpec } from "../../../extension";
-import { decoder, encoder } from "../../commonServices/BaseFile";
+import { encoder } from "../../commonServices/BaseFile";
 
 type SupportedFileExtensions = ".yaml" | ".json";
 const MAX_NEW_FILE_INDEX_ATTEMPTS = 10;
@@ -204,21 +197,15 @@ export function VirtualServiceRegistryContextProvider(props: Props) {
     [vsrService]
   );
 
-  const resourceContentGet = useCallback(
-    async (args: { fs: KieSandboxFs; groupId: string; relativePath: string; opts?: ResourceContentOptions }) => {
+  const workspaceChannelApiRequestContent = useCallback(
+    async (args: { fs: KieSandboxFs; groupId: string; relativePath: string }) => {
       const file = await vsrService.getFile({ descriptorId: args.groupId, ...args });
       if (!file) {
         throw new Error(`File '${args.relativePath}' not found in Workspace ${args.groupId}`);
       }
 
       try {
-        const content = await file.getFileContents();
-        if (args.opts?.type === "binary") {
-          return new ResourceContent(args.relativePath, Buffer.from(content).toString("base64"), ContentType.BINARY);
-        }
-
-        // "text" is the default
-        return new ResourceContent(args.relativePath, decoder.decode(content), ContentType.TEXT);
+        return await file.getFileContents();
       } catch (e) {
         console.error(e);
         throw e;
@@ -227,11 +214,10 @@ export function VirtualServiceRegistryContextProvider(props: Props) {
     [vsrService]
   );
 
-  const resourceContentList = useCallback(
+  const workspaceChannelApiFindPaths = useCallback(
     async (args: { fs: KieSandboxFs; groupId: string; globPattern: string }) => {
       const files = await vsrService.getFilesWithLazyContent(args.fs, args.groupId, args.globPattern);
-      const matchingPaths = files.map((file) => file.relativePath);
-      return new ResourcesList(args.globPattern, matchingPaths);
+      return files.map((file) => file.relativePath);
     },
     [vsrService]
   );
@@ -278,8 +264,8 @@ export function VirtualServiceRegistryContextProvider(props: Props) {
       vsrGroupService,
       vsrFsService,
       //
-      resourceContentGet,
-      resourceContentList,
+      workspaceChannelApiRequestContent,
+      workspaceChannelApiFindPaths,
       //
       createServiceRegistryGroupFromWorkspace,
       renameRegistryGroup,
@@ -300,8 +286,8 @@ export function VirtualServiceRegistryContextProvider(props: Props) {
       vsrService,
       vsrGroupService,
       vsrFsService,
-      resourceContentGet,
-      resourceContentList,
+      workspaceChannelApiRequestContent,
+      workspaceChannelApiFindPaths,
       createServiceRegistryGroupFromWorkspace,
       renameRegistryGroup,
       deleteRegistryGroup,

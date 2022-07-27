@@ -59,15 +59,15 @@ describe("EmbeddedViewer::ONLINE", () => {
     expect(container.firstChild).toMatchSnapshot();
   });
 
-  test("EmbeddedViewer::onResourceContentRequest", async () => {
-    const onResourceContentRequest = jest.fn(() => Promise.resolve({} as any));
+  test("EmbeddedViewer::onWorkspaceRequestContent", async () => {
+    const onWorkspaceRequestContent = jest.fn(() => Promise.resolve({} as any));
 
     const { container } = render(
       <EmbeddedViewer
         file={file}
         editorEnvelopeLocator={editorEnvelopeLocator}
         channelType={channelType}
-        kogitoWorkspace_resourceContentRequest={onResourceContentRequest}
+        kogitoWorkspace_requestContent={onWorkspaceRequestContent}
         locale={"en"}
       />
     );
@@ -76,23 +76,23 @@ describe("EmbeddedViewer::ONLINE", () => {
       targetEnvelopeServerId: envelopeServerId,
       requestId: "1",
       purpose: EnvelopeBusMessagePurpose.REQUEST,
-      type: "kogitoWorkspace_resourceContentRequest",
+      type: "kogitoWorkspace_requestContent",
       data: [{ path: "" }],
     });
 
-    expect(onResourceContentRequest).toBeCalled();
+    expect(onWorkspaceRequestContent).toBeCalled();
     expect(container.firstChild).toMatchSnapshot();
   });
 
-  test("EmbeddedViewer::onResourceListRequest", async () => {
-    const onResourceListRequest = jest.fn(() => Promise.resolve({} as any));
+  test("EmbeddedViewer::onWorkspaceFindPaths", async () => {
+    const onWorkspaceFindPaths = jest.fn(() => Promise.resolve({} as any));
 
     const { container } = render(
       <EmbeddedViewer
         file={file}
         editorEnvelopeLocator={editorEnvelopeLocator}
         channelType={channelType}
-        kogitoWorkspace_resourceListRequest={onResourceListRequest}
+        kogitoWorkspace_findPaths={onWorkspaceFindPaths}
         locale={"en"}
       />
     );
@@ -101,11 +101,11 @@ describe("EmbeddedViewer::ONLINE", () => {
       targetEnvelopeServerId: envelopeServerId,
       requestId: "1",
       purpose: EnvelopeBusMessagePurpose.REQUEST,
-      type: "kogitoWorkspace_resourceListRequest",
+      type: "kogitoWorkspace_findPaths",
       data: [{ pattern: "", paths: [] }],
     });
 
-    expect(onResourceListRequest).toBeCalled();
+    expect(onWorkspaceFindPaths).toBeCalled();
     expect(container.firstChild).toMatchSnapshot();
   });
 });

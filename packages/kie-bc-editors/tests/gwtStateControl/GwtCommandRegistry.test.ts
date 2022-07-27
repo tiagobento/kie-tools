@@ -47,26 +47,26 @@ describe("DefaultKogitoCommandRegistry", () => {
 
   test("test basic add/remove elements", () => {
     registry.register(COMMAND1.getId, COMMAND1);
-    expect(channelApiImpl.notifications.kogitoWorkspace_newEdit.send).toBeCalledWith(
+    expect(channelApiImpl.notifications.kogitoWorkspace_onNewEdit.send).toBeCalledWith(
       expect.objectContaining({ id: "1" })
     );
 
     registry.register(COMMAND2.getId, COMMAND2);
-    expect(channelApiImpl.notifications.kogitoWorkspace_newEdit.send).toBeCalledWith(
+    expect(channelApiImpl.notifications.kogitoWorkspace_onNewEdit.send).toBeCalledWith(
       expect.objectContaining({ id: "2" })
     );
 
     registry.register(COMMAND3.getId, COMMAND3);
-    expect(channelApiImpl.notifications.kogitoWorkspace_newEdit.send).toBeCalledWith(
+    expect(channelApiImpl.notifications.kogitoWorkspace_onNewEdit.send).toBeCalledWith(
       expect.objectContaining({ id: "3" })
     );
 
     registry.register(COMMAND4.getId, COMMAND4);
-    expect(channelApiImpl.notifications.kogitoWorkspace_newEdit.send).toBeCalledWith(
+    expect(channelApiImpl.notifications.kogitoWorkspace_onNewEdit.send).toBeCalledWith(
       expect.objectContaining({ id: "4" })
     );
 
-    expect(channelApiImpl.notifications.kogitoWorkspace_newEdit.send).toBeCalledTimes(4);
+    expect(channelApiImpl.notifications.kogitoWorkspace_onNewEdit.send).toBeCalledTimes(4);
 
     expect(registry.getCommands()).toHaveLength(4);
     expect(registry.getCommands()).toContain(COMMAND1);
@@ -103,16 +103,16 @@ describe("DefaultKogitoCommandRegistry", () => {
 
     registry.register(COMMAND1.getId, COMMAND1);
 
-    expect(channelApiImpl.notifications.kogitoWorkspace_newEdit.send).toBeCalledWith(
+    expect(channelApiImpl.notifications.kogitoWorkspace_onNewEdit.send).toBeCalledWith(
       expect.objectContaining({ id: "1" })
     );
 
     registry.register(COMMAND2.getId, COMMAND2);
-    expect(channelApiImpl.notifications.kogitoWorkspace_newEdit.send).toBeCalledWith(
+    expect(channelApiImpl.notifications.kogitoWorkspace_onNewEdit.send).toBeCalledWith(
       expect.objectContaining({ id: "2" })
     );
 
-    expect(channelApiImpl.notifications.kogitoWorkspace_newEdit.send).toBeCalledTimes(2);
+    expect(channelApiImpl.notifications.kogitoWorkspace_onNewEdit.send).toBeCalledTimes(2);
 
     expect(registry.getCommands()).toHaveLength(2);
     expect(registry.getCommands()).toContain(COMMAND1);
@@ -136,16 +136,16 @@ describe("DefaultKogitoCommandRegistry", () => {
 
   test("test basic adding elements after remove", () => {
     registry.register(COMMAND1.getId, COMMAND1);
-    expect(channelApiImpl.notifications.kogitoWorkspace_newEdit.send).toBeCalledWith(
+    expect(channelApiImpl.notifications.kogitoWorkspace_onNewEdit.send).toBeCalledWith(
       expect.objectContaining({ id: "1" })
     );
 
     registry.register(COMMAND2.getId, COMMAND2);
-    expect(channelApiImpl.notifications.kogitoWorkspace_newEdit.send).toBeCalledWith(
+    expect(channelApiImpl.notifications.kogitoWorkspace_onNewEdit.send).toBeCalledWith(
       expect.objectContaining({ id: "2" })
     );
 
-    expect(channelApiImpl.notifications.kogitoWorkspace_newEdit.send).toBeCalledTimes(2);
+    expect(channelApiImpl.notifications.kogitoWorkspace_onNewEdit.send).toBeCalledTimes(2);
 
     expect(registry.getCommands()).toHaveLength(2);
     expect(registry.getCommands()).toContain(COMMAND1);
@@ -162,7 +162,7 @@ describe("DefaultKogitoCommandRegistry", () => {
 
     registry.register(COMMAND2.getId, COMMAND2);
 
-    expect(channelApiImpl.notifications.kogitoWorkspace_newEdit.send).toBeCalledTimes(2);
+    expect(channelApiImpl.notifications.kogitoWorkspace_onNewEdit.send).toBeCalledTimes(2);
     expect(registry.getCommands()).toHaveLength(1);
     expect(registry.getCommands()).toContain(COMMAND2);
     expect(registry.getUndoneCommands()).toHaveLength(1);
@@ -171,7 +171,7 @@ describe("DefaultKogitoCommandRegistry", () => {
 
     registry.register(COMMAND1.getId, COMMAND1);
 
-    expect(channelApiImpl.notifications.kogitoWorkspace_newEdit.send).toBeCalledTimes(2);
+    expect(channelApiImpl.notifications.kogitoWorkspace_onNewEdit.send).toBeCalledTimes(2);
     expect(registry.getCommands()).toHaveLength(2);
     expect(registry.getCommands()).toContain(COMMAND1);
     expect(registry.getCommands()).toContain(COMMAND2);
@@ -179,10 +179,10 @@ describe("DefaultKogitoCommandRegistry", () => {
     expect(registry.isEmpty()).toBeFalsy();
 
     registry.register(COMMAND3.getId, COMMAND3);
-    expect(channelApiImpl.notifications.kogitoWorkspace_newEdit.send).toBeCalledWith(
+    expect(channelApiImpl.notifications.kogitoWorkspace_onNewEdit.send).toBeCalledWith(
       expect.objectContaining({ id: "3" })
     );
-    expect(channelApiImpl.notifications.kogitoWorkspace_newEdit.send).toBeCalledTimes(3);
+    expect(channelApiImpl.notifications.kogitoWorkspace_onNewEdit.send).toBeCalledTimes(3);
     expect(registry.getCommands()).toHaveLength(3);
     expect(registry.getCommands()).toContain(COMMAND1);
     expect(registry.getCommands()).toContain(COMMAND2);

@@ -32,7 +32,6 @@ import { AlertsController, useAlert } from "../alerts/Alerts";
 import { useCancelableEffect, useController, usePrevious } from "../reactExt/Hooks";
 import { TextEditorModal } from "./TextEditor/TextEditorModal";
 import { useWorkspaces } from "../workspace/WorkspacesContext";
-import { ResourceContentRequest, ResourceListRequest } from "@kie-tools-core/workspace/dist/api";
 import { useWorkspaceFilePromise } from "../workspace/hooks/WorkspaceFileHooks";
 import { PromiseStateWrapper } from "../workspace/hooks/PromiseState";
 import { EditorPageErrorPage } from "./EditorPageErrorPage";
@@ -45,6 +44,7 @@ import { Divider } from "@patternfly/react-core/dist/js/components/Divider";
 import { EditorPageDockDrawer, EditorPageDockDrawerRef } from "./EditorPageDockDrawer";
 import { DmnRunnerProvider } from "./DmnRunner/DmnRunnerProvider";
 import { useEditorEnvelopeLocator } from "../envelopeLocator/EditorEnvelopeLocatorContext";
+import { FindPathsOpts } from "@kie-tools-core/workspace/dist/api";
 
 export interface Props {
   workspaceId: string;
@@ -209,25 +209,24 @@ export function EditorPage(props: Props) {
     });
   }, [editor, saveContent, workspaceFilePromise]);
 
-  const handleResourceContentRequest = useCallback(
-    async (request: ResourceContentRequest) => {
-      return workspaces.resourceContentGet({
+  const handleWorkspaceContentRequest = useCallback(
+    async (path: string) => {
+      return workspaces.workspaceChannelApiRequestContent({
         fs: await workspaces.fsService.getWorkspaceFs(props.workspaceId),
         workspaceId: props.workspaceId,
-        relativePath: request.path,
-        opts: request.opts,
+        relativePath: path,
       });
     },
     [props.workspaceId, workspaces]
   );
 
-  const handleResourceListRequest = useCallback(
-    async (request: ResourceListRequest) => {
-      return workspaces.resourceContentList({
+  const handleWorkspaceFindPaths = useCallback(
+    async (globPattern: string, opts?: FindPathsOpts) => {
+      return workspaces.workspaceChannelApiFindPaths({
         fs: await workspaces.fsService.getWorkspaceFs(props.workspaceId),
         workspaceId: props.workspaceId,
-        globPattern: request.pattern,
-        opts: request.opts,
+        globPattern: globPattern,
+        opts: opts,
       });
     },
     [workspaces, props.workspaceId]
@@ -329,8 +328,8 @@ export function EditorPage(props: Props) {
                           ref={editorRef}
                           file={embeddedEditorFile}
                           kogitoWorkspace_openFile={handleOpenFile}
-                          kogitoWorkspace_resourceContentRequest={handleResourceContentRequest}
-                          kogitoWorkspace_resourceListRequest={handleResourceListRequest}
+                          kogitoWorkspace_requestContent={handleWorkspaceContentRequest}
+                          kogitoWorkspace_findPaths={handleWorkspaceFindPaths}
                           kogitoEditor_setContentError={handleSetContentError}
                           editorEnvelopeLocator={editorEnvelopeLocator}
                           channelType={ChannelType.ONLINE_MULTI_FILE}

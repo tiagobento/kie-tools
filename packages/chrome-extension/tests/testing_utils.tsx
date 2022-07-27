@@ -19,7 +19,7 @@ import {
   GlobalContext,
   GlobalContextType,
 } from "@kie-tools-core/chrome-extension/dist/app/components/common/GlobalContext";
-import { ResourceContentServiceFactory } from "@kie-tools-core/chrome-extension/dist/app/components/common/ChromeResourceContentService";
+import { ChromeExtensionWorkspaceChannelFsServiceFactory } from "@kie-tools-core/chrome-extension/dist/app/components/common/ChromeExtensionWorkspaceChannelFsServiceImpl";
 import {
   GitHubContext,
   GitHubContextType,
@@ -47,7 +47,7 @@ export function usingTestingGlobalContext(children: React.ReactElement, ctx?: Pa
     logger: new Logger("test-extension"),
     dependencies: new Dependencies(),
     extensionIconUrl: "/extension/icon.jpg",
-    resourceContentServiceFactory: new ResourceContentServiceFactory(),
+    chromeExtensionWorkspaceChannelFsServiceFactory: new ChromeExtensionWorkspaceChannelFsServiceFactory(),
     externalEditorManager: {
       name: "Test Online Editor",
       getLink: jest.fn((path) => `https://external-editor-link/${path}`),

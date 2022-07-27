@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-import { ResourceContentOptions, ResourceListOptions } from "@kie-tools-core/workspace/dist/api";
-
 /**
  * EXPOSED INTEROP API
  *
  * This API is exposed from the Envelope to be consumed on Java code.
  */
 export interface ResourceContentExposedInteropApi {
-  get(path: string, opts?: ResourceContentOptions): Promise<string | undefined>;
-  list(pattern: string, opts?: ResourceListOptions): Promise<string[]>;
+  get(path: string): Promise<string | undefined>; // FIXME: tiago change this so that WID icons can work on standalone editors
+  list(globPattern: string, opts?: { searchType: "traversal" | "asset-folder" }): Promise<string[]>;
 }

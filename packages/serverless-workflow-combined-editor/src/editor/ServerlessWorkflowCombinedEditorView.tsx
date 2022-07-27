@@ -64,7 +64,7 @@ export class ServerlessWorkflowCombinedEditorView implements Editor {
         isReadOnly={this.initArgs.isReadOnly}
         channelType={this.initArgs.channel}
         resourcesPathPrefix={this.initArgs.resourcesPathPrefix}
-        onNewEdit={this.envelopeContext.channelApi.notifications.kogitoWorkspace_newEdit.send}
+        onNewEdit={this.envelopeContext.channelApi.notifications.kogitoWorkspace_onNewEdit.send}
       />
     );
   }

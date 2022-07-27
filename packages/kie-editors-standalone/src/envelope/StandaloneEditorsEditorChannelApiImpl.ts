@@ -14,14 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  ContentType,
-  WorkspaceEdit,
-  ResourceContent,
-  ResourceContentRequest,
-  ResourceListRequest,
-  ResourcesList,
-} from "@kie-tools-core/workspace/dist/api";
+import { WorkspaceEdit } from "@kie-tools-core/workspace/dist/api";
 import {
   EditorContent,
   EditorTheme,
@@ -32,6 +25,7 @@ import { Tutorial, UserInteraction } from "@kie-tools-core/guided-tour/dist/api"
 import { EmbeddedEditorFile, StateControl } from "@kie-tools-core/editor/dist/channel";
 import { Minimatch } from "minimatch";
 import { Notification } from "@kie-tools-core/notifications/dist/api";
+import { FindPathsOpts } from "@kie-tools-core/workspace/dist/api";
 
 export class StandaloneEditorsEditorChannelApiImpl implements KogitoEditorChannelApi {
   constructor(
@@ -39,12 +33,12 @@ export class StandaloneEditorsEditorChannelApiImpl implements KogitoEditorChanne
     private readonly file: EmbeddedEditorFile,
     private readonly locale: string,
     private readonly overrides: Partial<KogitoEditorChannelApi>,
-    private readonly resources?: Map<string, { contentType: ContentType; content: Promise<string> }>
+    private readonly resources?: Map<string, Promise<Uint8Array | undefined>>
   ) {}
 
-  public kogitoWorkspace_newEdit(edit: WorkspaceEdit) {
+  public kogitoWorkspace_onNewEdit(edit: WorkspaceEdit) {
     this.stateControl.updateCommandStack({ id: edit.id });
-    this.overrides.kogitoWorkspace_newEdit?.(edit);
+    this.overrides.kogitoWorkspace_onNewEdit?.(edit);
   }
 
   public kogitoEditor_stateControlCommandUpdate(command: StateControlCommand) {
@@ -75,36 +69,23 @@ export class StandaloneEditorsEditorChannelApiImpl implements KogitoEditorChanne
     return { content: content ?? "", path: this.file.fileName };
   }
 
-  public async kogitoWorkspace_resourceContentRequest(request: ResourceContentRequest) {
-    const resource = this.resources?.get(request.path);
-
+  public async kogitoWorkspace_requestContent(path: string) {
+    const resource = await this.resources?.get(path);
     if (!resource) {
-      console.warn("The editor requested an unspecified resource: " + request.path);
-      return new ResourceContent(request.path, undefined);
+      console.warn("The editor requested an unspecified resource: " + path);
+      return undefined;
     }
 
-    const requestedContentType = request.opts?.type ?? resource.contentType;
-    if (requestedContentType !== resource.contentType) {
-      console.warn(
-        "The editor requested a resource with a different content type from the one specified: " +
-          request.path +
-          ". Content type requested: " +
-          requestedContentType
-      );
-      return new ResourceContent(request.path, undefined);
-    }
-
-    return new ResourceContent(request.path, await resource.content, resource.contentType);
+    return resource;
   }
 
-  public async kogitoWorkspace_resourceListRequest(request: ResourceListRequest) {
+  public async kogitoWorkspace_findPaths(globPattern: string, opts?: FindPathsOpts) {
     if (!this.resources) {
-      return new ResourcesList(request.pattern, []);
+      return [];
     }
 
-    const matcher = new Minimatch(request.pattern);
-    const matches = Array.from(this.resources.keys()).filter((path) => matcher.match(path));
-    return new ResourcesList(request.pattern, matches);
+    const matcher = new Minimatch(globPattern);
+    return Array.from(this.resources.keys()).filter((path) => matcher.match(path));
   }
 
   public kogitoWorkspace_openFile(path: string): void {
