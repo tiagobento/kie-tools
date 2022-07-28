@@ -1,0 +1,8 @@
+md
+icns
+ico
+gif
+jpg
+jpeg
+png
+svg
