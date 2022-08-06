@@ -18,6 +18,7 @@ package org.kie.kogito;
 
 import java.io.IOException;
 import java.io.InputStream;
+import org.kie.tools.MyMvnPkg;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
@@ -48,6 +49,8 @@ public class DmnDevSandboxResource {
         if (uploadService.getStatus() != UploadStatus.WAITING) {
             return Response.status(Response.Status.BAD_REQUEST).entity("Upload cannot be done anymore").build();
         }
+
+        System.out.println(MyMvnPkg.MY_MVN_PKG_CONSTANT);
 
         var inputStream = dataInput.getFormDataPart(DATA_PART_KEY, InputStream.class, null);
 

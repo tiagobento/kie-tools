@@ -1049,9 +1049,11 @@ importers:
     specifiers:
       "@kie-tools-core/run-script-if": workspace:*
       "@kie-tools/build-env": workspace:*
+      "@kie-tools/my-mvn-pkg": workspace:*
     devDependencies:
       "@kie-tools-core/run-script-if": link:../run-script-if
       "@kie-tools/build-env": link:../build-env
+      "@kie-tools/my-mvn-pkg": link:../my-mvn-pkg
 
   packages/editor:
     specifiers:
@@ -1565,6 +1567,14 @@ importers:
       monaco-editor: ^0.33.0
     dependencies:
       monaco-editor: 0.33.0
+    devDependencies:
+      "@kie-tools-core/run-script-if": link:../run-script-if
+      "@kie-tools/build-env": link:../build-env
+
+  packages/my-mvn-pkg:
+    specifiers:
+      "@kie-tools-core/run-script-if": workspace:*
+      "@kie-tools/build-env": workspace:*
     devDependencies:
       "@kie-tools-core/run-script-if": link:../run-script-if
       "@kie-tools/build-env": link:../build-env
