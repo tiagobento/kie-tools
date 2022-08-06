@@ -17,8 +17,8 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.kie.kogito</groupId>
-  <artifactId>dmn-dev-sandbox-quarkus</artifactId>
+  <groupId>org.kie.tools</groupId>
+  <artifactId>my-mvn-pkg</artifactId>
   <version>${revision}</version>
 
   <properties>
@@ -28,8 +28,6 @@
     <maven.compiler.target>11</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
-    <quarkus.platform.group-id>io.quarkus</quarkus.platform.group-id>
     <surefire-plugin.version>3.0.0-M5</surefire-plugin.version>
     <version.junit>4.13.1</version.junit>
   </properties>
@@ -37,16 +35,16 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>${quarkus.platform.group-id}</groupId>
-        <artifactId>${quarkus.platform.artifact-id}</artifactId>
-        <version>${quarkus.platform.version}</version>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-bom</artifactId>
+        <version>${myPkg.quarkus.platform.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
       <dependency>
         <groupId>io.quarkus.platform</groupId>
         <artifactId>quarkus-kogito-bom</artifactId>
-        <version>${quarkus.platform.version}</version>
+        <version>${myPkg.quarkus.platform.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -61,11 +59,6 @@
   </dependencyManagement>
 
   <dependencies>
-    <dependency>
-      <groupId>org.kie.tools</groupId>
-      <artifactId>my-mvn-pkg</artifactId>
-      <version>${myMvnPkg.version}</version>
-    </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-resteasy</artifactId>
@@ -115,42 +108,36 @@
   </dependencies>
 
   <build>
-    <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-      </resource>
-    </resources>
     <plugins>
       <plugin>
-        <groupId>${quarkus.platform.group-id}</groupId>
-        <artifactId>quarkus-maven-plugin</artifactId>
-        <version>${quarkus.platform.version}</version>
-        <extensions>true</extensions>
+        <artifactId>maven-resources-plugin</artifactId>
         <executions>
           <execution>
+            <id>build-pom-to-install</id>
+            <phase>validate</phase>
             <goals>
-              <goal>build</goal>
+              <goal>copy-resources</goal>
             </goals>
+            <configuration>
+              <resources>
+                <resource>
+                  <directory>pom</directory>
+                  <filtering>true</filtering>
+                </resource>
+              </resources>
+              <outputDirectory>target</outputDirectory>
+            </configuration>
           </execution>
         </executions>
       </plugin>
       <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>${compiler-plugin.version}</version>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-install-plugin</artifactId>
         <configuration>
-          <parameters>${maven.compiler.parameters}</parameters>
-        </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>${surefire-plugin.version}</version>
-        <configuration>
-          <systemPropertyVariables>
-            <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
-            <maven.home>${maven.home}</maven.home>
-          </systemPropertyVariables>
+          <pomFile>./target/pom.xml</pomFile>
         </configuration>
       </plugin>
     </plugins>
   </build>
+
 </project>

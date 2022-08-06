@@ -16,11 +16,11 @@
 
 const { varsWithName, composeEnv } = require("@kie-tools/build-env");
 
-module.exports = composeEnv([require("@kie-tools/build-env/env"), require("@kie-tools/my-mvn-pkg/env")], {
+module.exports = composeEnv([require("@kie-tools/build-env/env")], {
   vars: varsWithName({}),
   get env() {
     return {
-      dmnDevSandboxQuarkus: {
+      myMvnPkg: {
         version: require("../package.json").version,
       },
     };
