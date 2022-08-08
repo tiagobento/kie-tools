@@ -23,7 +23,7 @@ if (!newVersion) {
   return 1;
 }
 
-const pnpmFilter = ""; // TODO: `${process.argv.slice(4).join(" ")}`;
+const pnpmFilter = process.argv.slice(3).join(" ");
 
 const execOpts = { stdio: "inherit" };
 try {
@@ -36,7 +36,7 @@ try {
   execSync(`pnpm -r ${pnpmFilter} exec pnpm version ${newVersion} ${pnpmVersionArgs}`, execOpts);
 
   console.info(`[update-version] Bootstrapping with updated version...`);
-  execSync(`pnpm bootstrap`, execOpts); // TODO: use pnpmFilter
+  execSync(`pnpm bootstrap:sparse ${pnpmFilter}`, execOpts);
 
   console.info(`[update-version] Formatting files...`);
   execSync(`pnpm pretty-quick`, execOpts);
