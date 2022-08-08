@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Red Hat, Inc. and/or its affiliates.
+ * Copyright 2022 Red Hat, Inc. and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,9 @@ execSync(`pnpm install-dependencies ${pnpmFilter} --frozen-lockfile`, execOpts);
 
 console.info("[sparse-bootstrap] Linking packages with self...");
 execSync(`pnpm link-packages-with-self`, execOpts);
+
+console.info("[sparse-bootstrap] Generating packages graph...");
+execSync(`pnpm generate-packages-graph`, execOpts);
 
 console.info("[sparse-bootstrap] Checking CLI tools...");
 execSync(`pnpm check-cli-tools`, execOpts);
