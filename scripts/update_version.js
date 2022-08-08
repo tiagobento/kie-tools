@@ -16,24 +16,16 @@
 
 const execSync = require("child_process").execSync;
 
-// MAIN
-
 const newVersion = process.argv[2];
-const pnpmFilter = ""; // TODO: `${process.argv.slice(3).join(" ")}`;
 
 if (!newVersion) {
   console.error("Usage 'node update_version.js [version]'");
   return 1;
 }
 
-let execOpts = {};
-const opts = process.argv[3];
-if (opts === "--silent") {
-  execOpts = { stdio: "pipe" };
-} else {
-  execOpts = { stdio: "inherit" };
-}
+const pnpmFilter = ""; // TODO: `${process.argv.slice(4).join(" ")}`;
 
+const execOpts = { stdio: "inherit" };
 try {
   const pnpmVersionArgs = `--git-tag-version=false --allow-same-version=true`;
 
