@@ -130,10 +130,10 @@ async function main() {
   }
 
   if (!fs.existsSync(path.resolve(targetDir))) {
-    fs.mkdirSync(path.resolve(targetDir));
+    fs.mkdirSync(path.resolve(targetDir), { recursive: true });
   }
 
-  fs.writeFileSync(datavisGraphFilePath, g.to_dot());
+  fs.writeFileSync(dotGraphFilePath, g.to_dot());
   console.info(`[generate-packages-graph] Wrote packages DOT graph to '${dotGraphFilePath}'`);
 
   console.info(`[generate-packages-graph] Writing packages Datavis graph to '${datavisGraphFilePath}'...`);
