@@ -18,7 +18,7 @@ import * as jsonc from "jsonc-parser";
 
 // This is very similar to `jsonc.findNodeAtLocation`, but it allows the use of '*' as a wildcard selector.
 // This means that unlike `jsonc.findNodeAtLocation`, this method always returns a list of nodes, which can be empty if no matches are found.
-export function findNodesAtLocation(root: jsonc.Node | undefined, path: any): jsonc.Node[] {
+export function findNodesAtLocation(root: jsonc.Node | undefined, path: any[]): jsonc.Node[] {
   if (!root) {
     return [];
   }

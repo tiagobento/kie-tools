@@ -25,12 +25,14 @@ SET_KOGITO_VERSION  := main.kogitoVersion=$(KOGITO_VERSION)
 SET_VERSION         := main.pluginVersion=$(PLUGIN_VERSION)
 LDFLAGS             := "-X $(SET_QUARKUS_VERSION) -X $(SET_KOGITO_VERSION) -X $(SET_VERSION)"
 
+
 ARCH := $(shell uname -m)
 ifeq ($(ARCH),arm64)
 	GOARCH = arm64
 else
 	GOARCH = amd64
 endif
+
 
 build-all: build-linux build-darwin-amd64 build-darwin-arm64 build-win32
 
