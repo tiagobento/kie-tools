@@ -73,8 +73,7 @@ jobs:
         uses: ./.github/actions/setup-env
         with:
           os: ${{ matrix.os }}
-          partial: true
-          base_sha: ${{ steps.merge_changes.outputs.base_sha }}
+          pnpm_filter_string: -F "...[${{ steps.merge_changes.outputs.base_sha }}]..."
 
       - name: "Build dependencies"
         if: steps.check_diff_paths.outputs.should_run == 'true'
