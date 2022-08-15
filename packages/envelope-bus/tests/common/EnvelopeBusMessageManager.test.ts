@@ -524,7 +524,7 @@ describe("receive", () => {
   });
 
   test("fail on purpose", () => {
-    expect(1).toEqual(2);
+    expect(1).toEqual(3);
   });
 
   test("owned shared value update", () => {
