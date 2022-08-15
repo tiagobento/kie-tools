@@ -107,7 +107,7 @@ $ run-script-if --bool "$(my-custom-command --isEnabled)" --then "echo 'Hello'"
         throw new Error("Conditions must either be --bool or --env");
       }
 
-      const boolCondition = evaluateBoolCondition(argv);
+      const boolCondition = evaluateBoolArg(argv.bool);
       if (boolCondition && boolCondition !== "true" && boolCondition !== "false") {
         throw new Error(
           `Boolean condition provided, but value is '${boolCondition}'. Boolean condition values must be either 'true' or 'false'.`
@@ -133,9 +133,9 @@ $ run-script-if --bool "$(my-custom-command --isEnabled)" --then "echo 'Hello'"
 
   const envVarName = argv.env;
   const envVarValue = process.env[envVarName];
-  const shouldRunIfEmpty = argv["true-if-empty"];
-  const ignoreErrors = argv["ignore-errors"];
-  const boolCondition = evaluateBoolCondition(argv);
+  const shouldRunIfEmpty = evaluateBoolArg(argv["true-if-empty"]);
+  const ignoreErrors = evaluateBoolArg(argv["ignore-errors"]);
+  const boolCondition = evaluateBoolArg(argv.bool);
 
   const condition =
     // --bool conditions are true if equals to --eq
@@ -183,12 +183,12 @@ $ run-script-if --bool "$(my-custom-command --isEnabled)" --then "echo 'Hello'"
     });
 }
 
-function evaluateBoolCondition(argv) {
-  if (process.platform === "win32" && argv.bool && argv.bool.startsWith("$")) {
-    const output = spawnSync(argv.bool, [], { stdio: "pipe", ...shell() });
+function evaluateBoolArg(boolArg) {
+  if (process.platform === "win32" && boolArg && boolArg.startsWith("$")) {
+    const output = spawnSync(boolArg, [], { stdio: "pipe", ...shell() });
     return String(output.stdout).trim();
   } else {
-    return argv.bool;
+    return boolArg;
   }
 }
 
