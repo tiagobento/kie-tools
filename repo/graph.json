@@ -103,7 +103,8 @@
       { "id": "vscode-extension-red-hat-business-automation-bundle" },
       { "id": "vscode-extension-serverless-workflow-editor" },
       { "id": "vscode-extension-yard-editor" },
-      { "id": "@kie-tools/yard-editor" }
+      { "id": "@kie-tools/yard-editor" },
+      { "id": "scripts" }
     ],
     "links": [
       { "source": "@kie-tools-examples/base64png-editor", "target": "@kie-tools-core/editor", "weight": 1 },
@@ -771,6 +772,7 @@
     ],
     ["@kie-tools-core/webpack-base", "packages/webpack-base"],
     ["@kie-tools-core/workspace", "packages/workspace"],
-    ["@kie-tools/yard-editor", "packages/yard-editor"]
+    ["@kie-tools/yard-editor", "packages/yard-editor"],
+    ["scripts", "scripts"]
   ]
 }

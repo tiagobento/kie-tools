@@ -28,6 +28,9 @@ if (pnpmFilterString.length === 0) {
 
 const execOpts = { stdio: "inherit" };
 
+console.info("\n\n[bootstrap] Installing scripts dependencies...");
+execSync(`pnpm install-dependencies -F scripts`, execOpts);
+
 console.info("\n\n[bootstrap] Installing dependencies...");
 execSync(`pnpm install-dependencies ${pnpmFilterStringForInstalling}`, execOpts); // Always install root dependencies
 

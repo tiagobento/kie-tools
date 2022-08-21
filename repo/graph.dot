@@ -105,6 +105,7 @@ digraph G {
   "vscode-extension-serverless-workflow-editor" [ color = "blue", fontcolor = "blue", style = "rounded" ];
   "vscode-extension-yard-editor" [ color = "blue", fontcolor = "blue", style = "rounded" ];
   "@kie-tools/yard-editor" [ color = "blue", fontcolor = "blue", style = "rounded" ];
+  "scripts" [ color = "black", fontcolor = "black", style = "dashed, rounded" ];
   "@kie-tools-examples/base64png-editor" -> "@kie-tools-core/editor" [ style = "solid", color = "orange" ];
   "@kie-tools-examples/base64png-editor-chrome-extension" -> "@kie-tools-core/chrome-extension" [ style = "solid", color = "orange" ];
   "@kie-tools-examples/base64png-editor-chrome-extension" -> "@kie-tools-examples/base64png-editor" [ style = "solid", color = "orange" ];
@@ -320,4 +321,5 @@ digraph G {
   "@kie-tools/yard-editor" -> "@kie-tools-core/editor" [ style = "solid", color = "blue" ];
   "@kie-tools/yard-editor" -> "@kie-tools/i18n-common-dictionary" [ style = "solid", color = "blue" ];
   "@kie-tools/yard-editor" -> "@kie-tools-core/webpack-base" [ style = "dashed", color = "blue" ];
+  "scripts" -> "kie-tools";
 }

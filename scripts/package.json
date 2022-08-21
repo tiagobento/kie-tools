@@ -1,0 +1,14 @@
+{
+  "private": true,
+  "name": "scripts",
+  "version": "0.0.0",
+  "keywords": [],
+  "devDependencies": {
+    "@pnpm/filter-workspace-packages": "^5.0.27",
+    "@pnpm/find-workspace-packages": "^4.0.27",
+    "@pnpm/logger": "^4.0.0",
+    "graph-data-structure": "^2.0.0",
+    "graphviz": "^0.0.9",
+    "markdown-table": "^3.0.2"
+  }
+}
