@@ -14,7 +14,7 @@ This repository contains all the tooling artifacts of the Kogito project.
 [![License](https://img.shields.io/github/license/kiegroup/kie-tools.svg)](https://github.com/kiegroup/kie-tools/blob/main/LICENSE)
 [![Twitter Follow](https://img.shields.io/twitter/follow/kogito_kie.svg?label=Follow&style=social)](https://twitter.com/kogito_kie?lang=en)
 
-## Contribute
+## Contribute -- test
 
 - _Work in progress 🔨_
 
