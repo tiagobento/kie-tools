@@ -93,20 +93,14 @@ jobs:
         if: runner.os == 'Windows'
         run: git config --system core.longpaths true
 
-      - name: "Checkout kie-tools"
-        uses: actions/checkout@v2
+      - name: "Checkout"
+        uses: actions/checkout@v3
+
+      - name: "Checkout PR"
+        uses: ./.github/actions/checkout-pr
         with:
           ref: ${{ inputs.base_ref }}
-          path: ${{ github.workspace }}/kie-tools
-          fetch-depth: 0
-
-      - name: "Setup kie-tools-bot"
-        uses: ./kie-tools/.github/actions/setup-kie-tools-bot
-
-      - name: "Merge PR changes"
-        uses: ./kie-tools/.github/actions/merge-pr-changes
-        with:
-          working_dir: kie-tools
+          path: kie-tools
 
       - name: "Checkout kogito-online-staging (Ubuntu only)"
         if: ${{ runner.os == 'Linux' && !inputs.dry_run }}
