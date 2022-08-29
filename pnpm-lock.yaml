@@ -19,6 +19,7 @@ importers:
       "@kie-tools-build/sparse-checkout": workspace:*
       "@kie-tools-build/update-version": workspace:*
       "@nice-move/prettier-plugin-package-json": ^0.6.1
+      "@types/node": ^15.0.2
       "@typescript-eslint/eslint-plugin": ^4.24.0
       "@typescript-eslint/parser": ^4.24.0
       eslint: ^7.26.0
@@ -40,6 +41,7 @@ importers:
       "@kie-tools-build/sparse-checkout": link:scripts/sparse-checkout
       "@kie-tools-build/update-version": link:scripts/update-version
       "@nice-move/prettier-plugin-package-json": 0.6.1_prettier@2.3.0
+      "@types/node": 15.6.0
       "@typescript-eslint/eslint-plugin": 4.24.0_p3e62y3nyqf6ndl7srgd7ijb6y
       "@typescript-eslint/parser": 4.24.0_eslint@7.26.0
       eslint: 7.26.0
@@ -539,9 +541,6 @@ importers:
       webpack-cli: 4.10.0_yqwwn4zy7x4owjsib6p4jmcbki
       webpack-dev-server: 4.7.3_arvjobxnuton62rnb6f22zdmlm
       webpack-merge: 5.8.0
-
-  packages/build-env:
-    specifiers: {}
 
   packages/chrome-extension:
     specifiers:
@@ -2038,6 +2037,7 @@ importers:
       "@types/react": ^17.0.6
       "@types/testing-library__jest-dom": ^5.9.1
       "@types/testing-library__react": ^9.1.2
+      jest: ^26.6.3
       jest-junit: ^14.0.0
       jest-when: ^3.5.0
       react: ^17.0.2
@@ -2057,10 +2057,11 @@ importers:
       "@types/react": 17.0.21
       "@types/testing-library__jest-dom": 5.14.5
       "@types/testing-library__react": 9.1.3
+      jest: 26.6.3
       jest-junit: 14.0.0
-      jest-when: 3.5.1
+      jest-when: 3.5.1_jest@26.6.3
       rimraf: 3.0.2
-      ts-jest: 26.5.6_typescript@4.5.4
+      ts-jest: 26.5.6_hoj6rh37du6uxub6buv3fchqgy
       typescript: 4.5.4
 
   packages/i18n-common-dictionary:
@@ -4736,11 +4737,9 @@ importers:
 
   scripts/build-env:
     specifiers:
-      "@types/node": ^15.0.2
       rimraf: ^3.0.2
       typescript: ^4.4.2
     devDependencies:
-      "@types/node": 15.6.0
       rimraf: 3.0.2
       typescript: 4.5.4
 
@@ -18325,13 +18324,6 @@ packages:
       { integrity: sha512-ai0S49FU9FjUqtXOpkVj26WGc3Lsh6lBPkQABKtKoLUoR60Z42XBBFyNykaZpWRRfIPxprrahLsedPNAVDkJ3w== }
     dev: true
 
-  /jest-when/3.5.1:
-    resolution:
-      { integrity: sha512-o+HiaIVCg1IC95sMDKHU9G5v5N5l3UHqXvJpf0PgAMThZeQo4Hf5Sgoj+wpCBRGg4/KtzSAZZZEKNiLqE0i4eQ== }
-    peerDependencies:
-      jest: ">= 25"
-    dev: true
-
   /jest-when/3.5.1_jest@26.6.3:
     resolution:
       { integrity: sha512-o+HiaIVCg1IC95sMDKHU9G5v5N5l3UHqXvJpf0PgAMThZeQo4Hf5Sgoj+wpCBRGg4/KtzSAZZZEKNiLqE0i4eQ== }
@@ -25186,28 +25178,6 @@ packages:
       make-error: 1.3.6
       mkdirp: 1.0.4
       semver: 7.3.7
-      yargs-parser: 20.2.7
-    dev: true
-
-  /ts-jest/26.5.6_typescript@4.5.4:
-    resolution:
-      { integrity: sha512-rua+rCP8DxpA8b4DQD/6X2HQS8Zy/xzViVYfEs2OQu68tkCuKLV0Md8pmX55+W24uRIyAsf/BajRfxOs+R2MKA== }
-    engines: { node: ">= 10" }
-    hasBin: true
-    peerDependencies:
-      jest: ">=26 <27"
-      typescript: ">=3.8 <5.0"
-    dependencies:
-      bs-logger: 0.2.6
-      buffer-from: 1.1.1
-      fast-json-stable-stringify: 2.1.0
-      jest-util: 26.6.2
-      json5: 2.2.1
-      lodash: 4.17.21
-      make-error: 1.3.6
-      mkdirp: 1.0.4
-      semver: 7.3.7
-      typescript: 4.5.4
       yargs-parser: 20.2.7
     dev: true
 
