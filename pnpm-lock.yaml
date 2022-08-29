@@ -12,12 +12,12 @@ importers:
       "@babel/core": ^7.16.0
       "@babel/preset-env": ^7.16.0
       "@babel/preset-react": ^7.16.0
-      "@kie-tools-build/bootstrap": workspace:*
-      "@kie-tools-build/build-env": workspace:*
-      "@kie-tools-build/maven-config-setup-helper": workspace:*
-      "@kie-tools-build/run-script-if": workspace:*
-      "@kie-tools-build/sparse-checkout": workspace:*
-      "@kie-tools-build/update-version": workspace:*
+      "@kie-tools-scripts/bootstrap": workspace:*
+      "@kie-tools-scripts/build-env": workspace:*
+      "@kie-tools-scripts/maven-config-setup-helper": workspace:*
+      "@kie-tools-scripts/run-script-if": workspace:*
+      "@kie-tools-scripts/sparse-checkout": workspace:*
+      "@kie-tools-scripts/update-version": workspace:*
       "@nice-move/prettier-plugin-package-json": ^0.6.1
       "@types/node": ^15.0.2
       "@typescript-eslint/eslint-plugin": ^4.24.0
@@ -34,12 +34,12 @@ importers:
       "@babel/core": 7.16.12
       "@babel/preset-env": 7.16.11_@babel+core@7.16.12
       "@babel/preset-react": 7.16.0_@babel+core@7.16.12
-      "@kie-tools-build/bootstrap": link:scripts/bootstrap
-      "@kie-tools-build/build-env": link:scripts/build-env
-      "@kie-tools-build/maven-config-setup-helper": link:scripts/maven-config-setup-helper
-      "@kie-tools-build/run-script-if": link:scripts/run-script-if
-      "@kie-tools-build/sparse-checkout": link:scripts/sparse-checkout
-      "@kie-tools-build/update-version": link:scripts/update-version
+      "@kie-tools-scripts/bootstrap": link:scripts/bootstrap
+      "@kie-tools-scripts/build-env": link:scripts/build-env
+      "@kie-tools-scripts/maven-config-setup-helper": link:scripts/maven-config-setup-helper
+      "@kie-tools-scripts/run-script-if": link:scripts/run-script-if
+      "@kie-tools-scripts/sparse-checkout": link:scripts/sparse-checkout
+      "@kie-tools-scripts/update-version": link:scripts/update-version
       "@nice-move/prettier-plugin-package-json": 0.6.1_prettier@2.3.0
       "@types/node": 15.6.0
       "@typescript-eslint/eslint-plugin": 4.24.0_p3e62y3nyqf6ndl7srgd7ijb6y
@@ -551,6 +551,9 @@ importers:
       webpack-cli: 4.10.0_yqwwn4zy7x4owjsib6p4jmcbki
       webpack-dev-server: 4.7.3_arvjobxnuton62rnb6f22zdmlm
       webpack-merge: 5.8.0
+
+  packages/build-env:
+    specifiers: {}
 
   packages/chrome-extension:
     specifiers:
@@ -4333,7 +4336,7 @@ importers:
       ts-jest: 26.5.6_hoj6rh37du6uxub6buv3fchqgy
       typescript: 4.5.4
       vsce: 2.6.5
-      vscode-extension-tester: 4.3.0_jvempbdbjtvhoodinnen4jiyly
+      vscode-extension-tester: 4.4.1_jvempbdbjtvhoodinnen4jiyly
       vscode-test: 1.6.1
       webpack: 5.70.0_webpack-cli@4.10.0
       webpack-cli: 4.10.0_yqwwn4zy7x4owjsib6p4jmcbki
@@ -4499,7 +4502,7 @@ importers:
       selenium-webdriver: 4.2.0
       typescript: 4.5.4
       vsce: 2.6.5
-      vscode-extension-tester: 4.3.0_jvempbdbjtvhoodinnen4jiyly
+      vscode-extension-tester: 4.4.1_jvempbdbjtvhoodinnen4jiyly
       vscode-test: 1.6.1
       webpack: 5.70.0_webpack-cli@4.10.0
       webpack-cli: 4.10.0_yqwwn4zy7x4owjsib6p4jmcbki
@@ -4586,7 +4589,7 @@ importers:
       selenium-webdriver: 4.2.0
       typescript: 4.5.4
       vsce: 2.6.5
-      vscode-extension-tester: 4.3.0_jvempbdbjtvhoodinnen4jiyly
+      vscode-extension-tester: 4.4.1_jvempbdbjtvhoodinnen4jiyly
       vscode-test: 1.6.1
       webpack: 5.70.0_webpack-cli@4.10.0
       webpack-cli: 4.10.0_yqwwn4zy7x4owjsib6p4jmcbki
@@ -4757,7 +4760,7 @@ importers:
 
   scripts/bootstrap:
     specifiers:
-      "@kie-tools-build/build-env": workspace:*
+      "@kie-tools-scripts/build-env": workspace:*
       "@pnpm/filter-workspace-packages": ^5.0.27
       "@pnpm/find-workspace-packages": ^4.0.27
       "@pnpm/logger": ^4.0.0
@@ -4765,7 +4768,7 @@ importers:
       graphviz: ^0.0.9
       markdown-table: ^3.0.2
     devDependencies:
-      "@kie-tools-build/build-env": link:../build-env
+      "@kie-tools-scripts/build-env": link:../build-env
       "@pnpm/filter-workspace-packages": 5.0.27_@pnpm+logger@4.0.0
       "@pnpm/find-workspace-packages": 4.0.27_@pnpm+logger@4.0.0
       "@pnpm/logger": 4.0.0
@@ -9552,7 +9555,7 @@ packages:
     resolution:
       { integrity: sha512-iCdNPKU3IsYwRK9JieSYAiX0+aYDXOGAmrC/3/M7AqqSDKnWWVv07X+Zk1uFSL7cMTUYzv4lQRfohucEocn5/w== }
     dependencies:
-      "@types/react-dom": 18.0.6
+      "@types/react-dom": 17.0.17
       "@types/testing-library__dom": 7.5.0
       pretty-format: 25.5.0
     dev: true
@@ -11708,7 +11711,8 @@ packages:
     dev: true
 
   /batch/0.6.1:
-    resolution: { integrity: sha1-3DQxT05nkxgJP8dgJyUl+UvyXBY= }
+    resolution:
+      { integrity: sha512-x+VAiMRL6UPkx+kudNvxTl6hB2XNNCG2r+7wixVfIYwu/2HKRXimwQyaumLjMveWvT2Hkd/cAJw+QBMfJ/EKVw== }
     dev: true
 
   /bcrypt-pbkdf/1.0.2:
@@ -12854,7 +12858,8 @@ packages:
     dev: true
 
   /cookie-signature/1.0.6:
-    resolution: { integrity: sha1-4wOogrNCzD7oylE6eZmXNNqzriw= }
+    resolution:
+      { integrity: sha512-QADzlaHc8icV8I7vbaJXJwod9HWYp8uCqf1xa4OfNu1T7JVxQIrUgOWtHdNDtPiywmFbiS12VjotIXLrKM3orQ== }
     dev: true
 
   /cookie/0.4.0:
@@ -17818,7 +17823,8 @@ packages:
     dev: true
 
   /isobject/3.0.1:
-    resolution: { integrity: sha1-TkMekrEalzFjaqH5yNHMvP2reN8= }
+    resolution:
+      { integrity: sha512-WhB9zCku7EGTj/HQQRz5aUQEUeoQZH2bWcltRErOpymJ4boYE6wL9Tbr23krRPSZ+C5zqNSrSw+Cc7sZZ4b7vg== }
     engines: { node: ">=0.10.0" }
     dev: true
 
@@ -19671,7 +19677,8 @@ packages:
     dev: true
 
   /merge-descriptors/1.0.1:
-    resolution: { integrity: sha1-sAqqVW3YtEVoFQ7J0blT8/kMu2E= }
+    resolution:
+      { integrity: sha512-cCi6g3/Zr1iqQi6ySbseM1Xvooa98N0w31jzUYrXPX2xqObmFGHJ0tQ5u74H3mVh7wLouTseZyYIq39g8cNp1w== }
     dev: true
 
   /merge-stream/2.0.0:
@@ -20112,9 +20119,9 @@ packages:
     dependencies:
       monaco-editor: 0.33.0
 
-  /monaco-page-objects/2.0.0_rbm5onw4rdv3wixpn2nzow77om:
+  /monaco-page-objects/2.0.1_rbm5onw4rdv3wixpn2nzow77om:
     resolution:
-      { integrity: sha512-+nMHbbQIsxpBqn0semRpAaa24L+RORi+RKD3yoTIzZQLCBqhsgjksqX+c3mIFpvIQDLGUxS5MKZoo1xRpkKd2g== }
+      { integrity: sha512-OL2vzqA0YkKozdEEwj3fBYyJsv2jWZrG8nlKfho5epe//FQ7sY7QzaJ8OtfBD5mYGT7mwV1O649A/E33D5H6kA== }
     peerDependencies:
       selenium-webdriver: ^4.2.0
     dependencies:
@@ -20826,7 +20833,8 @@ packages:
     dev: true
 
   /once/1.4.0:
-    resolution: { integrity: sha1-WDsap3WWHUsROsF9nFC6753Xa9E= }
+    resolution:
+      { integrity: sha512-lNaJgI+2Q5URQBkccEKHTQOPaXdUxnZZElQTZY0MFUAuaEqe1E+Nyvgdz/aIyNi6Z9MzO5dv1H8n58/GELp3+w== }
     dependencies:
       wrappy: 1.0.2
 
@@ -24585,7 +24593,8 @@ packages:
     dev: true
 
   /strip-eof/1.0.0:
-    resolution: { integrity: sha1-u0P/VZim6wXYm1n80SnJgzE2Br8= }
+    resolution:
+      { integrity: sha512-7FCwGGmx8mD5xQd3RPUvnSpUXHM3BWuzjtpD4TXsfcZ9EL4azvVVUscFYwD9nx8Kh+uCBC00XBtAykoMHwTh8Q== }
     engines: { node: ">=0.10.0" }
 
   /strip-final-newline/2.0.0:
@@ -26192,20 +26201,20 @@ packages:
       yazl: 2.5.1
     dev: true
 
-  /vscode-extension-tester-locators/2.0.0_q7aqd6epe36dorcswu5mv7hqau:
+  /vscode-extension-tester-locators/2.0.0_c7mgiu2dpachgxdixrrvzoaz2i:
     resolution:
       { integrity: sha512-ljmevi7R1K5uCiMpstKydh/sCA9TEiohxLmzX30ZZU5qE/ZNWz/5oLrxTdqN3EcSVW9ZXhExvrQFvHoYZxy9Ng== }
     peerDependencies:
       monaco-page-objects: ^2.0.0
       selenium-webdriver: ^4.2.0
     dependencies:
-      monaco-page-objects: 2.0.0_rbm5onw4rdv3wixpn2nzow77om
+      monaco-page-objects: 2.0.1_rbm5onw4rdv3wixpn2nzow77om
       selenium-webdriver: 4.2.0
     dev: true
 
-  /vscode-extension-tester/4.3.0_jvempbdbjtvhoodinnen4jiyly:
+  /vscode-extension-tester/4.4.1_jvempbdbjtvhoodinnen4jiyly:
     resolution:
-      { integrity: sha512-Ih12B4j64l/XQMQ4SdWI+UpltzaCmHlX1u9yv9iIIUi/y401jgjQLbIoFxCUNas0SzG767hVjkzKsKbmzFPMXw== }
+      { integrity: sha512-CaxWk41sX1Q9rycFCN6GRmNzjY3DJl5dxVknbLxVbjeR9g0Qam+dIajVQIeHsdUVEKJdfPCA8xbpJOyl/bUFnA== }
     hasBin: true
     peerDependencies:
       mocha: ">=5.2.0"
@@ -26219,13 +26228,13 @@ packages:
       hpagent: 0.1.2
       js-yaml: 4.1.0
       mocha: 9.2.0
-      monaco-page-objects: 2.0.0_rbm5onw4rdv3wixpn2nzow77om
+      monaco-page-objects: 2.0.1_rbm5onw4rdv3wixpn2nzow77om
       sanitize-filename: 1.6.3
       selenium-webdriver: 4.2.0
       targz: 1.0.1
       unzip-stream: 0.3.1
       vsce: 2.6.5
-      vscode-extension-tester-locators: 2.0.0_q7aqd6epe36dorcswu5mv7hqau
+      vscode-extension-tester-locators: 2.0.0_c7mgiu2dpachgxdixrrvzoaz2i
     transitivePeerDependencies:
       - bufferutil
       - typescript
@@ -26840,7 +26849,8 @@ packages:
       strip-ansi: 6.0.1
 
   /wrappy/1.0.2:
-    resolution: { integrity: sha1-tSQ9jz7BqjXxNkYFvA0QNuMKtp8= }
+    resolution:
+      { integrity: sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ== }
 
   /write-file-atomic/3.0.3:
     resolution:
