@@ -193,7 +193,6 @@ export function DmnRunnerTable(props: Props) {
                 >
                   <Unitables
                     ref={unitablesRef}
-                    name={"DMN Runner Table"}
                     i18n={i18n.dmnRunner.table}
                     jsonSchema={dmnRunnerState.jsonSchema}
                     rowCount={rowCount}
