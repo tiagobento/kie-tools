@@ -56,6 +56,18 @@
       };
     </script>
   </head>
+  <style>
+    html {
+      height: 100vh;
+    }
+    body {
+      margin: 0;
+      height: 100vh;
+    }
+    #editorFrame {
+      height: calc(100vh - 43px); /* 43px is the height of the top header */
+    }
+  </style>
   <body>
     <div id="editor">
       Wait until the editor is loaded to open a DMN file:<br />
@@ -66,6 +78,6 @@
       <input type="button" id="download_btn" value="Download the diagram" onclick="download()" disabled />
     </div>
 
-    <iframe id="editorFrame" src="index.html" width="100%" height="880px" frameborder="0" scrolling="no"></iframe>
+    <iframe id="editorFrame" src="index.html" width="100%" frameborder="0" scrolling="no"></iframe>
   </body>
 </html>
