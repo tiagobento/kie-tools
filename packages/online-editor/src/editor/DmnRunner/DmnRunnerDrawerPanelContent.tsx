@@ -284,7 +284,7 @@ export function DmnRunnerDrawerPanelContent(props: Props) {
         return newData;
       });
     },
-    [dmnRunnerState.currentInputRowIndex, dmnRunnerDispatch.setInputRows]
+    [dmnRunnerDispatch, dmnRunnerState.currentInputRowIndex]
   );
 
   const [selectedRow, selectRow] = useState<string>("");
@@ -308,7 +308,7 @@ export function DmnRunnerDrawerPanelContent(props: Props) {
           Row {rowIndex + 1}
         </DropdownItem>
       )),
-    [dmnRunnerState.inputRows, dmnRunnerDispatch]
+    [dmnRunnerDispatch, dmnRunnerState.inputRows]
   );
 
   const formInputs = useMemo(() => {
