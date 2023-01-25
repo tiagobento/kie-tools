@@ -45,7 +45,7 @@ interface Props {
   workspaceFile: WorkspaceFile;
 }
 
-export function DmnRunnerTable(props: Props) {
+export function DmnRunnerTable({ isReady, setPanelOpen, dmnRunnerResults, setDmnRunnerResults, workspaceFile }: Props) {
   const extendedServices = useExtendedServices();
   const dmnRunnerState = useDmnRunnerState();
   const dmnRunnerDispatch = useDmnRunnerDispatch();
@@ -74,7 +74,7 @@ export function DmnRunnerTable(props: Props) {
 
   useEffect(() => {
     forceDrawerPanelRefresh();
-  }, [forceDrawerPanelRefresh, dmnRunnerState.inputRows, props.dmnRunnerResults]);
+  }, [forceDrawerPanelRefresh, dmnRunnerState.inputRows, dmnRunnerResults]);
 
   const onRowNumberUpdate = useCallback((rowQtt: number, operation?: BeeTableOperation, rowIndex?: number) => {
     setRowCount(rowQtt);
@@ -85,7 +85,7 @@ export function DmnRunnerTable(props: Props) {
 
   const updateDmnRunnerResults = useCallback(
     async (inputRows: Array<InputRow>, canceled: Holder<boolean>) => {
-      if (!props.isReady) {
+      if (!isReady) {
         dmnRunnerDispatch.setDidUpdateOutputRows(true);
         return;
       }
@@ -117,14 +117,14 @@ export function DmnRunnerTable(props: Props) {
             runnerResults.push(result.decisionResults);
           }
         }
-        props.setDmnRunnerResults(runnerResults);
+        setDmnRunnerResults(runnerResults);
         dmnRunnerDispatch.setDidUpdateOutputRows(true);
       } catch (err) {
         dmnRunnerDispatch.setDidUpdateOutputRows(true);
         return undefined;
       }
     },
-    [props.isReady, dmnRunnerDispatch, extendedServices.client]
+    [isReady, dmnRunnerDispatch, setDmnRunnerResults, extendedServices.client]
   );
 
   // Debounce to avoid multiple updates caused by uniforms library
@@ -146,9 +146,9 @@ export function DmnRunnerTable(props: Props) {
     (rowIndex: number) => {
       dmnRunnerDispatch.setMode(DmnRunnerMode.FORM);
       dmnRunnerDispatch.setCurrentInputRowIndex(rowIndex);
-      props.setPanelOpen(PanelId.NONE);
+      setPanelOpen(PanelId.NONE);
     },
-    [dmnRunnerDispatch, props.setPanelOpen]
+    [dmnRunnerDispatch, setPanelOpen]
   );
 
   useElementsThatStopKeyboardEventsPropagation(
@@ -182,9 +182,7 @@ export function DmnRunnerTable(props: Props) {
                           <DmnTableResults
                             i18n={i18n.dmnRunner.table}
                             jsonSchemaBridge={jsonSchemaBridge}
-                            rowCount={rowCount}
-                            results={props.dmnRunnerResults}
-                            onRowNumberUpdate={onRowNumberUpdate}
+                            results={dmnRunnerResults}
                           />
                         </div>
                       </DrawerPanelContent>
@@ -292,8 +290,8 @@ function useAnchoredUnitablesDrawerPanel(args: {
       return { didRefresh: false };
     }
 
-    const ADJUSTMENT_TO_HIDE_OUTPUTS_LINE_NUMBERS_IN_PX = 59;
-    const newTotalWidth = (outputsTable as HTMLElement).offsetWidth - ADJUSTMENT_TO_HIDE_OUTPUTS_LINE_NUMBERS_IN_PX;
+    const ADJUSTMENT_TO_HIDE_OUTPUTS_LINE_NUMBERS_IN_PX = 10;
+    const newTotalWidth = (outputsTable as HTMLElement).offsetWidth + ADJUSTMENT_TO_HIDE_OUTPUTS_LINE_NUMBERS_IN_PX;
     const newDrawerPanelMinSize = `min(50%, ${newTotalWidth + scrollbarWidth}px)`;
     setDrawerPanelMinSize((prev) => {
       // This is a nasty trick to force refreshing even when the value is the same.
