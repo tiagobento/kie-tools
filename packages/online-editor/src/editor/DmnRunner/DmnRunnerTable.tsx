@@ -26,14 +26,13 @@ import { DmnRunnerLoading } from "./DmnRunnerLoading";
 import { Holder } from "@kie-tools-core/react-hooks/dist/Holder";
 import { useCancelableEffect } from "@kie-tools-core/react-hooks/dist/useCancelableEffect";
 import { Drawer, DrawerContent, DrawerPanelContent } from "@patternfly/react-core/dist/js/components/Drawer";
-import { BeeTableOperation } from "@kie-tools/boxed-expression-component/dist/api";
 import { EmptyState, EmptyStateBody, EmptyStateIcon } from "@patternfly/react-core/dist/js/components/EmptyState";
 import { ExclamationIcon } from "@patternfly/react-icons/dist/js/icons/exclamation-icon";
 import { Text, TextContent } from "@patternfly/react-core/dist/js/components/Text";
 import { ErrorBoundary } from "@kie-tools/form";
 import { useOnlineI18n } from "../../i18n";
-import { Unitables, UnitablesApi } from "@kie-tools/unitables/dist/Unitables";
-import { DmnTableResults } from "@kie-tools/unitables-dmn/dist/DmnTableResults";
+import { Unitables } from "@kie-tools/unitables/dist/Unitables";
+import { DmnRunnerOutputsTable } from "@kie-tools/unitables-dmn/dist/DmnRunnerOutputsTable";
 import { DmnUnitablesValidator } from "@kie-tools/unitables-dmn/dist/DmnUnitablesValidator";
 
 interface Props {
@@ -47,11 +46,14 @@ interface Props {
 export function DmnRunnerTable({ isReady, setPanelOpen, dmnRunnerResults, setDmnRunnerResults, workspaceFile }: Props) {
   const dmnRunnerState = useDmnRunnerState();
   const dmnRunnerDispatch = useDmnRunnerDispatch();
-  const [rowCount, setRowCount] = useState<number>(dmnRunnerState.inputRows?.length ?? 1);
   const [dmnRunnerTableError, setDmnRunnerTableError] = useState<boolean>(false);
   const dmnRunnerTableErrorBoundaryRef = useRef<ErrorBoundary>(null);
-  const unitablesRef = useRef<UnitablesApi>(null);
+
   const { i18n } = useOnlineI18n();
+
+  const rowCount = useMemo(() => {
+    return dmnRunnerState.inputRows?.length ?? 1;
+  }, [dmnRunnerState.inputRows?.length]);
 
   const jsonSchemaBridge = useMemo(
     () => new DmnUnitablesValidator(i18n.dmnRunner.table).getBridge(dmnRunnerState.jsonSchema ?? {}),
@@ -73,13 +75,6 @@ export function DmnRunnerTable({ isReady, setPanelOpen, dmnRunnerResults, setDmn
   useEffect(() => {
     forceDrawerPanelRefresh();
   }, [forceDrawerPanelRefresh, dmnRunnerState.inputRows, dmnRunnerResults]);
-
-  const onRowNumberUpdate = useCallback((rowQtt: number, operation?: BeeTableOperation, rowIndex?: number) => {
-    setRowCount(rowQtt);
-    if (unitablesRef.current && operation !== undefined && rowIndex !== undefined) {
-      unitablesRef.current.operationHandler(operation, rowIndex);
-    }
-  }, []);
 
   const updateDmnRunnerResults = useCallback(
     async (inputRows: Array<InputRow>, canceled: Holder<boolean>) => {
@@ -167,6 +162,7 @@ export function DmnRunnerTable({ isReady, setPanelOpen, dmnRunnerResults, setDmn
               error={<DmnRunnerTableError />}
             >
               <Drawer isInline={true} isExpanded={true} className={"kie-tools--dmn-runner-table--drawer"}>
+                {/* DMN Runner Outputs */}
                 <DrawerContent
                   panelContent={
                     <>
@@ -177,7 +173,7 @@ export function DmnRunnerTable({ isReady, setPanelOpen, dmnRunnerResults, setDmn
                         defaultSize={drawerPanelDefaultSize}
                       >
                         <div ref={outputsContainerRef}>
-                          <DmnTableResults
+                          <DmnRunnerOutputsTable
                             i18n={i18n.dmnRunner.table}
                             jsonSchemaBridge={jsonSchemaBridge}
                             results={dmnRunnerResults}
@@ -187,8 +183,8 @@ export function DmnRunnerTable({ isReady, setPanelOpen, dmnRunnerResults, setDmn
                     </>
                   }
                 >
+                  {/* DMN Runner Inputs */}
                   <Unitables
-                    ref={unitablesRef}
                     i18n={i18n.dmnRunner.table}
                     jsonSchema={dmnRunnerState.jsonSchema}
                     rowCount={rowCount}
@@ -199,7 +195,6 @@ export function DmnRunnerTable({ isReady, setPanelOpen, dmnRunnerResults, setDmn
                     setError={dmnRunnerDispatch.setError}
                     jsonSchemaBridge={jsonSchemaBridge}
                     propertiesEntryPath={"definitions.InputSet"}
-                    onRowNumberUpdate={onRowNumberUpdate}
                     inputsContainerRef={inputsContainerRef}
                   />
                 </DrawerContent>
