@@ -69,7 +69,7 @@ export function DmnRunnerTable({ isReady, setPanelOpen }: Props) {
 
   useEffect(() => {
     forceDrawerPanelRefresh();
-  }, [forceDrawerPanelRefresh, dmnRunnerState.inputRows]);
+  }, [forceDrawerPanelRefresh, dmnRunnerState.jsonSchema]);
 
   const openRow = useCallback(
     (rowIndex: number) => {
@@ -133,6 +133,16 @@ export function DmnRunnerTable({ isReady, setPanelOpen }: Props) {
     )
   );
 
+  const inputsScrollableElementRef = useRef<{ current: HTMLDivElement | null }>({ current: null });
+  const outputsScrollableElementRef = useRef<{ current: HTMLDivElement | null }>({ current: null });
+
+  useEffect(() => {
+    inputsScrollableElementRef.current.current =
+      document.querySelector(".kie-tools--dmn-runner-table--drawer")?.querySelector(".pf-c-drawer__content") ?? null;
+    outputsScrollableElementRef.current.current =
+      document.querySelector(".kie-tools--dmn-runner-table--drawer")?.querySelector(".pf-c-drawer__panel-main") ?? null;
+  }, []);
+
   return (
     <div style={{ height: "100%" }}>
       <DmnRunnerLoading>
@@ -158,6 +168,7 @@ export function DmnRunnerTable({ isReady, setPanelOpen }: Props) {
                       >
                         <div ref={outputsContainerRef}>
                           <DmnRunnerOutputsTable
+                            scrollableParentRef={outputsScrollableElementRef.current}
                             i18n={i18n.dmnRunner.table}
                             jsonSchemaBridge={jsonSchemaBridge}
                             results={dmnRunnerResults}
@@ -169,17 +180,17 @@ export function DmnRunnerTable({ isReady, setPanelOpen }: Props) {
                 >
                   {/* DMN Runner Inputs */}
                   <Unitables
+                    scrollableParentRef={inputsScrollableElementRef.current}
                     i18n={i18n.dmnRunner.table}
                     jsonSchema={dmnRunnerState.jsonSchema}
-                    rowCount={rowCount}
                     openRow={openRow}
-                    inputRows={dmnRunnerState.inputRows}
-                    setInputRows={dmnRunnerDispatch.setInputRows}
+                    rows={dmnRunnerState.inputRows}
+                    setRows={dmnRunnerDispatch.setInputRows}
                     error={dmnRunnerState.error}
                     setError={dmnRunnerDispatch.setError}
                     jsonSchemaBridge={jsonSchemaBridge}
                     propertiesEntryPath={"definitions.InputSet"}
-                    inputsContainerRef={inputsContainerRef}
+                    containerRef={inputsContainerRef}
                   />
                 </DrawerContent>
               </Drawer>
