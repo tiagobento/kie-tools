@@ -18,12 +18,10 @@ import * as React from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDmnRunnerDispatch, useDmnRunnerState } from "./DmnRunnerContext";
 import { DmnRunnerMode } from "./DmnRunnerStatus";
-import { DecisionResult, InputRow } from "@kie-tools/form-dmn";
+import { DecisionResult } from "@kie-tools/form-dmn";
 import { PanelId } from "../EditorPageDockDrawer";
 import { useElementsThatStopKeyboardEventsPropagation } from "@kie-tools-core/keyboard-shortcuts/dist/channel";
-import { WorkspaceFile } from "@kie-tools-core/workspaces-git-fs/dist/context/WorkspacesContext";
 import { DmnRunnerLoading } from "./DmnRunnerLoading";
-import { Holder } from "@kie-tools-core/react-hooks/dist/Holder";
 import { useCancelableEffect } from "@kie-tools-core/react-hooks/dist/useCancelableEffect";
 import { Drawer, DrawerContent, DrawerPanelContent } from "@patternfly/react-core/dist/js/components/Drawer";
 import { EmptyState, EmptyStateBody, EmptyStateIcon } from "@patternfly/react-core/dist/js/components/EmptyState";
@@ -39,12 +37,9 @@ import { useExtendedServices } from "../../kieSandboxExtendedServices/KieSandbox
 interface Props {
   isReady?: boolean;
   setPanelOpen: React.Dispatch<React.SetStateAction<PanelId>>;
-  dmnRunnerResults: Array<DecisionResult[] | undefined>;
-  setDmnRunnerResults: React.Dispatch<React.SetStateAction<Array<DecisionResult[] | undefined>>>;
-  workspaceFile: WorkspaceFile;
 }
 
-export function DmnRunnerTable({ isReady, setPanelOpen, dmnRunnerResults, setDmnRunnerResults, workspaceFile }: Props) {
+export function DmnRunnerTable({ isReady, setPanelOpen }: Props) {
   const extendedServices = useExtendedServices();
   const dmnRunnerState = useDmnRunnerState();
   const dmnRunnerDispatch = useDmnRunnerDispatch();
@@ -76,66 +71,7 @@ export function DmnRunnerTable({ isReady, setPanelOpen, dmnRunnerResults, setDmn
 
   useEffect(() => {
     forceDrawerPanelRefresh();
-  }, [forceDrawerPanelRefresh, dmnRunnerState.inputRows, dmnRunnerResults]);
-
-  const updateDmnRunnerResults = useCallback(
-    async (inputRows: Array<InputRow>, canceled: Holder<boolean>) => {
-      if (!isReady) {
-        dmnRunnerDispatch.setDidUpdateOutputRows(true);
-        return;
-      }
-
-      try {
-        if (canceled.get()) {
-          return;
-        }
-        const payloads = await Promise.all(inputRows.map((data) => dmnRunnerDispatch.preparePayload(data)));
-        const results = await Promise.all(
-          payloads.map((payload) => {
-            if (payload === undefined) {
-              return;
-            }
-            return extendedServices.client.result(payload);
-          })
-        );
-        if (canceled.get()) {
-          return;
-        }
-
-        const runnerResults: Array<DecisionResult[] | undefined> = [];
-        for (const result of results) {
-          if (Object.hasOwnProperty.call(result, "details") && Object.hasOwnProperty.call(result, "stack")) {
-            dmnRunnerDispatch.setError(true);
-            break;
-          }
-          if (result) {
-            runnerResults.push(result.decisionResults);
-          }
-        }
-        setDmnRunnerResults(runnerResults);
-        dmnRunnerDispatch.setDidUpdateOutputRows(true);
-      } catch (err) {
-        dmnRunnerDispatch.setDidUpdateOutputRows(true);
-        return undefined;
-      }
-    },
-    [isReady, dmnRunnerDispatch, setDmnRunnerResults, extendedServices.client]
-  );
-
-  // Debounce to avoid multiple updates caused by uniforms library
-  useCancelableEffect(
-    useCallback(
-      ({ canceled }) => {
-        const timeout = setTimeout(() => {
-          updateDmnRunnerResults(dmnRunnerState.inputRows, canceled);
-        }, 100);
-        return () => {
-          clearTimeout(timeout);
-        };
-      },
-      [dmnRunnerState.inputRows, updateDmnRunnerResults]
-    )
-  );
+  }, [forceDrawerPanelRefresh, dmnRunnerState.inputRows]);
 
   const openRow = useCallback(
     (rowIndex: number) => {
@@ -146,9 +82,57 @@ export function DmnRunnerTable({ isReady, setPanelOpen, dmnRunnerResults, setDmn
     [dmnRunnerDispatch, setPanelOpen]
   );
 
-  useElementsThatStopKeyboardEventsPropagation(
-    window,
-    useMemo(() => [".kie-tools--dmn-runner-table--drawer"], [])
+  // FIXME: Tiago -> !
+  // useElementsThatStopKeyboardEventsPropagation(
+  //   window,
+  //   useMemo(() => [".kie-tools--dmn-runner-table--drawer"], [])
+  // );
+
+  const [dmnRunnerResults, setDmnRunnerResults] = useState<Array<DecisionResult[] | undefined>>([]);
+  useCancelableEffect(
+    useCallback(
+      ({ canceled }) => {
+        if (!isReady) {
+          dmnRunnerDispatch.setDidUpdateOutputRows(true);
+          return;
+        }
+
+        Promise.all(dmnRunnerState.inputRows.map((data) => dmnRunnerDispatch.preparePayload(data)))
+          .then((payloads) =>
+            Promise.all(
+              payloads.map((payload) => {
+                if (canceled.get() || payload === undefined) {
+                  return;
+                }
+                return extendedServices.client.result(payload);
+              })
+            )
+          )
+          .then((results) => {
+            if (canceled.get()) {
+              return;
+            }
+
+            const runnerResults: Array<DecisionResult[] | undefined> = [];
+            for (const result of results) {
+              if (Object.hasOwnProperty.call(result, "details") && Object.hasOwnProperty.call(result, "stack")) {
+                dmnRunnerDispatch.setError(true);
+                break;
+              }
+              if (result) {
+                runnerResults.push(result.decisionResults);
+              }
+            }
+
+            setDmnRunnerResults(runnerResults);
+            dmnRunnerDispatch.setDidUpdateOutputRows(true);
+          })
+          .catch((e) => {
+            dmnRunnerDispatch.setDidUpdateOutputRows(true);
+          });
+      },
+      [isReady, dmnRunnerDispatch, dmnRunnerState.inputRows, extendedServices.client]
+    )
   );
 
   return (
