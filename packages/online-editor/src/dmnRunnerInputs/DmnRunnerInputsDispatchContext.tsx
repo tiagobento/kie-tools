@@ -24,7 +24,7 @@ interface DmnInputsDispatchContextType {
   deletePersistedInputRows: (workspaceFile: WorkspaceFile) => void;
   updatePersistedInputRows: (
     workspaceFile: WorkspaceFile,
-    newInputRows: Array<InputRow> | ((previous: Array<InputRow>) => Array<InputRow>)
+    newInputRowsAction: React.SetStateAction<InputRow[]>
   ) => void;
   getInputRowsForDownload: (workspaceFile: WorkspaceFile) => Promise<Blob | undefined>;
   uploadInputRows: (workspaceFile: WorkspaceFile, file: File) => void;
