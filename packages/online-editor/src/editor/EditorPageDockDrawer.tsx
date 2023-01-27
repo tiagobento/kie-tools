@@ -166,7 +166,7 @@ export const EditorPageDockDrawer = React.forwardRef<
                       <NotificationsPanel ref={notificationsPanelRef} tabNames={notificationsPanelTabNames} />
                     )}
                     {panel === PanelId.DMN_RUNNER_TABULAR && isDmnTableMode && (
-                      <DmnRunnerTable setPanelOpen={setPanel} isReady={props.isEditorReady} />
+                      <DmnRunnerTable setPanel={setPanel} isReady={props.isEditorReady} />
                     )}
                   </>
                 )}
