@@ -36,10 +36,10 @@ import { useExtendedServices } from "../../kieSandboxExtendedServices/KieSandbox
 
 interface Props {
   isReady?: boolean;
-  setPanelOpen: React.Dispatch<React.SetStateAction<PanelId>>;
+  setPanel: React.Dispatch<React.SetStateAction<PanelId>>;
 }
 
-export function DmnRunnerTable({ isReady, setPanelOpen }: Props) {
+export function DmnRunnerTable({ isReady, setPanel }: Props) {
   const extendedServices = useExtendedServices();
   const dmnRunnerState = useDmnRunnerState();
   const dmnRunnerDispatch = useDmnRunnerDispatch();
@@ -77,9 +77,9 @@ export function DmnRunnerTable({ isReady, setPanelOpen }: Props) {
     (rowIndex: number) => {
       dmnRunnerDispatch.setMode(DmnRunnerMode.FORM);
       dmnRunnerDispatch.setCurrentInputRowIndex(rowIndex);
-      setPanelOpen(PanelId.NONE);
+      setPanel(PanelId.NONE);
     },
-    [dmnRunnerDispatch, setPanelOpen]
+    [dmnRunnerDispatch, setPanel]
   );
 
   // FIXME: Tiago -> !
