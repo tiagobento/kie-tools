@@ -39,17 +39,33 @@ export const feelTheme = (): Monaco.editor.IStandaloneThemeData => {
 
 export const feelTokensConfig = (): Monaco.languages.IMonarchLanguage => {
   return {
+    keywords: [
+      "for",
+      "in",
+      "return",
+      "if",
+      "then",
+      "else",
+      "some",
+      "every",
+      "satisfies",
+      "instance",
+      "of",
+      "function",
+      "external",
+      "or",
+      "and",
+      "between",
+      "not",
+      "null",
+    ],
     tokenizer: {
       root: [
         [/(?:true|false)/, "feel-boolean"],
         [/[0-9]+/, "feel-numeric"],
         [/(?:"(?:.*?)")/, "feel-string"],
         [/(?:(?:[a-z ]+\()|(?:\()|(?:\)))/, "feel-function"],
-        [/(?:if|then|else)/, "feel-keyword"],
-        [
-          /(?:for|in|return|if|then|else|some|every|satisfies|instance|of|function|external|or|and|between|not|null)/,
-          "feel-keyword",
-        ],
+        [/[\w$]*[a-z_$][\w$]*/, { cases: { "@keywords": "feel-keyword" } }],
       ],
     },
   };
