@@ -20,7 +20,6 @@ import { PopoverPosition } from "@patternfly/react-core/dist/js/components/Popov
 import * as _ from "lodash";
 import * as React from "react";
 import { useCallback } from "react";
-import { useBoxedExpressionEditorI18n } from "../../i18n";
 import { useBoxedExpressionEditor } from "../BoxedExpressionEditor/BoxedExpressionEditorContext";
 import { FunctionExpressionDefinitionKind } from "../../api";
 
@@ -45,6 +44,73 @@ export const FunctionKindSelector: React.FunctionComponent<FunctionKindSelectorP
     [onFunctionKindSelect]
   );
 
+  function iconForFunctionKind(functionKind: FunctionExpressionDefinitionKind): {
+    icon: React.ReactNode;
+    description: String;
+  } {
+    switch (functionKind) {
+      case FunctionExpressionDefinitionKind.Feel:
+        return {
+          icon: (
+            <span
+              style={{
+                fontSize: "0.8em",
+                fontWeight: "bold",
+              }}
+            >
+              FEEL
+            </span>
+          ),
+          description:
+            "Define function as another nested boxed 'Friendly Enough Expression Language (FEEL)' expression.",
+        };
+      case FunctionExpressionDefinitionKind.Java:
+        return {
+          icon: (
+            <span
+              style={{
+                fontSize: "0.8em",
+                fontWeight: "bold",
+              }}
+            >
+              JAVA
+            </span>
+          ),
+          description:
+            "Define full qualified java class name and method signature to invoke. For the method signature, please omit parameters name, keep just their data types.",
+        };
+      case FunctionExpressionDefinitionKind.Pmml:
+        return {
+          icon: (
+            <span
+              style={{
+                fontSize: "0.8em",
+                fontWeight: "bold",
+              }}
+            >
+              PMML
+            </span>
+          ),
+          description:
+            "Define 'Predictive Model Markup Language (PMML)' model to invoke. Editor parses and offers you all your PMML models from the workspace.",
+        };
+      default:
+        return {
+          icon: (
+            <span
+              style={{
+                fontSize: "0.8em",
+                fontWeight: "bold",
+              }}
+            >
+              FEEL
+            </span>
+          ),
+          description: "a",
+        };
+    }
+  }
+
   return (
     <PopoverMenu
       appendTo={editorRef?.current ?? undefined}
@@ -55,9 +121,13 @@ export const FunctionKindSelector: React.FunctionComponent<FunctionKindSelectorP
         <Menu onSelect={functionKindSelectionCallback(hide)}>
           <MenuList>
             {_.map(Object.values(FunctionExpressionDefinitionKind), (key) => (
-              <MenuItem key={key} itemId={key} data-ouia-component-id={key}>
-                {key}
-              </MenuItem>
+              <MenuItem
+                key={key}
+                itemId={key}
+                data-ouia-component-id={key}
+                icon={iconForFunctionKind(key).icon}
+                description={iconForFunctionKind(key).description}
+              />
             ))}
           </MenuList>
         </Menu>
