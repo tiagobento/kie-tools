@@ -154,26 +154,18 @@ export function BeeTableHeader<R extends object>({
   );
 
   const renderColumn = useCallback<
-    (
-      rowIndex: number,
-      column: ReactTable.ColumnInstance<R>,
-      columnIndex: number,
-      done: Set<ReactTable.ColumnInstance<R>>
-    ) => JSX.Element
+    (rowIndex: number, column: ReactTable.ColumnInstance<R>, columnIndex: number, rowSpan: number) => JSX.Element
   >(
-    (rowIndex, _column, columnIndex, done) => {
+    (rowIndex, _column, columnIndex, rowSpan) => {
       const column = _column;
-      const rowSpan = 1;
-
       const thRef = React.createRef<HTMLTableCellElement>();
-
       const ret = column.isRowIndexColumn ? (
         <React.Fragment key={"row-index-column"}>
           {shouldRenderRowIndexColumn && renderRowIndexColumn(column, rowIndex)}
         </React.Fragment>
       ) : (
         <React.Fragment key={getColumnKey(column)}>
-          {!done.has(column) && (
+          {rowSpan > 0 && (
             <BeeTableThResizable
               firstColumnIndexOfGroup={reactTableInstance.allColumns.indexOf(column.columns?.[0] ?? column)}
               forwardRef={thRef}
@@ -239,7 +231,6 @@ export function BeeTableHeader<R extends object>({
         </React.Fragment>
       );
 
-      done.add(column);
       return ret;
     },
     [
@@ -263,17 +254,35 @@ export function BeeTableHeader<R extends object>({
       ? _.dropRight(reactTableInstance.headerGroups)
       : reactTableInstance.headerGroups;
 
-    const done = new Set<ReactTable.ColumnInstance<R>>();
+    const processedHeaders: Set<String> = new Set();
+
     return headerGroupsToRender.map((headerGroup, headerGroupLevel) => {
       // rowIndex === -1 --> Last headerGroup
       // rowIndex === -2 --> Second to last headerGroup
       // ... and so on
+
       const rowIndex = -(headerGroupsToRender.length - 1 - headerGroupLevel + 1);
 
       const { key, ...props } = { ...headerGroup.getHeaderGroupProps(), style: {} };
       return (
         <tr key={key} {...props}>
-          {headerGroup.headers.map((column, columnIndex) => renderColumn(rowIndex, column, columnIndex, done))}
+          {headerGroup.headers.map((column, columnIndex) => {
+            let lastLevelPlaceholderDepth = 1;
+            let lastLevelPlaceholder = column;
+
+            while (lastLevelPlaceholder.placeholderOf) {
+              lastLevelPlaceholderDepth++;
+              lastLevelPlaceholder = lastLevelPlaceholder.placeholderOf as ReactTable.HeaderGroup<R>;
+              processedHeaders.add(lastLevelPlaceholder.id);
+            }
+
+            return renderColumn(
+              rowIndex,
+              column.placeholderOf ? lastLevelPlaceholder : column,
+              columnIndex,
+              processedHeaders.has(column.id) ? 0 : lastLevelPlaceholderDepth
+            );
+          })}
         </tr>
       );
     });
@@ -281,11 +290,10 @@ export function BeeTableHeader<R extends object>({
 
   const renderAtLevelInHeaderGroups = useCallback(
     (headerGroupLevel: number) => {
-      const done = new Set<ReactTable.ColumnInstance<R>>();
       return (
         <tr>
           {_.nth(reactTableInstance.headerGroups, headerGroupLevel)?.headers.map((column, columnIndex) =>
-            renderColumn(headerGroupLevel, column, columnIndex, done)
+            renderColumn(headerGroupLevel, column, columnIndex, 1)
           )}
         </tr>
       );
