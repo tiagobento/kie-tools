@@ -44,41 +44,6 @@ public class BoxedExpressionService {
     }
 
     @JsMethod
-    public static void broadcastLiteralExpressionDefinition(final LiteralProps literalProps) {
-        expressionEditor.broadcastLiteralExpressionDefinition(literalProps);
-    }
-
-    @JsMethod
-    public static void broadcastContextExpressionDefinition(final ContextProps contextProps) {
-        expressionEditor.broadcastContextExpressionDefinition(contextProps);
-    }
-
-    @JsMethod
-    public static void broadcastRelationExpressionDefinition(final RelationProps relationProps) {
-        expressionEditor.broadcastRelationExpressionDefinition(relationProps);
-    }
-
-    @JsMethod
-    public static void broadcastListExpressionDefinition(final ListProps listProps) {
-        expressionEditor.broadcastListExpressionDefinition(listProps);
-    }
-
-    @JsMethod
-    public static void broadcastInvocationExpressionDefinition(final InvocationProps invocationProps) {
-        expressionEditor.broadcastInvocationExpressionDefinition(invocationProps);
-    }
-
-    @JsMethod
-    public static void broadcastFunctionExpressionDefinition(final FunctionProps functionProps) {
-        expressionEditor.broadcastFunctionExpressionDefinition(functionProps);
-    }
-
-    @JsMethod
-    public static void broadcastDecisionTableExpressionDefinition(final DecisionTableProps decisionTableProps) {
-        expressionEditor.broadcastDecisionTableExpressionDefinition(decisionTableProps);
-    }
-
-    @JsMethod
     public static void updateExpression(final ExpressionProps expressionProps) {
         expressionEditor.updateExpression(expressionProps);
     }
