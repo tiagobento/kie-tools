@@ -538,6 +538,53 @@ public class ExpressionEditorViewImpl implements ExpressionEditorView {
                                                                         getHasName()));
     }
 
+    public void updateExpression(final ExpressionProps expressionProps) {
+        createUndoCommand();
+
+        ExpressionType logicType = ExpressionType.getTypeByText(expressionProps.logicType);
+        switch (logicType) {
+            case LITERAL_EXPRESSION:
+                broadcastLiteralExpressionDefinition((LiteralProps) expressionProps);
+                break;
+            case RELATION:
+                broadcastRelationExpressionDefinition((RelationProps) expressionProps);
+                break;
+            case CONTEXT:
+                broadcastContextExpressionDefinition((ContextProps) expressionProps);
+                break;
+            case DECISION_TABLE:
+                broadcastDecisionTableExpressionDefinition((DecisionTableProps) expressionProps);
+                break;
+            case INVOCATION:
+                broadcastInvocationExpressionDefinition((InvocationProps) expressionProps);
+                break;
+            case LIST:
+                broadcastListExpressionDefinition((ListProps) expressionProps);
+                break;
+            case FUNCTION:
+                broadcastFunctionExpressionDefinition((FunctionProps) expressionProps);
+                break;
+            case UNDEFINED:
+                // Ignore
+                break;
+            default:
+                throw new UnsupportedOperationException("Logic type: " + logicType + " is currently unsupported");
+        }
+    }
+
+    /*
+    public ExpressionProps getAutofilledDecisionTable(final DecisionTableProps decisionTableProps) {
+        return FillExpressionCommand().g
+
+        executeExpressionCommand(new FillDecisionTableExpressionCommand(getHasExpression(),
+                decisionTableProps,
+                getEditorSelectedEvent(),
+                getNodeUUID(),
+                this,
+                itemDefinitionUtils,
+                getHasName()));
+    } */
+
     public void openManageDataType() {
         dataTypePageActiveEvent.fire(new DataTypePageTabActiveEvent());
     }
@@ -706,7 +753,10 @@ public class ExpressionEditorViewImpl implements ExpressionEditorView {
         return nodeUUID;
     }
 
-    public void createUndoCommand() {
+    /**
+     * It creates an UNDO command with the current expression status
+     */
+    protected void createUndoCommand() {
         final CompositeCommand.Builder<AbstractCanvasHandler, CanvasViolation> commandBuilder = createCommandBuilder();
         final SaveCurrentStateCommand expressionCommand = new SaveCurrentStateCommand(getHasExpression(),
                                                                                       getEditorSelectedEvent(),

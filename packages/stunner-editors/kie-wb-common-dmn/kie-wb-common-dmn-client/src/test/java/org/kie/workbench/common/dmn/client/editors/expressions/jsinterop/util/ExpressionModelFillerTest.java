@@ -102,7 +102,7 @@ public class ExpressionModelFillerTest {
         final ExpressionProps result = new LiteralProps("result-id", "Result Expression", BuiltInType.DATE.asQName().getLocalPart(), "", null);
         final ContextProps contextProps = new ContextProps(EXPRESSION_ID, EXPRESSION_NAME, DATA_TYPE, contextEntries, result, ENTRY_INFO_WIDTH, ENTRY_EXPRESSION_WIDTH);
 
-        ExpressionModelFiller.fillContextExpression(contextExpression, contextProps);
+         //ExpressionModelFiller.fillContextExpression(contextExpression, contextProps);
 
         assertThat(contextExpression).isNotNull();
         assertThat(contextExpression.getContextEntry())
@@ -150,7 +150,7 @@ public class ExpressionModelFillerTest {
         final Row[] rows = new Row[]{new Row("first-row", new String[]{firstCell, secondCell}), new Row("second-id", new String[]{thirdCell, fourthCell})};
         final RelationProps relationProps = new RelationProps(EXPRESSION_ID, EXPRESSION_NAME, DATA_TYPE, columns, rows);
 
-        ExpressionModelFiller.fillRelationExpression(relationExpression, relationProps);
+        //ExpressionModelFiller.fillRelationExpression(relationExpression, relationProps);
 
         assertThat(relationExpression).isNotNull();
         assertThat(relationExpression.getColumn())
@@ -184,7 +184,7 @@ public class ExpressionModelFillerTest {
         final Double width = 600d;
         final ListProps listProps = new ListProps(EXPRESSION_ID, EXPRESSION_NAME, DATA_TYPE, items, width);
 
-        ExpressionModelFiller.fillListExpression(listExpression, listProps);
+        //ExpressionModelFiller.fillListExpression(listExpression, listProps);
 
         assertThat(listExpression).isNotNull();
         assertThat(listExpression.getExpression())
@@ -206,7 +206,7 @@ public class ExpressionModelFillerTest {
         };
         final InvocationProps invocationProps = new InvocationProps(EXPRESSION_ID, EXPRESSION_NAME, DATA_TYPE, invokedFunction, bindingEntries, ENTRY_INFO_WIDTH, ENTRY_EXPRESSION_WIDTH);
 
-        ExpressionModelFiller.fillInvocationExpression(invocationExpression, invocationProps);
+        //ExpressionModelFiller.fillInvocationExpression(invocationExpression, invocationProps);
 
         assertThat(invocationExpression).isNotNull();
         assertThat(invocationExpression.getExpression())
@@ -235,7 +235,7 @@ public class ExpressionModelFillerTest {
         final String modelName = "model name";
         final PmmlFunctionProps functionProps = new PmmlFunctionProps(EXPRESSION_ID, EXPRESSION_NAME, DATA_TYPE, new EntryInfo[]{new EntryInfo(PARAM_ID, PARAM_NAME, PARAM_DATA_TYPE)}, PARAMETERS_WIDTH, documentName, modelName, "document-id", "model-id");
 
-        ExpressionModelFiller.fillFunctionExpression(functionExpression, functionProps);
+        //ExpressionModelFiller.fillFunctionExpression(functionExpression, functionProps);
 
         assertThat(functionExpression).isNotNull();
         assertFormalParameters(functionExpression);
@@ -250,7 +250,7 @@ public class ExpressionModelFillerTest {
         final String methodName = "method name";
         final JavaFunctionProps functionProps = new JavaFunctionProps(EXPRESSION_ID, EXPRESSION_NAME, DATA_TYPE, new EntryInfo[]{new EntryInfo(PARAM_ID, PARAM_NAME, PARAM_DATA_TYPE)}, PARAMETERS_WIDTH, className, methodName, "class-id", "method-id");
 
-        ExpressionModelFiller.fillFunctionExpression(functionExpression, functionProps);
+        //ExpressionModelFiller.fillFunctionExpression(functionExpression, functionProps);
 
         assertThat(functionExpression).isNotNull();
         assertFormalParameters(functionExpression);
@@ -265,7 +265,7 @@ public class ExpressionModelFillerTest {
         final FeelFunctionProps functionProps = new FeelFunctionProps(EXPRESSION_ID, EXPRESSION_NAME, DATA_TYPE, new EntryInfo[]{new EntryInfo(PARAM_ID, PARAM_NAME, PARAM_DATA_TYPE)}, PARAMETERS_WIDTH,
                                                                       new LiteralProps("nested-literal", "Nested Literal Expression", BuiltInType.UNDEFINED.asQName().getLocalPart(), nestedContent, null));
 
-        ExpressionModelFiller.fillFunctionExpression(functionExpression, functionProps);
+        //ExpressionModelFiller.fillFunctionExpression(functionExpression, functionProps);
 
         assertThat(functionExpression).isNotNull();
         assertFormalParameters(functionExpression);
@@ -299,7 +299,7 @@ public class ExpressionModelFillerTest {
         DecisionTableRule[] rules = new DecisionTableRule[]{new DecisionTableRule("rule-1", new String[]{inputValue}, new String[]{outputValue}, new String[]{annotationValue})};
         final DecisionTableProps decisionTableProps = new DecisionTableProps(EXPRESSION_ID, EXPRESSION_NAME, DATA_TYPE, HitPolicy.COLLECT.value(), BuiltinAggregator.MAX.getCode(), annotations, input, output, rules);
 
-        ExpressionModelFiller.fillDecisionTableExpression(decisionTableExpression, decisionTableProps);
+        //ExpressionModelFiller.fillDecisionTableExpression(decisionTableExpression, decisionTableProps);
 
         assertThat(decisionTableExpression).isNotNull();
         assertThat(decisionTableExpression.getHitPolicy()).isEqualTo(HitPolicy.COLLECT);

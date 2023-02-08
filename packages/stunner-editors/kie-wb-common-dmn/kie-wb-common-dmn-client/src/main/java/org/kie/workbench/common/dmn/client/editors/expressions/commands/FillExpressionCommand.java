@@ -47,7 +47,7 @@ public abstract class FillExpressionCommand<E extends ExpressionProps> {
     private final ItemDefinitionUtils itemDefinitionUtils;
     private final Optional<HasName> hasName;
 
-    public FillExpressionCommand(final HasExpression hasExpression,
+    protected FillExpressionCommand(final HasExpression hasExpression,
                                  final E expressionProps,
                                  final Event<ExpressionEditorChanged> editorSelectedEvent,
                                  final String nodeUUID,
@@ -69,6 +69,10 @@ public abstract class FillExpressionCommand<E extends ExpressionProps> {
 
     public E getExpressionProps() {
         return expressionProps;
+    }
+
+    protected ItemDefinitionUtils getItemDefinitionUtils() {
+        return itemDefinitionUtils;
     }
 
     public ExpressionEditorView getView() {

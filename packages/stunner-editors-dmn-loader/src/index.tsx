@@ -63,12 +63,25 @@ const BoxedExpressionEditorWrapper: React.FunctionComponent<BoxedExpressionEdito
   pmmlParams,
 }: BoxedExpressionEditorProps) => {
   const [expression, setExpression] = useState<ExpressionDefinition>(expressionDefinition);
+  const [source, setSource] = useState<"gwt" | "react">("gwt");
 
   useEffect(() => {
-    console.info("DMN Editor changed the expression. Updating internal state with:");
+    console.info("GWT layer changed the expression. Updating internal state with:");
     console.info(JSON.stringify(expressionDefinition));
+    setSource("gwt");
     setExpression(expressionDefinition);
   }, [expressionDefinition]);
+
+  useEffect(() => {
+    console.log("===================================================");
+    console.info("Expression is changed. Source is: " + source);
+    console.info(JSON.stringify(expressionDefinition));
+
+    if (source === "react") {
+      console.info("Sending notification to GWT layer to create undo command and update the expression ");
+      window.beeApiWrapper?.updateExpression(expression);
+    }
+  }, [expression]);
 
   const beeGwtService: BeeGwtService = {
     openManageDataType(): void {
@@ -84,43 +97,11 @@ const BoxedExpressionEditorWrapper: React.FunctionComponent<BoxedExpressionEdito
 
   const setExpressionNotifyingUserAction = useCallback(
     (newExpressionAction: React.SetStateAction<ExpressionDefinition>) => {
+      setSource("react");
       setExpression((prev) => {
         const n = typeof newExpressionAction === "function" ? newExpressionAction(prev) : newExpressionAction;
-
         console.info("Notifying DMN Editor that expression is changing with:");
         console.info(JSON.stringify(n));
-        window.beeApiWrapper?.createUndoCommand();
-
-        const logicType = n.logicType;
-        switch (logicType) {
-          case ExpressionDefinitionLogicType.Literal:
-            window.beeApiWrapper?.broadcastLiteralExpressionDefinition?.(n);
-            break;
-          case ExpressionDefinitionLogicType.Relation:
-            window.beeApiWrapper?.broadcastRelationExpressionDefinition?.(n);
-            break;
-          case ExpressionDefinitionLogicType.Context:
-            window.beeApiWrapper?.broadcastContextExpressionDefinition?.(n);
-            break;
-          case ExpressionDefinitionLogicType.DecisionTable:
-            window.beeApiWrapper?.broadcastDecisionTableExpressionDefinition?.(n);
-            break;
-          case ExpressionDefinitionLogicType.Invocation:
-            window.beeApiWrapper?.broadcastInvocationExpressionDefinition?.(n);
-            break;
-          case ExpressionDefinitionLogicType.List:
-            window.beeApiWrapper?.broadcastListExpressionDefinition?.(n);
-            break;
-          case ExpressionDefinitionLogicType.Function:
-            window.beeApiWrapper?.broadcastFunctionExpressionDefinition?.(n);
-            break;
-          case ExpressionDefinitionLogicType.Undefined:
-            // Ignore
-            break;
-          default:
-            assertUnreachable(logicType);
-        }
-
         return n;
       });
     },
@@ -193,7 +174,3 @@ const renderImportJavaClasses = (selector: string) => {
 };
 
 export { renderBoxedExpressionEditor, renderImportJavaClasses };
-
-function assertUnreachable(logicType: never) {
-  throw new Error("Shouldn't reach this point.");
-}

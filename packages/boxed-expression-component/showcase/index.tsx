@@ -125,6 +125,10 @@ export const App: React.FunctionComponent = () => {
     setExpressionString(JSON.stringify(expression));
   }, [expression]);
 
+  useEffect(() => {
+    console.log("Expression changed!!!!!!!!!!!");
+  }, [expression]);
+
   const emptyRef = React.useRef<HTMLElement>(null);
   return (
     // <div className="showcase">
