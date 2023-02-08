@@ -20,14 +20,7 @@ import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsType;
 import org.kie.workbench.common.dmn.client.editors.expressions.ExpressionEditorViewImpl;
-import org.kie.workbench.common.dmn.client.editors.expressions.jsinterop.props.ContextProps;
-import org.kie.workbench.common.dmn.client.editors.expressions.jsinterop.props.DecisionTableProps;
 import org.kie.workbench.common.dmn.client.editors.expressions.jsinterop.props.ExpressionProps;
-import org.kie.workbench.common.dmn.client.editors.expressions.jsinterop.props.FunctionProps;
-import org.kie.workbench.common.dmn.client.editors.expressions.jsinterop.props.InvocationProps;
-import org.kie.workbench.common.dmn.client.editors.expressions.jsinterop.props.ListProps;
-import org.kie.workbench.common.dmn.client.editors.expressions.jsinterop.props.LiteralProps;
-import org.kie.workbench.common.dmn.client.editors.expressions.jsinterop.props.RelationProps;
 
 @JsType(namespace = JsPackage.GLOBAL, name = "beeApiWrapper")
 public class BoxedExpressionService {
