@@ -48,12 +48,12 @@ public abstract class FillExpressionCommand<E extends ExpressionProps> {
     private final Optional<HasName> hasName;
 
     protected FillExpressionCommand(final HasExpression hasExpression,
-                                 final E expressionProps,
-                                 final Event<ExpressionEditorChanged> editorSelectedEvent,
-                                 final String nodeUUID,
-                                 final ExpressionEditorView view,
-                                 final ItemDefinitionUtils itemDefinitionUtils,
-                                 final Optional<HasName> hasName) {
+                                    final E expressionProps,
+                                    final Event<ExpressionEditorChanged> editorSelectedEvent,
+                                    final String nodeUUID,
+                                    final ExpressionEditorView view,
+                                    final ItemDefinitionUtils itemDefinitionUtils,
+                                    final Optional<HasName> hasName) {
         this.hasExpression = hasExpression;
         this.expressionProps = expressionProps;
         this.nodeUUID = nodeUUID;
