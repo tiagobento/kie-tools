@@ -62,6 +62,7 @@ import org.kie.workbench.common.dmn.client.editors.expressions.jsinterop.props.L
 import org.kie.workbench.common.dmn.client.editors.expressions.jsinterop.props.LiteralProps;
 import org.kie.workbench.common.dmn.client.editors.expressions.types.ExpressionEditorDefinition;
 import org.kie.workbench.common.dmn.client.editors.expressions.types.ExpressionEditorDefinitions;
+import org.kie.workbench.common.dmn.client.editors.expressions.types.ExpressionType;
 import org.kie.workbench.common.dmn.client.editors.expressions.types.function.supplementary.pmml.PMMLDocumentMetadataProvider;
 import org.kie.workbench.common.dmn.client.editors.types.DataTypePageTabActiveEvent;
 import org.kie.workbench.common.dmn.client.editors.types.common.ItemDefinitionUtils;
@@ -596,15 +597,14 @@ public class ExpressionEditorViewImplTest {
         assertEquals(NODE_UUID, command.getNodeUUID());
     }
 
-    /*
     @Test
-    public void testBroadcastLiteralExpressionDefinition() {
-
-        final LiteralProps props = mock(LiteralProps.class);
+    public void testUpdateExpressionLiteralProps() {
+        final LiteralProps props = new LiteralProps("", "", ExpressionType.LITERAL_EXPRESSION.getText(), null, 0d);
 
         doNothing().when(view).executeExpressionCommand(any());
+        doNothing().when(view).createUndoCommand();
 
-        view.broadcastLiteralExpressionDefinition(props);
+        view.updateExpression(props);
 
         verify(view).executeExpressionCommand(commandCaptor.capture());
 
@@ -615,13 +615,13 @@ public class ExpressionEditorViewImplTest {
     }
 
     @Test
-    public void testBroadcastContextExpressionDefinition() {
-
-        final ContextProps props = mock(ContextProps.class);
+    public void testUpdateExpressionContextProps() {
+        final ContextProps props = new ContextProps("", "", ExpressionType.CONTEXT.getText(), null, null, 0d, 0d);
 
         doNothing().when(view).executeExpressionCommand(any());
+        doNothing().when(view).createUndoCommand();
 
-        view.broadcastContextExpressionDefinition(props);
+        view.updateExpression(props);
 
         verify(view).executeExpressionCommand(commandCaptor.capture());
 
@@ -632,13 +632,13 @@ public class ExpressionEditorViewImplTest {
     }
 
     @Test
-    public void testBroadcastListExpressionDefinition() {
-
-        final ListProps props = mock(ListProps.class);
+    public void testUpdateExpressionListProps() {
+        final ListProps props = new ListProps("", "", ExpressionType.LIST.getText(), null, 0d);
 
         doNothing().when(view).executeExpressionCommand(any());
+        doNothing().when(view).createUndoCommand();
 
-        view.broadcastListExpressionDefinition(props);
+        view.updateExpression(props);
 
         verify(view).executeExpressionCommand(commandCaptor.capture());
 
@@ -649,13 +649,13 @@ public class ExpressionEditorViewImplTest {
     }
 
     @Test
-    public void testBroadcastInvocationExpressionDefinition() {
-
-        final InvocationProps props = mock(InvocationProps.class);
+    public void testUpdateExpressionInvocationProps() {
+        final InvocationProps props = new InvocationProps("", "", ExpressionType.INVOCATION.getText(), null, null, 0d, 0d);
 
         doNothing().when(view).executeExpressionCommand(any());
+        doNothing().when(view).createUndoCommand();
 
-        view.broadcastInvocationExpressionDefinition(props);
+        view.updateExpression(props);
 
         verify(view).executeExpressionCommand(commandCaptor.capture());
 
@@ -666,13 +666,13 @@ public class ExpressionEditorViewImplTest {
     }
 
     @Test
-    public void testBroadcastFunctionExpressionDefinition() {
-
-        final FunctionProps props = mock(FunctionProps.class);
+    public void testUpdateExpressionFunctionProps() {
+        final FunctionProps props = new FunctionProps("", "", ExpressionType.FUNCTION.getText(), null, 0d, "");
 
         doNothing().when(view).executeExpressionCommand(any());
+        doNothing().when(view).createUndoCommand();
 
-        view.broadcastFunctionExpressionDefinition(props);
+        view.updateExpression(props);
 
         verify(view).executeExpressionCommand(commandCaptor.capture());
 
@@ -683,13 +683,13 @@ public class ExpressionEditorViewImplTest {
     }
 
     @Test
-    public void testBroadcastDecisionTableExpressionDefinition() {
-
-        final DecisionTableProps props = mock(DecisionTableProps.class);
+    public void testUpdateExpressionDecisionTable() {
+        final DecisionTableProps props = new DecisionTableProps("", "", ExpressionType.DECISION_TABLE.getText(), null, "", null, null, null, null);
 
         doNothing().when(view).executeExpressionCommand(any());
+        doNothing().when(view).createUndoCommand();
 
-        view.broadcastDecisionTableExpressionDefinition(props);
+        view.updateExpression(props);
 
         verify(view).executeExpressionCommand(commandCaptor.capture());
 
@@ -721,7 +721,7 @@ public class ExpressionEditorViewImplTest {
         assertEquals(editorSelectedEvent, command.getEditorSelectedEvent());
         assertEquals(view, command.getView());
         assertEquals(NODE_UUID, command.getNodeUUID());
-    } */
+    }
 
     @Test
     public void testOpenManageDataType() {
