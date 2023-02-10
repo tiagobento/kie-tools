@@ -66,19 +66,16 @@ const BoxedExpressionEditorWrapper: React.FunctionComponent<BoxedExpressionEdito
   const [source, setSource] = useState<"gwt" | "react">("gwt");
 
   useEffect(() => {
-    console.info("GWT layer changed the expression. Updating internal state with:");
-    console.info(JSON.stringify(expressionDefinition));
     setSource("gwt");
     setExpression(expressionDefinition);
   }, [expressionDefinition]);
 
   useEffect(() => {
-    console.log("===================================================");
-    console.info("Expression is changed. Source is: " + source);
-    console.info(JSON.stringify(expressionDefinition));
+    console.log("Expression is changed. Source is: " + source);
+    console.log(JSON.stringify(expressionDefinition));
 
     if (source === "react") {
-      console.info("Sending notification to GWT layer to create undo command and update the expression ");
+      console.log("Sending expression update to GWT layer.");
       window.beeApiWrapper?.updateExpression(expression);
     }
   }, [expression]);
@@ -98,12 +95,9 @@ const BoxedExpressionEditorWrapper: React.FunctionComponent<BoxedExpressionEdito
   const setExpressionNotifyingUserAction = useCallback(
     (newExpressionAction: React.SetStateAction<ExpressionDefinition>) => {
       setSource("react");
-      setExpression((prev) => {
-        const n = typeof newExpressionAction === "function" ? newExpressionAction(prev) : newExpressionAction;
-        console.info("Notifying DMN Editor that expression is changing with:");
-        console.info(JSON.stringify(n));
-        return n;
-      });
+      setExpression((prev) =>
+        typeof newExpressionAction === "function" ? newExpressionAction(prev) : newExpressionAction
+      );
     },
     []
   );
