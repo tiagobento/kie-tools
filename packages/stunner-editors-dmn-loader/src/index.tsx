@@ -62,23 +62,24 @@ const BoxedExpressionEditorWrapper: React.FunctionComponent<BoxedExpressionEdito
   isResetSupportedOnRootExpression,
   pmmlParams,
 }: BoxedExpressionEditorProps) => {
-  const [expression, setExpression] = useState<ExpressionDefinition>(expressionDefinition);
-  const [source, setSource] = useState<"gwt" | "react">("gwt");
+  const [expressionWrapper, setExpressionWrapper] = useState<{
+    source: "gwt" | "react";
+    expression: ExpressionDefinition;
+  }>({ source: "gwt", expression: expressionDefinition });
 
   useEffect(() => {
-    setSource("gwt");
-    setExpression(expressionDefinition);
+    setExpressionWrapper({ source: "gwt", expression: expressionDefinition });
   }, [expressionDefinition]);
 
   useEffect(() => {
-    console.log("Expression is changed. Source is: " + source);
+    console.log("Expression is changed. Source is: " + expressionWrapper.source);
     console.log(JSON.stringify(expressionDefinition));
 
-    if (source === "react") {
+    if (expressionWrapper.source === "react") {
       console.log("Sending expression update to GWT layer.");
-      window.beeApiWrapper?.updateExpression(expression);
+      window.beeApiWrapper?.updateExpression(expressionWrapper.expression);
     }
-  }, [expression]);
+  }, [expressionWrapper.expression]);
 
   const beeGwtService: BeeGwtService = {
     openManageDataType(): void {
@@ -94,10 +95,13 @@ const BoxedExpressionEditorWrapper: React.FunctionComponent<BoxedExpressionEdito
 
   const setExpressionNotifyingUserAction = useCallback(
     (newExpressionAction: React.SetStateAction<ExpressionDefinition>) => {
-      setSource("react");
-      setExpression((prev) =>
-        typeof newExpressionAction === "function" ? newExpressionAction(prev) : newExpressionAction
-      );
+      setExpressionWrapper((prevState) => {
+        return {
+          source: "react",
+          expression:
+            typeof newExpressionAction === "function" ? newExpressionAction(prevState.expression) : newExpressionAction,
+        };
+      });
     },
     []
   );
@@ -114,7 +118,7 @@ const BoxedExpressionEditorWrapper: React.FunctionComponent<BoxedExpressionEdito
       scrollableParentRef={emptyRef}
       beeGwtService={beeGwtService}
       decisionNodeId={decisionNodeId}
-      expressionDefinition={expression}
+      expressionDefinition={expressionWrapper.expression}
       setExpressionDefinition={setExpressionNotifyingUserAction}
       dataTypes={dataTypes}
       isResetSupportedOnRootExpression={isResetSupportedOnRootExpression}
