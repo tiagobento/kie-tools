@@ -432,7 +432,7 @@ public class ExpressionEditorViewImplTest {
 
     @Test
     public void testSetReturnToLinkText() {
-        final String RETURN_LINK = "DRG";
+        final String RETURN_LINK = "return-link";
 
         view.setReturnToLinkText(RETURN_LINK);
 
