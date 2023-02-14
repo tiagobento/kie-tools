@@ -742,17 +742,6 @@ public class ExpressionEditorViewImplTest {
     }
 
     @Test
-    public void testReloadEditor() {
-        doNothing().when(view).loadNewBoxedExpressionEditor();
-        doNothing().when(view).syncExpressionWithOlderEditor();
-
-        view.reloadEditor();
-
-        verify(view).loadNewBoxedExpressionEditor();
-        verify(view).syncExpressionWithOlderEditor();
-    }
-
-    @Test
     public void testSyncExpressionWithOlderEditor() {
 
         final Supplier cache = mock(Supplier.class);
@@ -776,24 +765,24 @@ public class ExpressionEditorViewImplTest {
 
     @Test
     public void testReloadIfIsNewEditor_WhenItIs() {
+        doReturn(true).when(view).isReactBoxedExpressionVisible();
+        doNothing().when(view).loadNewBoxedExpressionEditor();
 
-        doReturn(true).when(view).isNewEditorEnabled();
-        doNothing().when(view).reloadEditor();
+        view.reloadEditor();
 
-        view.reloadIfIsNewEditor();
-
-        verify(view).reloadEditor();
+        verify(view).loadNewBoxedExpressionEditor();
+        verify(view).syncExpressionWithOlderEditor();
     }
 
     @Test
     public void testReloadIfIsNewEditor_WhenItIsNot() {
+        doReturn(false).when(view).isReactBoxedExpressionVisible();
+        doNothing().when(view).loadNewBoxedExpressionEditor();
 
-        doReturn(false).when(view).isNewEditorEnabled();
-        doNothing().when(view).reloadEditor();
+        view.reloadEditor();
 
-        view.reloadIfIsNewEditor();
-
-        verify(view, never()).reloadEditor();
+        verify(view, never()).loadNewBoxedExpressionEditor();
+        verify(view).syncExpressionWithOlderEditor();
     }
 
     @Test

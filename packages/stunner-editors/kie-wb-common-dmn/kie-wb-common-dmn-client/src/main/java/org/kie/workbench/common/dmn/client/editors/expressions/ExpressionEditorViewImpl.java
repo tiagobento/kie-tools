@@ -302,7 +302,7 @@ public class ExpressionEditorViewImpl implements ExpressionEditorView {
                                                               refreshFormPropertiesEvent,
                                                               domainObjectSelectionEvent);
 
-        expressionContainerGrid.setOnUndoClear(Optional.of(o -> reloadIfIsNewEditor()));
+        expressionContainerGrid.setOnUndoClear(Optional.of(o -> reloadEditor()));
         gridLayer.removeAll();
         gridLayer.add(expressionContainerGrid);
         gridLayer.select(expressionContainerGrid);
@@ -371,7 +371,7 @@ public class ExpressionEditorViewImpl implements ExpressionEditorView {
     }
 
     public void onPropertiesPanelFormFieldChanged(@Observes FormFieldChanged event) {
-        reloadIfIsNewEditor();
+        reloadEditor();
     }
 
     @EventHandler("try-it")
@@ -574,8 +574,8 @@ public class ExpressionEditorViewImpl implements ExpressionEditorView {
         }
     }
 
-    boolean isNewEditorEnabled() {
-        return !HiddenHelper.isHidden(newBoxedExpression);
+    protected boolean isReactBoxedExpressionVisible() {
+        return DomGlobal.document.getElementsByClassName("kie-dmn-new-expression-editor").length > 0;
     }
 
     Stream<DataTypeProps> retrieveDefaultDataTypeProps() {
@@ -673,7 +673,9 @@ public class ExpressionEditorViewImpl implements ExpressionEditorView {
 
     @Override
     public void reloadEditor() {
-        loadNewBoxedExpressionEditor();
+        if (isReactBoxedExpressionVisible()) {
+            loadNewBoxedExpressionEditor();
+        }
 
         // This should be removed when the older editor is removed.
         syncExpressionWithOlderEditor();
@@ -685,12 +687,6 @@ public class ExpressionEditorViewImpl implements ExpressionEditorView {
                                                    getHasExpression(),
                                                    getHasName(),
                                                    isOnlyVisualChangeAllowed);
-    }
-
-    void reloadIfIsNewEditor() {
-        if (isNewEditorEnabled()) {
-            reloadEditor();
-        }
     }
 
     @Override
