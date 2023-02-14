@@ -62,7 +62,7 @@ export const FunctionKindSelector: React.FunctionComponent<FunctionKindSelectorP
             </span>
           ),
           description:
-            "Define function as another nested boxed 'Friendly Enough Expression Language (FEEL)' expression.",
+            "Define function as a 'Friendly Enough Expression Language (FEEL)' expression. This is the default.",
         };
       case FunctionExpressionDefinitionKind.Java:
         return {
