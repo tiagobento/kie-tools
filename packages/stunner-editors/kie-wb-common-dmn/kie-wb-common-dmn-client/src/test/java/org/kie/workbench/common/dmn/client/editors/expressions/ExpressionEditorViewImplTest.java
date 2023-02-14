@@ -782,7 +782,7 @@ public class ExpressionEditorViewImplTest {
         view.reloadEditor();
 
         verify(view, never()).loadNewBoxedExpressionEditor();
-        verify(view).syncExpressionWithOlderEditor();
+        verify(view, never()).syncExpressionWithOlderEditor();
     }
 
     @Test

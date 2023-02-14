@@ -675,10 +675,10 @@ public class ExpressionEditorViewImpl implements ExpressionEditorView {
     public void reloadEditor() {
         if (isReactBoxedExpressionVisible()) {
             loadNewBoxedExpressionEditor();
-        }
 
-        // This should be removed when the older editor is removed.
-        syncExpressionWithOlderEditor();
+            // This should be removed when the older editor is removed.
+            syncExpressionWithOlderEditor();
+        }
     }
 
     void syncExpressionWithOlderEditor() {
