@@ -77,7 +77,7 @@ export const FunctionKindSelector: React.FunctionComponent<FunctionKindSelectorP
             </span>
           ),
           description:
-            "Define full qualified java class name and method signature to invoke. For the method signature, please omit parameters name, keep just their data types.",
+            "Define full qualified java class name and a public static method signature to invoke. The method-signature consist of the name of the method, followed by an argument list of the argument types.",
         };
       case FunctionExpressionDefinitionKind.Pmml:
         return {
