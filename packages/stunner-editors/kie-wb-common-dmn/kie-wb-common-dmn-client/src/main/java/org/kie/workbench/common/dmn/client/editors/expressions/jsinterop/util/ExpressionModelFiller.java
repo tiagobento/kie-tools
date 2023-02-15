@@ -174,10 +174,6 @@ public class ExpressionModelFiller {
         decisionTableExpression.getRule().addAll(rulesConvertForDecisionTableExpression(decisionTableProps));
     }
 
-    private static void fillUndefinedExpression() {
-
-    }
-
     private static Expression buildAndFillNestedExpression(final ExpressionProps props,
                                                            final UnaryOperator<QName> qNameNormalizer) {
         if (Objects.equals(LITERAL_EXPRESSION.getText(), props.logicType)) {

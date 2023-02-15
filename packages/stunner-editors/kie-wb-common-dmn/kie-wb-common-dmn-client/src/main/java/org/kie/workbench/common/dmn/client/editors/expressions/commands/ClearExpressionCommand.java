@@ -22,7 +22,6 @@ import javax.enterprise.event.Event;
 
 import org.kie.workbench.common.dmn.api.definition.HasExpression;
 import org.kie.workbench.common.dmn.api.definition.HasName;
-import org.kie.workbench.common.dmn.api.definition.model.Context;
 import org.kie.workbench.common.dmn.api.definition.model.Expression;
 import org.kie.workbench.common.dmn.client.editors.expressions.ExpressionEditorView;
 import org.kie.workbench.common.dmn.client.editors.expressions.jsinterop.props.ExpressionProps;
@@ -43,17 +42,12 @@ public class ClearExpressionCommand extends FillExpressionCommand<ExpressionProp
 
     @Override
     public void execute() {
-        fireEditorSelectedEvent();
-        setExpressionName(getExpressionProps().name);
-        setTypeRef(getExpressionProps().dataType);
-        //createExpression();
-        //fill();
+        fill();
     }
 
     @Override
     protected void fill() {
-        final Expression expression = getHasExpression().getExpression();
-        //getView().clear();
+        getHasExpression().setExpression(null);
     }
 
     @Override
