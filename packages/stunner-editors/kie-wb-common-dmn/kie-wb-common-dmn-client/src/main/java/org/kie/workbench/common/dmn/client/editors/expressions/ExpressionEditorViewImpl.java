@@ -301,8 +301,6 @@ public class ExpressionEditorViewImpl implements ExpressionEditorView {
                                                               this::setExpressionNameText,
                                                               refreshFormPropertiesEvent,
                                                               domainObjectSelectionEvent);
-
-        expressionContainerGrid.setOnUndoClear(Optional.of(o -> reloadEditor()));
         gridLayer.removeAll();
         gridLayer.add(expressionContainerGrid);
         gridLayer.select(expressionContainerGrid);
@@ -453,86 +451,91 @@ public class ExpressionEditorViewImpl implements ExpressionEditorView {
         this.domainObjectSelectionEvent.fire(event);
     }
 
-    public void resetExpressionDefinition(final ExpressionProps expressionProps) {
-        executeExpressionCommand(new ClearExpressionCommand(getHasExpression(),
-                                                            expressionProps,
-                                                            getEditorSelectedEvent(),
-                                                            getNodeUUID(),
-                                                            this,
-                                                            itemDefinitionUtils,
-                                                            getHasName()));
+    /** TODO NOT READY **/
+    public ExpressionProps generateExpression(ExpressionProps expressionProps) {
+        ExpressionType logicType = ExpressionType.getTypeByText(expressionProps.logicType);
+        switch (logicType) {
+            case UNDEFINED:
+                return new ExpressionProps(expressionProps.id, expressionProps.name, BuiltInType.UNDEFINED.getName(), ExpressionType.UNDEFINED.getText());
+            default:
+                throw new UnsupportedOperationException("Logic type: " + logicType + " is currently unsupported");
+        }
     }
 
     public void updateExpression(final ExpressionProps expressionProps) {
-        createUndoCommand();
-
         ExpressionType logicType = ExpressionType.getTypeByText(expressionProps.logicType);
         switch (logicType) {
-            case LITERAL_EXPRESSION:
-                executeExpressionCommand(new FillLiteralExpressionCommand(getHasExpression(),
-                                                                          (LiteralProps) expressionProps,
-                                                                          getEditorSelectedEvent(),
-                                                                          getNodeUUID(),
-                                                                          this,
-                                                                          itemDefinitionUtils,
-                                                                          getHasName()));
-                break;
-            case RELATION:
-                executeExpressionCommand(new FillRelationExpressionCommand(getHasExpression(),
-                                                                           (RelationProps) expressionProps,
-                                                                           getEditorSelectedEvent(),
-                                                                           getNodeUUID(),
-                                                                           this,
-                                                                           itemDefinitionUtils,
-                                                                           getHasName()));
-                break;
             case CONTEXT:
-                executeExpressionCommand(new FillContextExpressionCommand(getHasExpression(),
-                                                                          (ContextProps) expressionProps,
-                                                                          getEditorSelectedEvent(),
-                                                                          getNodeUUID(),
-                                                                          this,
-                                                                          itemDefinitionUtils,
-                                                                          getHasName()));
+                executeUndoableExpressionCommand(new FillContextExpressionCommand(getHasExpression(),
+                                                                                  (ContextProps) expressionProps,
+                                                                                  getEditorSelectedEvent(),
+                                                                                  getNodeUUID(),
+                                                                                  this,
+                                                                                  itemDefinitionUtils,
+                                                                                  getHasName()));
                 break;
             case DECISION_TABLE:
-                executeExpressionCommand(new FillDecisionTableExpressionCommand(getHasExpression(),
-                                                                                (DecisionTableProps) expressionProps,
-                                                                                getEditorSelectedEvent(),
-                                                                                getNodeUUID(),
-                                                                                this,
-                                                                                itemDefinitionUtils,
-                                                                                getHasName()));
-                break;
-            case INVOCATION:
-                executeExpressionCommand(new FillInvocationExpressionCommand(getHasExpression(),
-                                                                             (InvocationProps) expressionProps,
-                                                                             getEditorSelectedEvent(),
-                                                                             getNodeUUID(),
-                                                                             this,
-                                                                             itemDefinitionUtils,
-                                                                             getHasName()));
-                break;
-            case LIST:
-                executeExpressionCommand(new FillListExpressionCommand(getHasExpression(),
-                                                                       (ListProps) expressionProps,
-                                                                       getEditorSelectedEvent(),
-                                                                       getNodeUUID(),
-                                                                       this,
-                                                                       itemDefinitionUtils,
-                                                                       getHasName()));
+                executeUndoableExpressionCommand(new FillDecisionTableExpressionCommand(getHasExpression(),
+                                                                                        (DecisionTableProps) expressionProps,
+                                                                                        getEditorSelectedEvent(),
+                                                                                        getNodeUUID(),
+                                                                                        this,
+                                                                                        itemDefinitionUtils,
+                                                                                        getHasName()));
                 break;
             case FUNCTION:
-                executeExpressionCommand(new FillFunctionExpressionCommand(getHasExpression(),
-                                                                           (FunctionProps) expressionProps,
-                                                                           getEditorSelectedEvent(),
-                                                                           getNodeUUID(),
-                                                                           this,
-                                                                           itemDefinitionUtils,
-                                                                           getHasName()));
+                executeUndoableExpressionCommand(new FillFunctionExpressionCommand(getHasExpression(),
+                                                                                   (FunctionProps) expressionProps,
+                                                                                   getEditorSelectedEvent(),
+                                                                                   getNodeUUID(),
+                                                                                   this,
+                                                                                   itemDefinitionUtils,
+                                                                                   getHasName()));
+                break;
+            case INVOCATION:
+                executeUndoableExpressionCommand(new FillInvocationExpressionCommand(getHasExpression(),
+                                                                                     (InvocationProps) expressionProps,
+                                                                                     getEditorSelectedEvent(),
+                                                                                     getNodeUUID(),
+                                                                                     this,
+                                                                                     itemDefinitionUtils,
+                                                                                     getHasName()));
+                break;
+            case LIST:
+                executeUndoableExpressionCommand(new FillListExpressionCommand(getHasExpression(),
+                                                                               (ListProps) expressionProps,
+                                                                               getEditorSelectedEvent(),
+                                                                               getNodeUUID(),
+                                                                               this,
+                                                                               itemDefinitionUtils,
+                                                                               getHasName()));
+                break;
+            case LITERAL_EXPRESSION:
+                executeUndoableExpressionCommand(new FillLiteralExpressionCommand(getHasExpression(),
+                                                                                  (LiteralProps) expressionProps,
+                                                                                  getEditorSelectedEvent(),
+                                                                                  getNodeUUID(),
+                                                                                  this,
+                                                                                  itemDefinitionUtils,
+                                                                                  getHasName()));
+                break;
+            case RELATION:
+                executeUndoableExpressionCommand(new FillRelationExpressionCommand(getHasExpression(),
+                                                                                   (RelationProps) expressionProps,
+                                                                                   getEditorSelectedEvent(),
+                                                                                   getNodeUUID(),
+                                                                                   this,
+                                                                                   itemDefinitionUtils,
+                                                                                   getHasName()));
                 break;
             case UNDEFINED:
-                // Ignore
+                executeUndoableExpressionCommand(new ClearExpressionCommand(getHasExpression(),
+                                                                            expressionProps,
+                                                                            getEditorSelectedEvent(),
+                                                                            getNodeUUID(),
+                                                                            this,
+                                                                            itemDefinitionUtils,
+                                                                            getHasName()));
                 break;
             default:
                 throw new UnsupportedOperationException("Logic type: " + logicType + " is currently unsupported");
@@ -550,6 +553,23 @@ public class ExpressionEditorViewImpl implements ExpressionEditorView {
                 .ifPresent(this::enrichModelExpression);
     }
 
+    /**
+     * It executes a given expression command. Before executing it, it creates and UNDO command with the current model
+     * status. Statement ordering matters: the UNDO command MUST be called before executing the expression command change.
+     * @param expressionCommand
+     */
+    void executeUndoableExpressionCommand(final FillExpressionCommand expressionCommand) {
+        createUndoCommand();
+        expressionCommand.execute();
+        updateCanvasNodeNameCommand.execute(getNodeUUID(), getHasName().orElse(null));
+    }
+
+    /**
+     * It executes a given expression command. Doesn't create an UNDO command. Possible reasons are:
+     * - The given command manages the UNDO command internally
+     * - The given command is not an UNDOABLE command.
+     * @param expressionCommand
+     */
     void executeExpressionCommand(final FillExpressionCommand expressionCommand) {
         expressionCommand.execute();
         updateCanvasNodeNameCommand.execute(getNodeUUID(), getHasName().orElse(null));

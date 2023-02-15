@@ -73,7 +73,7 @@ const BoxedExpressionEditorWrapper: React.FunctionComponent<BoxedExpressionEdito
 
   useEffect(() => {
     console.log("Expression is changed. Source is: " + expressionWrapper.source);
-    console.log(JSON.stringify(expressionDefinition));
+    console.log(JSON.stringify(expressionWrapper.expression));
 
     if (expressionWrapper.source === "react") {
       console.log("Sending expression update to GWT layer.");

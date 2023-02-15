@@ -35,9 +35,10 @@ public class ExpressionEditorService {
         ExpressionEditorService.expressionEditorView = expressionEditor;
     }
 
+    /** TODO NOT READY **/
     @JsMethod
-    public static void resetExpressionDefinition(final ExpressionProps expressionProps) {
-        expressionEditorView.resetExpressionDefinition(expressionProps);
+    public static ExpressionProps generateExpression(final ExpressionProps expressionProps) {
+        return expressionEditorView.generateExpression(expressionProps);
     }
 
     /**
