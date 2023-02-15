@@ -601,12 +601,11 @@ public class ExpressionEditorViewImplTest {
     public void testUpdateExpressionLiteralProps() {
         final LiteralProps props = new LiteralProps("", "", ExpressionType.LITERAL_EXPRESSION.getText(), null, 0d);
 
-        doNothing().when(view).executeExpressionCommand(any());
-        doNothing().when(view).createUndoCommand();
+        doNothing().when(view).executeUndoableExpressionCommand(any());
 
         view.updateExpression(props);
 
-        verify(view).executeExpressionCommand(commandCaptor.capture());
+        verify(view).executeUndoableExpressionCommand(commandCaptor.capture());
 
         final FillExpressionCommand command = commandCaptor.getValue();
 
@@ -618,12 +617,11 @@ public class ExpressionEditorViewImplTest {
     public void testUpdateExpressionContextProps() {
         final ContextProps props = new ContextProps("", "", ExpressionType.CONTEXT.getText(), null, null, 0d, 0d);
 
-        doNothing().when(view).executeExpressionCommand(any());
-        doNothing().when(view).createUndoCommand();
+        doNothing().when(view).executeUndoableExpressionCommand(any());
 
         view.updateExpression(props);
 
-        verify(view).executeExpressionCommand(commandCaptor.capture());
+        verify(view).executeUndoableExpressionCommand(commandCaptor.capture());
 
         final FillExpressionCommand command = commandCaptor.getValue();
 
@@ -635,12 +633,11 @@ public class ExpressionEditorViewImplTest {
     public void testUpdateExpressionListProps() {
         final ListProps props = new ListProps("", "", ExpressionType.LIST.getText(), null, 0d);
 
-        doNothing().when(view).executeExpressionCommand(any());
-        doNothing().when(view).createUndoCommand();
+        doNothing().when(view).executeUndoableExpressionCommand(any());
 
         view.updateExpression(props);
 
-        verify(view).executeExpressionCommand(commandCaptor.capture());
+        verify(view).executeUndoableExpressionCommand(commandCaptor.capture());
 
         final FillExpressionCommand command = commandCaptor.getValue();
 
@@ -652,12 +649,11 @@ public class ExpressionEditorViewImplTest {
     public void testUpdateExpressionInvocationProps() {
         final InvocationProps props = new InvocationProps("", "", ExpressionType.INVOCATION.getText(), null, null, 0d, 0d);
 
-        doNothing().when(view).executeExpressionCommand(any());
-        doNothing().when(view).createUndoCommand();
+        doNothing().when(view).executeUndoableExpressionCommand(any());
 
         view.updateExpression(props);
 
-        verify(view).executeExpressionCommand(commandCaptor.capture());
+        verify(view).executeUndoableExpressionCommand(commandCaptor.capture());
 
         final FillExpressionCommand command = commandCaptor.getValue();
 
@@ -669,12 +665,11 @@ public class ExpressionEditorViewImplTest {
     public void testUpdateExpressionFunctionProps() {
         final FunctionProps props = new FunctionProps("", "", ExpressionType.FUNCTION.getText(), null, 0d, "");
 
-        doNothing().when(view).executeExpressionCommand(any());
-        doNothing().when(view).createUndoCommand();
+        doNothing().when(view).executeUndoableExpressionCommand(any());
 
         view.updateExpression(props);
 
-        verify(view).executeExpressionCommand(commandCaptor.capture());
+        verify(view).executeUndoableExpressionCommand(commandCaptor.capture());
 
         final FillExpressionCommand command = commandCaptor.getValue();
 
@@ -686,12 +681,11 @@ public class ExpressionEditorViewImplTest {
     public void testUpdateExpressionDecisionTable() {
         final DecisionTableProps props = new DecisionTableProps("", "", ExpressionType.DECISION_TABLE.getText(), null, "", null, null, null, null);
 
-        doNothing().when(view).executeExpressionCommand(any());
-        doNothing().when(view).createUndoCommand();
+        doNothing().when(view).executeUndoableExpressionCommand(any());
 
         view.updateExpression(props);
 
-        verify(view).executeExpressionCommand(commandCaptor.capture());
+        verify(view).executeUndoableExpressionCommand(commandCaptor.capture());
 
         final FillExpressionCommand command = commandCaptor.getValue();
 
