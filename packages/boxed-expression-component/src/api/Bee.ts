@@ -34,11 +34,11 @@ declare global {
   interface BeeApi {
     resetExpressionDefinition: (definition: ExpressionDefinition) => void;
 
-    // Notifies the GWT layer that the expression is changed.
+    // It propagates to the GWT layer the modified expression. It MUTATES the GWT layer status.
     updateExpression: (expressionDefinition: ExpressionDefinition) => void;
 
-    // Navigate to Data Types definitions, if available
-    openManageDataType: () => void;
+    // It Navigates to "Data Type" tab page
+    openDataTypePage: () => void;
 
     // Notifies that an ExpressionDefinitionLogicType was selected.
     onLogicTypeSelect: (selectedLogicType: string) => void;

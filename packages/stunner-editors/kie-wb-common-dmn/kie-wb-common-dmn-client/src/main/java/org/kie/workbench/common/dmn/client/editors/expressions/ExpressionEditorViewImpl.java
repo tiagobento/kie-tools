@@ -74,7 +74,7 @@ import org.kie.workbench.common.dmn.client.editors.expressions.jsinterop.props.L
 import org.kie.workbench.common.dmn.client.editors.expressions.jsinterop.props.ModelsFromDocument;
 import org.kie.workbench.common.dmn.client.editors.expressions.jsinterop.props.PMMLParam;
 import org.kie.workbench.common.dmn.client.editors.expressions.jsinterop.props.RelationProps;
-import org.kie.workbench.common.dmn.client.editors.expressions.jsinterop.util.BoxedExpressionService;
+import org.kie.workbench.common.dmn.client.editors.expressions.jsinterop.util.ExpressionEditorService;
 import org.kie.workbench.common.dmn.client.editors.expressions.jsinterop.util.ExpressionPropsFiller;
 import org.kie.workbench.common.dmn.client.editors.expressions.types.ExpressionEditorDefinition;
 import org.kie.workbench.common.dmn.client.editors.expressions.types.ExpressionEditorDefinitions;
@@ -248,7 +248,7 @@ public class ExpressionEditorViewImpl implements ExpressionEditorView {
     @Override
     public void init(final ExpressionEditorView.Presenter presenter) {
         this.presenter = presenter;
-        BoxedExpressionService.registerBroadcastForExpression(this);
+        ExpressionEditorService.registerExpressionEditorView(this);
     }
 
     @Override
@@ -323,11 +323,6 @@ public class ExpressionEditorViewImpl implements ExpressionEditorView {
         mousePanMediator.setBatchDraw(true);
         gridLayer.setDefaultTransformMediator(defaultTransformMediator);
         gridPanel.getViewport().getMediators().push(mousePanMediator);
-    }
-
-    @Override
-    public void disableBetaBoxedExpressionToggle() {
-        betaBoxedExpressionToggle.classList.toggle("hidden", true);
     }
 
     @Override
@@ -544,7 +539,7 @@ public class ExpressionEditorViewImpl implements ExpressionEditorView {
         }
     }
 
-    public void openManageDataType() {
+    public void openDataTypePage() {
         dataTypePageActiveEvent.fire(new DataTypePageTabActiveEvent());
     }
 

@@ -82,8 +82,8 @@ const BoxedExpressionEditorWrapper: React.FunctionComponent<BoxedExpressionEdito
   }, [expressionWrapper.expression]);
 
   const beeGwtService: BeeGwtService = {
-    openManageDataType(): void {
-      window.beeApiWrapper?.openManageDataType();
+    openDataTypePage(): void {
+      window.beeApiWrapper?.openDataTypePage();
     },
     onLogicTypeSelect(selectedLogicType: string): void {
       window.beeApiWrapper?.onLogicTypeSelect(selectedLogicType);

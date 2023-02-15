@@ -724,8 +724,8 @@ public class ExpressionEditorViewImplTest {
     }
 
     @Test
-    public void testOpenManageDataType() {
-        view.openManageDataType();
+    public void testOpenDataTypePage() {
+        view.openDataTypePage();
 
         verify(dataTypePageActiveEvent).fire(any(DataTypePageTabActiveEvent.class));
     }
