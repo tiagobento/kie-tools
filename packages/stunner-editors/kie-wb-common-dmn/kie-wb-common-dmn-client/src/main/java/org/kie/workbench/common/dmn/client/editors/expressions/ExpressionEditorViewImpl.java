@@ -451,17 +451,6 @@ public class ExpressionEditorViewImpl implements ExpressionEditorView {
         this.domainObjectSelectionEvent.fire(event);
     }
 
-    /** TODO NOT READY **/
-    public ExpressionProps generateExpression(ExpressionProps expressionProps) {
-        ExpressionType logicType = ExpressionType.getTypeByText(expressionProps.logicType);
-        switch (logicType) {
-            case UNDEFINED:
-                return new ExpressionProps(expressionProps.id, expressionProps.name, BuiltInType.UNDEFINED.getName(), ExpressionType.UNDEFINED.getText());
-            default:
-                throw new UnsupportedOperationException("Logic type: " + logicType + " is currently unsupported");
-        }
-    }
-
     public void updateExpression(final ExpressionProps expressionProps) {
         ExpressionType logicType = ExpressionType.getTypeByText(expressionProps.logicType);
         switch (logicType) {

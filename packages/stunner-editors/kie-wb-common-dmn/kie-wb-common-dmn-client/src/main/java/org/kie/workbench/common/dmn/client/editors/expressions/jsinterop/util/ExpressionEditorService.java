@@ -35,12 +35,6 @@ public class ExpressionEditorService {
         ExpressionEditorService.expressionEditorView = expressionEditor;
     }
 
-    /** TODO NOT READY **/
-    @JsMethod
-    public static ExpressionProps generateExpression(final ExpressionProps expressionProps) {
-        return expressionEditorView.generateExpression(expressionProps);
-    }
-
     /**
      * It opens the "Data Type" tab page.
      */

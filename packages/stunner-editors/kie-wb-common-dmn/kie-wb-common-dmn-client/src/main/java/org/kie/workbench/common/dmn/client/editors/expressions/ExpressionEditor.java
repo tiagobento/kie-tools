@@ -54,6 +54,7 @@ public class ExpressionEditor implements ExpressionEditorView.Presenter {
     private DecisionNavigatorPresenter decisionNavigator;
 
     private DMNGraphUtils dmnGraphUtils;
+
     public ExpressionEditor(final ExpressionEditorView view,
                             final DecisionNavigatorPresenter decisionNavigator,
                             final DMNGraphUtils dmnGraphUtils,
