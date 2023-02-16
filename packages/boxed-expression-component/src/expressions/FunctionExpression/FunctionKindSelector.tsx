@@ -77,7 +77,7 @@ export const FunctionKindSelector: React.FunctionComponent<FunctionKindSelectorP
             </span>
           ),
           description:
-            "Define full qualified java class name and a public static method signature to invoke. The method-signature consist of the name of the method, followed by an argument list of the argument types.",
+            "Define full qualified java class name and a public static method signature to invoke.\nThe method-signature consist of the name of the method, followed by an argument list of the argument types.",
         };
       case FunctionExpressionDefinitionKind.Pmml:
         return {
@@ -92,7 +92,7 @@ export const FunctionKindSelector: React.FunctionComponent<FunctionKindSelectorP
             </span>
           ),
           description:
-            "Define 'Predictive Model Markup Language (PMML)' model to invoke. Editor parses and offers you all your PMML models from the workspace.",
+            "Define 'Predictive Model Markup Language (PMML)' model to invoke.\nEditor parses and offers you all your PMML models from the workspace.",
         };
       default:
         return {
