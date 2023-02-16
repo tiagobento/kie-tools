@@ -64,7 +64,6 @@ public class ClearExpressionCommandTest {
                                                             expressionProps,
                                                             editorSelectedEvent,
                                                             nodeUUID,
-                                                            view,
                                                             itemDefinitionUtils,
                                                             Optional.empty());
     }

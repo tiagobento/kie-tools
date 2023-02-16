@@ -454,7 +454,6 @@ public class ExpressionEditorViewImpl implements ExpressionEditorView {
                                                                                   (ContextProps) expressionProps,
                                                                                   getEditorSelectedEvent(),
                                                                                   getNodeUUID(),
-                                                                                  this,
                                                                                   itemDefinitionUtils,
                                                                                   getHasName()));
                 break;
@@ -463,7 +462,6 @@ public class ExpressionEditorViewImpl implements ExpressionEditorView {
                                                                                         (DecisionTableProps) expressionProps,
                                                                                         getEditorSelectedEvent(),
                                                                                         getNodeUUID(),
-                                                                                        this,
                                                                                         itemDefinitionUtils,
                                                                                         getHasName()));
                 break;
@@ -472,7 +470,6 @@ public class ExpressionEditorViewImpl implements ExpressionEditorView {
                                                                                    (FunctionProps) expressionProps,
                                                                                    getEditorSelectedEvent(),
                                                                                    getNodeUUID(),
-                                                                                   this,
                                                                                    itemDefinitionUtils,
                                                                                    getHasName()));
                 break;
@@ -481,7 +478,6 @@ public class ExpressionEditorViewImpl implements ExpressionEditorView {
                                                                                      (InvocationProps) expressionProps,
                                                                                      getEditorSelectedEvent(),
                                                                                      getNodeUUID(),
-                                                                                     this,
                                                                                      itemDefinitionUtils,
                                                                                      getHasName()));
                 break;
@@ -490,7 +486,6 @@ public class ExpressionEditorViewImpl implements ExpressionEditorView {
                                                                                (ListProps) expressionProps,
                                                                                getEditorSelectedEvent(),
                                                                                getNodeUUID(),
-                                                                               this,
                                                                                itemDefinitionUtils,
                                                                                getHasName()));
                 break;
@@ -499,7 +494,6 @@ public class ExpressionEditorViewImpl implements ExpressionEditorView {
                                                                                   (LiteralProps) expressionProps,
                                                                                   getEditorSelectedEvent(),
                                                                                   getNodeUUID(),
-                                                                                  this,
                                                                                   itemDefinitionUtils,
                                                                                   getHasName()));
                 break;
@@ -508,7 +502,6 @@ public class ExpressionEditorViewImpl implements ExpressionEditorView {
                                                                                    (RelationProps) expressionProps,
                                                                                    getEditorSelectedEvent(),
                                                                                    getNodeUUID(),
-                                                                                   this,
                                                                                    itemDefinitionUtils,
                                                                                    getHasName()));
                 break;
@@ -517,7 +510,6 @@ public class ExpressionEditorViewImpl implements ExpressionEditorView {
                                                                             expressionProps,
                                                                             getEditorSelectedEvent(),
                                                                             getNodeUUID(),
-                                                                            this,
                                                                             itemDefinitionUtils,
                                                                             getHasName()));
                 break;
