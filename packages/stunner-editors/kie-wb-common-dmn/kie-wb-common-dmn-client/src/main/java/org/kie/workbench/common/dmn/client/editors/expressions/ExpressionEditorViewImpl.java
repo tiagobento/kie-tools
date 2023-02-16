@@ -553,17 +553,6 @@ public class ExpressionEditorViewImpl implements ExpressionEditorView {
         updateCanvasNodeNameCommand.execute(getNodeUUID(), getHasName().orElse(null));
     }
 
-    /**
-     * It executes a given expression command. Doesn't create an UNDO command. Possible reasons are:
-     * - The given command manages the UNDO command internally
-     * - The given command is not an UNDOABLE command.
-     * @param expressionCommand
-     */
-    void executeExpressionCommand(final FillExpressionCommand expressionCommand) {
-        expressionCommand.execute();
-        updateCanvasNodeNameCommand.execute(getNodeUUID(), getHasName().orElse(null));
-    }
-
     void toggleBetaBoxedExpressionEditor(final boolean enabled) {
         betaBoxedExpressionToggle.classList.toggle(ENABLED_BETA_CSS_CLASS, enabled);
         newBoxedExpression.classList.toggle(HiddenHelper.HIDDEN_CSS_CLASS, !enabled);

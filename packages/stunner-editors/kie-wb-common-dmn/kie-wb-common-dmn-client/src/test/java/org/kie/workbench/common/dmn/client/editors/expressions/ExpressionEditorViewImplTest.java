@@ -45,6 +45,7 @@ import org.kie.workbench.common.dmn.api.definition.model.LiteralExpression;
 import org.kie.workbench.common.dmn.api.property.dmn.Name;
 import org.kie.workbench.common.dmn.api.property.dmn.types.BuiltInType;
 import org.kie.workbench.common.dmn.client.commands.factory.DefaultCanvasCommandFactory;
+import org.kie.workbench.common.dmn.client.editors.expressions.commands.ClearExpressionCommand;
 import org.kie.workbench.common.dmn.client.editors.expressions.commands.FillContextExpressionCommand;
 import org.kie.workbench.common.dmn.client.editors.expressions.commands.FillDecisionTableExpressionCommand;
 import org.kie.workbench.common.dmn.client.editors.expressions.commands.FillExpressionCommand;
@@ -690,6 +691,22 @@ public class ExpressionEditorViewImplTest {
         final FillExpressionCommand command = commandCaptor.getValue();
 
         assertTrue(command instanceof FillDecisionTableExpressionCommand);
+        assertCommandParameters(command, props);
+    }
+
+    @Test
+    public void testUpdateExpressionUndefined() {
+        final ExpressionProps props = new ExpressionProps("", "", ExpressionType.UNDEFINED.getText(), null);
+
+        doNothing().when(view).executeUndoableExpressionCommand(any());
+
+        view.updateExpression(props);
+
+        verify(view).executeUndoableExpressionCommand(commandCaptor.capture());
+
+        final FillExpressionCommand command = commandCaptor.getValue();
+
+        assertTrue(command instanceof ClearExpressionCommand);
         assertCommandParameters(command, props);
     }
 
