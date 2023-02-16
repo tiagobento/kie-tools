@@ -86,8 +86,12 @@ export function RelationExpression(relationExpression: RelationExpressionDefinit
         const newColumns = [...(prev.columns ?? [])];
         const newWidth =
           typeof newWidthAction === "function" ? newWidthAction(newColumns[columnIndex].width) : newWidthAction;
-        newColumns[columnIndex].width = newWidth;
-        return { ...prev, columns: newColumns };
+        if (newColumns[columnIndex].width !== newWidth) {
+          newColumns[columnIndex].width = newWidth;
+          return { ...prev, columns: newColumns };
+        } else {
+          return prev;
+        }
       });
     },
     [setExpression]

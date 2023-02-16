@@ -76,19 +76,19 @@ export function ExpressionDefinitionHeaderMenu({
   const popoverMenuRef = useRef<PopoverMenuRef>();
 
   useEffect(() => {
-    setExpressionName(selectedExpressionName);
+    setExpressionName((prevState) => (prevState !== selectedExpressionName ? selectedExpressionName : prevState));
   }, [selectedExpressionName]);
 
   useEffect(() => {
-    setDataType(selectedDataType);
+    setDataType((prevState) => (prevState !== selectedDataType ? selectedDataType : prevState));
   }, [selectedDataType]);
 
   const onExpressionNameChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    setExpressionName(event.target.value);
+    setExpressionName((prevState) => (prevState !== event.target.value ? event.target.value : prevState));
   }, []);
 
   const onDataTypeChange = useCallback((dataType: DmnBuiltInDataType) => {
-    setDataType(dataType);
+    setDataType((prevState) => (prevState !== dataType ? dataType : prevState));
   }, []);
 
   const openDataTypePage = useCallback(() => {
@@ -100,8 +100,8 @@ export function ExpressionDefinitionHeaderMenu({
   }, [expressionName, onExpressionHeaderUpdated, dataType]);
 
   const resetFormData = useCallback(() => {
-    setExpressionName(selectedExpressionName);
-    setDataType(selectedDataType);
+    setExpressionName((prevState) => (prevState !== selectedExpressionName ? selectedExpressionName : prevState));
+    setDataType((prevState) => (prevState !== selectedDataType ? selectedDataType : prevState));
   }, [selectedExpressionName, selectedDataType]);
 
   const onHide = useCallback(() => {
