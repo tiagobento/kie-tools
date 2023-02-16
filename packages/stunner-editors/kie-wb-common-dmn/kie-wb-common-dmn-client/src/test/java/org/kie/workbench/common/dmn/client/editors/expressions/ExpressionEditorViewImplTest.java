@@ -578,18 +578,6 @@ public class ExpressionEditorViewImplTest {
         verify(betaBoxedExpressionToggle.classList).toggle(ENABLED_BETA_CSS_CLASS, true);
     }
 
-    @Test
-    public void testClear() {
-
-        final ExpressionContainerGrid expressionContainerGrid = mock(ExpressionContainerGrid.class);
-
-        doReturn(expressionContainerGrid).when(view).getExpressionContainerGrid();
-
-        view.clear();
-
-        verify(expressionContainerGrid).clearExpressionType();
-    }
-
     private void assertCommandParameters(final FillExpressionCommand command,
                                          final ExpressionProps props) {
         assertEquals(hasExpression, command.getHasExpression());

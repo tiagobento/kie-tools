@@ -405,11 +405,6 @@ public class ExpressionEditorViewImpl implements ExpressionEditorView {
     }
 
     @Override
-    public void clear() {
-        getExpressionContainerGrid().clearExpressionType();
-    }
-
-    @Override
     public void selectDomainObject(final String uuid) {
         fireDomainObjectSelectionEvent(findDomainObject(uuid));
     }
