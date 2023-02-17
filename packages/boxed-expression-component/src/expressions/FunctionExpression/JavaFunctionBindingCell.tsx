@@ -64,11 +64,10 @@ export function JavaFunctionBindingCell({ data, rowIndex }: BeeTableCellProps<RO
       setExpression((prev: JavaFunctionExpressionDefinition) => {
         const newWidth =
           typeof newWidthAction === "function" ? newWidthAction(prev.classAndMethodNamesWidth) : newWidthAction;
-        if (prev.classAndMethodNamesWidth !== newWidth) {
-          return { ...prev, classAndMethodNamesWidth: newWidth };
-        } else {
-          return prev;
-        }
+        return {
+          ...prev,
+          classAndMethodNamesWidth: newWidth,
+        };
       });
     },
     [setExpression]

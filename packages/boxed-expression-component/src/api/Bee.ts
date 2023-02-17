@@ -33,7 +33,7 @@ declare global {
   // Set of Functions used to interact with the GWT Layer. Must be synchronized with ExpressionEditorService.java
   interface BeeApi {
     // It requests to the GWT layer the default ExpressionDefinition given a selected logic type. Currently it works for root expressions only.
-    getDefaultExpressionDefinition(logicType: string): ExpressionDefinition;
+    getDefaultExpressionDefinition: (logicType: string) => ExpressionDefinition;
 
     // It Navigates to "Data Type" tab page
     openDataTypePage: () => void;
