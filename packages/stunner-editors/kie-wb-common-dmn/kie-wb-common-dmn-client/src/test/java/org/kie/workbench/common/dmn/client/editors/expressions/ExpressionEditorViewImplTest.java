@@ -812,14 +812,4 @@ public class ExpressionEditorViewImplTest {
                 .hasSize(1)
                 .anyMatch(typeProps -> typeProps.isCustom && typeProps.name.equals(customDataType) && typeProps.typeRef.equals(customDataType));
     }
-
-    @Test
-    public void testOnLogicTypeSelect() {
-        doNothing().when(view).loadNewBoxedExpressionEditor();
-
-        view.onLogicTypeSelect(LITERAL_EXPRESSION.getText());
-
-        verify(literalExpressionEditorDefinition).enrich(any(), any(), any());
-        verify(view).loadNewBoxedExpressionEditor();
-    }
 }
