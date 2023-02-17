@@ -107,6 +107,7 @@ export interface BeeTableCellRef {
   setValue?(value: string): void;
   getValue?(): string;
   setResizingWidth?: React.Dispatch<React.SetStateAction<ResizingWidth>>;
+  colSpan?: number;
 }
 
 export interface BeeTableSelection {
@@ -699,12 +700,19 @@ export function BeeTableSelectionContextProvider({ children }: React.PropsWithCh
 
           // Selecting a header cell from another header cell
           // Do not allow selecting multi-line header cells
-          if (
-            (prev.selectionEnd?.rowIndex ?? 0) < 0 &&
-            (newSelectionEnd?.rowIndex ?? 0) < 0 &&
-            prev.selectionEnd?.rowIndex !== newSelectionEnd?.rowIndex
-          ) {
-            return prev;
+          if ((prev.selectionEnd?.rowIndex ?? 0) < 0 && (newSelectionEnd?.rowIndex ?? 0) < 0) {
+            if (prev.selectionEnd?.rowIndex !== newSelectionEnd?.rowIndex) {
+              return prev;
+            } else {
+              return {
+                ...prev,
+                selectionEnd: {
+                  columnIndex: newSelectionEnd?.columnIndex ?? 0,
+                  rowIndex: Math.min(prev.selectionEnd?.rowIndex ?? 0, newSelectionEnd?.rowIndex ?? 0),
+                  isEditing: false,
+                },
+              };
+            }
           }
           // Selecting a rowIndex cell from a header cell.
           // Do not allow selecting rowIndex cells from header cells
@@ -801,6 +809,14 @@ export function BeeTableSelectionContextProvider({ children }: React.PropsWithCh
     }
   }, [activeDepth, containerCellCoordinates, depth, dispatch, isSelectionHere, parentActiveCell, selection]);
 
+  function getCellColSpan(cell?: Set<BeeTableCellRef>): number {
+    let colSpan = 1;
+    if (cell) {
+      cell.forEach((e) => (colSpan = e.colSpan ?? 1));
+    }
+    return colSpan;
+  }
+
   // Paint the selection
   useEffect(() => {
     if (!selection.active || !selection.selectionStart || !selection.selectionEnd) {
@@ -811,7 +827,31 @@ export function BeeTableSelectionContextProvider({ children }: React.PropsWithCh
     const active = selection.active;
 
     const { startRow, endRow, startColumn, endColumn } = getSelectionIterationBoundaries(selection);
+
+    const maxCellCount = currentRefs.get(0)?.size ?? 0;
+
+    Array.from(currentRefs.keys()).forEach((rowIndex) => {
+      for (let c = 0; c < maxCellCount; c++) {
+        currentRefs
+          .get(rowIndex)
+          ?.get(c)
+          ?.forEach((e) => e.setStatus?.({ isActive: false, isEditing: false, isSelected: false }));
+      }
+    });
+
     for (let r = startRow; r <= endRow; r++) {
+      const reindexedUpperRow: Array<number> = new Array<number>();
+      let reIndexUpper = 0;
+
+      if (r + 1 < 0) {
+        for (let colIndex = 0; colIndex < maxCellCount; colIndex++) {
+          if (currentRefs.get(r)?.get(colIndex)) {
+            reindexedUpperRow.push(reIndexUpper);
+            reIndexUpper += getCellColSpan(currentRefs.get(r)?.get(colIndex));
+          }
+        }
+      }
+
       // Select rowIndex cells
       currentRefs
         .get(r)
@@ -819,29 +859,46 @@ export function BeeTableSelectionContextProvider({ children }: React.PropsWithCh
         ?.forEach((e) => e.setStatus?.({ isActive: false, isEditing: false, isSelected: true }));
 
       for (let c = startColumn; c <= endColumn; c++) {
-        // Select header cells
-        if (startRow >= 0) {
+        if (r < 0) {
           currentRefs
-            .get(-1)
+            .get(r)
             ?.get(c)
             ?.forEach((e) => e.setStatus?.({ isActive: false, isEditing: false, isSelected: true }));
+          if (r + 1 < 0) {
+            const cellCollSpan = getCellColSpan(currentRefs.get(r)?.get(c));
+            for (let colSubIndex = 0; colSubIndex < cellCollSpan; colSubIndex++) {
+              currentRefs
+                .get(r + +1)
+                ?.get(reindexedUpperRow[c] + colSubIndex)
+                ?.forEach((e) => e.setStatus?.({ isActive: false, isEditing: false, isSelected: true }));
+            }
+          }
         }
 
-        // Select normal cells
-        const refs = currentRefs.get(r)?.get(c);
-        refs?.forEach((ref) =>
-          ref.setStatus?.({
-            isActive: false,
-            isEditing: false,
-            isSelected: true,
-            selectedPositions: [
-              ...(r === startRow ? [BeeTableSelectionPosition.Top] : []),
-              ...(r === endRow ? [BeeTableSelectionPosition.Bottom] : []),
-              ...(c === startColumn ? [BeeTableSelectionPosition.Left] : []),
-              ...(c === endColumn ? [BeeTableSelectionPosition.Right] : []),
-            ],
-          })
-        );
+        if (startRow >= 0) {
+          // II PROPOSE DELTING THIS, AS IT IS NON TRIVIAL TO FIND PROPER CELL IN HEADER, ONCE THERE ARE MERGED CELLS
+          // Select header cells indicating what columns are selected
+          // currentRefs
+          //   .get(-1)
+          //   ?.get(c)
+          //   ?.forEach((e) => e.setStatus?.({ isActive: false, isEditing: false, isSelected: true }));
+
+          // Select normal cells
+          const refs = currentRefs.get(r)?.get(c);
+          refs?.forEach((ref) =>
+            ref.setStatus?.({
+              isActive: false,
+              isEditing: false,
+              isSelected: true,
+              selectedPositions: [
+                ...(r === startRow ? [BeeTableSelectionPosition.Top] : []),
+                ...(r === endRow ? [BeeTableSelectionPosition.Bottom] : []),
+                ...(c === startColumn ? [BeeTableSelectionPosition.Left] : []),
+                ...(c === endColumn ? [BeeTableSelectionPosition.Right] : []),
+              ],
+            })
+          );
+        }
       }
     }
 
@@ -916,7 +973,8 @@ export function useBeeTableSelectableCellRef(
   rowIndex: number,
   columnIndex: number,
   setValue?: BeeTableCellRef["setValue"],
-  getValue?: BeeTableCellRef["getValue"]
+  getValue?: BeeTableCellRef["getValue"],
+  colSpan?: number
 ) {
   const { registerSelectableCellRef, deregisterSelectableCellRef } = useBeeTableSelectionDispatch();
 
@@ -927,11 +985,12 @@ export function useBeeTableSelectableCellRef(
       setStatus,
       setValue,
       getValue,
+      colSpan,
     });
     return () => {
       deregisterSelectableCellRef?.(rowIndex, columnIndex, ref);
     };
-  }, [columnIndex, rowIndex, getValue, setValue, registerSelectableCellRef, deregisterSelectableCellRef]);
+  }, [columnIndex, rowIndex, colSpan, getValue, setValue, registerSelectableCellRef, deregisterSelectableCellRef]);
 
   return status;
 }
@@ -958,6 +1017,7 @@ export function useBeeTableSelectableCell(
   cellRef: React.RefObject<HTMLTableCellElement>,
   rowIndex: number,
   columnIndex: number,
+  colSpan?: number,
   setValue?: BeeTableCellRef["setValue"],
   getValue?: BeeTableCellRef["getValue"]
 ) {
@@ -966,7 +1026,8 @@ export function useBeeTableSelectableCell(
     rowIndex,
     columnIndex,
     setValue,
-    getValue
+    getValue,
+    colSpan
   );
 
   const cssClasses = useMemo(() => {

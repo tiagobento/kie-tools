@@ -162,6 +162,7 @@ export function BeeTableTd<R extends object>({
     tdRef,
     rowIndex,
     columnIndex,
+    column.columns?.length ?? 1,
     undefined,
     getValue
   );

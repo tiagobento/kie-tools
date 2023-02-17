@@ -128,6 +128,7 @@ export function BeeTableTh<R extends object>({
     thRef,
     rowIndex,
     columnIndex,
+    column.columns?.length ?? 1,
     undefined,
     useCallback(() => {
       if (column.dataType) {

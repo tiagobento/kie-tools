@@ -54,7 +54,12 @@ export function BeeTableTdForAdditionalRow<R extends object>({
     column.width ? Math.max(lastColumnMinWidth ?? column.minWidth ?? 0, column.width ?? 0) : undefined
   );
 
-  const { cssClasses, onMouseDown, onDoubleClick } = useBeeTableSelectableCell(tdRef, rowIndex, columnIndex);
+  const { cssClasses, onMouseDown, onDoubleClick } = useBeeTableSelectableCell(
+    tdRef,
+    rowIndex,
+    columnIndex,
+    column.columns?.length ?? 1
+  );
 
   return isEmptyCell ? (
     <td
