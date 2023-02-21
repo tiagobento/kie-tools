@@ -101,10 +101,11 @@ export function InvocationExpression(invocationExpression: InvocationExpressionD
     (newWidthAction: React.SetStateAction<number | undefined>) => {
       setExpression((prev: InvocationExpressionDefinition) => {
         const newWidth = typeof newWidthAction === "function" ? newWidthAction(prev.entryInfoWidth) : newWidthAction;
-        return {
-          ...prev,
-          entryInfoWidth: newWidth,
-        };
+        if (prev.entryInfoWidth !== newWidth) {
+          return { ...prev, entryInfoWidth: newWidth };
+        } else {
+          return prev;
+        }
       });
     },
     [setExpression]

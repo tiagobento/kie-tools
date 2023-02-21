@@ -67,7 +67,11 @@ export function LiteralExpression(literalExpression: LiteralExpressionDefinition
     (newWidthAction: React.SetStateAction<number | undefined>) => {
       setExpression((prev: LiteralExpressionDefinition) => {
         const newWidth = typeof newWidthAction === "function" ? newWidthAction(prev.width) : newWidthAction;
-        return { ...prev, width: newWidth };
+        if (prev.width !== newWidth) {
+          return { ...prev, width: newWidth };
+        } else {
+          return prev;
+        }
       });
     },
     [setExpression]

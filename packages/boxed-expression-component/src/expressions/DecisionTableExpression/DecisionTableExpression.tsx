@@ -117,8 +117,12 @@ export function DecisionTableExpression(
         const newInputs = [...(prev.input ?? [])];
         const newWidth =
           typeof newWidthAction === "function" ? newWidthAction(newInputs[inputIndex].width) : newWidthAction;
-        newInputs[inputIndex].width = newWidth;
-        return { ...prev, input: newInputs };
+        if (newInputs![inputIndex].width !== newWidth) {
+          newInputs[inputIndex].width = newWidth;
+          return { ...prev, input: newInputs };
+        } else {
+          return prev;
+        }
       });
     },
     [setExpression]
@@ -130,8 +134,12 @@ export function DecisionTableExpression(
         const newOutputs = [...(prev.output ?? [])];
         const newWidth =
           typeof newWidthAction === "function" ? newWidthAction(newOutputs[outputIndex].width) : newWidthAction;
-        newOutputs[outputIndex].width = newWidth;
-        return { ...prev, output: newOutputs };
+        if (newOutputs[outputIndex].width !== newWidth) {
+          newOutputs[outputIndex].width = newWidth;
+          return { ...prev, output: newOutputs };
+        } else {
+          return prev;
+        }
       });
     },
     [setExpression]
@@ -143,8 +151,12 @@ export function DecisionTableExpression(
         const newAnnotations = [...(prev.annotations ?? [])];
         const newWidth =
           typeof newWidthAction === "function" ? newWidthAction(newAnnotations[annotationIndex].width) : newWidthAction;
-        newAnnotations[annotationIndex].width = newWidth;
-        return { ...prev, annotations: newAnnotations };
+        if (newAnnotations[annotationIndex].width !== newWidth) {
+          newAnnotations[annotationIndex].width = newWidth;
+          return { ...prev, annotations: newAnnotations };
+        } else {
+          return prev;
+        }
       });
     },
     [setExpression]
