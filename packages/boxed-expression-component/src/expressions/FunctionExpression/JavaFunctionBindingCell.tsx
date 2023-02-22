@@ -193,7 +193,7 @@ function getParameterLabelHelp(javaFunctionParameterLabel: string): React.ReactN
   if (javaFunctionParameterLabel === "Class name") {
     return <code>org.kie.kogito.MyClass</code>;
   } else {
-    return <code>doSomething(Integer, String, String)</code>;
+    return <code>doSomething(java.lang.Integer, double)</code>;
   }
 }
 
