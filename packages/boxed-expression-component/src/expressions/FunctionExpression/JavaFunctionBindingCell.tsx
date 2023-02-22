@@ -189,11 +189,11 @@ export function JavaFunctionBindingCell({ data, rowIndex }: BeeTableCellProps<RO
   );
 }
 
-function getParameterLabelHelp(javaFunctionParameterLabel: string): string {
+function getParameterLabelHelp(javaFunctionParameterLabel: string): React.ReactNode {
   if (javaFunctionParameterLabel === "Class name") {
-    return "org.kie.kogito.MyClass";
+    return <code>org.kie.kogito.MyClass</code>;
   } else {
-    return "doSomething(Integer, String, String)";
+    return <code>doSomething(Integer, String, String)</code>;
   }
 }
 
