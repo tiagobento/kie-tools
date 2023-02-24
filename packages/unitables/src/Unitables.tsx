@@ -149,13 +149,13 @@ export const Unitables = ({
           <div style={{ display: "flex" }} ref={containerRef}>
             <div
               className={"kie-tools--unitables-open-on-form-container"}
-              style={{ display: "flex", flexDirection: "column", marginTop: "5px", paddingLeft: "5px" }}
+              style={{ display: "flex", flexDirection: "column" }}
             >
               <OutsideRowMenu height={63} isFirstChild={true}>{`#`}</OutsideRowMenu>
-              <OutsideRowMenu height={64.5} borderBottomSizeBasis={1}>{`#`}</OutsideRowMenu>
+              <OutsideRowMenu height={64.2} borderBottomSizeBasis={1}>{`#`}</OutsideRowMenu>
               {rows.map((e, rowIndex) => (
                 <Tooltip key={rowIndex} content={`Open row ${rowIndex + 1} in the form view`}>
-                  <OutsideRowMenu height={61} isLastChild={rowIndex === rows.length - 1}>
+                  <OutsideRowMenu height={60.8} isLastChild={rowIndex === rows.length - 1}>
                     <Button
                       className={"kie-tools--masthead-hoverable"}
                       variant={ButtonVariant.plain}
@@ -243,7 +243,7 @@ function OutsideRowMenu({
     <div
       style={{
         width: "60px",
-        height: `${height + (isFirstChild ? 3 : 0) + (isLastChild ? 2 : 0)}px`,
+        height: `${height + (isFirstChild ? 3 : 0) + (isLastChild ? 1.6 : 0)}px`,
         display: "flex",
         fontSize: "16px",
         color: "gray",
