@@ -48,10 +48,8 @@ interface Props {
 }
 
 export const Unitables = ({
-  jsonSchema,
   rows,
   setRows,
-  error,
   setError,
   openRow,
   i18n,

@@ -15,7 +15,7 @@
  */
 
 import * as React from "react";
-import { PropsWithChildren, useCallback, useImperativeHandle, useRef } from "react";
+import { PropsWithChildren, useCallback, useImperativeHandle, useRef, useEffect } from "react";
 import { AutoRow } from "./uniforms/AutoRow";
 import { createPortal } from "react-dom";
 import { context as UniformsContext } from "uniforms";
@@ -53,10 +53,19 @@ export const UnitablesRow = React.forwardRef<UnitablesRowApi, PropsWithChildren<
       [onModelUpdate, rowIndex]
     );
 
-    useImperativeHandle(forwardRef, () => ({
-      submit: () => autoRowRef.current?.submit(),
-      reset: onSubmit,
-    }));
+    useImperativeHandle(
+      forwardRef,
+      () => ({
+        submit: () => autoRowRef.current?.submit(),
+        reset: onSubmit,
+      }),
+      [onSubmit]
+    );
+
+    // Submits the form in the first render triggering the onValidate function
+    useEffect(() => {
+      autoRowRef.current?.submit();
+    }, [autoRowRef]);
 
     return (
       <>
@@ -69,6 +78,7 @@ export const UnitablesRow = React.forwardRef<UnitablesRowApi, PropsWithChildren<
           onSubmit={onSubmit}
           onValidate={onValidate}
           placeholder={true}
+          validate={"onSubmit"}
         >
           <UniformsContext.Consumer>
             {(uniformsContext) => (
