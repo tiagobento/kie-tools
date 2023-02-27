@@ -43,13 +43,11 @@ export const UNITABLES_COLUMN_MIN_WIDTH = 150;
 
 export type ROWTYPE = Record<string, any> & { id: string };
 
-const EMPTY_SYMBOL = "";
-
 export interface UnitablesBeeTable {
   id: string;
   i18n: BoxedExpressionEditorI18n;
   rows: ROWTYPE[];
-  setRows: React.Dispatch<React.SetStateAction<object[]>>;
+  setInputRows: React.Dispatch<React.SetStateAction<object[]>>;
   columns: UnitablesColumnType[];
   scrollableParentRef: React.RefObject<HTMLElement>;
   rowWrapper?: React.FunctionComponent<React.PropsWithChildren<{ row: ROWTYPE; rowIndex: number }>>;
@@ -60,7 +58,7 @@ export function UnitablesBeeTable({
   i18n,
   columns,
   rows,
-  setRows,
+  setInputRows,
   scrollableParentRef,
   rowWrapper,
 }: UnitablesBeeTable) {
@@ -150,7 +148,7 @@ export function UnitablesBeeTable({
 
   const onRowAdded = useCallback(
     (args: { beforeIndex: number }) => {
-      setRows((prev) => {
+      setInputRows((prev) => {
         const n = [...(prev ?? [])];
         n.splice(
           args.beforeIndex,
@@ -164,12 +162,12 @@ export function UnitablesBeeTable({
         return n;
       });
     },
-    [setRows]
+    [setInputRows]
   );
 
   const onRowDuplicated = useCallback(
     (args: { rowIndex: number }) => {
-      setRows((prev) => {
+      setInputRows((prev) => {
         const n = [...(prev ?? [])];
         n.splice(args.rowIndex, 0, {
           ...JSON.parse(JSON.stringify(prev[args.rowIndex])),
@@ -178,7 +176,7 @@ export function UnitablesBeeTable({
         return n;
       });
     },
-    [setRows]
+    [setInputRows]
   );
 
   return (

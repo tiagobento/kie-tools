@@ -36,7 +36,7 @@ import { generateUuid } from "@kie-tools/boxed-expression-component/dist/api";
 interface Props {
   jsonSchema: object;
   rows: object[];
-  setRows: React.Dispatch<React.SetStateAction<object[]>>;
+  setInputRows: React.Dispatch<React.SetStateAction<object[]>>;
   error: boolean;
   setError: React.Dispatch<React.SetStateAction<boolean>>;
   openRow: (rowIndex: number) => void;
@@ -49,7 +49,7 @@ interface Props {
 
 export const Unitables = ({
   rows,
-  setRows,
+  setInputRows,
   setError,
   openRow,
   i18n,
@@ -59,11 +59,8 @@ export const Unitables = ({
   scrollableParentRef,
 }: Props) => {
   const inputErrorBoundaryRef = useRef<ErrorBoundary>(null);
-
   const [formsDivRendered, setFormsDivRendered] = useState<boolean>(false);
-
-  const { columns: unitablesColumns } = useUnitablesColumns(jsonSchemaBridge, rows, setRows, propertiesEntryPath);
-
+  const { columns: unitablesColumns } = useUnitablesColumns(jsonSchemaBridge, setInputRows, propertiesEntryPath);
   const inputUid = useMemo(() => nextId(), []);
 
   // Resets the ErrorBoundary everytime the FormSchema is updated
@@ -98,17 +95,17 @@ export const Unitables = ({
   }, [formsDivRendered, rows, containerRef, searchRecursively]);
   // Set in-cell input heights (end)
 
-  const onModelUpdate = useCallback(
-    (model: object, index: number) => {
-      setRows?.((prev) => {
-        console.info(`prev model (${index}) ${JSON.stringify(prev)}`);
-        console.info(`updating model (${index}) ${JSON.stringify(model)}`);
+  const onInputUpdate = useCallback(
+    (newInput: object, index: number) => {
+      setInputRows?.((prev) => {
+        console.info(`prev inputs (${index}) ${JSON.stringify(prev)}`);
+        console.info(`updating inputs (${index}) ${JSON.stringify(newInput)}`);
         const n = [...prev];
-        n[index] = model;
+        n[index] = newInput;
         return n;
       });
     },
-    [setRows]
+    [setInputRows]
   );
 
   const rowWrapper = useCallback(
@@ -121,17 +118,19 @@ export const Unitables = ({
       row: object;
     }>) => {
       return (
-        <UnitablesRowWrapper
+        <UnitablesRow
+          key={rowIndex}
+          formsId={FORMS_ID}
           rowIndex={rowIndex}
-          model={row}
+          rowInput={row}
           jsonSchemaBridge={jsonSchemaBridge}
-          onModelUpdate={onModelUpdate}
+          onInputUpdate={onInputUpdate}
         >
           {children}
-        </UnitablesRowWrapper>
+        </UnitablesRow>
       );
     },
-    [jsonSchemaBridge, onModelUpdate]
+    [jsonSchemaBridge, onInputUpdate]
   );
 
   const beeTableRows = useMemo<ROWTYPE[]>(() => {
@@ -172,7 +171,7 @@ export const Unitables = ({
               rows={beeTableRows}
               columns={unitablesColumns}
               id={inputUid}
-              setRows={setRows}
+              setInputRows={setInputRows}
             />
           </div>
         </ErrorBoundary>
@@ -182,32 +181,6 @@ export const Unitables = ({
     </>
   );
 };
-
-function UnitablesRowWrapper({
-  children,
-  rowIndex,
-  model,
-  jsonSchemaBridge,
-  onModelUpdate,
-}: React.PropsWithChildren<{
-  rowIndex: number;
-  model: object;
-  jsonSchemaBridge: UnitablesJsonSchemaBridge;
-  onModelUpdate: (model: object, index: number) => void;
-}>) {
-  return (
-    <UnitablesRow
-      key={rowIndex}
-      formsId={FORMS_ID}
-      rowIndex={rowIndex}
-      model={model}
-      jsonSchemaBridge={jsonSchemaBridge}
-      onModelUpdate={onModelUpdate}
-    >
-      {children}
-    </UnitablesRow>
-  );
-}
 
 function InputError() {
   return (

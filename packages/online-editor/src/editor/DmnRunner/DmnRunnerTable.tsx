@@ -42,7 +42,7 @@ interface Props {
 export function DmnRunnerTable({ setPanelOpen }: Props) {
   const extendedServices = useExtendedServices();
   const dmnRunnerState = useDmnRunnerState();
-  const dmnRunnerDispatch = useDmnRunnerDispatch();
+  const { preparePayload, setCurrentInputRowIndex, setError, setInputRows, setMode } = useDmnRunnerDispatch();
   const [dmnRunnerTableError, setDmnRunnerTableError] = useState<boolean>(false);
   const dmnRunnerTableErrorBoundaryRef = useRef<ErrorBoundary>(null);
 
@@ -75,11 +75,11 @@ export function DmnRunnerTable({ setPanelOpen }: Props) {
 
   const openRow = useCallback(
     (rowIndex: number) => {
-      dmnRunnerDispatch.setMode(DmnRunnerMode.FORM);
-      dmnRunnerDispatch.setCurrentInputRowIndex(rowIndex);
+      setMode(DmnRunnerMode.FORM);
+      setCurrentInputRowIndex(rowIndex);
       setPanelOpen(PanelId.NONE);
     },
-    [dmnRunnerDispatch, setPanelOpen]
+    [setMode, setCurrentInputRowIndex, setPanelOpen]
   );
 
   // FIXME: Tiago -> !
@@ -92,8 +92,7 @@ export function DmnRunnerTable({ setPanelOpen }: Props) {
   useCancelableEffect(
     useCallback(
       ({ canceled }) => {
-
-        Promise.all(dmnRunnerState.inputRows.map((data) => dmnRunnerDispatch.preparePayload(data)))
+        Promise.all(dmnRunnerState.inputRows.map((data) => preparePayload(data)))
           .then((payloads) =>
             Promise.all(
               payloads.map((payload) => {
@@ -112,7 +111,7 @@ export function DmnRunnerTable({ setPanelOpen }: Props) {
             const runnerResults: Array<DecisionResult[] | undefined> = [];
             for (const result of results) {
               if (Object.hasOwnProperty.call(result, "details") && Object.hasOwnProperty.call(result, "stack")) {
-                dmnRunnerDispatch.setError(true);
+                setError(true);
                 break;
               }
               if (result) {
@@ -123,7 +122,7 @@ export function DmnRunnerTable({ setPanelOpen }: Props) {
             setDmnRunnerResults(runnerResults);
           });
       },
-      [dmnRunnerDispatch, dmnRunnerState.inputRows, extendedServices.client]
+      [preparePayload, setError, dmnRunnerState.inputRows, extendedServices.client]
     )
   );
 
@@ -179,9 +178,9 @@ export function DmnRunnerTable({ setPanelOpen }: Props) {
                     jsonSchema={dmnRunnerState.jsonSchema}
                     openRow={openRow}
                     rows={dmnRunnerState.inputRows}
-                    setRows={dmnRunnerDispatch.setInputRows}
+                    setInputRows={setInputRows}
                     error={dmnRunnerState.error}
-                    setError={dmnRunnerDispatch.setError}
+                    setError={setError}
                     jsonSchemaBridge={jsonSchemaBridge}
                     propertiesEntryPath={"definitions.InputSet"}
                     containerRef={inputsContainerRef}
