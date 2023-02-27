@@ -99,7 +99,7 @@ export function ExpressionDefinitionHeaderMenu({
     if (expressionName !== selectedExpressionName || dataType !== selectedDataType) {
       onExpressionHeaderUpdated({ name: expressionName, dataType: dataType });
     }
-  }, [expressionName, onExpressionHeaderUpdated, dataType]);
+  }, [expressionName, selectedExpressionName, dataType, selectedDataType, onExpressionHeaderUpdated]);
 
   const resetFormData = useCallback(() => {
     setExpressionName((prevState) => (prevState !== selectedExpressionName ? selectedExpressionName : prevState));
