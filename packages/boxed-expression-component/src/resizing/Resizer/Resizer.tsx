@@ -62,6 +62,9 @@ export const Resizer: React.FunctionComponent<ResizerProps> = ({
     if (!resizingStop__data) {
       return;
     }
+    if (resizingWidth?.value === width) {
+      return;
+    }
 
     for (const resizerRef of getResizerRefs()) {
       resizerRef.setWidth?.((prev) => {
@@ -83,7 +86,16 @@ export const Resizer: React.FunctionComponent<ResizerProps> = ({
     setWidth?.(resizingWidth?.value);
 
     setResizingStop__data(0); // Prevent this effect from running after it just ran. Let onResizeStop trigger it.
-  }, [getResizerRefs, resizingWidth?.value, resizingStop__data, setResizing, setResizingWidth, setWidth, _setResizing]);
+  }, [
+    getResizerRefs,
+    resizingWidth?.value,
+    resizingStop__data,
+    setResizing,
+    setResizingWidth,
+    setWidth,
+    _setResizing,
+    width,
+  ]);
 
   //
   // onResizeStop batching strategy (end)
