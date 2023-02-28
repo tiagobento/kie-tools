@@ -30,7 +30,7 @@ import { UnitablesI18n } from "./i18n";
 import { FORMS_ID, UnitablesJsonSchemaBridge } from "./uniforms";
 import { useUnitablesColumns } from "./UnitablesColumns";
 import "./Unitables.css";
-import { UnitablesRow } from "./UnitablesRow";
+import { UnitablesRow, UnitablesRowApi } from "./UnitablesRow";
 import { generateUuid } from "@kie-tools/boxed-expression-component/dist/api";
 
 interface Props {
@@ -62,6 +62,7 @@ export const Unitables = ({
   const [formsDivRendered, setFormsDivRendered] = useState<boolean>(false);
   const { columns: unitablesColumns } = useUnitablesColumns(jsonSchemaBridge, setInputRows, propertiesEntryPath);
   const inputUid = useMemo(() => nextId(), []);
+  const unitableRowRefs = useRef<(UnitablesRowApi | null)[]>([]);
 
   // Resets the ErrorBoundary everytime the FormSchema is updated
   useEffect(() => {
@@ -95,15 +96,32 @@ export const Unitables = ({
   }, [formsDivRendered, rows, containerRef, searchRecursively]);
   // Set in-cell input heights (end)
 
-  const onInputUpdate = useCallback(
-    (newInput: object, index: number) => {
-      setInputRows?.((prev) => {
-        console.info(`prev inputs (${index}) ${JSON.stringify(prev)}`);
-        console.info(`updating inputs (${index}) ${JSON.stringify(newInput)}`);
-        const n = [...prev];
-        n[index] = newInput;
-        return n;
-      });
+  const onRowSubmit = useCallback((newInputRow: object, rowIndex: number) => {
+    //
+  }, []);
+
+  // debounce all rows;
+  const timeout = useRef<number | undefined>(undefined);
+  const cachedValue = useRef<object[]>([]);
+  const onRowValidate = useCallback(
+    (rowInput: object, rowIndex: number) => {
+      // save new rowInput of each row;
+      cachedValue.current[rowIndex] = rowInput;
+      if (timeout.current) {
+        window.clearTimeout(timeout.current);
+      }
+
+      timeout.current = window.setTimeout(() => {
+        // submit new value in all rows;
+        setInputRows?.((currentInputRows) => {
+          console.info(`prev inputs (${rowIndex}) ${JSON.stringify(currentInputRows)}`);
+          console.info(`updating inputs (${rowIndex}) ${JSON.stringify(rowInput)}`);
+          if (JSON.stringify(cachedValue.current) === JSON.stringify(currentInputRows)) {
+            return currentInputRows;
+          }
+          return cachedValue.current;
+        });
+      }, 400); // autoSaveDelay
     },
     [setInputRows]
   );
@@ -119,25 +137,27 @@ export const Unitables = ({
     }>) => {
       return (
         <UnitablesRow
+          ref={(ref) => (unitableRowRefs.current[rowIndex] = ref)}
           key={rowIndex}
           formsId={FORMS_ID}
           rowIndex={rowIndex}
           rowInput={row}
           jsonSchemaBridge={jsonSchemaBridge}
-          onInputUpdate={onInputUpdate}
+          onRowValidate={onRowValidate}
+          onRowSubmit={onRowSubmit}
         >
           {children}
         </UnitablesRow>
       );
     },
-    [jsonSchemaBridge, onInputUpdate]
+    [jsonSchemaBridge, onRowSubmit, onRowValidate]
   );
 
-  const beeTableRows = useMemo<ROWTYPE[]>(() => {
-    return rows.map((row) => {
-      return { id: generateUuid(), ...row };
-    });
-  }, [rows]);
+  // const beeTableRows = useMemo<ROWTYPE[]>(() => {
+  //   return rows.map((row) => {
+  //     return { id: generateUuid(), ...row };
+  //   });
+  // }, [rows]);
 
   return (
     <>
@@ -168,7 +188,7 @@ export const Unitables = ({
               rowWrapper={rowWrapper}
               scrollableParentRef={scrollableParentRef}
               i18n={i18n}
-              rows={beeTableRows}
+              rows={rows}
               columns={unitablesColumns}
               id={inputUid}
               setInputRows={setInputRows}

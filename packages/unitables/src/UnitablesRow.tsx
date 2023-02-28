@@ -26,16 +26,16 @@ interface Props {
   rowIndex: number;
   jsonSchemaBridge: UnitablesJsonSchemaBridge;
   rowInput: object;
-  onInputUpdate: (rowInput: object, index: number) => void;
+  onRowValidate: (rowInput: object, index: number) => void;
+  onRowSubmit: (rowInput: object, index: number) => void;
 }
 
 export interface UnitablesRowApi {
-  submit: () => void;
-  reset: (defaultValues?: object) => void;
+  submit: (rowInput?: object) => void;
 }
 
 export const UnitablesRow = React.forwardRef<UnitablesRowApi, PropsWithChildren<Props>>(
-  ({ children, formsId, rowIndex, jsonSchemaBridge, rowInput, onInputUpdate }, forwardRef) => {
+  ({ children, formsId, rowIndex, jsonSchemaBridge, rowInput, onRowSubmit, onRowValidate }, forwardRef) => {
     const autoRowRef = useRef<HTMLFormElement>(null);
 
     const onSubmit = useCallback(
@@ -47,18 +47,17 @@ export const UnitablesRow = React.forwardRef<UnitablesRowApi, PropsWithChildren<
 
     const onValidate = useCallback(
       (rowInput: object, error: object) => {
-        onInputUpdate(rowInput, rowIndex);
+        onRowValidate(rowInput, rowIndex);
       },
-      [onInputUpdate, rowIndex]
+      [onRowValidate, rowIndex]
     );
 
     useImperativeHandle(
       forwardRef,
       () => ({
-        submit: () => autoRowRef.current?.submit(),
-        reset: onSubmit,
+        submit: (newRowInput?: object) => onRowSubmit(newRowInput ?? rowInput, rowIndex),
       }),
-      [onSubmit]
+      [onRowSubmit, rowInput, rowIndex]
     );
 
     // Submits the form in the first render triggering the onValidate function
@@ -71,12 +70,11 @@ export const UnitablesRow = React.forwardRef<UnitablesRowApi, PropsWithChildren<
         <AutoRow
           ref={autoRowRef}
           schema={jsonSchemaBridge}
-          autosave={true}
           model={rowInput}
           onSubmit={onSubmit}
           onValidate={onValidate}
           placeholder={true}
-          validate={"onSubmit"}
+          validate={"onChange"}
         >
           <UniformsContext.Consumer>
             {(uniformsContext) => (

@@ -41,16 +41,16 @@ import { AUTO_ROW_ID } from "../uniforms/UnitablesJsonSchemaBridge";
 
 export const UNITABLES_COLUMN_MIN_WIDTH = 150;
 
-export type ROWTYPE = Record<string, any> & { id: string };
+export type ROWTYPE = Record<string, any>;
 
 export interface UnitablesBeeTable {
   id: string;
   i18n: BoxedExpressionEditorI18n;
-  rows: ROWTYPE[];
+  rows: object[];
   setInputRows: React.Dispatch<React.SetStateAction<object[]>>;
   columns: UnitablesColumnType[];
   scrollableParentRef: React.RefObject<HTMLElement>;
-  rowWrapper?: React.FunctionComponent<React.PropsWithChildren<{ row: ROWTYPE; rowIndex: number }>>;
+  rowWrapper?: React.FunctionComponent<React.PropsWithChildren<{ row: object; rowIndex: number }>>;
 }
 
 export function UnitablesBeeTable({
@@ -134,10 +134,6 @@ export function UnitablesBeeTable({
     });
   }, [columns, uuid]);
 
-  const beeTableRows = useMemo<ROWTYPE[]>(() => {
-    return rows;
-  }, [rows]);
-
   const getColumnKey = useCallback((column: ReactTable.ColumnInstance<ROWTYPE>) => {
     return column.originalId ?? column.id;
   }, []);
@@ -191,7 +187,7 @@ export function UnitablesBeeTable({
       headerVisibility={BeeTableHeaderVisibility.AllLevels}
       operationConfig={beeTableOperationConfig}
       columns={beeTableColumns}
-      rows={beeTableRows}
+      rows={rows}
       enableKeyboardNavigation={true}
       shouldRenderRowIndexColumn={true}
       shouldShowRowsInlineControls={true}
