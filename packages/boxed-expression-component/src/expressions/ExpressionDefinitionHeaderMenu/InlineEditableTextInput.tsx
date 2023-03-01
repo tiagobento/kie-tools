@@ -36,10 +36,12 @@ export const InlineEditableTextInput: React.FunctionComponent<InlineEditableText
   const onInputBlur = useCallback(
     (event: FocusEvent<HTMLInputElement>) => {
       const changedText = event.target.value;
-      onChange(changedText);
+      if (changedText !== value) {
+        onChange(changedText);
+      }
       setToggle(true);
     },
-    [onChange]
+    [onChange, value]
   );
 
   const onInputKeyDown = useMemo(
