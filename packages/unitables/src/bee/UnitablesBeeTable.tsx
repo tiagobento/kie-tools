@@ -180,11 +180,12 @@ export function UnitablesBeeTable({
 
   const onRowDeleted = useCallback(
     (args: { rowIndex: number }) => {
-      // setInputRows((prev) => {
-      //   const n = [...(prev ?? [])];
-      //   n.splice(args.rowIndex, 1);
-      //   return n
-      // });
+      setInputRows((prev) => {
+        const n = [...(prev ?? [])];
+        n.splice(args.rowIndex, 1);
+        n[args.rowIndex] = { ...n[args.rowIndex], id: generateUuid() };
+        return n;
+      });
     },
     [setInputRows]
   );

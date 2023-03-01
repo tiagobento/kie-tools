@@ -127,7 +127,11 @@ export const Unitables = ({
         setInputRows?.((currentInputRows) => {
           console.info(`prev inputs (${rowIndex}) ${JSON.stringify(currentInputRows)}`);
           console.info(`updating inputs (${rowIndex}) ${JSON.stringify(rowInput)}`);
-          if (JSON.stringify(cachedRows.current) === JSON.stringify(currentInputRows)) {
+          // if cached length isn't equal to current a table event occured. e.g. add, delete;
+          if (
+            cachedRows.current.length !== currentInputRows.length ||
+            JSON.stringify(cachedRows.current) === JSON.stringify(currentInputRows)
+          ) {
             return currentInputRows;
           }
           return [...cachedRows.current];
