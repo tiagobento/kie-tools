@@ -90,6 +90,8 @@ export function DmnRunnerDrawerPanelContent(props: Props) {
     contentFlexDirection: "row",
     buttonPosition: ButtonPosition.OUTPUT,
   });
+  const [selectedRow, selectRow] = useState<string>("");
+  const [rowSelectionIsOpen, openRowSelection] = useState<boolean>(false);
 
   const formInputs: InputRow = useMemo(() => {
     return dmnRunnerState.inputRows[dmnRunnerState.currentInputRowIndex];
@@ -281,9 +283,6 @@ export function DmnRunnerDrawerPanelContent(props: Props) {
     },
     [dmnRunnerState.currentInputRowIndex, setInputRows]
   );
-
-  const [selectedRow, selectRow] = useState<string>("");
-  const [rowSelectionIsOpen, openRowSelection] = useState<boolean>(false);
 
   const onSelectRow = useCallback((event) => {
     openRowSelection(false);

@@ -110,9 +110,16 @@ export function useForm<Input extends Record<string, any>, Schema extends Record
       const bridge = formValidator.getBridge(form);
       setJsonSchemaBridge((previousBridge) => {
         setFormInputs((currentFormInputs) => {
-          const newFormInputs = removeDeletedPropertiesAndAddDefaultValues(currentFormInputs, bridge, previousBridge);
+          let newFormInputs: Input = { ...currentFormInputs };
+          if (previousBridge !== undefined) {
+            newFormInputs = removeDeletedPropertiesAndAddDefaultValues(
+              currentFormInputs,
+              bridge,
+              previousBridge
+            ) as Input;
+          }
           if (Object.keys(diff(currentFormInputs ?? {}, newFormInputs ?? {})).length > 0) {
-            return newFormInputs as Input;
+            return newFormInputs;
           }
           return currentFormInputs;
         });
