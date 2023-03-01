@@ -100,12 +100,12 @@ export const Unitables = ({
     //
   }, []);
 
-  // debounce all rows;
+  // Manually perform a autosaveDelay to use a batch setState from React;
   const timeout = useRef<number | undefined>(undefined);
   const cachedValue = useRef<object[]>([]);
   const onRowValidate = useCallback(
     (rowInput: object, rowIndex: number) => {
-      // save new rowInput of each row;
+      // save all rowInputs before timeout;
       cachedValue.current[rowIndex] = rowInput;
       if (timeout.current) {
         window.clearTimeout(timeout.current);
@@ -153,11 +153,11 @@ export const Unitables = ({
     [jsonSchemaBridge, onRowSubmit, onRowValidate]
   );
 
-  // const beeTableRows = useMemo<ROWTYPE[]>(() => {
-  //   return rows.map((row) => {
-  //     return { id: generateUuid(), ...row };
-  //   });
-  // }, [rows]);
+  const beeTableRows = useMemo<ROWTYPE[]>(() => {
+    return rows.map((row) => {
+      return { id: generateUuid(), ...row };
+    });
+  }, [rows]);
 
   return (
     <>
@@ -188,7 +188,7 @@ export const Unitables = ({
               rowWrapper={rowWrapper}
               scrollableParentRef={scrollableParentRef}
               i18n={i18n}
-              rows={rows}
+              rows={beeTableRows}
               columns={unitablesColumns}
               id={inputUid}
               setInputRows={setInputRows}
