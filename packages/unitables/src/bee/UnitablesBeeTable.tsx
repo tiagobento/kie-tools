@@ -146,15 +146,7 @@ export function UnitablesBeeTable({
     (args: { beforeIndex: number }) => {
       setInputRows((prev) => {
         const n = [...(prev ?? [])];
-        n.splice(
-          args.beforeIndex,
-          0,
-          Object.keys(prev[0]).reduce((acc, k) => {
-            acc[k] = undefined;
-            return acc;
-          }, {} as Record<string, any>)
-        );
-
+        n.splice(args.beforeIndex, 0, { id: generateUuid() });
         return n;
       });
     },
