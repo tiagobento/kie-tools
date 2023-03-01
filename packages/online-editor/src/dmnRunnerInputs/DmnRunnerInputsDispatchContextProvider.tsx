@@ -37,7 +37,7 @@ export function DmnRunnerInputsDispatchContextProvider(props: React.PropsWithChi
         workspaceFileRelativePath: workspaceFile.relativePath,
       });
 
-      dmnRunnerInputsService.companionFsService.createOrOverwrite(
+      return dmnRunnerInputsService.companionFsService.createOrOverwrite(
         { workspaceId: workspaceFile.workspaceId, workspaceFileRelativePath: workspaceFile.relativePath },
         JSON.stringify(EMPTY_DMN_RUNNER_INPUTS)
       );

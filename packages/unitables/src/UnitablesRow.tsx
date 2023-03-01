@@ -26,8 +26,7 @@ interface Props {
   rowIndex: number;
   jsonSchemaBridge: UnitablesJsonSchemaBridge;
   rowInput: object;
-  onRowValidate: (rowInput: object, index: number) => void;
-  onRowSubmit: (rowInput: object, index: number) => void;
+  onValidateRow: (rowInput: object, index: number) => void;
 }
 
 export interface UnitablesRowApi {
@@ -35,7 +34,7 @@ export interface UnitablesRowApi {
 }
 
 export const UnitablesRow = React.forwardRef<UnitablesRowApi, PropsWithChildren<Props>>(
-  ({ children, formsId, rowIndex, jsonSchemaBridge, rowInput, onRowSubmit, onRowValidate }, forwardRef) => {
+  ({ children, formsId, rowIndex, jsonSchemaBridge, rowInput, onValidateRow }, forwardRef) => {
     const autoRowRef = useRef<HTMLFormElement>(null);
 
     const onSubmit = useCallback(
@@ -47,17 +46,9 @@ export const UnitablesRow = React.forwardRef<UnitablesRowApi, PropsWithChildren<
 
     const onValidate = useCallback(
       (rowInput: object, error: object) => {
-        onRowValidate(rowInput, rowIndex);
+        onValidateRow(rowInput, rowIndex);
       },
-      [onRowValidate, rowIndex]
-    );
-
-    useImperativeHandle(
-      forwardRef,
-      () => ({
-        submit: (newRowInput?: object) => onRowSubmit(newRowInput ?? rowInput, rowIndex),
-      }),
-      [onRowSubmit, rowInput, rowIndex]
+      [onValidateRow, rowIndex]
     );
 
     // Submits the form in the first render triggering the onValidate function

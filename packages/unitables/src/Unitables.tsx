@@ -30,8 +30,9 @@ import { UnitablesI18n } from "./i18n";
 import { FORMS_ID, UnitablesJsonSchemaBridge } from "./uniforms";
 import { useUnitablesColumns } from "./UnitablesColumns";
 import "./Unitables.css";
-import { UnitablesRow, UnitablesRowApi } from "./UnitablesRow";
+import { UnitablesRow } from "./UnitablesRow";
 import { generateUuid } from "@kie-tools/boxed-expression-component/dist/api";
+import { EMPTY_DMN_RUNNER_INPUTS } from "../../online-editor/src/dmnRunnerInputs/DmnRunnerInputsService";
 
 interface Props {
   jsonSchema: object;
@@ -62,7 +63,20 @@ export const Unitables = ({
   const [formsDivRendered, setFormsDivRendered] = useState<boolean>(false);
   const { columns: unitablesColumns } = useUnitablesColumns(jsonSchemaBridge, setInputRows, propertiesEntryPath);
   const inputUid = useMemo(() => nextId(), []);
-  const unitableRowRefs = useRef<(UnitablesRowApi | null)[]>([]);
+  const cachedRows = useRef<object[]>([...EMPTY_DMN_RUNNER_INPUTS]);
+
+  // Erase cache;
+  useLayoutEffect(() => {
+    if (JSON.stringify(rows) === JSON.stringify(EMPTY_DMN_RUNNER_INPUTS)) {
+      cachedRows.current = [...EMPTY_DMN_RUNNER_INPUTS];
+    }
+  }, [rows]);
+
+  const beeTableRows = useMemo<ROWTYPE[]>(() => {
+    return rows.map((row) => {
+      return { id: generateUuid(), ...row };
+    });
+  }, [rows]);
 
   // Resets the ErrorBoundary everytime the FormSchema is updated
   useEffect(() => {
@@ -96,30 +110,27 @@ export const Unitables = ({
   }, [formsDivRendered, rows, containerRef, searchRecursively]);
   // Set in-cell input heights (end)
 
-  const onRowSubmit = useCallback((newInputRow: object, rowIndex: number) => {
-    //
-  }, []);
-
-  // Manually perform a autosaveDelay to use a batch setState from React;
+  // Perform a autosaveDelay and update all rows simultaneously;
   const timeout = useRef<number | undefined>(undefined);
-  const cachedValue = useRef<object[]>([]);
-  const onRowValidate = useCallback(
+  const onValidateRow = useCallback(
     (rowInput: object, rowIndex: number) => {
-      // save all rowInputs before timeout;
-      cachedValue.current[rowIndex] = rowInput;
+      // Save all rowInputs before timeout;
+      cachedRows.current[rowIndex] = rowInput;
+
+      // Debounce;
       if (timeout.current) {
         window.clearTimeout(timeout.current);
       }
 
       timeout.current = window.setTimeout(() => {
-        // submit new value in all rows;
+        // Update all rows if a value was changed;
         setInputRows?.((currentInputRows) => {
           console.info(`prev inputs (${rowIndex}) ${JSON.stringify(currentInputRows)}`);
           console.info(`updating inputs (${rowIndex}) ${JSON.stringify(rowInput)}`);
-          if (JSON.stringify(cachedValue.current) === JSON.stringify(currentInputRows)) {
+          if (JSON.stringify(cachedRows.current) === JSON.stringify(currentInputRows)) {
             return currentInputRows;
           }
-          return [...cachedValue.current];
+          return [...cachedRows.current];
         });
       }, 400); // autoSaveDelay
     },
@@ -137,27 +148,19 @@ export const Unitables = ({
     }>) => {
       return (
         <UnitablesRow
-          ref={(ref) => (unitableRowRefs.current[rowIndex] = ref)}
           key={rowIndex}
           formsId={FORMS_ID}
           rowIndex={rowIndex}
           rowInput={row}
           jsonSchemaBridge={jsonSchemaBridge}
-          onRowValidate={onRowValidate}
-          onRowSubmit={onRowSubmit}
+          onValidateRow={onValidateRow}
         >
           {children}
         </UnitablesRow>
       );
     },
-    [jsonSchemaBridge, onRowSubmit, onRowValidate]
+    [jsonSchemaBridge, onValidateRow]
   );
-
-  const beeTableRows = useMemo<ROWTYPE[]>(() => {
-    return rows.map((row) => {
-      return { id: generateUuid(), ...row };
-    });
-  }, [rows]);
 
   return (
     <>

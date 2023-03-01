@@ -20,7 +20,7 @@ import { WorkspaceFile } from "@kie-tools-core/workspaces-git-fs/dist/context/Wo
 
 interface DmnInputsDispatchContextType {
   dmnRunnerInputsService: DmnRunnerInputsService;
-  deletePersistedInputRows: (workspaceFile: WorkspaceFile) => void;
+  deletePersistedInputRows: (workspaceFile: WorkspaceFile) => Promise<void>;
   getInputRowsForDownload: (workspaceFile: WorkspaceFile) => Promise<Blob | undefined>;
   uploadInputRows: (workspaceFile: WorkspaceFile, file: File) => void;
 }

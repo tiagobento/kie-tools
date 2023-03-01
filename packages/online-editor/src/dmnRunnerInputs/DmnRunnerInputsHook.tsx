@@ -30,7 +30,7 @@ interface DmnRunnerInputs {
 }
 
 export function useDmnRunnerInputs(workspaceFile: WorkspaceFile): DmnRunnerInputs {
-  const [inputRows, setInputRows] = useState<Array<InputRow> | undefined>(undefined);
+  const [inputRows, setInputRows] = useState<Array<InputRow>>(EMPTY_DMN_RUNNER_INPUTS);
   const { dmnRunnerInputsService } = useDmnRunnerInputsDispatch();
 
   // When another TAB updates the FS, it should sync up
@@ -118,12 +118,12 @@ export function useDmnRunnerInputs(workspaceFile: WorkspaceFile): DmnRunnerInput
 
   // Updating the inputRows should update the FS
   useEffect(() => {
-    console.log("use effect triggered by input rows");
+    console.log("use effect triggered by input rows", inputRows);
     if (!workspaceFile.relativePath || !workspaceFile.workspaceId) {
       return;
     }
 
-    if (inputRows === undefined) {
+    if (JSON.stringify(inputRows) === JSON.stringify(EMPTY_DMN_RUNNER_INPUTS)) {
       return;
     }
 
@@ -137,7 +137,7 @@ export function useDmnRunnerInputs(workspaceFile: WorkspaceFile): DmnRunnerInput
   }, [dmnRunnerInputsService, workspaceFile.workspaceId, workspaceFile.relativePath, inputRows]);
 
   return {
-    inputRows: inputRows ?? EMPTY_DMN_RUNNER_INPUTS,
+    inputRows,
     setInputRows,
   };
 }
