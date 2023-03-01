@@ -167,6 +167,28 @@ export function UnitablesBeeTable({
     [setInputRows]
   );
 
+  const onRowReset = useCallback(
+    (args: { rowIndex: number }) => {
+      setInputRows((prev) => {
+        const n = [...(prev ?? [])];
+        n[args.rowIndex] = { id: generateUuid() };
+        return n;
+      });
+    },
+    [setInputRows]
+  );
+
+  const onRowDeleted = useCallback(
+    (args: { rowIndex: number }) => {
+      // setInputRows((prev) => {
+      //   const n = [...(prev ?? [])];
+      //   n.splice(args.rowIndex, 1);
+      //   return n
+      // });
+    },
+    [setInputRows]
+  );
+
   return (
     <StandaloneBeeTable
       cellComponentByColumnAccessor={cellComponentByColumnAccessor}
@@ -186,6 +208,8 @@ export function UnitablesBeeTable({
       shouldShowColumnsInlineControls={false}
       onRowAdded={onRowAdded}
       onRowDuplicated={onRowDuplicated}
+      onRowReset={onRowReset}
+      onRowDeleted={onRowDeleted}
       rowWrapper={rowWrapper}
       resizerStopBehavior={ResizerStopBehavior.SET_WIDTH_ALWAYS}
     />
