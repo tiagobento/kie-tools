@@ -15,7 +15,7 @@
  */
 
 import * as React from "react";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useCancelableEffect } from "@kie-tools-core/react-hooks/dist/useCancelableEffect";
 import { WorkspaceFile } from "@kie-tools-core/workspaces-git-fs/dist/context/WorkspacesContext";
 import { InputRow } from "@kie-tools/form-dmn";
@@ -30,7 +30,8 @@ interface DmnRunnerInputs {
 }
 
 export function useDmnRunnerInputs(workspaceFile: WorkspaceFile): DmnRunnerInputs {
-  const { dmnRunnerInputsService, inputRows, setInputRows } = useDmnRunnerInputsDispatch();
+  const [inputRows, setInputRows] = useState<Array<InputRow> | undefined>(undefined);
+  const { dmnRunnerInputsService } = useDmnRunnerInputsDispatch();
 
   // When another TAB updates the FS, it should sync up
   useCancelableEffect(
@@ -122,6 +123,10 @@ export function useDmnRunnerInputs(workspaceFile: WorkspaceFile): DmnRunnerInput
       return;
     }
 
+    if (inputRows === undefined) {
+      return;
+    }
+
     dmnRunnerInputsService.companionFsService.update(
       {
         workspaceId: workspaceFile.workspaceId,
@@ -132,7 +137,7 @@ export function useDmnRunnerInputs(workspaceFile: WorkspaceFile): DmnRunnerInput
   }, [dmnRunnerInputsService, workspaceFile.workspaceId, workspaceFile.relativePath, inputRows]);
 
   return {
-    inputRows,
+    inputRows: inputRows ?? EMPTY_DMN_RUNNER_INPUTS,
     setInputRows,
   };
 }

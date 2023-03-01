@@ -119,7 +119,7 @@ export const Unitables = ({
           if (JSON.stringify(cachedValue.current) === JSON.stringify(currentInputRows)) {
             return currentInputRows;
           }
-          return cachedValue.current;
+          return [...cachedValue.current];
         });
       }, 400); // autoSaveDelay
     },

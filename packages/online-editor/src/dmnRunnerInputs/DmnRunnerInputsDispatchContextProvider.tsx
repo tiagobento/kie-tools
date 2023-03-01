@@ -15,18 +15,15 @@
  */
 
 import * as React from "react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { WorkspaceFile } from "@kie-tools-core/workspaces-git-fs/dist/context/WorkspacesContext";
 import { DmnRunnerInputsService } from "./DmnRunnerInputsService";
 import { DmnRunnerInputsDispatchContext } from "./DmnRunnerInputsDispatchContext";
 import { decoder } from "@kie-tools-core/workspaces-git-fs/dist/encoderdecoder/EncoderDecoder";
 import { useSyncedCompanionFs } from "../companionFs/CompanionFsHooks";
 import { EMPTY_DMN_RUNNER_INPUTS } from "./DmnRunnerInputsService";
-import { InputRow } from "@kie-tools/form-dmn";
 
 export function DmnRunnerInputsDispatchContextProvider(props: React.PropsWithChildren<{}>) {
-  const [inputRows, setInputRows] = useState<Array<InputRow>>(EMPTY_DMN_RUNNER_INPUTS);
-
   const dmnRunnerInputsService = useMemo(() => {
     return new DmnRunnerInputsService();
   }, []);
@@ -81,8 +78,6 @@ export function DmnRunnerInputsDispatchContextProvider(props: React.PropsWithChi
         deletePersistedInputRows,
         getInputRowsForDownload,
         uploadInputRows,
-        inputRows,
-        setInputRows,
       }}
     >
       {props.children}
