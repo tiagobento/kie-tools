@@ -181,9 +181,13 @@ export function UnitablesBeeTable({
   const onRowDeleted = useCallback(
     (args: { rowIndex: number }) => {
       setInputRows((prev) => {
-        const n = [...(prev ?? [])];
+        const n = [...prev];
         n.splice(args.rowIndex, 1);
-        n[args.rowIndex] = { ...n[args.rowIndex], id: generateUuid() };
+        n.forEach((e, i, n) => {
+          if (i >= args.rowIndex) {
+            n[i] = { ...e, id: generateUuid() };
+          }
+        });
         return n;
       });
     },

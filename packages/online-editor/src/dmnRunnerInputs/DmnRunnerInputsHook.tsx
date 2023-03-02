@@ -66,6 +66,10 @@ export function useDmnRunnerInputs(workspaceFile: WorkspaceFile): DmnRunnerInput
                 return currentInputRows;
               }
               // Triggered by the other tab; should update;
+              console.log(
+                "should be triggered by another tab; content !== current -> companion = ",
+                companionEvent.content
+              );
               return dmnRunnerInputsService.parseDmnRunnerInputs(companionEvent.content);
             });
           }

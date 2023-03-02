@@ -125,15 +125,15 @@ export const Unitables = ({
       timeout.current = window.setTimeout(() => {
         // Update all rows if a value was changed;
         setInputRows?.((currentInputRows) => {
-          console.info(`prev inputs (${rowIndex}) ${JSON.stringify(currentInputRows)}`);
-          console.info(`updating inputs (${rowIndex}) ${JSON.stringify(rowInput)}`);
           // if cached length isn't equal to current a table event occured. e.g. add, delete;
           if (
             cachedRows.current.length !== currentInputRows.length ||
             JSON.stringify(cachedRows.current) === JSON.stringify(currentInputRows)
           ) {
+            console.log("unitables skip");
             return currentInputRows;
           }
+          console.log("unitables set inputs", cachedRows.current);
           return [...cachedRows.current];
         });
       }, 400); // autoSaveDelay
