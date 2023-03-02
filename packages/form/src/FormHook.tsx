@@ -65,6 +65,66 @@ export function useForm<Input extends Record<string, any>, Schema extends Record
   const formValidator = useMemo(() => (validator ? validator : new Validator(i18n)), [validator, i18n]);
   const [ref, setRef] = useState<HTMLFormElement | null>(null);
 
+  const onFormSubmit = useCallback(
+    (formInputs) => {
+      onSubmit?.(formInputs);
+    },
+    [onSubmit]
+  );
+
+  // Validation occurs on every change and submit.
+  const onFormValidate = useCallback(
+    (formInputs, error: any) => {
+      onValidate?.(formInputs, error);
+      setFormInputs((previousInputs) => {
+        if (Object.keys(diff(formInputs, previousInputs ?? {})).length > 0) {
+          return formInputs;
+        }
+        return previousInputs ?? {};
+      });
+      if (!error) {
+        return;
+      }
+      // if the form has an error, the error should be displayed and the outputs column should be updated anyway.
+      const {
+        details,
+        changes,
+      }: {
+        details: object[];
+        changes: Array<[string, string | number | undefined]>;
+      } = error.details.reduce(
+        (infos: any, detail: any) => {
+          if (detail.keyword === "type") {
+            // If it's a type error, it's handled by replacing the current value with a undefined value.
+            const formFieldPath = dataPathToFormFieldPath(detail.dataPath);
+            infos.changes = [...infos.changes, [formFieldPath, undefined]];
+            return infos;
+          } else if (detail.keyword === "enum") {
+            // A enum error is caused by a type error.
+            const formFieldPath = dataPathToFormFieldPath(detail.dataPath);
+            infos.changes = [...infos.changes, [formFieldPath, undefined]];
+            return infos;
+          }
+          infos.details = [...infos.details, detail];
+          return infos;
+        },
+        { details: [], changes: [] }
+      );
+      // Update formInputs with the current change.
+      changes.forEach(([formFieldPath, fieldValue]) => {
+        formFieldPath?.split(".")?.reduce((deeper, field, index, array) => {
+          if (index === array.length - 1) {
+            deeper[field] = fieldValue;
+          } else {
+            return deeper[field];
+          }
+        }, formInputs);
+      });
+      return { details };
+    },
+    [onValidate, setFormInputs]
+  );
+
   const removeDeletedPropertiesAndAddDefaultValues = useCallback(
     (formInputs: object, bridge: FormJsonSchemaBridge, previousBridge?: FormJsonSchemaBridge) => {
       const propertiesDifference = diff(
@@ -152,66 +212,6 @@ export function useForm<Input extends Record<string, any>, Schema extends Record
     ref?.submit();
     setFormRef?.(ref);
   }, [setFormRef, ref]);
-
-  const onFormSubmit = useCallback(
-    (formInputs) => {
-      onSubmit?.(formInputs);
-    },
-    [onSubmit]
-  );
-
-  // Validation occurs on every change and submit.
-  const onFormValidate = useCallback(
-    (formInputs, error: any) => {
-      onValidate?.(formInputs, error);
-      setFormInputs((previousInputs) => {
-        if (Object.keys(diff(formInputs, previousInputs ?? {})).length > 0) {
-          return formInputs;
-        }
-        return previousInputs ?? {};
-      });
-      if (!error) {
-        return;
-      }
-      // if the form has an error, the error should be displayed and the outputs column should be updated anyway.
-      const {
-        details,
-        changes,
-      }: {
-        details: object[];
-        changes: Array<[string, string | number | undefined]>;
-      } = error.details.reduce(
-        (infos: any, detail: any) => {
-          if (detail.keyword === "type") {
-            // If it's a type error, it's handled by replacing the current value with a undefined value.
-            const formFieldPath = dataPathToFormFieldPath(detail.dataPath);
-            infos.changes = [...infos.changes, [formFieldPath, undefined]];
-            return infos;
-          } else if (detail.keyword === "enum") {
-            // A enum error is caused by a type error.
-            const formFieldPath = dataPathToFormFieldPath(detail.dataPath);
-            infos.changes = [...infos.changes, [formFieldPath, undefined]];
-            return infos;
-          }
-          infos.details = [...infos.details, detail];
-          return infos;
-        },
-        { details: [], changes: [] }
-      );
-      // Update formInputs with the current change.
-      changes.forEach(([formFieldPath, fieldValue]) => {
-        formFieldPath?.split(".")?.reduce((deeper, field, index, array) => {
-          if (index === array.length - 1) {
-            deeper[field] = fieldValue;
-          } else {
-            return deeper[field];
-          }
-        }, formInputs);
-      });
-      return { details };
-    },
-    [onValidate, setFormInputs]
-  );
 
   return {
     onSubmit: onFormSubmit,

@@ -15,7 +15,7 @@
  */
 
 import * as React from "react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useLayoutEffect } from "react";
 import { Text, TextContent } from "@patternfly/react-core/dist/js/components/Text";
 import { Page, PageSection } from "@patternfly/react-core/dist/js/components/Page";
 import { DrawerCloseButton, DrawerPanelContent } from "@patternfly/react-core/dist/js/components/Drawer";
@@ -51,6 +51,7 @@ import { CaretDownIcon } from "@patternfly/react-icons/dist/js/icons/caret-down-
 import { ToolbarItem } from "@patternfly/react-core/dist/js/components/Toolbar";
 import { DmnRunnerLoading } from "./DmnRunnerLoading";
 import { useExtendedServices } from "../../kieSandboxExtendedServices/KieSandboxExtendedServicesContext";
+import isEqual from "lodash/isEqual";
 
 const KOGITO_JIRA_LINK = "https://issues.jboss.org/projects/KOGITO";
 
@@ -96,6 +97,10 @@ export function DmnRunnerDrawerPanelContent(props: Props) {
   const formInputs: InputRow = useMemo(() => {
     return inputRows[currentInputRowIndex];
   }, [inputRows, currentInputRowIndex]);
+
+  // useLayoutEffect(() => {
+  //   formRef?.submit();
+  // }, [formRef, formInputs])
 
   const onResize = useCallback((width: number) => {
     // FIXME: PatternFly bug. The first interaction without resizing the splitter will result in width === 0.
@@ -267,16 +272,26 @@ export function DmnRunnerDrawerPanelContent(props: Props) {
     setDrawerError(false);
   }, [jsonSchema]);
 
+  // changing between rows re-calculate this function;
   const setFormInputs = useCallback(
     (newFormInputs) => {
       setInputRows((currentInputRows: Array<InputRow>) => {
         const newInputs = [...currentInputRows];
         if (typeof newFormInputs === "function") {
-          newInputs[currentInputRowIndex] = newFormInputs(currentInputRows[currentInputRowIndex]);
-          return newInputs;
+          const formInput = newFormInputs(currentInputRows[currentInputRowIndex]);
+          // prevent unnecessary re-render after changing rows;
+          if (!isEqual(formInput, newInputs[currentInputRowIndex])) {
+            newInputs[currentInputRowIndex] = formInput;
+            return newInputs;
+          }
+        } else {
+          // complementary logic
+          if (!isEqual(newFormInputs, newInputs[currentInputRowIndex])) {
+            newInputs[currentInputRowIndex] = newFormInputs;
+            return newInputs;
+          }
         }
-        newInputs[currentInputRowIndex] = newFormInputs;
-        return newInputs;
+        return currentInputRows;
       });
     },
     [currentInputRowIndex, setInputRows]
@@ -286,6 +301,8 @@ export function DmnRunnerDrawerPanelContent(props: Props) {
     openRowSelection(false);
   }, []);
 
+  const getRow = useCallback((index: number) => `Row ${index}`, []);
+
   const rowOptions = useMemo(
     () =>
       inputRows.map((_, rowIndex) => (
@@ -293,24 +310,24 @@ export function DmnRunnerDrawerPanelContent(props: Props) {
           component={"button"}
           key={rowIndex}
           onClick={() => {
-            selectRow(`Row ${rowIndex + 1}`);
+            selectRow(getRow(rowIndex + 1));
             setCurrentInputRowIndex(rowIndex);
           }}
         >
           Row {rowIndex + 1}
         </DropdownItem>
       )),
-    [inputRows, setCurrentInputRowIndex, selectRow]
+    [inputRows, setCurrentInputRowIndex, selectRow, getRow]
   );
 
   const onAddNewRow = useCallback(() => {
     setCurrentInputRowIndex((currentInputRowIndex) => {
       const newInputRowIndex = currentInputRowIndex + 1;
       onRowAdded({ beforeIndex: newInputRowIndex });
-      selectRow(`Row ${newInputRowIndex}`);
+      selectRow(getRow(newInputRowIndex));
       return newInputRowIndex;
     });
-  }, [onRowAdded, setCurrentInputRowIndex]);
+  }, [onRowAdded, setCurrentInputRowIndex, getRow]);
 
   const onChangeToTableView = useCallback(() => {
     setMode(DmnRunnerMode.TABLE);
@@ -419,7 +436,8 @@ export function DmnRunnerDrawerPanelContent(props: Props) {
                   <div className={"kogito--editor__dmn-runner-drawer-content-body"}>
                     <PageSection className={"kogito--editor__dmn-runner-drawer-content-body-input"}>
                       <DmnForm
-                        name={selectedRow}
+                        // force a re-render when the row is changed;
+                        key={selectedRow}
                         formInputs={formInputs}
                         setFormInputs={setFormInputs}
                         formError={error}
