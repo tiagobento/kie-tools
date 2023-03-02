@@ -32,6 +32,7 @@ import { useUnitablesColumns } from "./UnitablesColumns";
 import "./Unitables.css";
 import { UnitablesRow } from "./UnitablesRow";
 import { generateUuid } from "@kie-tools/boxed-expression-component/dist/api";
+import isEqual from "lodash/isEqual";
 
 const EMPTY_UNITABLES_INPUTS = [{}];
 
@@ -76,8 +77,7 @@ export const Unitables = ({
 
   // Erase cache;
   useLayoutEffect(() => {
-    // safe comparison, checking againts an array with an empty object;
-    if (JSON.stringify(rows) === JSON.stringify(EMPTY_UNITABLES_INPUTS)) {
+    if (isEqual(rows, EMPTY_UNITABLES_INPUTS)) {
       cachedRows.current = [...EMPTY_UNITABLES_INPUTS];
     }
   }, [rows]);
@@ -136,14 +136,10 @@ export const Unitables = ({
         // Update all rows if a value was changed;
         setInputRows?.((currentInputRows) => {
           // if cached length isn't equal to current a table event occured. e.g. add, delete;
-          if (
-            cachedRows.current.length !== currentInputRows.length ||
-            JSON.stringify(cachedRows.current) === JSON.stringify(currentInputRows)
-          ) {
-            console.log("unitables skip");
+          // if cached has the same value as current
+          if (cachedRows.current.length !== currentInputRows.length || isEqual(cachedRows.current, currentInputRows)) {
             return currentInputRows;
           }
-          console.log("unitables set inputs", cachedRows.current);
           return [...cachedRows.current];
         });
       }, 400); // autoSaveDelay

@@ -62,17 +62,11 @@ export function useDmnRunnerInputs(workspaceFile: WorkspaceFile): DmnRunnerInput
             companionEvent.type === "CFSF_DELETE"
           ) {
             setInputRows((currentInputRows) => {
-              // Triggered by the tab; shouldn't update;
-
-              // unsafe comparison;
+              // Triggered by the tab; shouldn't update; safe comparison;
               if (isEqual(JSON.parse(companionEvent.content), currentInputRows)) {
                 return currentInputRows;
               }
               // Triggered by the other tab; should update;
-              console.log(
-                "should be triggered by another tab; content !== current -> companion = ",
-                companionEvent.content
-              );
               return dmnRunnerInputsService.parseDmnRunnerInputs(companionEvent.content);
             });
           }

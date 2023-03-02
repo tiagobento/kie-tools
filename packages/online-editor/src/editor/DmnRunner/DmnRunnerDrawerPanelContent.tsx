@@ -272,19 +272,11 @@ export function DmnRunnerDrawerPanelContent(props: Props) {
       setInputRows((currentInputRows: Array<InputRow>) => {
         const newInputs = [...currentInputRows];
         if (typeof newFormInputs === "function") {
-          const formInputs = newFormInputs(currentInputRows[currentInputRowIndex]);
-          if (JSON.stringify(formInputs) !== JSON.stringify(newInputs[currentInputRowIndex])) {
-            newInputs[currentInputRowIndex] = formInputs;
-            return newInputs;
-          }
-        } else {
-          if (JSON.stringify(newFormInputs) !== JSON.stringify(newInputs[currentInputRowIndex])) {
-            newInputs[currentInputRowIndex] = newFormInputs;
-            return newInputs;
-          }
+          newInputs[currentInputRowIndex] = newFormInputs(currentInputRows[currentInputRowIndex]);
+          return newInputs;
         }
-
-        return currentInputRows;
+        newInputs[currentInputRowIndex] = newFormInputs;
+        return newInputs;
       });
     },
     [currentInputRowIndex, setInputRows]
