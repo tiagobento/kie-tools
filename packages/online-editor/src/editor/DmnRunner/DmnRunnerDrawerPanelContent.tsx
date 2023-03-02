@@ -77,7 +77,7 @@ export function DmnRunnerDrawerPanelContent(props: Props) {
   const extendedServices = useExtendedServices();
   const { i18n, locale } = useOnlineI18n();
   const [formRef, setFormRef] = useState<HTMLFormElement | null>();
-  const dmnRunnerState = useDmnRunnerState();
+  const { currentInputRowIndex, inputRows, error, mode, status, isExpanded, jsonSchema } = useDmnRunnerState();
   const { preparePayload, setError, setExpanded, setInputRows, setCurrentInputRowIndex, setMode } =
     useDmnRunnerDispatch();
   const [drawerError, setDrawerError] = useState<boolean>(false);
@@ -94,8 +94,8 @@ export function DmnRunnerDrawerPanelContent(props: Props) {
   const [rowSelectionIsOpen, openRowSelection] = useState<boolean>(false);
 
   const formInputs: InputRow = useMemo(() => {
-    return dmnRunnerState.inputRows[dmnRunnerState.currentInputRowIndex];
-  }, [dmnRunnerState.inputRows, dmnRunnerState.currentInputRowIndex]);
+    return inputRows[currentInputRowIndex];
+  }, [inputRows, currentInputRowIndex]);
 
   const onResize = useCallback((width: number) => {
     // FIXME: PatternFly bug. The first interaction without resizing the splitter will result in width === 0.
@@ -155,7 +155,7 @@ export function DmnRunnerDrawerPanelContent(props: Props) {
 
   const updateDmnRunnerResults = useCallback(
     async (formInputs: InputRow, canceled: Holder<boolean>) => {
-      if (dmnRunnerState.status !== DmnRunnerStatus.AVAILABLE) {
+      if (status !== DmnRunnerStatus.AVAILABLE) {
         return;
       }
 
@@ -186,26 +186,26 @@ export function DmnRunnerDrawerPanelContent(props: Props) {
         setDmnRunnerResults(undefined);
       }
     },
-    [extendedServices.client, dmnRunnerState.status, preparePayload, setError, setExecutionNotifications]
+    [extendedServices.client, status, preparePayload, setError, setExecutionNotifications]
   );
 
   // Update outputs column on form change
   useCancelableEffect(
     useCallback(
       ({ canceled }) => {
-        if (dmnRunnerState.isExpanded && dmnRunnerState.mode === DmnRunnerMode.FORM) {
+        if (isExpanded && mode === DmnRunnerMode.FORM) {
           updateDmnRunnerResults(formInputs ?? {}, canceled);
         }
       },
-      [formInputs, updateDmnRunnerResults, dmnRunnerState.isExpanded, dmnRunnerState.mode]
+      [formInputs, updateDmnRunnerResults, isExpanded, mode]
     )
   );
 
-  const previousFormError = usePrevious(dmnRunnerState.error);
+  const previousFormError = usePrevious(error);
   useCancelableEffect(
     useCallback(
       ({ canceled }) => {
-        if (dmnRunnerState.error) {
+        if (error) {
           // if there is an error generating the form, the last form data is submitted
           updateDmnRunnerResults(formInputs ?? {}, canceled);
         } else if (previousFormError) {
@@ -217,7 +217,7 @@ export function DmnRunnerDrawerPanelContent(props: Props) {
           }, 0);
         }
       },
-      [formRef, dmnRunnerState.error, formInputs, updateDmnRunnerResults, previousFormError]
+      [formRef, error, formInputs, updateDmnRunnerResults, previousFormError]
     )
   );
 
@@ -265,23 +265,29 @@ export function DmnRunnerDrawerPanelContent(props: Props) {
   useEffect(() => {
     errorBoundaryRef.current?.reset();
     setDrawerError(false);
-  }, [dmnRunnerState.jsonSchema]);
+  }, [jsonSchema]);
 
   const setFormInputs = useCallback(
     (newFormInputs) => {
       setInputRows((currentInputRows: Array<InputRow>) => {
-        const newData = [...currentInputRows];
+        const newInputs = [...currentInputRows];
         if (typeof newFormInputs === "function") {
-          newData[dmnRunnerState.currentInputRowIndex] = newFormInputs(
-            currentInputRows[dmnRunnerState.currentInputRowIndex]
-          );
+          const formInputs = newFormInputs(currentInputRows[currentInputRowIndex]);
+          if (JSON.stringify(formInputs) !== JSON.stringify(newInputs[currentInputRowIndex])) {
+            newInputs[currentInputRowIndex] = formInputs;
+            return newInputs;
+          }
         } else {
-          newData[dmnRunnerState.currentInputRowIndex] = newFormInputs;
+          if (JSON.stringify(newFormInputs) !== JSON.stringify(newInputs[currentInputRowIndex])) {
+            newInputs[currentInputRowIndex] = newFormInputs;
+            return newInputs;
+          }
         }
-        return newData;
+
+        return currentInputRows;
       });
     },
-    [dmnRunnerState.currentInputRowIndex, setInputRows]
+    [currentInputRowIndex, setInputRows]
   );
 
   const onSelectRow = useCallback((event) => {
@@ -290,7 +296,7 @@ export function DmnRunnerDrawerPanelContent(props: Props) {
 
   const rowOptions = useMemo(
     () =>
-      dmnRunnerState.inputRows.map((_, rowIndex) => (
+      inputRows.map((_, rowIndex) => (
         <DropdownItem
           component={"button"}
           key={rowIndex}
@@ -302,7 +308,7 @@ export function DmnRunnerDrawerPanelContent(props: Props) {
           Row {rowIndex + 1}
         </DropdownItem>
       )),
-    [dmnRunnerState.inputRows, setCurrentInputRowIndex, selectRow]
+    [inputRows, setCurrentInputRowIndex, selectRow]
   );
 
   const onAddNewRow = useCallback(() => {
@@ -353,7 +359,7 @@ export function DmnRunnerDrawerPanelContent(props: Props) {
                       alignItems={{ default: "alignItemsCenter" }}
                     >
                       <FlexItem>
-                        {dmnRunnerState.inputRows.length <= 1 ? (
+                        {inputRows.length <= 1 ? (
                           <Button
                             variant={ButtonVariant.plain}
                             className={"kie-tools--masthead-hoverable"}
@@ -376,8 +382,7 @@ export function DmnRunnerDrawerPanelContent(props: Props) {
                                 >
                                   <TextContent>
                                     <Text component={"h3"}>
-                                      {i18n.terms.inputs} (Row {dmnRunnerState.currentInputRowIndex + 1}){" "}
-                                      <CaretDownIcon />
+                                      {i18n.terms.inputs} (Row {currentInputRowIndex + 1}) <CaretDownIcon />
                                     </Text>
                                   </TextContent>
                                 </DropdownToggle>
@@ -425,9 +430,9 @@ export function DmnRunnerDrawerPanelContent(props: Props) {
                         name={selectedRow}
                         formInputs={formInputs}
                         setFormInputs={setFormInputs}
-                        formError={dmnRunnerState.error}
+                        formError={error}
                         setFormError={setError}
-                        formSchema={dmnRunnerState.jsonSchema}
+                        formSchema={jsonSchema}
                         id={"form"}
                         setFormRef={setFormRef}
                         showInlineError={true}

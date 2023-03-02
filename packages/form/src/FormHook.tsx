@@ -68,17 +68,9 @@ export function useForm<Input extends Record<string, any>, Schema extends Record
   const removeDeletedPropertiesAndAddDefaultValues = useCallback(
     (formInputs: object, bridge: FormJsonSchemaBridge, previousBridge?: FormJsonSchemaBridge) => {
       const propertiesDifference = diff(
-        getObjectByPath(previousBridge?.schema ?? {}, propertiesEntryPath) ?? {},
+        getObjectByPath(previousBridge?.schema ?? { ...bridge.schema }, propertiesEntryPath) ?? {},
         getObjectByPath(bridge.schema ?? {}, propertiesEntryPath) ?? {}
       );
-
-      const defaultFormValues = Object.keys(bridge?.schema?.properties ?? {}).reduce((acc, property) => {
-        const field = bridge.getField(property);
-        if (field.default) {
-          acc[`${property}`] = field.default;
-        }
-        return acc;
-      }, {} as Record<string, any>);
 
       // Remove property that has been deleted;
       return Object.entries(propertiesDifference).reduce(
@@ -91,7 +83,7 @@ export function useForm<Input extends Record<string, any>, Schema extends Record
           }
           return form;
         },
-        { ...defaultFormValues, ...formInputs }
+        { ...formInputs }
       );
     },
     [propertiesEntryPath]
@@ -110,14 +102,12 @@ export function useForm<Input extends Record<string, any>, Schema extends Record
       const bridge = formValidator.getBridge(form);
       setJsonSchemaBridge((previousBridge) => {
         setFormInputs((currentFormInputs) => {
-          let newFormInputs: Input = { ...currentFormInputs };
-          if (previousBridge !== undefined) {
-            newFormInputs = removeDeletedPropertiesAndAddDefaultValues(
-              currentFormInputs,
-              bridge,
-              previousBridge
-            ) as Input;
-          }
+          const newFormInputs = removeDeletedPropertiesAndAddDefaultValues(
+            currentFormInputs,
+            bridge,
+            previousBridge
+          ) as Input;
+
           if (Object.keys(diff(currentFormInputs ?? {}, newFormInputs ?? {})).length > 0) {
             return newFormInputs;
           }
@@ -174,11 +164,11 @@ export function useForm<Input extends Record<string, any>, Schema extends Record
   const onFormValidate = useCallback(
     (formInputs, error: any) => {
       onValidate?.(formInputs, error);
-      setFormInputs((previousModel) => {
-        if (Object.keys(diff(formInputs, previousModel ?? {})).length > 0) {
+      setFormInputs((previousInputs) => {
+        if (Object.keys(diff(formInputs, previousInputs ?? {})).length > 0) {
           return formInputs;
         }
-        return previousModel ?? {};
+        return previousInputs ?? {};
       });
       if (!error) {
         return;
