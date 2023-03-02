@@ -47,10 +47,13 @@ export interface UnitablesBeeTable {
   id: string;
   i18n: BoxedExpressionEditorI18n;
   rows: object[];
-  setInputRows: React.Dispatch<React.SetStateAction<object[]>>;
   columns: UnitablesColumnType[];
   scrollableParentRef: React.RefObject<HTMLElement>;
   rowWrapper?: React.FunctionComponent<React.PropsWithChildren<{ row: object; rowIndex: number }>>;
+  onRowAdded: (args: { beforeIndex: number }) => void;
+  onRowDuplicated: (args: { rowIndex: number }) => void;
+  onRowReset: (args: { rowIndex: number }) => void;
+  onRowDeleted: (args: { rowIndex: number }) => void;
 }
 
 export function UnitablesBeeTable({
@@ -58,9 +61,12 @@ export function UnitablesBeeTable({
   i18n,
   columns,
   rows,
-  setInputRows,
   scrollableParentRef,
   rowWrapper,
+  onRowAdded,
+  onRowDuplicated,
+  onRowReset,
+  onRowDeleted,
 }: UnitablesBeeTable) {
   const beeTableOperationConfig = useMemo<BeeTableOperationConfig>(
     () => [
@@ -141,58 +147,6 @@ export function UnitablesBeeTable({
   const getRowKey = useCallback((row: ReactTable.Row<ROWTYPE>) => {
     return row.original.id;
   }, []);
-
-  const onRowAdded = useCallback(
-    (args: { beforeIndex: number }) => {
-      setInputRows((prev) => {
-        const n = [...(prev ?? [])];
-        n.splice(args.beforeIndex, 0, { id: generateUuid() });
-        return n;
-      });
-    },
-    [setInputRows]
-  );
-
-  const onRowDuplicated = useCallback(
-    (args: { rowIndex: number }) => {
-      setInputRows((prev) => {
-        const n = [...(prev ?? [])];
-        n.splice(args.rowIndex, 0, {
-          ...JSON.parse(JSON.stringify(prev[args.rowIndex])),
-          id: generateUuid(),
-        });
-        return n;
-      });
-    },
-    [setInputRows]
-  );
-
-  const onRowReset = useCallback(
-    (args: { rowIndex: number }) => {
-      setInputRows((prev) => {
-        const n = [...(prev ?? [])];
-        n[args.rowIndex] = { id: generateUuid() };
-        return n;
-      });
-    },
-    [setInputRows]
-  );
-
-  const onRowDeleted = useCallback(
-    (args: { rowIndex: number }) => {
-      setInputRows((prev) => {
-        const n = [...prev];
-        n.splice(args.rowIndex, 1);
-        n.forEach((e, i, n) => {
-          if (i >= args.rowIndex) {
-            n[i] = { ...e, id: generateUuid() };
-          }
-        });
-        return n;
-      });
-    },
-    [setInputRows]
-  );
 
   return (
     <StandaloneBeeTable

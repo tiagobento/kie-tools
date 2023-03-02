@@ -46,6 +46,10 @@ interface Props {
   propertiesEntryPath: string;
   containerRef: React.RefObject<HTMLDivElement>;
   scrollableParentRef: React.RefObject<HTMLElement>;
+  onRowAdded: (args: { beforeIndex: number }) => void;
+  onRowDuplicated: (args: { rowIndex: number }) => void;
+  onRowReset: (args: { rowIndex: number }) => void;
+  onRowDeleted: (args: { rowIndex: number }) => void;
 }
 
 export const Unitables = ({
@@ -58,6 +62,10 @@ export const Unitables = ({
   propertiesEntryPath,
   containerRef,
   scrollableParentRef,
+  onRowAdded,
+  onRowDuplicated,
+  onRowReset,
+  onRowDeleted,
 }: Props) => {
   const inputErrorBoundaryRef = useRef<ErrorBoundary>(null);
   const [formsDivRendered, setFormsDivRendered] = useState<boolean>(false);
@@ -198,7 +206,10 @@ export const Unitables = ({
               rows={beeTableRows}
               columns={unitablesColumns}
               id={inputUid}
-              setInputRows={setInputRows}
+              onRowAdded={onRowAdded}
+              onRowDuplicated={onRowDuplicated}
+              onRowReset={onRowReset}
+              onRowDeleted={onRowDeleted}
             />
           </div>
         </ErrorBoundary>

@@ -78,7 +78,7 @@ export function DmnRunnerDrawerPanelContent(props: Props) {
   const { i18n, locale } = useOnlineI18n();
   const [formRef, setFormRef] = useState<HTMLFormElement | null>();
   const { currentInputRowIndex, inputRows, error, mode, status, isExpanded, jsonSchema } = useDmnRunnerState();
-  const { preparePayload, setError, setExpanded, setInputRows, setCurrentInputRowIndex, setMode } =
+  const { onRowAdded, preparePayload, setError, setExpanded, setInputRows, setCurrentInputRowIndex, setMode } =
     useDmnRunnerDispatch();
   const [drawerError, setDrawerError] = useState<boolean>(false);
   const errorBoundaryRef = useRef<ErrorBoundary>(null);
@@ -312,13 +312,13 @@ export function DmnRunnerDrawerPanelContent(props: Props) {
   );
 
   const onAddNewRow = useCallback(() => {
-    setInputRows((previousData: Array<InputRow>) => {
-      const newData = [...previousData, {}];
-      setCurrentInputRowIndex(newData.length - 1);
-      selectRow(`Row ${newData.length}`);
-      return newData;
+    setCurrentInputRowIndex((currentInputRowIndex) => {
+      const newInputRowIndex = currentInputRowIndex + 1;
+      onRowAdded({ beforeIndex: newInputRowIndex });
+      selectRow(`Row ${newInputRowIndex}`);
+      return newInputRowIndex;
     });
-  }, [setInputRows, setCurrentInputRowIndex]);
+  }, [onRowAdded, setCurrentInputRowIndex]);
 
   const onChangeToTableView = useCallback(() => {
     setMode(DmnRunnerMode.TABLE);

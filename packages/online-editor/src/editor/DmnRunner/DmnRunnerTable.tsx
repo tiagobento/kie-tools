@@ -42,7 +42,17 @@ interface Props {
 export function DmnRunnerTable({ setPanelOpen }: Props) {
   const extendedServices = useExtendedServices();
   const { error, inputRows, jsonSchema } = useDmnRunnerState();
-  const { preparePayload, setCurrentInputRowIndex, setError, setInputRows, setMode } = useDmnRunnerDispatch();
+  const {
+    onRowAdded,
+    onRowDuplicated,
+    onRowReset,
+    onRowDeleted,
+    preparePayload,
+    setCurrentInputRowIndex,
+    setError,
+    setInputRows,
+    setMode,
+  } = useDmnRunnerDispatch();
   const [dmnRunnerTableError, setDmnRunnerTableError] = useState<boolean>(false);
   const dmnRunnerTableErrorBoundaryRef = useRef<ErrorBoundary>(null);
 
@@ -184,6 +194,10 @@ export function DmnRunnerTable({ setPanelOpen }: Props) {
                     jsonSchemaBridge={jsonSchemaBridge}
                     propertiesEntryPath={"definitions.InputSet"}
                     containerRef={inputsContainerRef}
+                    onRowAdded={onRowAdded}
+                    onRowDuplicated={onRowDuplicated}
+                    onRowReset={onRowReset}
+                    onRowDeleted={onRowDeleted}
                   />
                 </DrawerContent>
               </Drawer>
