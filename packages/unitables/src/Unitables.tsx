@@ -32,7 +32,8 @@ import { useUnitablesColumns } from "./UnitablesColumns";
 import "./Unitables.css";
 import { UnitablesRow } from "./UnitablesRow";
 import { generateUuid } from "@kie-tools/boxed-expression-component/dist/api";
-import { EMPTY_DMN_RUNNER_INPUTS } from "../../online-editor/src/dmnRunnerInputs/DmnRunnerInputsService";
+
+const EMPTY_UNITABLES_INPUTS = [{}];
 
 interface Props {
   jsonSchema: object;
@@ -71,12 +72,13 @@ export const Unitables = ({
   const [formsDivRendered, setFormsDivRendered] = useState<boolean>(false);
   const { columns: unitablesColumns } = useUnitablesColumns(jsonSchemaBridge, setInputRows, propertiesEntryPath);
   const inputUid = useMemo(() => nextId(), []);
-  const cachedRows = useRef<object[]>([...EMPTY_DMN_RUNNER_INPUTS]);
+  const cachedRows = useRef<object[]>([...EMPTY_UNITABLES_INPUTS]);
 
   // Erase cache;
   useLayoutEffect(() => {
-    if (JSON.stringify(rows) === JSON.stringify(EMPTY_DMN_RUNNER_INPUTS)) {
-      cachedRows.current = [...EMPTY_DMN_RUNNER_INPUTS];
+    // safe comparison, checking againts an array with an empty object;
+    if (JSON.stringify(rows) === JSON.stringify(EMPTY_UNITABLES_INPUTS)) {
+      cachedRows.current = [...EMPTY_UNITABLES_INPUTS];
     }
   }, [rows]);
 

@@ -23,6 +23,7 @@ import { useDmnRunnerInputsDispatch } from "./DmnRunnerInputsDispatchContext";
 import { decoder } from "@kie-tools-core/workspaces-git-fs/dist/encoderdecoder/EncoderDecoder";
 import { CompanionFsServiceBroadcastEvents } from "../companionFs/CompanionFsService";
 import { EMPTY_DMN_RUNNER_INPUTS } from "./DmnRunnerInputsService";
+import isEqual from "lodash/isEqual";
 
 interface DmnRunnerInputs {
   inputRows: Array<InputRow>;
@@ -62,7 +63,9 @@ export function useDmnRunnerInputs(workspaceFile: WorkspaceFile): DmnRunnerInput
           ) {
             setInputRows((currentInputRows) => {
               // Triggered by the tab; shouldn't update;
-              if (companionEvent.content === JSON.stringify(currentInputRows)) {
+
+              // unsafe comparison;
+              if (isEqual(JSON.parse(companionEvent.content), currentInputRows)) {
                 return currentInputRows;
               }
               // Triggered by the other tab; should update;
@@ -127,6 +130,7 @@ export function useDmnRunnerInputs(workspaceFile: WorkspaceFile): DmnRunnerInput
       return;
     }
 
+    // safe comparison, it compares to an array with an empty object;
     if (JSON.stringify(inputRows) === JSON.stringify(EMPTY_DMN_RUNNER_INPUTS)) {
       return;
     }
