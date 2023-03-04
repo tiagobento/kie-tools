@@ -15,7 +15,7 @@
  */
 
 import * as React from "react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import * as ReactTable from "react-table";
 import {
   BeeTableHeaderVisibility,
@@ -39,9 +39,10 @@ import {
   CONTEXT_EXPRESSION_EXTRA_WIDTH,
 } from "../../resizing/WidthConstants";
 import { useBeeTableSelectableCellRef, useBeeTableCoordinates } from "../../selection/BeeTableSelectionContext";
-import { BeeTable, BeeTableColumnUpdate } from "../../table/BeeTable";
+import { BeeTable, BeeTableColumnUpdate, BeeTableRef } from "../../table/BeeTable";
 import { useBoxedExpressionEditorDispatch } from "../BoxedExpressionEditor/BoxedExpressionEditorContext";
 import { DEFAULT_EXPRESSION_NAME } from "../ExpressionDefinitionHeaderMenu";
+import { useFlexibleColumnWidth } from "../ListExpression";
 import { ContextEntryExpressionCell } from "./ContextEntryExpressionCell";
 import { ContextEntryInfoCell } from "./ContextEntryInfoCell";
 import "./ContextExpression.css";
@@ -75,7 +76,7 @@ export function ContextExpression(contextExpression: ContextExpressionDefinition
     isPivoting: false,
   });
 
-  const onColumnResizingWidthChange = useCallback((args: Map<number, ResizingWidth | undefined>) => {
+  const onColumnResizingWidthChange1 = useCallback((args: Map<number, ResizingWidth | undefined>) => {
     const newResizingWidth = args.get(1);
     if (newResizingWidth) {
       setEntryInfoResizingWidth(newResizingWidth);
@@ -105,6 +106,27 @@ export function ContextExpression(contextExpression: ContextExpressionDefinition
 
   /// //////////////////////////////////////////////////////
 
+  /// //////////////////////////////////////////////////////
+  /// ////////// FLEXIBLE COLUMN WIDTH (start) /////////////
+  /// //////////////////////////////////////////////////////
+
+  const beeTableRef = useRef<BeeTableRef>(null);
+  const {
+    flexibleColumnAttrs,
+    onColumnResizingWidthChange: onColumnResizingWidthChange2,
+    nestedExpressionContainerValueWithFlexibleColumnWidth,
+  } = useFlexibleColumnWidth(beeTableRef, contextExpression.isNested, 2, nestedExpressionContainerValue);
+
+  /// //////////////////////////////////////////////////////
+
+  const onColumnResizingWidthChange = useCallback(
+    (args: Map<number, ResizingWidth | undefined>) => {
+      onColumnResizingWidthChange2?.(args);
+      onColumnResizingWidthChange1(args);
+    },
+    [onColumnResizingWidthChange1, onColumnResizingWidthChange2]
+  );
+
   const beeTableColumns = useMemo<ReactTable.Column<ROWTYPE>[]>(() => {
     return [
       {
@@ -129,13 +151,12 @@ export function ContextExpression(contextExpression: ContextExpressionDefinition
             label: "entryExpression",
             isRowIndexColumn: false,
             dataType: DmnBuiltInDataType.Undefined,
-            minWidth: CONTEXT_ENTRY_EXPRESSION_MIN_WIDTH,
-            width: undefined,
+            ...flexibleColumnAttrs,
           },
         ],
       },
     ];
-  }, [contextExpression.name, contextExpression.dataType, entryInfoWidth, setEntryInfoWidth]);
+  }, [contextExpression.name, contextExpression.dataType, entryInfoWidth, setEntryInfoWidth, flexibleColumnAttrs]);
 
   const onColumnUpdates = useCallback(
     ([{ name, dataType }]: BeeTableColumnUpdate<ROWTYPE>[]) => {
@@ -281,7 +302,7 @@ export function ContextExpression(contextExpression: ContextExpressionDefinition
   );
 
   return (
-    <NestedExpressionContainerContext.Provider value={nestedExpressionContainerValue}>
+    <NestedExpressionContainerContext.Provider value={nestedExpressionContainerValueWithFlexibleColumnWidth}>
       <div className={`context-expression ${contextExpression.id}`}>
         <BeeTable
           resizerStopBehavior={ResizerStopBehavior.SET_WIDTH_WHEN_SMALLER}

@@ -79,6 +79,7 @@ export function BeeTableTd<R extends object>({
   const { resizingWidth, setResizingWidth } = useBeeTableResizableCell(
     columnIndex,
     resizerStopBehavior,
+    column.width,
     column.setWidth,
     // If the column specifies a width, then we should respect its minWidth as well.
     column.width ? Math.max(lastColumnMinWidth ?? column.minWidth ?? 0, column.width ?? 0) : undefined
@@ -193,7 +194,7 @@ export function BeeTableTd<R extends object>({
           <>
             {tdContent}
 
-            {(hoverInfo.isHovered || (resizingWidth?.isPivoting && isResizing)) && (
+            {!column.isFlexible && (hoverInfo.isHovered || (resizingWidth?.isPivoting && isResizing)) && (
               <Resizer
                 getWidthToFitData={cellWidthToFitDataRef?.getWidthToFitData}
                 minWidth={lastColumnMinWidth ?? cell.column.minWidth}

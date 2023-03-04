@@ -58,6 +58,7 @@ export function BeeTableThResizable<R extends object>({
   firstColumnIndexOfGroup,
   rowSpan,
   isEditableHeader,
+  reactTableInstance,
   getColumnKey,
   onExpressionHeaderUpdated,
   onHeaderClick,
@@ -89,6 +90,7 @@ export function BeeTableThResizable<R extends object>({
   const { resizingWidth, setResizingWidth } = useBeeTableResizableCell(
     columnIndex,
     resizerStopBehavior,
+    column.width,
     column.setWidth,
     // If the column specifies a width, then we should respect its minWidth as well.
     column.width ? Math.max(lastColumnMinWidth ?? column.minWidth ?? 0, column.width ?? 0) : undefined
@@ -148,6 +150,65 @@ export function BeeTableThResizable<R extends object>({
   //   firstColumnIndexOfGroup,
   //   updateColumnResizingWidths,
   // ]);
+
+  //
+  //
+  // Flexible headers (begin)
+
+  const { updateColumnResizingWidths } = useBeeTableResizableColumnsDispatch();
+  const flexibleMinWidth = useMemo(() => computeFlexibleWidth(column, "minWidth"), [column]);
+  const flexibleWidth = useMemo(() => computeFlexibleWidth(column, "width"), [column]);
+
+  const [flexibleResizingWidth, setFlexibleResizingWidth] = useState({
+    isPivoting: false,
+    value: flexibleWidth,
+  });
+
+  useEffect(() => {
+    if (column.width) {
+      return;
+    }
+
+    setFlexibleResizingWidth({ isPivoting: false, value: flexibleWidth });
+  }, [column, flexibleWidth]);
+
+  const indexOfFirstSubColumn = useMemo(() => {
+    return reactTableInstance.allColumns.findIndex(({ id }) => id === column.columns?.[0].id);
+  }, [column.columns, reactTableInstance.allColumns]);
+
+  useEffect(() => {
+    if (indexOfFirstSubColumn <= 0) {
+      return;
+    }
+
+    const subColumns = (column.columns ?? []).map(({ minWidth, width, isWidthPinned }) => ({
+      minWidth: minWidth ?? 0,
+      currentWidth: width ?? minWidth ?? 0,
+      isFrozen: isWidthPinned ?? false,
+    }));
+
+    const fixedWidthAmount = subColumns.reduce(
+      (acc, { isFrozen, currentWidth, minWidth }) => (isFrozen ? acc + (currentWidth ?? minWidth) : acc),
+      0
+    );
+
+    const nextTotalWidth = flexibleResizingWidth.value - fixedWidthAmount;
+    const apportionedWidths = apportionColumnWidths(nextTotalWidth, subColumns);
+
+    const newColumnWidths = apportionedWidths.reduce((acc, nextWidth, index) => {
+      const columnIndex = indexOfFirstSubColumn + index;
+      if (!subColumns[index]?.isFrozen) {
+        acc.set(columnIndex, { isPivoting: true, value: nextWidth });
+      }
+      return acc;
+    }, new Map());
+
+    updateColumnResizingWidths(newColumnWidths);
+  }, [column.columns, indexOfFirstSubColumn, flexibleResizingWidth.value, updateColumnResizingWidths]);
+
+  // Flexible headers (end)
+  //
+  //
 
   const [hoverInfo, setHoverInfo] = useState<HoverInfo>({ isHovered: false });
   const [isResizing, setResizing] = useState<boolean>(false);
@@ -213,7 +274,8 @@ export function BeeTableThResizable<R extends object>({
           headerCellInfo
         )}
       </div>
-      {(hoverInfo.isHovered || (resizingWidth?.isPivoting && isResizing)) && (
+      {/* Normal resizingWidth. I.e., Exact-sized columns. */}
+      {column.width && resizingWidth && (hoverInfo.isHovered || (resizingWidth?.isPivoting && isResizing)) && (
         <Resizer
           minWidth={lastColumnMinWidth ?? column.minWidth}
           width={column.width}
@@ -224,6 +286,19 @@ export function BeeTableThResizable<R extends object>({
           setResizing={setResizing}
         />
       )}
+      {/* Flexible resizingWidth. I.e., columns with subcolumns that don't contain an exact width. */}
+      {!(column.width && resizingWidth) &&
+        (hoverInfo.isHovered || (flexibleResizingWidth?.isPivoting && isResizing)) && (
+          <Resizer
+            minWidth={flexibleMinWidth}
+            width={flexibleWidth}
+            setWidth={undefined}
+            resizingWidth={flexibleResizingWidth}
+            setResizingWidth={setFlexibleResizingWidth}
+            getWidthToFitData={getWidthToFitData}
+            setResizing={setResizing}
+          />
+        )}
       {/* //FIXME: Tiago -> Don't know if that's a good idea yet. */}
       {/* {calcWidth && (hoverInfo.isHovered || (calcResizingWidth?.isPivoting && isCalcWidthResizing)) && (
         <Resizer
@@ -238,4 +313,19 @@ export function BeeTableThResizable<R extends object>({
       )} */}
     </BeeTableTh>
   );
+}
+
+function computeFlexibleWidth(col: ReactTable.ColumnInstance<any>, property: "width" | "minWidth"): number {
+  // Aggregator column
+  if (col.columns) {
+    return col.columns.reduce((acc, c) => acc + (c[property] ?? computeFlexibleWidth(c, property)), 0);
+  }
+  // Exact width column
+  else if (col.width) {
+    return col.width;
+  }
+  // Flexible width column
+  else {
+    return col.minWidth ?? 0;
+  }
 }

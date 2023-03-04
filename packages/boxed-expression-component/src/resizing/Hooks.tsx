@@ -211,6 +211,7 @@ export function useApportionedColumnWidthsIfNestedTable(
       (acc, { isFrozen, width, minWidth }) => (isFrozen ? acc + (width ?? minWidth) : acc),
       0
     );
+
     const nextTotalWidth =
       Math.max(
         nestedExpressionContainer.minWidth - extraWidth,
@@ -348,7 +349,7 @@ export function apportionColumnWidths(
     }
   }
 
-  return apportionedWidths.filter(Boolean); // Filter out `NaN` values.
+  return apportionedWidths.filter((w) => !isNaN(w)); // Filter out `NaN` values.
 }
 
 export function useNestedTableLastColumnMinWidth(columnResizingWidths: Map<number, ResizingWidth>) {

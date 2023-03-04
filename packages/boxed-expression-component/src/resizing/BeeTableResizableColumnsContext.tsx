@@ -83,6 +83,7 @@ export function useBeeTableResizableColumnsDispatch() {
 export function useBeeTableResizableCell(
   columnIndex: number,
   resizerStopBehavior: ResizerStopBehavior,
+  width: number | undefined,
   setWidth?: React.Dispatch<React.SetStateAction<number | undefined>>,
   initialResizingWidthValue?: number
 ) {
@@ -105,11 +106,12 @@ export function useBeeTableResizableCell(
   useResizerRef(
     useMemo(
       () => ({
+        width,
         setWidth,
         resizingWidth,
         resizerStopBehavior,
       }),
-      [resizerStopBehavior, resizingWidth, setWidth]
+      [resizerStopBehavior, resizingWidth, setWidth, width]
     )
   );
 
