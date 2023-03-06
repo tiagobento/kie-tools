@@ -98,10 +98,6 @@ export function DmnRunnerDrawerPanelContent(props: Props) {
     return inputRows[currentInputRowIndex];
   }, [inputRows, currentInputRowIndex]);
 
-  // useLayoutEffect(() => {
-  //   formRef?.submit();
-  // }, [formRef, formInputs])
-
   const onResize = useCallback((width: number) => {
     // FIXME: PatternFly bug. The first interaction without resizing the splitter will result in width === 0.
     if (width === 0) {
@@ -279,13 +275,13 @@ export function DmnRunnerDrawerPanelContent(props: Props) {
         const newInputs = [...currentInputRows];
         if (typeof newFormInputs === "function") {
           const formInput = newFormInputs(currentInputRows[currentInputRowIndex]);
-          // prevent unnecessary re-render after changing rows;
+          // prevent unnecessary re-render after changing between rows;
           if (!isEqual(formInput, newInputs[currentInputRowIndex])) {
             newInputs[currentInputRowIndex] = formInput;
             return newInputs;
           }
         } else {
-          // complementary logic
+          // prevent unnecessary re-render after changing between rows;
           if (!isEqual(newFormInputs, newInputs[currentInputRowIndex])) {
             newInputs[currentInputRowIndex] = newFormInputs;
             return newInputs;
