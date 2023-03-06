@@ -53,26 +53,23 @@ export function ListExpression(listExpression: ListExpressionDefinition & { isNe
   /// ///////////// RESIZING WIDTHS ////////////////////////
   /// //////////////////////////////////////////////////////
 
-  const { nestedExpressionContainerValue } = useNestedExpressionContainerWithNestedExpressions(
-    useMemo(() => {
-      return {
-        nestedExpressions: listExpression.items,
-        fixedColumnActualWidth: 0,
-        fixedColumnResizingWidth: { value: 0, isPivoting: false },
-        fixedColumnMinWidth: 0,
-        nestedExpressionMinWidth: LIST_EXPRESSION_ITEM_MIN_WIDTH,
-        extraWidth: LIST_EXPRESSION_EXTRA_WIDTH,
-        expression: listExpression,
-      };
-    }, [listExpression])
-  );
-
   const beeTableRef = useRef<BeeTableRef>(null);
-  const { onColumnResizingWidthChange, nestedExpressionContainerValueWithFlexibleColumnWidth } = useFlexibleColumnWidth(
-    1,
-    beeTableRef,
-    nestedExpressionContainerValue
-  );
+  const { nestedExpressionContainerValue, onColumnResizingWidthChange } =
+    useNestedExpressionContainerWithNestedExpressions(
+      useMemo(() => {
+        return {
+          nestedExpressions: listExpression.items,
+          fixedColumnActualWidth: 0,
+          fixedColumnResizingWidth: { value: 0, isPivoting: false },
+          fixedColumnMinWidth: 0,
+          nestedExpressionMinWidth: LIST_EXPRESSION_ITEM_MIN_WIDTH,
+          extraWidth: LIST_EXPRESSION_EXTRA_WIDTH,
+          expression: listExpression,
+          flexibleColumnIndex: 1,
+          beeTableRef,
+        };
+      }, [listExpression])
+    );
 
   /// //////////////////////////////////////////////////////
 
@@ -186,7 +183,7 @@ export function ListExpression(listExpression: ListExpressionDefinition & { isNe
   );
 
   return (
-    <NestedExpressionContainerContext.Provider value={nestedExpressionContainerValueWithFlexibleColumnWidth}>
+    <NestedExpressionContainerContext.Provider value={nestedExpressionContainerValue}>
       <div className={`${listExpression.id} list-expression`}>
         <BeeTable<ROWTYPE>
           forwardRef={beeTableRef}
@@ -210,57 +207,4 @@ export function ListExpression(listExpression: ListExpressionDefinition & { isNe
       </div>
     </NestedExpressionContainerContext.Provider>
   );
-}
-
-export function useFlexibleColumnWidth(
-  columnIndex: number,
-  beeTableRef: React.RefObject<BeeTableRef>,
-  nestedExpressionContainerValue: NestedExpressionContainerContextType
-) {
-  const flexibleColumnWidthValue = useMemo(() => {
-    return Math.max(nestedExpressionContainerValue.resizingWidth.value, nestedExpressionContainerValue.minWidth);
-  }, [nestedExpressionContainerValue.minWidth, nestedExpressionContainerValue.resizingWidth.value]);
-
-  const [flexibleColumnWidth, setFlexibleColumnWidth] = useState(flexibleColumnWidthValue);
-
-  const [flexibleColumnResizingWidth, setFlexibleColumnResizingWidth] = useState({
-    isPivoting: false,
-    value: flexibleColumnWidth,
-  });
-
-  const onColumnResizingWidthChange = useMemo(() => {
-    return (args: Map<number, ResizingWidth | undefined>) => {
-      const newResizingWidth = args.get(columnIndex);
-      if (newResizingWidth) {
-        setFlexibleColumnResizingWidth(newResizingWidth);
-      }
-    };
-  }, [columnIndex]);
-
-  useEffect(() => {
-    setFlexibleColumnWidth(flexibleColumnWidthValue);
-    setFlexibleColumnResizingWidth({ isPivoting: false, value: flexibleColumnWidthValue });
-  }, [flexibleColumnWidthValue]);
-
-  useEffect(() => {
-    setFlexibleColumnResizingWidth(nestedExpressionContainerValue.resizingWidth);
-  }, [nestedExpressionContainerValue.resizingWidth]);
-
-  useEffect(() => {
-    beeTableRef.current?.updateColumnResizingWidths(new Map([[columnIndex, flexibleColumnResizingWidth]]));
-  }, [beeTableRef, columnIndex, flexibleColumnResizingWidth]);
-
-  const nestedExpressionContainerValueWithFlexibleColumnWidth = useMemo(() => {
-    return {
-      minWidth: nestedExpressionContainerValue.minWidth,
-      resizingWidth: flexibleColumnResizingWidth,
-      actualWidth: flexibleColumnWidth,
-    };
-  }, [flexibleColumnResizingWidth, flexibleColumnWidth, nestedExpressionContainerValue]);
-
-  return {
-    onColumnResizingWidthChange,
-    nestedExpressionContainerValueWithFlexibleColumnWidth,
-    isPivoting: flexibleColumnResizingWidth.isPivoting,
-  };
 }

@@ -55,7 +55,6 @@ import {
   NestedExpressionContainerContext,
   useNestedExpressionContainer,
 } from "../../resizing/NestedExpressionContainerContext";
-import { useFlexibleColumnWidth } from "../ListExpression";
 
 export const DEFAULT_FIRST_PARAM_NAME = "p-1";
 
@@ -254,34 +253,31 @@ export function FunctionExpression(functionExpression: FunctionExpressionDefinit
   /// ///////////// RESIZING WIDTHS ////////////////////////
   /// //////////////////////////////////////////////////////
 
-  const { nestedExpressionContainerValue } = useNestedExpressionContainerWithNestedExpressions(
-    useMemo(() => {
-      return {
-        nestedExpressions:
-          functionExpression.functionKind === FunctionExpressionDefinitionKind.Feel
-            ? [functionExpression.expression]
-            : [],
-        fixedColumnActualWidth: 0,
-        fixedColumnResizingWidth: { value: 0, isPivoting: false },
-        fixedColumnMinWidth: 0,
-        nestedExpressionMinWidth: CONTEXT_ENTRY_EXPRESSION_MIN_WIDTH,
-        extraWidth: FUNCTION_EXPRESSION_COMMON_EXTRA_WIDTH,
-        expression: functionExpression,
-      };
-    }, [functionExpression])
-  );
-
   const beeTableRef = useRef<BeeTableRef>(null);
-  const { onColumnResizingWidthChange, nestedExpressionContainerValueWithFlexibleColumnWidth } = useFlexibleColumnWidth(
-    1,
-    beeTableRef,
-    nestedExpressionContainerValue
-  );
+  const { nestedExpressionContainerValue, onColumnResizingWidthChange } =
+    useNestedExpressionContainerWithNestedExpressions(
+      useMemo(() => {
+        return {
+          nestedExpressions:
+            functionExpression.functionKind === FunctionExpressionDefinitionKind.Feel
+              ? [functionExpression.expression]
+              : [],
+          fixedColumnActualWidth: 0,
+          fixedColumnResizingWidth: { value: 0, isPivoting: false },
+          fixedColumnMinWidth: 0,
+          nestedExpressionMinWidth: CONTEXT_ENTRY_EXPRESSION_MIN_WIDTH,
+          extraWidth: FUNCTION_EXPRESSION_COMMON_EXTRA_WIDTH,
+          expression: functionExpression,
+          flexibleColumnIndex: 1,
+          beeTableRef,
+        };
+      }, [functionExpression])
+    );
 
   /// //////////////////////////////////////////////////////
 
   return (
-    <NestedExpressionContainerContext.Provider value={nestedExpressionContainerValueWithFlexibleColumnWidth}>
+    <NestedExpressionContainerContext.Provider value={nestedExpressionContainerValue}>
       <div className={`function-expression ${functionExpression.id}`}>
         <BeeTable
           forwardRef={beeTableRef}

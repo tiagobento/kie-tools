@@ -198,12 +198,6 @@ export function BeeTableThResizable<R extends object>({
   }, [column, column.accessor, totalSubColumnsWidth]);
 
   useEffect(() => {
-    // Flexible-sized column.
-    if (!column.width && !column.columns?.length) {
-      updateColumnResizingWidths(new Map([[columnIndex, fillingResizingWidth]]));
-      return;
-    }
-
     // Exact-sized column
     if (!column.columns?.length) {
       return;

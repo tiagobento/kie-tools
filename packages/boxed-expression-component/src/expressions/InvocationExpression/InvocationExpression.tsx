@@ -45,7 +45,6 @@ import { ArgumentEntryExpressionCell } from "./ArgumentEntryExpressionCell";
 import { ContextEntryInfoCell } from "../ContextExpression";
 import "./InvocationExpression.css";
 import { DEFAULT_EXPRESSION_NAME } from "../ExpressionDefinitionHeaderMenu";
-import { useFlexibleColumnWidth } from "../ListExpression";
 
 type ROWTYPE = ContextExpressionDefinitionEntry;
 
@@ -78,25 +77,23 @@ export function InvocationExpression(invocationExpression: InvocationExpressionD
   /// ///////////// RESIZING WIDTHS ////////////////////////
   /// //////////////////////////////////////////////////////
 
-  const { nestedExpressionContainerValue } = useNestedExpressionContainerWithNestedExpressions(
-    useMemo(() => {
-      return {
-        nestedExpressions: invocationExpression.bindingEntries?.map((e) => e.entryExpression) ?? [],
-        fixedColumnActualWidth: parametersWidth,
-        fixedColumnResizingWidth: parametersResizingWidth,
-        fixedColumnMinWidth: INVOCATION_PARAMETER_MIN_WIDTH,
-        nestedExpressionMinWidth: INVOCATION_ARGUMENT_EXPRESSION_MIN_WIDTH,
-        extraWidth: INVOCATION_EXTRA_WIDTH,
-        expression: invocationExpression,
-      };
-    }, [parametersWidth, parametersResizingWidth, invocationExpression])
-  );
-
   const beeTableRef = useRef<BeeTableRef>(null);
-  const {
-    onColumnResizingWidthChange: onColumnResizingWidthChange2,
-    nestedExpressionContainerValueWithFlexibleColumnWidth,
-  } = useFlexibleColumnWidth(2, beeTableRef, nestedExpressionContainerValue);
+  const { nestedExpressionContainerValue, onColumnResizingWidthChange: onColumnResizingWidthChange2 } =
+    useNestedExpressionContainerWithNestedExpressions(
+      useMemo(() => {
+        return {
+          nestedExpressions: invocationExpression.bindingEntries?.map((e) => e.entryExpression) ?? [],
+          fixedColumnActualWidth: parametersWidth,
+          fixedColumnResizingWidth: parametersResizingWidth,
+          fixedColumnMinWidth: INVOCATION_PARAMETER_MIN_WIDTH,
+          nestedExpressionMinWidth: INVOCATION_ARGUMENT_EXPRESSION_MIN_WIDTH,
+          extraWidth: INVOCATION_EXTRA_WIDTH,
+          expression: invocationExpression,
+          flexibleColumnIndex: 2,
+          beeTableRef,
+        };
+      }, [parametersWidth, parametersResizingWidth, invocationExpression])
+    );
 
   /// //////////////////////////////////////////////////////
 
@@ -303,7 +300,7 @@ export function InvocationExpression(invocationExpression: InvocationExpressionD
   );
 
   return (
-    <NestedExpressionContainerContext.Provider value={nestedExpressionContainerValueWithFlexibleColumnWidth}>
+    <NestedExpressionContainerContext.Provider value={nestedExpressionContainerValue}>
       <div className={`invocation-expression ${invocationExpression.id}`}>
         <BeeTable
           forwardRef={beeTableRef}

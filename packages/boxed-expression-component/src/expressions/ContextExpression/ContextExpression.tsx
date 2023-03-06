@@ -15,7 +15,7 @@
  */
 
 import * as React from "react";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as ReactTable from "react-table";
 import {
   BeeTableHeaderVisibility,
@@ -31,8 +31,11 @@ import {
 } from "../../api";
 import { useBoxedExpressionEditorI18n } from "../../i18n";
 import { useNestedExpressionContainerWithNestedExpressions } from "../../resizing/Hooks";
-import { NestedExpressionContainerContext } from "../../resizing/NestedExpressionContainerContext";
-import { ResizerStopBehavior, ResizingWidth } from "../../resizing/ResizingWidthsContext";
+import {
+  NestedExpressionContainerContext,
+  NestedExpressionContainerContextType,
+} from "../../resizing/NestedExpressionContainerContext";
+import { ResizerStopBehavior, ResizingWidth, useResizingWidthsDispatch } from "../../resizing/ResizingWidthsContext";
 import {
   CONTEXT_ENTRY_EXPRESSION_MIN_WIDTH,
   CONTEXT_ENTRY_INFO_MIN_WIDTH,
@@ -42,7 +45,6 @@ import { useBeeTableSelectableCellRef, useBeeTableCoordinates } from "../../sele
 import { BeeTable, BeeTableColumnUpdate, BeeTableRef } from "../../table/BeeTable";
 import { useBoxedExpressionEditorDispatch } from "../BoxedExpressionEditor/BoxedExpressionEditorContext";
 import { DEFAULT_EXPRESSION_NAME } from "../ExpressionDefinitionHeaderMenu";
-import { useFlexibleColumnWidth } from "../ListExpression";
 import { ContextEntryExpressionCell } from "./ContextEntryExpressionCell";
 import { ContextEntryInfoCell } from "./ContextEntryInfoCell";
 import "./ContextExpression.css";
@@ -87,29 +89,26 @@ export function ContextExpression(contextExpression: ContextExpressionDefinition
   /// ///////////// RESIZING WIDTHS ////////////////////////
   /// //////////////////////////////////////////////////////
 
-  const { nestedExpressionContainerValue } = useNestedExpressionContainerWithNestedExpressions(
-    useMemo(() => {
-      return {
-        nestedExpressions: [
-          ...contextExpression.contextEntries.map((e) => e.entryExpression),
-          contextExpression.result,
-        ],
-        fixedColumnActualWidth: entryInfoWidth,
-        fixedColumnResizingWidth: entryInfoResizingWidth,
-        fixedColumnMinWidth: CONTEXT_ENTRY_INFO_MIN_WIDTH,
-        nestedExpressionMinWidth: CONTEXT_ENTRY_EXPRESSION_MIN_WIDTH,
-        extraWidth: CONTEXT_EXPRESSION_EXTRA_WIDTH,
-        expression: contextExpression,
-      };
-    }, [contextExpression, entryInfoResizingWidth, entryInfoWidth])
-  );
-
   const beeTableRef = useRef<BeeTableRef>(null);
-  const {
-    onColumnResizingWidthChange: onColumnResizingWidthChange2,
-    nestedExpressionContainerValueWithFlexibleColumnWidth,
-    isPivoting: isFlexibleColumnPivoting,
-  } = useFlexibleColumnWidth(2, beeTableRef, nestedExpressionContainerValue);
+  const { nestedExpressionContainerValue, onColumnResizingWidthChange: onColumnResizingWidthChange2 } =
+    useNestedExpressionContainerWithNestedExpressions(
+      useMemo(() => {
+        return {
+          nestedExpressions: [
+            ...contextExpression.contextEntries.map((e) => e.entryExpression),
+            contextExpression.result,
+          ],
+          fixedColumnActualWidth: entryInfoWidth,
+          fixedColumnResizingWidth: entryInfoResizingWidth,
+          fixedColumnMinWidth: CONTEXT_ENTRY_INFO_MIN_WIDTH,
+          nestedExpressionMinWidth: CONTEXT_ENTRY_EXPRESSION_MIN_WIDTH,
+          extraWidth: CONTEXT_EXPRESSION_EXTRA_WIDTH,
+          expression: contextExpression,
+          flexibleColumnIndex: 2,
+          beeTableRef,
+        };
+      }, [contextExpression, entryInfoResizingWidth, entryInfoWidth])
+    );
 
   /// //////////////////////////////////////////////////////
 
@@ -165,7 +164,8 @@ export function ContextExpression(contextExpression: ContextExpressionDefinition
   );
 
   const headerVisibility = useMemo(() => {
-    return contextExpression.isNested ? BeeTableHeaderVisibility.None : BeeTableHeaderVisibility.SecondToLastLevel;
+    return BeeTableHeaderVisibility.AllLevels;
+    // return contextExpression.isNested ? BeeTableHeaderVisibility.None : BeeTableHeaderVisibility.SecondToLastLevel;
   }, [contextExpression.isNested]);
 
   const updateEntry = useCallback(
@@ -297,7 +297,7 @@ export function ContextExpression(contextExpression: ContextExpressionDefinition
   );
 
   return (
-    <NestedExpressionContainerContext.Provider value={nestedExpressionContainerValueWithFlexibleColumnWidth}>
+    <NestedExpressionContainerContext.Provider value={nestedExpressionContainerValue}>
       <div className={`context-expression ${contextExpression.id}`}>
         <BeeTable
           forwardRef={beeTableRef}

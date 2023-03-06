@@ -1,4 +1,4 @@
-import { useMemo, useEffect } from "react";
+import { useMemo, useEffect, useState } from "react";
 import { ExpressionDefinition } from "../api";
 import { BeeTableRef } from "../expressions";
 import {
@@ -112,6 +112,8 @@ export function useNestedExpressionContainerWithNestedExpressions({
   nestedExpressionMinWidth,
   extraWidth,
   expression,
+  beeTableRef,
+  flexibleColumnIndex,
 }: {
   nestedExpressions: ExpressionDefinition[];
   fixedColumnActualWidth: number;
@@ -120,13 +122,38 @@ export function useNestedExpressionContainerWithNestedExpressions({
   nestedExpressionMinWidth: number;
   extraWidth: number;
   expression: ExpressionDefinition;
+  beeTableRef: React.RefObject<BeeTableRef>;
+  flexibleColumnIndex: number;
 }) {
+  const nestedExpressionContainer = useNestedExpressionContainer();
+
+  const [flexibleColumnResizingWidth, setFlexibleColumnResizingWidth] = useState({
+    isPivoting: false,
+    value: 0,
+  });
+
+  const onColumnResizingWidthChange = useMemo(() => {
+    return (args: Map<number, ResizingWidth | undefined>) => {
+      const newResizingWidth = args.get(flexibleColumnIndex);
+      if (newResizingWidth) {
+        setFlexibleColumnResizingWidth(newResizingWidth);
+      }
+    };
+  }, [flexibleColumnIndex]);
+
+  useEffect(() => {
+    beeTableRef.current?.updateColumnResizingWidths(new Map([[flexibleColumnIndex, flexibleColumnResizingWidth]]));
+  }, [beeTableRef, flexibleColumnIndex, flexibleColumnResizingWidth]);
+
   const { resizingWidths } = useResizingWidths();
+
   const isPivoting = useMemo<boolean>(() => {
     return (
-      fixedColumnResizingWidth.isPivoting || nestedExpressions.some(({ id }) => resizingWidths.get(id)?.isPivoting)
+      fixedColumnResizingWidth.isPivoting ||
+      flexibleColumnResizingWidth.isPivoting ||
+      nestedExpressions.some(({ id }) => resizingWidths.get(id)?.isPivoting)
     );
-  }, [fixedColumnResizingWidth.isPivoting, nestedExpressions, resizingWidths]);
+  }, [fixedColumnResizingWidth.isPivoting, flexibleColumnResizingWidth.isPivoting, nestedExpressions, resizingWidths]);
 
   const nestedExpressionResizingWidthValue = useNestedExpressionResizingWidthValue(
     isPivoting,
@@ -150,8 +177,6 @@ export function useNestedExpressionContainerWithNestedExpressions({
     fixedColumnActualWidth,
     extraWidth
   );
-
-  const nestedExpressionContainer = useNestedExpressionContainer();
 
   const nestedExpressionContainerValue = useMemo<NestedExpressionContainerContextType>(() => {
     return {
@@ -186,9 +211,14 @@ export function useNestedExpressionContainerWithNestedExpressions({
     extraWidth,
   ]);
 
-  return useMemo(() => {
-    return { nestedExpressionContainerValue, isPivoting };
-  }, [nestedExpressionContainerValue, isPivoting]);
+  return useMemo(
+    () => ({
+      nestedExpressionContainerValue,
+      onColumnResizingWidthChange,
+      isPivoting,
+    }),
+    [nestedExpressionContainerValue, isPivoting, onColumnResizingWidthChange]
+  );
 }
 
 export function useApportionedColumnWidthsIfNestedTable(
