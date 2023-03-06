@@ -16,6 +16,11 @@
 
 import { InputRow } from "@kie-tools/form-dmn";
 import { CompanionFsService } from "../companionFs/CompanionFsService";
+import { v4 as uuid } from "uuid";
+
+export const generateUuid = () => {
+  return `_${uuid()}`.toLocaleUpperCase();
+};
 
 export const EMPTY_DMN_RUNNER_INPUTS = [{}];
 

@@ -24,13 +24,12 @@ import { ListIcon } from "@patternfly/react-icons/dist/js/icons/list-icon";
 import * as React from "react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import nextId from "react-id-generator";
-import { ROWTYPE, UnitablesBeeTable } from "./bee";
+import { UnitablesBeeTable } from "./bee";
 import { UnitablesI18n } from "./i18n";
 import { FORMS_ID, UnitablesJsonSchemaBridge } from "./uniforms";
 import { useUnitablesColumns } from "./UnitablesColumns";
 import "./Unitables.css";
 import { UnitablesRow } from "./UnitablesRow";
-import { generateUuid } from "@kie-tools/boxed-expression-component/dist/api";
 import isEqual from "lodash/isEqual";
 
 const EMPTY_UNITABLES_INPUTS = [{}];
@@ -79,12 +78,6 @@ export const Unitables = ({
     if (isEqual(rows, EMPTY_UNITABLES_INPUTS)) {
       cachedRows.current = [...EMPTY_UNITABLES_INPUTS];
     }
-  }, [rows]);
-
-  const beeTableRows = useMemo<ROWTYPE[]>(() => {
-    return rows.map((row) => {
-      return { id: generateUuid(), ...row };
-    });
   }, [rows]);
 
   // Resets the ErrorBoundary everytime the FormSchema is updated
@@ -200,7 +193,7 @@ export const Unitables = ({
               rowWrapper={rowWrapper}
               scrollableParentRef={scrollableParentRef}
               i18n={i18n}
-              rows={beeTableRows}
+              rows={rows}
               columns={unitablesColumns}
               id={inputUid}
               onRowAdded={onRowAdded}

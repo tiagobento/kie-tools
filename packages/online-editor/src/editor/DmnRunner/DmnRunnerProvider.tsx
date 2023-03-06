@@ -27,7 +27,7 @@ import { DmnSchema, InputRow } from "@kie-tools/form-dmn";
 import { useDmnRunnerInputs } from "../../dmnRunnerInputs/DmnRunnerInputsHook";
 import { DmnLanguageService } from "@kie-tools/dmn-language-service";
 import { decoder } from "@kie-tools-core/workspaces-git-fs/dist/encoderdecoder/EncoderDecoder";
-import { generateUuid } from "@kie-tools/boxed-expression-component/dist/api/Bee";
+import { generateUuid } from "../../dmnRunnerInputs/DmnRunnerInputsService";
 
 interface Props {
   isEditorReady?: boolean;
@@ -126,7 +126,19 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
       setInputRows((currentInputRows) => {
         const n = [...currentInputRows];
         // add default value;
-        n.splice(args.beforeIndex, 0, { id: generateUuid() });
+        const newRowInptus = Object.entries(n[args.beforeIndex - 1]).reduce((acc, [key, value]) => {
+          if (typeof value === "string") {
+            acc[key] = "";
+          } else if (typeof value === "number") {
+            acc[key] = 0;
+          } else if (typeof value === "boolean") {
+            acc[key] = false;
+          } else if (typeof value === "object") {
+            acc[key] = {};
+          }
+          return acc;
+        }, {} as any);
+        n.splice(args.beforeIndex, 0, { ...newRowInptus, id: generateUuid() });
         return n;
       });
     },

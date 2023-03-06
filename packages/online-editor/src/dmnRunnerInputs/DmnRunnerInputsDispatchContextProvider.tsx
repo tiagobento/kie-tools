@@ -17,11 +17,10 @@
 import * as React from "react";
 import { useCallback, useMemo } from "react";
 import { WorkspaceFile } from "@kie-tools-core/workspaces-git-fs/dist/context/WorkspacesContext";
-import { DmnRunnerInputsService } from "./DmnRunnerInputsService";
+import { DmnRunnerInputsService, generateUuid } from "./DmnRunnerInputsService";
 import { DmnRunnerInputsDispatchContext } from "./DmnRunnerInputsDispatchContext";
 import { decoder } from "@kie-tools-core/workspaces-git-fs/dist/encoderdecoder/EncoderDecoder";
 import { useSyncedCompanionFs } from "../companionFs/CompanionFsHooks";
-import { EMPTY_DMN_RUNNER_INPUTS } from "./DmnRunnerInputsService";
 
 export function DmnRunnerInputsDispatchContextProvider(props: React.PropsWithChildren<{}>) {
   const dmnRunnerInputsService = useMemo(() => {
@@ -39,7 +38,7 @@ export function DmnRunnerInputsDispatchContextProvider(props: React.PropsWithChi
 
       return dmnRunnerInputsService.companionFsService.createOrOverwrite(
         { workspaceId: workspaceFile.workspaceId, workspaceFileRelativePath: workspaceFile.relativePath },
-        JSON.stringify(EMPTY_DMN_RUNNER_INPUTS)
+        JSON.stringify([{ id: generateUuid() }])
       );
     },
     [dmnRunnerInputsService]

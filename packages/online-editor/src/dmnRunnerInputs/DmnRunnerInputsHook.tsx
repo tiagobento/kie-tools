@@ -22,7 +22,7 @@ import { InputRow } from "@kie-tools/form-dmn";
 import { useDmnRunnerInputsDispatch } from "./DmnRunnerInputsDispatchContext";
 import { decoder } from "@kie-tools-core/workspaces-git-fs/dist/encoderdecoder/EncoderDecoder";
 import { CompanionFsServiceBroadcastEvents } from "../companionFs/CompanionFsService";
-import { EMPTY_DMN_RUNNER_INPUTS } from "./DmnRunnerInputsService";
+import { EMPTY_DMN_RUNNER_INPUTS, generateUuid } from "./DmnRunnerInputsService";
 import isEqual from "lodash/isEqual";
 
 interface DmnRunnerInputs {
@@ -99,7 +99,7 @@ export function useDmnRunnerInputs(workspaceFile: WorkspaceFile): DmnRunnerInput
             if (!inputs) {
               dmnRunnerInputsService.companionFsService.createOrOverwrite(
                 { workspaceId: workspaceFile.workspaceId, workspaceFileRelativePath: workspaceFile.relativePath },
-                JSON.stringify(EMPTY_DMN_RUNNER_INPUTS)
+                JSON.stringify([{ id: generateUuid() }])
               );
               return;
             }
@@ -125,6 +125,7 @@ export function useDmnRunnerInputs(workspaceFile: WorkspaceFile): DmnRunnerInput
     }
 
     // safe comparison, it compares to an array with an empty object;
+    // used in the first render;
     if (JSON.stringify(inputRows) === JSON.stringify(EMPTY_DMN_RUNNER_INPUTS)) {
       return;
     }
