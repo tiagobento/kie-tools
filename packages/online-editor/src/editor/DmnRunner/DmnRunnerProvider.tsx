@@ -125,6 +125,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
     (args: { beforeIndex: number }) => {
       setInputRows((currentInputRows) => {
         const n = [...currentInputRows];
+        // add default value;
         n.splice(args.beforeIndex, 0, { id: generateUuid() });
         return n;
       });
