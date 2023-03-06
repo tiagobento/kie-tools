@@ -10,7 +10,7 @@ import { ResizingWidth, useResizingWidths, useResizingWidthsDispatch } from "./R
 import { RELATION_EXPRESSION_COLUMN_MIN_WIDTH } from "./WidthConstants";
 import { getExpressionResizingWidth, getExpressionMinWidth } from "./WidthMaths";
 
-export function useNestedExpressionResizingWidth(
+export function useNestedExpressionResizingWidthValue(
   isPivoting: boolean,
   nestedExpressions: ExpressionDefinition[],
   fixedColumnActualWidth: number,
@@ -128,7 +128,7 @@ export function useNestedExpressionContainerWithNestedExpressions({
     );
   }, [fixedColumnResizingWidth.isPivoting, nestedExpressions, resizingWidths]);
 
-  const nestedExpressionResizingWidthValue = useNestedExpressionResizingWidth(
+  const nestedExpressionResizingWidthValue = useNestedExpressionResizingWidthValue(
     isPivoting,
     nestedExpressions,
     fixedColumnActualWidth,
@@ -187,8 +187,8 @@ export function useNestedExpressionContainerWithNestedExpressions({
   ]);
 
   return useMemo(() => {
-    return { nestedExpressionContainerValue };
-  }, [nestedExpressionContainerValue]);
+    return { nestedExpressionContainerValue, isPivoting };
+  }, [nestedExpressionContainerValue, isPivoting]);
 }
 
 export function useApportionedColumnWidthsIfNestedTable(

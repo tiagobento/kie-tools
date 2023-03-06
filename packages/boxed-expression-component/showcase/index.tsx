@@ -97,7 +97,8 @@ const beeGwtService: BeeGwtService = {
   getDefaultExpressionDefinition(logicType: string): ExpressionDefinition {
     return getDefaultExpressionDefinitionByLogicType(
       logicType as ExpressionDefinitionLogicType,
-      { dataType: DmnBuiltInDataType.Undefined } as ExpressionDefinition
+      { dataType: DmnBuiltInDataType.Undefined } as ExpressionDefinition,
+      0
     );
   },
   openDataTypePage(): void {},

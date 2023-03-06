@@ -33,7 +33,7 @@ import * as React from "react";
 import _ from "lodash";
 import { PopoverMenu } from "../../contextMenu/PopoverMenu";
 import { useBoxedExpressionEditorI18n } from "../../i18n";
-import { BeeTableColumnUpdate, BeeTable } from "../../table/BeeTable";
+import { BeeTableColumnUpdate, BeeTable, BeeTableRef } from "../../table/BeeTable";
 import {
   useBoxedExpressionEditorDispatch,
   useBoxedExpressionEditor,
@@ -43,8 +43,19 @@ import { DEFAULT_EXPRESSION_NAME } from "../ExpressionDefinitionHeaderMenu";
 import { FunctionKindSelector } from "./FunctionKindSelector";
 import { ParametersPopover } from "./ParametersPopover";
 import * as ReactTable from "react-table";
-import { JAVA_FUNCTION_EXPRESSION_VALUES_MIN_WIDTH } from "../../resizing/WidthConstants";
+import {
+  CONTEXT_ENTRY_EXPRESSION_MIN_WIDTH,
+  FUNCTION_EXPRESSION_COMMON_EXTRA_WIDTH,
+  JAVA_FUNCTION_EXPRESSION_VALUES_MIN_WIDTH,
+} from "../../resizing/WidthConstants";
 import { ResizerStopBehavior } from "../../resizing/ResizingWidthsContext";
+import { useMemo, useRef } from "react";
+import { useNestedExpressionContainerWithNestedExpressions } from "../../resizing/Hooks";
+import {
+  NestedExpressionContainerContext,
+  useNestedExpressionContainer,
+} from "../../resizing/NestedExpressionContainerContext";
+import { useFlexibleColumnWidth } from "../ListExpression";
 
 export const DEFAULT_FIRST_PARAM_NAME = "p-1";
 
@@ -115,15 +126,21 @@ export function FunctionExpression(functionExpression: FunctionExpressionDefinit
     return functionExpression.isNested ? BeeTableHeaderVisibility.LastLevel : BeeTableHeaderVisibility.AllLevels;
   }, [functionExpression.isNested]);
 
+  const nestedExpressionContainer = useNestedExpressionContainer();
+
   const onFunctionKindSelect = React.useCallback(
     (kind: string) => {
       setExpression((prev) => {
         if (kind === FunctionExpressionDefinitionKind.Feel) {
-          return getDefaultExpressionDefinitionByLogicType(ExpressionDefinitionLogicType.Function, {
-            id: prev.id ?? generateUuid(),
-            name: prev.name,
-            dataType: DmnBuiltInDataType.Undefined,
-          });
+          return getDefaultExpressionDefinitionByLogicType(
+            ExpressionDefinitionLogicType.Function,
+            {
+              id: prev.id ?? generateUuid(),
+              name: prev.name,
+              dataType: DmnBuiltInDataType.Undefined,
+            },
+            nestedExpressionContainer.resizingWidth.value
+          );
         } else if (kind === FunctionExpressionDefinitionKind.Java) {
           return {
             name: prev.name,
@@ -148,7 +165,7 @@ export function FunctionExpression(functionExpression: FunctionExpressionDefinit
         }
       });
     },
-    [setExpression]
+    [nestedExpressionContainer.resizingWidth.value, setExpression]
   );
 
   const onColumnUpdates = React.useCallback(
@@ -233,24 +250,58 @@ export function FunctionExpression(functionExpression: FunctionExpressionDefinit
     });
   }, [setExpression]);
 
+  /// //////////////////////////////////////////////////////
+  /// ///////////// RESIZING WIDTHS ////////////////////////
+  /// //////////////////////////////////////////////////////
+
+  const { nestedExpressionContainerValue } = useNestedExpressionContainerWithNestedExpressions(
+    useMemo(() => {
+      return {
+        nestedExpressions:
+          functionExpression.functionKind === FunctionExpressionDefinitionKind.Feel
+            ? [functionExpression.expression]
+            : [],
+        fixedColumnActualWidth: 0,
+        fixedColumnResizingWidth: { value: 0, isPivoting: false },
+        fixedColumnMinWidth: 0,
+        nestedExpressionMinWidth: CONTEXT_ENTRY_EXPRESSION_MIN_WIDTH,
+        extraWidth: FUNCTION_EXPRESSION_COMMON_EXTRA_WIDTH,
+        expression: functionExpression,
+      };
+    }, [functionExpression])
+  );
+
+  const beeTableRef = useRef<BeeTableRef>(null);
+  const { onColumnResizingWidthChange, nestedExpressionContainerValueWithFlexibleColumnWidth } = useFlexibleColumnWidth(
+    1,
+    beeTableRef,
+    nestedExpressionContainerValue
+  );
+
+  /// //////////////////////////////////////////////////////
+
   return (
-    <div className={`function-expression ${functionExpression.id}`}>
-      <BeeTable
-        resizerStopBehavior={ResizerStopBehavior.SET_WIDTH_WHEN_SMALLER}
-        operationConfig={beeTableOperationConfig}
-        onColumnUpdates={onColumnUpdates}
-        getRowKey={getRowKey}
-        onRowReset={onRowReset}
-        columns={beeTableColumns}
-        rows={beeTableRows}
-        headerLevelCount={1}
-        headerVisibility={headerVisibility}
-        controllerCell={controllerCell}
-        cellComponentByColumnAccessor={cellComponentByColumnAccessor}
-        shouldRenderRowIndexColumn={true}
-        shouldShowRowsInlineControls={false}
-        shouldShowColumnsInlineControls={false}
-      />
-    </div>
+    <NestedExpressionContainerContext.Provider value={nestedExpressionContainerValueWithFlexibleColumnWidth}>
+      <div className={`function-expression ${functionExpression.id}`}>
+        <BeeTable
+          forwardRef={beeTableRef}
+          resizerStopBehavior={ResizerStopBehavior.SET_WIDTH_WHEN_SMALLER}
+          operationConfig={beeTableOperationConfig}
+          onColumnUpdates={onColumnUpdates}
+          onColumnResizingWidthChange={onColumnResizingWidthChange}
+          getRowKey={getRowKey}
+          onRowReset={onRowReset}
+          columns={beeTableColumns}
+          rows={beeTableRows}
+          headerLevelCount={1}
+          headerVisibility={headerVisibility}
+          controllerCell={controllerCell}
+          cellComponentByColumnAccessor={cellComponentByColumnAccessor}
+          shouldRenderRowIndexColumn={true}
+          shouldShowRowsInlineControls={false}
+          shouldShowColumnsInlineControls={false}
+        />
+      </div>
+    </NestedExpressionContainerContext.Provider>
   );
 }

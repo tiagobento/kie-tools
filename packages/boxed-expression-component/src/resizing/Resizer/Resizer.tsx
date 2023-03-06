@@ -76,17 +76,9 @@ export const Resizer: React.FunctionComponent<ResizerProps> = ({
       console.debug(`Stop resizing (different): ${resizingStopWidth}`);
       for (const resizerRef of getResizerRefs()) {
         if (resizerRef.resizingWidth?.value !== resizerRef.width) {
-          resizerRef.setWidth?.((prev) => {
-            const prevWidth = prev ?? 0;
-            const resizingWidthValue = resizerRef.resizingWidth?.value ?? prevWidth;
-            if (resizerRef.resizerStopBehavior === ResizerStopBehavior.SET_WIDTH_ALWAYS) {
-              return resizingWidthValue;
-            } else if (resizerRef.resizerStopBehavior === ResizerStopBehavior.SET_WIDTH_WHEN_SMALLER) {
-              return Math.min(resizingWidthValue, prevWidth);
-            } else {
-              throw new Error("Shouldn't ever reach this point");
-            }
-          });
+          resizerRef.setWidth?.((prev) => resizerRef.resizingWidth?.value ?? prev ?? 0);
+        } else {
+          // Ignoring. Nothing to do.
         }
       }
 

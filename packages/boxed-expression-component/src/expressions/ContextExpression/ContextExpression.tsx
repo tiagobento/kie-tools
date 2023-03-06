@@ -104,18 +104,12 @@ export function ContextExpression(contextExpression: ContextExpressionDefinition
     }, [contextExpression, entryInfoResizingWidth, entryInfoWidth])
   );
 
-  /// //////////////////////////////////////////////////////
-
-  /// //////////////////////////////////////////////////////
-  /// ////////// FLEXIBLE COLUMN WIDTH (start) /////////////
-  /// //////////////////////////////////////////////////////
-
   const beeTableRef = useRef<BeeTableRef>(null);
   const {
-    flexibleColumnAttrs,
     onColumnResizingWidthChange: onColumnResizingWidthChange2,
     nestedExpressionContainerValueWithFlexibleColumnWidth,
-  } = useFlexibleColumnWidth(beeTableRef, contextExpression.isNested, 2, nestedExpressionContainerValue);
+    isPivoting: isFlexibleColumnPivoting,
+  } = useFlexibleColumnWidth(2, beeTableRef, nestedExpressionContainerValue);
 
   /// //////////////////////////////////////////////////////
 
@@ -149,14 +143,15 @@ export function ContextExpression(contextExpression: ContextExpressionDefinition
           {
             accessor: "entryExpression",
             label: "entryExpression",
-            isRowIndexColumn: false,
             dataType: DmnBuiltInDataType.Undefined,
-            ...flexibleColumnAttrs,
+            isRowIndexColumn: false,
+            minWidth: CONTEXT_ENTRY_EXPRESSION_MIN_WIDTH,
+            width: undefined,
           },
         ],
       },
     ];
-  }, [contextExpression.name, contextExpression.dataType, entryInfoWidth, setEntryInfoWidth, flexibleColumnAttrs]);
+  }, [contextExpression.name, contextExpression.dataType, entryInfoWidth, setEntryInfoWidth]);
 
   const onColumnUpdates = useCallback(
     ([{ name, dataType }]: BeeTableColumnUpdate<ROWTYPE>[]) => {
@@ -305,6 +300,7 @@ export function ContextExpression(contextExpression: ContextExpressionDefinition
     <NestedExpressionContainerContext.Provider value={nestedExpressionContainerValueWithFlexibleColumnWidth}>
       <div className={`context-expression ${contextExpression.id}`}>
         <BeeTable
+          forwardRef={beeTableRef}
           resizerStopBehavior={ResizerStopBehavior.SET_WIDTH_WHEN_SMALLER}
           tableId={contextExpression.id}
           headerLevelCount={1}

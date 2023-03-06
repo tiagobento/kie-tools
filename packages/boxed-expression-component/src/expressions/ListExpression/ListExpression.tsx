@@ -35,7 +35,7 @@ import {
   NestedExpressionContainerContext,
   NestedExpressionContainerContextType,
 } from "../../resizing/NestedExpressionContainerContext";
-import { LIST_EXPRESSION_EXTRA_WIDTH, LIST_ITEM_EXPRESSION_MIN_WIDTH } from "../../resizing/WidthConstants";
+import { LIST_EXPRESSION_EXTRA_WIDTH, LIST_EXPRESSION_ITEM_MIN_WIDTH } from "../../resizing/WidthConstants";
 import { BeeTable, BeeTableColumnUpdate, BeeTableRef } from "../../table/BeeTable";
 import { useBoxedExpressionEditorDispatch } from "../BoxedExpressionEditor/BoxedExpressionEditorContext";
 import { DEFAULT_EXPRESSION_NAME } from "../ExpressionDefinitionHeaderMenu";
@@ -60,22 +60,19 @@ export function ListExpression(listExpression: ListExpressionDefinition & { isNe
         fixedColumnActualWidth: 0,
         fixedColumnResizingWidth: { value: 0, isPivoting: false },
         fixedColumnMinWidth: 0,
-        nestedExpressionMinWidth: LIST_ITEM_EXPRESSION_MIN_WIDTH,
+        nestedExpressionMinWidth: LIST_EXPRESSION_ITEM_MIN_WIDTH,
         extraWidth: LIST_EXPRESSION_EXTRA_WIDTH,
         expression: listExpression,
       };
     }, [listExpression])
   );
 
-  /// //////////////////////////////////////////////////////
-
-  /// //////////////////////////////////////////////////////
-  /// ////////// FLEXIBLE COLUMN WIDTH (start) /////////////
-  /// //////////////////////////////////////////////////////
-
   const beeTableRef = useRef<BeeTableRef>(null);
-  const { flexibleColumnAttrs, onColumnResizingWidthChange, nestedExpressionContainerValueWithFlexibleColumnWidth } =
-    useFlexibleColumnWidth(beeTableRef, listExpression.isNested, 1, nestedExpressionContainerValue);
+  const { onColumnResizingWidthChange, nestedExpressionContainerValueWithFlexibleColumnWidth } = useFlexibleColumnWidth(
+    1,
+    beeTableRef,
+    nestedExpressionContainerValue
+  );
 
   /// //////////////////////////////////////////////////////
 
@@ -108,10 +105,11 @@ export function ListExpression(listExpression: ListExpressionDefinition & { isNe
         label: listExpression.name ?? DEFAULT_EXPRESSION_NAME,
         dataType: listExpression.dataType,
         isRowIndexColumn: false,
-        ...flexibleColumnAttrs,
+        minWidth: LIST_EXPRESSION_ITEM_MIN_WIDTH,
+        width: undefined,
       },
     ],
-    [flexibleColumnAttrs, listExpression.dataType, listExpression.name]
+    [listExpression.dataType, listExpression.name]
   );
 
   const getRowKey = useCallback((row: ReactTable.Row<ROWTYPE>) => {
@@ -215,14 +213,13 @@ export function ListExpression(listExpression: ListExpressionDefinition & { isNe
 }
 
 export function useFlexibleColumnWidth(
-  beeTableRef: React.RefObject<BeeTableRef>,
-  isNested: boolean,
   columnIndex: number,
+  beeTableRef: React.RefObject<BeeTableRef>,
   nestedExpressionContainerValue: NestedExpressionContainerContextType
 ) {
   const flexibleColumnWidthValue = useMemo(() => {
-    return Math.max(nestedExpressionContainerValue.actualWidth, nestedExpressionContainerValue.minWidth);
-  }, [nestedExpressionContainerValue.actualWidth, nestedExpressionContainerValue.minWidth]);
+    return Math.max(nestedExpressionContainerValue.resizingWidth.value, nestedExpressionContainerValue.minWidth);
+  }, [nestedExpressionContainerValue.minWidth, nestedExpressionContainerValue.resizingWidth.value]);
 
   const [flexibleColumnWidth, setFlexibleColumnWidth] = useState(flexibleColumnWidthValue);
 
@@ -232,71 +229,38 @@ export function useFlexibleColumnWidth(
   });
 
   const onColumnResizingWidthChange = useMemo(() => {
-    if (isNested) {
-      return undefined;
-    }
-
     return (args: Map<number, ResizingWidth | undefined>) => {
       const newResizingWidth = args.get(columnIndex);
       if (newResizingWidth) {
         setFlexibleColumnResizingWidth(newResizingWidth);
       }
     };
-  }, [columnIndex, isNested]);
+  }, [columnIndex]);
 
   useEffect(() => {
-    if (isNested) {
-      return;
-    }
-
     setFlexibleColumnWidth(flexibleColumnWidthValue);
-  }, [
-    flexibleColumnWidthValue,
-    isNested,
-    nestedExpressionContainerValue.actualWidth,
-    nestedExpressionContainerValue.minWidth,
-  ]);
+    setFlexibleColumnResizingWidth({ isPivoting: false, value: flexibleColumnWidthValue });
+  }, [flexibleColumnWidthValue]);
 
   useEffect(() => {
-    if (isNested) {
-      return;
-    }
-
     setFlexibleColumnResizingWidth(nestedExpressionContainerValue.resizingWidth);
-  }, [isNested, nestedExpressionContainerValue.resizingWidth]);
+  }, [nestedExpressionContainerValue.resizingWidth]);
 
   useEffect(() => {
-    if (isNested) {
-      return;
-    }
-
     beeTableRef.current?.updateColumnResizingWidths(new Map([[columnIndex, flexibleColumnResizingWidth]]));
-  }, [beeTableRef, columnIndex, flexibleColumnResizingWidth, isNested]);
+  }, [beeTableRef, columnIndex, flexibleColumnResizingWidth]);
 
   const nestedExpressionContainerValueWithFlexibleColumnWidth = useMemo(() => {
-    if (isNested) {
-      return nestedExpressionContainerValue;
-    }
-
     return {
       minWidth: nestedExpressionContainerValue.minWidth,
       resizingWidth: flexibleColumnResizingWidth,
       actualWidth: flexibleColumnWidth,
     };
-  }, [flexibleColumnResizingWidth, flexibleColumnWidth, isNested, nestedExpressionContainerValue]);
-
-  const flexibleColumnAttrs = useMemo(() => {
-    return {
-      isFlexible: !isNested,
-      minWidth: nestedExpressionContainerValue.minWidth,
-      width: isNested ? undefined : flexibleColumnWidth,
-      setWidth: isNested ? undefined : setFlexibleColumnWidth,
-    };
-  }, [flexibleColumnWidth, isNested, nestedExpressionContainerValue.minWidth]);
+  }, [flexibleColumnResizingWidth, flexibleColumnWidth, nestedExpressionContainerValue]);
 
   return {
-    flexibleColumnAttrs,
     onColumnResizingWidthChange,
     nestedExpressionContainerValueWithFlexibleColumnWidth,
+    isPivoting: flexibleColumnResizingWidth.isPivoting,
   };
 }

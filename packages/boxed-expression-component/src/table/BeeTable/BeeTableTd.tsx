@@ -194,17 +194,18 @@ export function BeeTableTd<R extends object>({
           <>
             {tdContent}
 
-            {!column.isFlexible && (hoverInfo.isHovered || (resizingWidth?.isPivoting && isResizing)) && (
-              <Resizer
-                getWidthToFitData={cellWidthToFitDataRef?.getWidthToFitData}
-                minWidth={lastColumnMinWidth ?? cell.column.minWidth}
-                width={cell.column.width}
-                setWidth={cell.column.setWidth}
-                resizingWidth={resizingWidth}
-                setResizingWidth={setResizingWidth}
-                setResizing={setResizing}
-              />
-            )}
+            {!(!column.width && !column.columns?.length) &&
+              (hoverInfo.isHovered || (resizingWidth?.isPivoting && isResizing)) && (
+                <Resizer
+                  getWidthToFitData={cellWidthToFitDataRef?.getWidthToFitData}
+                  minWidth={lastColumnMinWidth ?? cell.column.minWidth}
+                  width={cell.column.width}
+                  setWidth={cell.column.setWidth}
+                  resizingWidth={resizingWidth}
+                  setResizingWidth={setResizingWidth}
+                  setResizing={setResizing}
+                />
+              )}
           </>
         )}
 
