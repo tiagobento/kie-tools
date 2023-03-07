@@ -38,6 +38,7 @@ import { ResizerStopBehavior } from "@kie-tools/boxed-expression-component/dist/
 import { AutoField } from "@kie-tools/uniforms-patternfly/dist/esm";
 import { useField } from "uniforms";
 import { AUTO_ROW_ID } from "../uniforms/UnitablesJsonSchemaBridge";
+import { usePublishedBeeTableResizableColumns } from "@kie-tools/boxed-expression-component/dist/resizing/BeeTableResizableColumnsContext";
 
 export const UNITABLES_COLUMN_MIN_WIDTH = 150;
 
@@ -103,7 +104,17 @@ export function UnitablesBeeTable({
     }, {} as NonNullable<BeeTableProps<ROWTYPE>["cellComponentByColumnAccessor"]>);
   }, [columns]);
 
+  const setColumnWidth = useCallback(
+    (inputIndex: number) => (newWidthAction: React.SetStateAction<number | undefined>) => {
+      const newWidth = typeof newWidthAction === "function" ? newWidthAction(0) : newWidthAction;
+      console.log(newWidth);
+      return newWidth;
+    },
+    []
+  );
+
   const beeTableColumns = useMemo<ReactTable.Column<ROWTYPE>[]>(() => {
+    let columnIndex = 0;
     return columns.map((column) => {
       if (column.insideProperties) {
         return {
@@ -122,6 +133,7 @@ export function UnitablesBeeTable({
               dataType: insideProperty.dataType,
               isRowIndexColumn: false,
               width: insideProperty.width,
+              setWidth: setColumnWidth(columnIndex++),
               minWidth: UNITABLES_COLUMN_MIN_WIDTH,
             };
           }),
@@ -134,11 +146,12 @@ export function UnitablesBeeTable({
           dataType: column.dataType,
           isRowIndexColumn: false,
           width: column.width as number,
+          setWidth: setColumnWidth(columnIndex++),
           minWidth: UNITABLES_COLUMN_MIN_WIDTH,
         };
       }
     });
-  }, [columns, uuid]);
+  }, [setColumnWidth, columns, uuid]);
 
   const getColumnKey = useCallback((column: ReactTable.ColumnInstance<ROWTYPE>) => {
     return column.originalId ?? column.id;
@@ -190,6 +203,16 @@ function UnitablesBeeTableCell({ joinedName }: BeeTableCellProps<ROWTYPE> & { jo
     setValue,
     useCallback(() => JSON.stringify(value), [value])
   );
+
+  const { onColumnResizingWidthChange, columnResizingWidths } = usePublishedBeeTableResizableColumns(
+    "something",
+    1,
+    true
+  );
+
+  const some = useMemo(() => {
+    return columnResizingWidths;
+  }, [columnResizingWidths]);
 
   return (
     <>
