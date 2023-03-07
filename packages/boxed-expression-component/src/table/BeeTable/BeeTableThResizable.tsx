@@ -210,7 +210,7 @@ export function BeeTableThResizable<R extends object>({
         return acc; // Skip updating frozen columns.
       }
 
-      acc.set(columnIndex, { isPivoting: true, value: nextWidth });
+      acc.set(columnIndex, { isPivoting: false, value: nextWidth });
       return acc;
     }, new Map());
 

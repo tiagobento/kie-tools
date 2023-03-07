@@ -187,9 +187,10 @@ export function InvocationExpression(invocationExpression: InvocationExpressionD
   );
 
   const headerVisibility = useMemo(() => {
-    return invocationExpression.isNested
-      ? BeeTableHeaderVisibility.SecondToLastLevel
-      : BeeTableHeaderVisibility.AllLevels;
+    return BeeTableHeaderVisibility.AllLevels;
+    // return invocationExpression.isNested
+    //   ? BeeTableHeaderVisibility.SecondToLastLevel
+    //   : BeeTableHeaderVisibility.AllLevels;
   }, [invocationExpression.isNested]);
 
   const getRowKey = useCallback((row: ReactTable.Row<ROWTYPE>) => {
@@ -308,7 +309,7 @@ export function InvocationExpression(invocationExpression: InvocationExpressionD
           tableId={invocationExpression.id}
           headerLevelCountForAppendingRowIndexColumn={2}
           headerVisibility={headerVisibility}
-          skipLastHeaderGroup={true}
+          // skipLastHeaderGroup={true}
           cellComponentByColumnAccessor={cellComponentByColumnAccessor}
           columns={beeTableColumns}
           rows={beeTableRows}

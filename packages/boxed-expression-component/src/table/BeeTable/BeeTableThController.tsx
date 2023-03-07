@@ -86,17 +86,19 @@ export function useBeeTableFillingResizingWidth(
 
   useEffect(() => {
     setFillingResizingWidth((prev) => {
-      if (prev.value === totalColumnResizingWidth.value) {
+      if (prev.isPivoting) {
+        return prev; // In this case, the resize handle from fillingResizingWidth is in use, therefore, we shouldn't interfere.
+      } else if (prev.value === totalColumnResizingWidth.value) {
         return prev; // Skip updating if nothing changed.
       } else if (isFlexbileColumn(column)) {
-        return { isPivoting: prev.isPivoting, value: totalColumnResizingWidth.value }; // Flexible columns are only pivoting when their handle is doing the resizing.
+        return { isPivoting: false, value: totalColumnResizingWidth.value }; // Something changed on a parent column or on the column's cells.
       } else if (isParentColumn(column)) {
-        return { isPivoting: prev.isPivoting, value: totalColumnResizingWidth.value }; // Parent columns are only pivoting when their handle is doing the resizing.
+        return { isPivoting: false, value: totalColumnResizingWidth.value }; // Something changed on sub columns or on the sub column's cells.
       } else {
         return prev; // Ignore
       }
     });
-  }, [column, column.accessor, totalColumnResizingWidth]);
+  }, [column, totalColumnResizingWidth]);
 
   return { fillingResizingWidth, setFillingResizingWidth, fillingMinWidth, fillingWidth };
 }
