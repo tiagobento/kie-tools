@@ -5,6 +5,7 @@ import {
   useBeeTableResizableColumns,
   useBeeTableResizableColumnsDispatch,
 } from "../../resizing/BeeTableResizableColumnsContext";
+import { apportionColumnWidths } from "../../resizing/Hooks";
 import { useNestedExpressionContainer } from "../../resizing/NestedExpressionContainerContext";
 import { ResizingWidth } from "../../resizing/ResizingWidthsContext";
 
@@ -50,7 +51,7 @@ export function useBeeTableFillingResizingWidth(
   const { updateColumnResizingWidths } = useBeeTableResizableColumnsDispatch();
 
   // That's be be used for:
-  // a) Flexible-sized columns -> Terminal columns that don't have a width, and adapt to the size of their cells; or
+  // a) Flexible columns -> Terminal columns that don't have a width, and adapt to the size of their cells; or
   // b) Parent columns -> Columns with subColumns.
   const [fillingResizingWidth, setFillingResizingWidth] = useState({
     isPivoting: false,
@@ -60,29 +61,6 @@ export function useBeeTableFillingResizingWidth(
   const totalColumnResizingWidth = useMemo(() => {
     return getTotalColumnResizingWidth(column, columnResizingWidths, reactTableInstance);
   }, [column, columnResizingWidths, reactTableInstance]);
-
-  // Flexible-sized columns should always be equal to nestedExpressionContainer.resizingWidth
-  useEffect(() => {
-    if (isFlexbileColumn(column)) {
-      updateColumnResizingWidths(
-        new Map([
-          [
-            columnIndex,
-            {
-              isPivoting: fillingResizingWidth.isPivoting,
-              value: nestedExpressionContainer.resizingWidth.value,
-            },
-          ],
-        ])
-      );
-    }
-  }, [
-    column,
-    columnIndex,
-    fillingResizingWidth.isPivoting,
-    nestedExpressionContainer.resizingWidth,
-    updateColumnResizingWidths,
-  ]);
 
   useEffect(() => {
     setFillingResizingWidth((prev) => {
@@ -100,6 +78,89 @@ export function useBeeTableFillingResizingWidth(
     });
   }, [column, totalColumnResizingWidth]);
 
+  // SYNC
+  useEffect(() => {
+    if (fillingResizingWidth.isPivoting) {
+      return;
+    }
+
+    if (isFlexbileColumn(column)) {
+      updateColumnResizingWidths(
+        new Map([
+          [
+            columnIndex,
+            {
+              isPivoting: false,
+              value: nestedExpressionContainer.resizingWidth.value,
+            },
+          ],
+        ])
+      );
+    }
+  }, [
+    column,
+    columnIndex,
+    fillingResizingWidth.isPivoting,
+    nestedExpressionContainer.resizingWidth.value,
+    updateColumnResizingWidths,
+  ]);
+
+  // WRITE
+  useEffect(() => {
+    if (!fillingResizingWidth.isPivoting) {
+      return;
+    }
+
+    // Flexible column.
+    if (isFlexbileColumn(column)) {
+      updateColumnResizingWidths(new Map([[columnIndex, fillingResizingWidth]]));
+      return;
+    }
+
+    // Exact column
+    if (!isParentColumn(column)) {
+      return;
+    }
+
+    // Parent column.
+    const flatListOfSubColumns = getFlatListOfSubColumns(column);
+    const indexOfFirstSubColumn = findIndexOfColumn(flatListOfSubColumns[0], reactTableInstance);
+
+    const subColumns = flatListOfSubColumns.map(({ minWidth, width, isWidthPinned }) => ({
+      minWidth: minWidth ?? 0,
+      currentWidth: width ?? minWidth ?? 0,
+      isFrozen: isWidthPinned ?? false,
+    }));
+
+    const fixedWidthAmount = subColumns.reduce(
+      (acc, { isFrozen, currentWidth, minWidth }) => (isFrozen ? acc + (currentWidth ?? minWidth) : acc),
+      0
+    );
+
+    const nextTotalWidth = fillingResizingWidth.value - fixedWidthAmount;
+    const apportionedWidths = apportionColumnWidths(nextTotalWidth, subColumns);
+
+    const newColumnWidths = apportionedWidths.reduce((acc, nextWidth, index) => {
+      const columnIndex = indexOfFirstSubColumn + index;
+      if (subColumns[index]?.isFrozen) {
+        return acc; // Skip updating frozen columns.
+      }
+
+      acc.set(columnIndex, { isPivoting: false, value: nextWidth });
+      return acc;
+    }, new Map());
+
+    updateColumnResizingWidths(newColumnWidths);
+  }, [
+    column.columns,
+    updateColumnResizingWidths,
+    fillingResizingWidth,
+    columnIndex,
+    column.width,
+    column,
+    reactTableInstance,
+  ]);
+
   return { fillingResizingWidth, setFillingResizingWidth, fillingMinWidth, fillingWidth };
 }
 
@@ -108,7 +169,7 @@ export function sumColumnPropertyRecursively(
   property: "width" | "minWidth",
   containerValue: number
 ): number {
-  // Flexible-sized column
+  // Flexible column
   if (isFlexbileColumn(column)) {
     return containerValue ?? column.minWidth ?? 0;
   }
@@ -121,7 +182,7 @@ export function sumColumnPropertyRecursively(
     );
   }
 
-  // Exact-sized column
+  // Exact column
   return column[property] ?? column.minWidth ?? 0;
 }
 
@@ -164,5 +225,5 @@ export function isParentColumn(column: ReactTable.ColumnInstance<any>) {
 }
 
 export function isFlexbileColumn(column: ReactTable.ColumnInstance<any>) {
-  return !column.width && !column.columns?.length;
+  return !column.width && !isParentColumn(column);
 }
