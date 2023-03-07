@@ -141,10 +141,6 @@ export function useNestedExpressionContainerWithNestedExpressions({
     };
   }, [flexibleColumnIndex]);
 
-  useEffect(() => {
-    beeTableRef.current?.updateColumnResizingWidths(new Map([[flexibleColumnIndex, flexibleColumnResizingWidth]]));
-  }, [beeTableRef, flexibleColumnIndex, flexibleColumnResizingWidth]);
-
   const { resizingWidths } = useResizingWidths();
 
   const isPivoting = useMemo<boolean>(() => {

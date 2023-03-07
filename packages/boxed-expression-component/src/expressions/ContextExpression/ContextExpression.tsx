@@ -104,7 +104,7 @@ export function ContextExpression(contextExpression: ContextExpressionDefinition
           nestedExpressionMinWidth: CONTEXT_ENTRY_EXPRESSION_MIN_WIDTH,
           extraWidth: CONTEXT_EXPRESSION_EXTRA_WIDTH,
           expression: contextExpression,
-          flexibleColumnIndex: 2,
+          flexibleColumnIndex: 1,
           beeTableRef,
         };
       }, [contextExpression, entryInfoResizingWidth, entryInfoWidth])
@@ -164,8 +164,7 @@ export function ContextExpression(contextExpression: ContextExpressionDefinition
   );
 
   const headerVisibility = useMemo(() => {
-    return BeeTableHeaderVisibility.AllLevels;
-    // return contextExpression.isNested ? BeeTableHeaderVisibility.None : BeeTableHeaderVisibility.SecondToLastLevel;
+    return contextExpression.isNested ? BeeTableHeaderVisibility.None : BeeTableHeaderVisibility.SecondToLastLevel;
   }, [contextExpression.isNested]);
 
   const updateEntry = useCallback(
@@ -303,7 +302,7 @@ export function ContextExpression(contextExpression: ContextExpressionDefinition
           forwardRef={beeTableRef}
           resizerStopBehavior={ResizerStopBehavior.SET_WIDTH_WHEN_SMALLER}
           tableId={contextExpression.id}
-          headerLevelCount={1}
+          headerLevelCountForAppendingRowIndexColumn={1}
           headerVisibility={headerVisibility}
           cellComponentByColumnAccessor={cellComponentByColumnAccessor}
           columns={beeTableColumns}

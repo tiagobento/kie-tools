@@ -30,6 +30,7 @@ import { BeeTableTh, getHoverInfo, HoverInfo } from "./BeeTableTh";
 import { ResizerStopBehavior, ResizingWidth } from "../../resizing/ResizingWidthsContext";
 import { apportionColumnWidths } from "../../resizing/Hooks";
 import { useNestedExpressionContainer } from "../../resizing/NestedExpressionContainerContext";
+import { findIndexOfColumn, getFlatListOfSubColumns, useBeeTableFillingResizingWidth } from "./BeeTableThController";
 
 export interface BeeTableThResizableProps<R extends object> {
   onColumnAdded?: (args: { beforeIndex: number; groupType: string | undefined }) => void;
@@ -157,58 +158,29 @@ export function BeeTableThResizable<R extends object>({
   //
   // Flexible headers (begin)
 
-  const nestedExpressionContainer = useNestedExpressionContainer();
-  const { columnResizingWidths } = useBeeTableResizableColumns();
   const { updateColumnResizingWidths } = useBeeTableResizableColumnsDispatch();
 
-  // That's be be used for:
-  // a) Flexible-sized columns -> Terminal columns that don't have a width, and adapt to the size of their cells; or
-  // b) Parent columns -> Columns with subColumns.
-  const [fillingResizingWidth, setFillingResizingWidth] = useState({
-    isPivoting: false,
-    value: 0,
-  });
+  const { fillingResizingWidth, setFillingResizingWidth, fillingWidth, fillingMinWidth } =
+    useBeeTableFillingResizingWidth(columnIndex, column, reactTableInstance);
 
+  /// WRITE
   useEffect(() => {
-    // Flexible-sized columns should always be equal to nestedContainerWidth
-    if (!column.width && !column.columns?.length) {
-      setFillingResizingWidth(nestedExpressionContainer.resizingWidth);
+    if (!fillingResizingWidth.isPivoting) {
       return;
     }
-  }, [column.columns?.length, column.width, nestedExpressionContainer.resizingWidth]);
 
-  const totalSubColumnsWidth = useMemo(() => {
-    // Only for parent columns
-    if (!column.columns?.length) {
-      return 0;
+    // Flexible-sized column.
+    if (!column.width && !column.columns?.length) {
+      updateColumnResizingWidths(new Map([[columnIndex, fillingResizingWidth]]));
+      return;
     }
 
-    return getTotalResizingWidth(column, columnResizingWidths, reactTableInstance);
-  }, [column, columnResizingWidths, reactTableInstance]);
-
-  // Parent columns should always have their width equal to the sum of its subColumns
-  useEffect(() => {
-    setFillingResizingWidth((prev) => {
-      if (prev.value === totalSubColumnsWidth) {
-        return prev; // Skip updating if nothing changed.
-      } else {
-        return { isPivoting: false, value: totalSubColumnsWidth };
-      }
-    });
-  }, [column, column.accessor, totalSubColumnsWidth]);
-
-  useEffect(() => {
     // Exact-sized column
     if (!column.columns?.length) {
       return;
     }
 
     // Parent column.
-    // Should not update its subColumns if it's not pivoting the ongoing resize.
-    if (!fillingResizingWidth.isPivoting) {
-      return;
-    }
-
     const flatListOfSubColumns = getFlatListOfSubColumns(column);
     const indexOfFirstSubColumn = findIndexOfColumn(flatListOfSubColumns[0], reactTableInstance);
 
@@ -278,24 +250,6 @@ export function BeeTableThResizable<R extends object>({
       th?.removeEventListener("mouseenter", onEnter);
     };
   }, [columnIndex, rowIndex, forwardRef]);
-
-  const fillingMinWidth = useMemo(
-    () =>
-      Math.max(
-        nestedExpressionContainer.minWidth,
-        computeFlexibleWidth(column, "minWidth", nestedExpressionContainer.minWidth)
-      ),
-    [column, nestedExpressionContainer.minWidth]
-  );
-
-  const fillingWidth = useMemo(
-    () =>
-      Math.max(
-        nestedExpressionContainer.minWidth,
-        computeFlexibleWidth(column, "width", nestedExpressionContainer.actualWidth)
-      ),
-    [column, nestedExpressionContainer.actualWidth, nestedExpressionContainer.minWidth]
-  );
 
   return (
     <BeeTableTh<R>
@@ -372,53 +326,4 @@ export function BeeTableThResizable<R extends object>({
       )} */}
     </BeeTableTh>
   );
-}
-
-function computeFlexibleWidth(
-  col: ReactTable.ColumnInstance<any>,
-  property: "width" | "minWidth",
-  container: number
-): number {
-  // Flexible-sized column
-  if (!col.width && !col.columns?.length) {
-    return container ?? col.minWidth ?? 0;
-  }
-
-  // Parent column
-  if (!col.width && col.columns?.length) {
-    return col.columns.reduce((acc, c) => acc + computeFlexibleWidth(c, property, container), 0);
-  }
-
-  // Exact-sized column
-  return col[property] ?? col.minWidth ?? 0;
-}
-
-function findIndexOfColumn(
-  column: ReactTable.ColumnInstance<any> | undefined,
-  reactTableInstance: ReactTable.TableInstance<any>
-) {
-  return reactTableInstance.allColumns.findIndex(({ id }) => id === column?.id);
-}
-
-function getTotalResizingWidth(
-  column: ReactTable.ColumnInstance<any>,
-  columnResizingWidths: Map<number, ResizingWidth | undefined>,
-  reactTableInstance: ReactTable.TableInstance<any>
-) {
-  const flatListOfSubColumns = getFlatListOfSubColumns(column);
-  const indexOfFirstSubColumn = findIndexOfColumn(flatListOfSubColumns[0], reactTableInstance);
-
-  let total = 0;
-  flatListOfSubColumns.forEach((_, index) => {
-    total += columnResizingWidths.get(indexOfFirstSubColumn + index)?.value ?? 0;
-  });
-  return total;
-}
-
-function getFlatListOfSubColumns(column: ReactTable.ColumnInstance<any>): ReactTable.ColumnInstance<any>[] {
-  if (!column.columns?.length) {
-    return [column];
-  }
-
-  return (column.columns ?? []).flatMap((c) => getFlatListOfSubColumns(c));
 }

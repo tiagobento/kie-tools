@@ -268,7 +268,7 @@ export function FunctionExpression(functionExpression: FunctionExpressionDefinit
           nestedExpressionMinWidth: CONTEXT_ENTRY_EXPRESSION_MIN_WIDTH,
           extraWidth: FUNCTION_EXPRESSION_COMMON_EXTRA_WIDTH,
           expression: functionExpression,
-          flexibleColumnIndex: 1,
+          flexibleColumnIndex: 0,
           beeTableRef,
         };
       }, [functionExpression])
@@ -289,7 +289,7 @@ export function FunctionExpression(functionExpression: FunctionExpressionDefinit
           onRowReset={onRowReset}
           columns={beeTableColumns}
           rows={beeTableRows}
-          headerLevelCount={1}
+          headerLevelCountForAppendingRowIndexColumn={1}
           headerVisibility={headerVisibility}
           controllerCell={controllerCell}
           cellComponentByColumnAccessor={cellComponentByColumnAccessor}

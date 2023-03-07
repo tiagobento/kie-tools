@@ -89,7 +89,7 @@ export function InvocationExpression(invocationExpression: InvocationExpressionD
           nestedExpressionMinWidth: INVOCATION_ARGUMENT_EXPRESSION_MIN_WIDTH,
           extraWidth: INVOCATION_EXTRA_WIDTH,
           expression: invocationExpression,
-          flexibleColumnIndex: 2,
+          flexibleColumnIndex: 1,
           beeTableRef,
         };
       }, [parametersWidth, parametersResizingWidth, invocationExpression])
@@ -186,11 +186,11 @@ export function InvocationExpression(invocationExpression: InvocationExpressionD
     [setExpression]
   );
 
-  const headerVisibility = useMemo(
-    () =>
-      invocationExpression.isNested ? BeeTableHeaderVisibility.SecondToLastLevel : BeeTableHeaderVisibility.AllLevels,
-    [invocationExpression.isNested]
-  );
+  const headerVisibility = useMemo(() => {
+    return invocationExpression.isNested
+      ? BeeTableHeaderVisibility.SecondToLastLevel
+      : BeeTableHeaderVisibility.AllLevels;
+  }, [invocationExpression.isNested]);
 
   const getRowKey = useCallback((row: ReactTable.Row<ROWTYPE>) => {
     return row.original.entryInfo.id;
@@ -306,7 +306,7 @@ export function InvocationExpression(invocationExpression: InvocationExpressionD
           forwardRef={beeTableRef}
           resizerStopBehavior={ResizerStopBehavior.SET_WIDTH_WHEN_SMALLER}
           tableId={invocationExpression.id}
-          headerLevelCount={2}
+          headerLevelCountForAppendingRowIndexColumn={2}
           headerVisibility={headerVisibility}
           skipLastHeaderGroup={true}
           cellComponentByColumnAccessor={cellComponentByColumnAccessor}
