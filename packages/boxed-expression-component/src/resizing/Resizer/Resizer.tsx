@@ -82,9 +82,9 @@ export const Resizer: React.FunctionComponent<ResizerProps> = ({
         }
       }
 
-      if (resizingStopWidth !== width) {
-        setWidth?.(resizingStopWidth);
-      }
+      // if (resizingStopWidth !== width) {
+      //   setWidth?.(resizingStopWidth);
+      // }
     }
 
     setResizing?.(false);

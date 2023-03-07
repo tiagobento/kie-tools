@@ -1,5 +1,5 @@
 import { useMemo, useEffect, useState } from "react";
-import { ExpressionDefinition } from "../api";
+import { ExpressionDefinition, ExpressionDefinitionLogicType } from "../api";
 import { BeeTableRef } from "../expressions";
 import {
   useNestedExpressionContainer,
@@ -145,9 +145,11 @@ export function useNestedExpressionContainerWithNestedExpressions({
 
   const isPivoting = useMemo<boolean>(() => {
     return (
-      fixedColumnResizingWidth.isPivoting || nestedExpressions.some(({ id }) => resizingWidths.get(id)?.isPivoting)
+      fixedColumnResizingWidth.isPivoting ||
+      flexibleColumnResizingWidth.isPivoting ||
+      nestedExpressions.some(({ id }) => resizingWidths.get(id)?.isPivoting)
     );
-  }, [fixedColumnResizingWidth.isPivoting, nestedExpressions, resizingWidths]);
+  }, [fixedColumnResizingWidth.isPivoting, flexibleColumnResizingWidth.isPivoting, nestedExpressions, resizingWidths]);
 
   const nestedExpressionResizingWidthValue = useNestedExpressionResizingWidthValue(
     isPivoting,
@@ -177,13 +179,17 @@ export function useNestedExpressionContainerWithNestedExpressions({
       minWidth: maxNestedExpressionMinWidth,
       actualWidth: nestedExpressionActualWidth,
       resizingWidth: {
-        value: nestedExpressionResizingWidthValue,
+        value: flexibleColumnResizingWidth.isPivoting
+          ? flexibleColumnResizingWidth.value
+          : nestedExpressionResizingWidthValue,
         isPivoting: isPivoting || nestedExpressionContainer.resizingWidth.isPivoting,
       },
     };
   }, [
     maxNestedExpressionMinWidth,
     nestedExpressionActualWidth,
+    flexibleColumnResizingWidth.isPivoting,
+    flexibleColumnResizingWidth.value,
     nestedExpressionResizingWidthValue,
     isPivoting,
     nestedExpressionContainer.resizingWidth.isPivoting,
@@ -193,12 +199,12 @@ export function useNestedExpressionContainerWithNestedExpressions({
 
   useEffect(() => {
     updateResizingWidth(expression.id, (prev) => ({
-      value: fixedColumnResizingWidth.value + nestedExpressionResizingWidthValue + extraWidth,
+      value: fixedColumnResizingWidth.value + nestedExpressionContainerValue.resizingWidth.value + extraWidth,
       isPivoting,
     }));
   }, [
     expression.id,
-    nestedExpressionResizingWidthValue,
+    nestedExpressionContainerValue.resizingWidth.value,
     isPivoting,
     updateResizingWidth,
     fixedColumnResizingWidth.value,

@@ -164,7 +164,8 @@ export function ContextExpression(contextExpression: ContextExpressionDefinition
   );
 
   const headerVisibility = useMemo(() => {
-    return contextExpression.isNested ? BeeTableHeaderVisibility.None : BeeTableHeaderVisibility.SecondToLastLevel;
+    return BeeTableHeaderVisibility.AllLevels;
+    // return contextExpression.isNested ? BeeTableHeaderVisibility.None : BeeTableHeaderVisibility.SecondToLastLevel;
   }, [contextExpression.isNested]);
 
   const updateEntry = useCallback(
