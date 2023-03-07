@@ -89,7 +89,7 @@ export function InvocationExpression(invocationExpression: InvocationExpressionD
           nestedExpressionMinWidth: INVOCATION_ARGUMENT_EXPRESSION_MIN_WIDTH,
           extraWidth: INVOCATION_EXTRA_WIDTH,
           expression: invocationExpression,
-          flexibleColumnIndex: 1,
+          flexibleColumnIndex: 2,
           beeTableRef,
         };
       }, [parametersWidth, parametersResizingWidth, invocationExpression])

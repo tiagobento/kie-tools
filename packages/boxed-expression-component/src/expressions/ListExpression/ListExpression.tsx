@@ -65,7 +65,7 @@ export function ListExpression(listExpression: ListExpressionDefinition & { isNe
           nestedExpressionMinWidth: LIST_EXPRESSION_ITEM_MIN_WIDTH,
           extraWidth: LIST_EXPRESSION_EXTRA_WIDTH,
           expression: listExpression,
-          flexibleColumnIndex: 0,
+          flexibleColumnIndex: 1,
           beeTableRef,
         };
       }, [listExpression])

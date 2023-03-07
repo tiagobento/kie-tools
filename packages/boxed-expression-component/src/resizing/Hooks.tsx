@@ -145,11 +145,9 @@ export function useNestedExpressionContainerWithNestedExpressions({
 
   const isPivoting = useMemo<boolean>(() => {
     return (
-      fixedColumnResizingWidth.isPivoting ||
-      flexibleColumnResizingWidth.isPivoting ||
-      nestedExpressions.some(({ id }) => resizingWidths.get(id)?.isPivoting)
+      fixedColumnResizingWidth.isPivoting || nestedExpressions.some(({ id }) => resizingWidths.get(id)?.isPivoting)
     );
-  }, [fixedColumnResizingWidth.isPivoting, flexibleColumnResizingWidth.isPivoting, nestedExpressions, resizingWidths]);
+  }, [fixedColumnResizingWidth.isPivoting, nestedExpressions, resizingWidths]);
 
   const nestedExpressionResizingWidthValue = useNestedExpressionResizingWidthValue(
     isPivoting,

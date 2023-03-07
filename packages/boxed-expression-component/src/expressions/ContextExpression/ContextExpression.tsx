@@ -104,7 +104,7 @@ export function ContextExpression(contextExpression: ContextExpressionDefinition
           nestedExpressionMinWidth: CONTEXT_ENTRY_EXPRESSION_MIN_WIDTH,
           extraWidth: CONTEXT_EXPRESSION_EXTRA_WIDTH,
           expression: contextExpression,
-          flexibleColumnIndex: 1,
+          flexibleColumnIndex: 2,
           beeTableRef,
         };
       }, [contextExpression, entryInfoResizingWidth, entryInfoWidth])

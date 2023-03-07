@@ -290,18 +290,16 @@ export function BeeTableHeader<R extends object>({
       // ... and so on
       const rowIndex = -(reactTableInstance.headerGroups.length - 1 - index + 1);
 
+      const { key, ...props } = { ...headerGroup.getHeaderGroupProps(), style: {} };
       if (shouldRenderHeaderGroup(rowIndex)) {
-        const { key, ...props } = { ...headerGroup.getHeaderGroupProps(), style: {} };
         return (
           <tr key={key} {...props}>
-            {headerGroup.headers.map((column, columnIndex) => (
-              <>{renderColumn(rowIndex, column, columnIndex, done)}</>
-            ))}
+            {headerGroup.headers.map((column, columnIndex) => renderColumn(rowIndex, column, columnIndex, done))}
           </tr>
         );
       } else {
         return (
-          <>
+          <React.Fragment key={key}>
             {headerGroup.headers.map((column, columnIndex) => (
               <BeeTableThController
                 key={getColumnKey(column)}
@@ -310,7 +308,7 @@ export function BeeTableHeader<R extends object>({
                 reactTableInstance={reactTableInstance}
               />
             ))}
-          </>
+          </React.Fragment>
         );
       }
     });

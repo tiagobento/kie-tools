@@ -268,7 +268,7 @@ export function FunctionExpression(functionExpression: FunctionExpressionDefinit
           nestedExpressionMinWidth: CONTEXT_ENTRY_EXPRESSION_MIN_WIDTH,
           extraWidth: FUNCTION_EXPRESSION_COMMON_EXTRA_WIDTH,
           expression: functionExpression,
-          flexibleColumnIndex: 0,
+          flexibleColumnIndex: 1,
           beeTableRef,
         };
       }, [functionExpression])
