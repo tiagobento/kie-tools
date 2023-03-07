@@ -40,7 +40,7 @@ public class RuleAnnotationClause extends DMNElement implements HasName {
     }
 
     public RuleAnnotationClause exactCopy() {
-        final RuleAnnotationClause exactelyClonedRuleAnnotationClause = new RuleAnnotationClause();
+        final RuleAnnotationClause exactelyClonedRuleAnnotationClause = copy();
         exactelyClonedRuleAnnotationClause.id = Optional.ofNullable(id).map(Id::copy).orElse(null);
         return exactelyClonedRuleAnnotationClause;
     }

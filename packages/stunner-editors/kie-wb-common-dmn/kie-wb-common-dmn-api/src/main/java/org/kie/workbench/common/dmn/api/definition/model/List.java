@@ -67,7 +67,7 @@ public class List extends Expression {
     }
 
     @Override
-    public Expression exactCopy() {
+    public List exactCopy() {
         final List exactelyClonedList = new List();
         exactelyClonedList.id = Optional.ofNullable(id).map(Id::copy).orElse(null);
         exactelyClonedList.description = Optional.ofNullable(description).map(Description::copy).orElse(null);

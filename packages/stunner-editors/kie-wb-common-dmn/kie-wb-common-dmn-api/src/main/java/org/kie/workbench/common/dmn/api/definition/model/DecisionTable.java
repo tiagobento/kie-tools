@@ -101,7 +101,7 @@ public class DecisionTable extends Expression {
     }
 
     @Override
-    public Expression exactCopy() {
+    public DecisionTable exactCopy() {
         final DecisionTable exactelyClonedDecisionTable = new DecisionTable();
         exactelyClonedDecisionTable.id = Optional.ofNullable(id).map(Id::copy).orElse(null);
         exactelyClonedDecisionTable.description = Optional.ofNullable(description).map(Description::copy).orElse(null);

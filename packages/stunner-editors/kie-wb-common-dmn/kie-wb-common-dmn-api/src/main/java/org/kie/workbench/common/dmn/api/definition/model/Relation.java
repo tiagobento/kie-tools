@@ -71,7 +71,7 @@ public class Relation extends Expression {
     }
 
     @Override
-    public Expression exactCopy() {
+    public Relation exactCopy() {
         final Relation exactelyClonedRelation = new Relation();
         exactelyClonedRelation.id = Optional.ofNullable(id).map(Id::copy).orElse(null);
         exactelyClonedRelation.description = Optional.ofNullable(description).map(Description::copy).orElse(null);
