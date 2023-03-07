@@ -21,6 +21,7 @@ import java.util.Optional;
 
 import org.jboss.errai.common.client.api.annotations.Portable;
 import org.kie.workbench.common.dmn.api.definition.HasText;
+import org.kie.workbench.common.dmn.api.property.dmn.Id;
 import org.kie.workbench.common.dmn.api.property.dmn.Text;
 
 @Portable
@@ -36,6 +37,12 @@ public class RuleAnnotationClauseText extends DMNElement implements HasText {
         final RuleAnnotationClauseText clonedRuleAnnotationClauseText = new RuleAnnotationClauseText();
         clonedRuleAnnotationClauseText.text = Optional.ofNullable(text).map(Text::copy).orElse(null);
         return clonedRuleAnnotationClauseText;
+    }
+
+    public RuleAnnotationClauseText exactCopy() {
+        final RuleAnnotationClauseText exactelyClonedRuleAnnotationClauseText = copy();
+        exactelyClonedRuleAnnotationClauseText.id = Optional.ofNullable(id).map(Id::copy).orElse(null);
+        return exactelyClonedRuleAnnotationClauseText;
     }
 
     @Override

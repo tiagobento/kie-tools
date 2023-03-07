@@ -21,6 +21,7 @@ import java.util.Optional;
 
 import org.jboss.errai.common.client.api.annotations.Portable;
 import org.kie.workbench.common.dmn.api.definition.HasName;
+import org.kie.workbench.common.dmn.api.property.dmn.Id;
 import org.kie.workbench.common.dmn.api.property.dmn.Name;
 
 @Portable
@@ -36,6 +37,12 @@ public class RuleAnnotationClause extends DMNElement implements HasName {
         final RuleAnnotationClause clonedRuleAnnotationClause = new RuleAnnotationClause();
         clonedRuleAnnotationClause.name = Optional.ofNullable(name).map(Name::copy).orElse(null);
         return clonedRuleAnnotationClause;
+    }
+
+    public RuleAnnotationClause exactCopy() {
+        final RuleAnnotationClause exactelyClonedRuleAnnotationClause = new RuleAnnotationClause();
+        exactelyClonedRuleAnnotationClause.id = Optional.ofNullable(id).map(Id::copy).orElse(null);
+        return exactelyClonedRuleAnnotationClause;
     }
 
     @Override
@@ -67,4 +74,5 @@ public class RuleAnnotationClause extends DMNElement implements HasName {
     public int hashCode() {
         return Objects.hash(name);
     }
+
 }

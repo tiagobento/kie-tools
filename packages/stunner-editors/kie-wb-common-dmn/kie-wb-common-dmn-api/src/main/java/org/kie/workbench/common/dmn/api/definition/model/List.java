@@ -67,6 +67,21 @@ public class List extends Expression {
     }
 
     @Override
+    public Expression exactCopy() {
+        final List exactelyClonedList = new List();
+        exactelyClonedList.id = Optional.ofNullable(id).map(Id::copy).orElse(null);
+        exactelyClonedList.description = Optional.ofNullable(description).map(Description::copy).orElse(null);
+        exactelyClonedList.typeRef = Optional.ofNullable(typeRef).map(QName::copy).orElse(null);
+        exactelyClonedList.componentWidths = new ArrayList<>(componentWidths);
+        exactelyClonedList.expression = expression.stream().map(expression ->
+                HasExpression.wrap(
+                        exactelyClonedList,
+                        Optional.ofNullable(expression.getExpression()).map(Expression::exactCopy).orElse(null)
+                )).collect(Collectors.toList());
+        return exactelyClonedList;
+    }
+
+    @Override
     public Optional<DomainObject> findDomainObject(final String uuid) {
         return getExpression().stream()
                 .filter(hasExpression -> !isNull(hasExpression.getExpression()))
