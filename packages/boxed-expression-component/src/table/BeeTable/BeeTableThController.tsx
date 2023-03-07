@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useEffect, useMemo, useState } from "react";
 import * as ReactTable from "react-table";
 import {
   useBeeTableResizableColumns,
@@ -30,40 +31,55 @@ export function useBeeTableFillingResizingWidth(
   // That's be be used for:
   // a) Flexible-sized columns -> Terminal columns that don't have a width, and adapt to the size of their cells; or
   // b) Parent columns -> Columns with subColumns.
-  const [fillingResizingWidth, setFillingResizingWidth] = React.useState({
+  const [fillingResizingWidth, setFillingResizingWidth] = useState({
     isPivoting: false,
     value: 0,
   });
 
+  const subColumnsResizingWidth = useMemo(() => {
+    return getTotalResizingWidth(column, columnResizingWidths, reactTableInstance);
+  }, [column, columnResizingWidths, reactTableInstance]);
+
+  const isPivoting = useMemo(() => {
+    return subColumnsResizingWidth.isPivoting || nestedExpressionContainer.resizingWidth.isPivoting;
+  }, [nestedExpressionContainer.resizingWidth.isPivoting, subColumnsResizingWidth.isPivoting]);
+
   // Flexible-sized columns should always be equal to nestedExpressionContainer.resizingWidth
-  React.useEffect(() => {
+  useEffect(() => {
     if (!column.width && !column.columns?.length) {
-      updateColumnResizingWidths(new Map([[columnIndex, nestedExpressionContainer.resizingWidth]]));
+      updateColumnResizingWidths(
+        new Map([
+          [
+            columnIndex,
+            {
+              isPivoting,
+              value: nestedExpressionContainer.resizingWidth.value,
+            },
+          ],
+        ])
+      );
     }
   }, [
     column.columns?.length,
     column.width,
     columnIndex,
+    isPivoting,
     nestedExpressionContainer.resizingWidth,
     updateColumnResizingWidths,
   ]);
 
-  const totalSubColumnsWidth = React.useMemo(() => {
-    return getTotalResizingWidth(column, columnResizingWidths, reactTableInstance);
-  }, [column, columnResizingWidths, reactTableInstance]);
-
   // Parent and flexible-sized columns should always have their width equal to the sum of its subColumns
-  React.useEffect(() => {
+  useEffect(() => {
     setFillingResizingWidth((prev) => {
-      if (prev.value === totalSubColumnsWidth) {
+      if (prev.value === subColumnsResizingWidth.value && prev.isPivoting === subColumnsResizingWidth.isPivoting) {
         return prev; // Skip updating if nothing changed.
       } else {
-        return { isPivoting: false, value: totalSubColumnsWidth };
+        return subColumnsResizingWidth;
       }
     });
-  }, [column, column.accessor, totalSubColumnsWidth]);
+  }, [column, column.accessor, subColumnsResizingWidth]);
 
-  const fillingMinWidth = React.useMemo(
+  const fillingMinWidth = useMemo(
     () =>
       Math.max(
         nestedExpressionContainer.minWidth,
@@ -72,7 +88,7 @@ export function useBeeTableFillingResizingWidth(
     [column, nestedExpressionContainer.minWidth]
   );
 
-  const fillingWidth = React.useMemo(
+  const fillingWidth = useMemo(
     () =>
       Math.max(
         nestedExpressionContainer.minWidth,
@@ -118,11 +134,15 @@ export function getTotalResizingWidth(
   const flatListOfSubColumns = getFlatListOfSubColumns(column);
   const indexOfFirstSubColumn = findIndexOfColumn(flatListOfSubColumns[0], reactTableInstance);
 
-  let total = 0;
+  let value = 0;
+  let isPivoting = false;
   flatListOfSubColumns.forEach((_, index) => {
-    total += columnResizingWidths.get(indexOfFirstSubColumn + index)?.value ?? 0;
+    const resizingWidth = columnResizingWidths.get(indexOfFirstSubColumn + index);
+    value += resizingWidth?.value ?? 0;
+    isPivoting = isPivoting || (resizingWidth?.isPivoting ?? false);
   });
-  return total;
+
+  return { isPivoting, value };
 }
 
 export function getFlatListOfSubColumns(column: ReactTable.ColumnInstance<any>): ReactTable.ColumnInstance<any>[] {
