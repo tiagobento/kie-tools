@@ -8,13 +8,15 @@ import {
 import { useNestedExpressionContainer } from "../../resizing/NestedExpressionContainerContext";
 import { ResizingWidth } from "../../resizing/ResizingWidthsContext";
 
-export interface Props {
+export function BeeTableThController({
+  columnIndex,
+  column,
+  reactTableInstance,
+}: {
   columnIndex: number;
   column: ReactTable.ColumnInstance<any>;
   reactTableInstance: ReactTable.TableInstance<any>;
-}
-
-export function BeeTableThController({ columnIndex, column, reactTableInstance }: Props) {
+}) {
   useBeeTableFillingResizingWidth(columnIndex, column, reactTableInstance);
   return <></>;
 }
@@ -46,7 +48,7 @@ export function useBeeTableFillingResizingWidth(
 
   // Flexible-sized columns should always be equal to nestedExpressionContainer.resizingWidth
   useEffect(() => {
-    if (!column.width && !column.columns?.length) {
+    if (isFlexbileColumn(column)) {
       updateColumnResizingWidths(
         new Map([
           [
@@ -60,6 +62,7 @@ export function useBeeTableFillingResizingWidth(
       );
     }
   }, [
+    column,
     column.columns?.length,
     column.width,
     columnIndex,
@@ -70,13 +73,14 @@ export function useBeeTableFillingResizingWidth(
 
   // Parent and flexible-sized columns should always have their width equal to the sum of its subColumns
   useEffect(() => {
-    setFillingResizingWidth((prev) => {
-      if (prev.value === subColumnsResizingWidth.value && prev.isPivoting === subColumnsResizingWidth.isPivoting) {
-        return prev; // Skip updating if nothing changed.
-      } else {
-        return subColumnsResizingWidth;
-      }
-    });
+    if (isFlexbileColumn(column) || isParentColumn(column))
+      setFillingResizingWidth((prev) => {
+        if (prev.value === subColumnsResizingWidth.value && prev.isPivoting === subColumnsResizingWidth.isPivoting) {
+          return prev; // Skip updating if nothing changed.
+        } else {
+          return subColumnsResizingWidth;
+        }
+      });
   }, [column, column.accessor, subColumnsResizingWidth]);
 
   const fillingMinWidth = useMemo(
@@ -101,22 +105,22 @@ export function useBeeTableFillingResizingWidth(
 }
 
 export function computeFlexibleWidth(
-  col: ReactTable.ColumnInstance<any>,
+  column: ReactTable.ColumnInstance<any>,
   property: "width" | "minWidth",
   container: number
 ): number {
   // Flexible-sized column
-  if (!col.width && !col.columns?.length) {
-    return container ?? col.minWidth ?? 0;
+  if (isFlexbileColumn(column)) {
+    return container ?? column.minWidth ?? 0;
   }
 
   // Parent column
-  if (!col.width && col.columns?.length) {
-    return col.columns.reduce((acc, c) => acc + computeFlexibleWidth(c, property, container), 0);
+  if (isParentColumn(column)) {
+    return (column.columns ?? []).reduce((acc, c) => acc + computeFlexibleWidth(c, property, container), 0);
   }
 
   // Exact-sized column
-  return col[property] ?? col.minWidth ?? 0;
+  return column[property] ?? column.minWidth ?? 0;
 }
 
 export function findIndexOfColumn(
@@ -146,9 +150,17 @@ export function getTotalResizingWidth(
 }
 
 export function getFlatListOfSubColumns(column: ReactTable.ColumnInstance<any>): ReactTable.ColumnInstance<any>[] {
-  if (!column.columns?.length) {
-    return [column];
+  if (isParentColumn(column)) {
+    return (column.columns ?? []).flatMap((c) => getFlatListOfSubColumns(c));
   }
 
-  return (column.columns ?? []).flatMap((c) => getFlatListOfSubColumns(c));
+  return [column];
+}
+
+export function isParentColumn(column: ReactTable.ColumnInstance<any>) {
+  return (column.columns?.length ?? 0) > 0;
+}
+
+export function isFlexbileColumn(column: ReactTable.ColumnInstance<any>) {
+  return !column.width && !column.columns?.length;
 }

@@ -30,7 +30,13 @@ import { BeeTableTh, getHoverInfo, HoverInfo } from "./BeeTableTh";
 import { ResizerStopBehavior, ResizingWidth } from "../../resizing/ResizingWidthsContext";
 import { apportionColumnWidths } from "../../resizing/Hooks";
 import { useNestedExpressionContainer } from "../../resizing/NestedExpressionContainerContext";
-import { findIndexOfColumn, getFlatListOfSubColumns, useBeeTableFillingResizingWidth } from "./BeeTableThController";
+import {
+  findIndexOfColumn,
+  getFlatListOfSubColumns,
+  isFlexbileColumn,
+  isParentColumn,
+  useBeeTableFillingResizingWidth,
+} from "./BeeTableThController";
 
 export interface BeeTableThResizableProps<R extends object> {
   onColumnAdded?: (args: { beforeIndex: number; groupType: string | undefined }) => void;
@@ -170,13 +176,13 @@ export function BeeTableThResizable<R extends object>({
     }
 
     // Flexible-sized column.
-    if (!column.width && !column.columns?.length) {
+    if (isFlexbileColumn(column)) {
       updateColumnResizingWidths(new Map([[columnIndex, fillingResizingWidth]]));
       return;
     }
 
     // Exact-sized column
-    if (!column.columns?.length) {
+    if (!isParentColumn(column)) {
       return;
     }
 
