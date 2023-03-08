@@ -160,7 +160,7 @@ export function BeeTableThResizable<R extends object>({
   //   updateColumnResizingWidths,
   // ]);
 
-  const { fillingResizingWidth, setFillingResizingWidth, fillingWidth, fillingMinWidth } =
+  const { fillingResizingWidth, setFillingResizingWidth, fillingWidth, fillingMinWidth, setFillingWidth } =
     useBeeTableFillingResizingWidth(columnIndex, column, reactTableInstance);
 
   const [hoverInfo, setHoverInfo] = useState<HoverInfo>({ isHovered: false });
@@ -245,7 +245,7 @@ export function BeeTableThResizable<R extends object>({
           <Resizer
             minWidth={fillingMinWidth}
             width={fillingWidth}
-            setWidth={undefined}
+            setWidth={setFillingWidth}
             resizingWidth={fillingResizingWidth}
             setResizingWidth={setFillingResizingWidth}
             getWidthToFitData={getWidthToFitData}

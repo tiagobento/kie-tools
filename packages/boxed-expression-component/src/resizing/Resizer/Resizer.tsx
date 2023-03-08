@@ -24,7 +24,7 @@ import "./Resizer.css";
 export interface ResizerProps {
   minWidth: number | undefined;
   width: number | undefined;
-  setWidth: React.Dispatch<React.SetStateAction<number | undefined>> | undefined;
+  setWidth: ((newWidth: number) => void) | undefined;
   resizingWidth: ResizingWidth | undefined;
   setResizingWidth: (newResizingWidth: ResizingWidth) => void;
   setResizing?: React.Dispatch<React.SetStateAction<boolean>>;
@@ -82,9 +82,9 @@ export const Resizer: React.FunctionComponent<ResizerProps> = ({
         }
       }
 
-      // if (resizingStopWidth !== width) {
-      //   setWidth?.(resizingStopWidth);
-      // }
+      if (resizingStopWidth !== width) {
+        setWidth?.(resizingStopWidth);
+      }
     }
 
     setResizing?.(false);

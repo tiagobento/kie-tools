@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import * as ReactTable from "react-table";
 import {
   useBeeTableResizableColumns,
@@ -78,6 +78,46 @@ export function useBeeTableFillingResizingWidth(
     });
   }, [column, totalColumnResizingWidth]);
 
+  const setFillingWidth = useCallback(
+    (newWidth: number) => {
+      if (isFlexbileColumn(column)) {
+        updateColumnResizingWidths(new Map([[columnIndex, { isPivoting: false, value: newWidth }]]));
+      }
+
+      if (isParentColumn(column)) {
+        const flatListOfSubColumns = getFlatListOfSubColumns(column);
+        const indexOfFirstSubColumn = findIndexOfColumn(flatListOfSubColumns[0], reactTableInstance);
+
+        const subColumns = flatListOfSubColumns.map(({ minWidth, width, isWidthPinned }) => ({
+          minWidth: minWidth ?? 0,
+          currentWidth: width ?? minWidth ?? 0,
+          isFrozen: isWidthPinned ?? false,
+        }));
+
+        const fixedWidthAmount = subColumns.reduce(
+          (acc, { isFrozen, currentWidth, minWidth }) => (isFrozen ? acc + (currentWidth ?? minWidth) : acc),
+          0
+        );
+
+        const nextTotalWidth = newWidth - fixedWidthAmount;
+        const apportionedWidths = apportionColumnWidths(nextTotalWidth, subColumns);
+
+        const newColumnWidths = apportionedWidths.reduce((acc, nextWidth, index) => {
+          const columnIndex = indexOfFirstSubColumn + index;
+          if (subColumns[index]?.isFrozen) {
+            return acc; // Skip updating frozen columns.
+          }
+
+          acc.set(columnIndex, { isPivoting: false, value: nextWidth });
+          return acc;
+        }, new Map());
+
+        updateColumnResizingWidths(newColumnWidths);
+      }
+    },
+    [column, columnIndex, reactTableInstance, updateColumnResizingWidths]
+  );
+
   // SYNC
   useEffect(() => {
     if (fillingResizingWidth.isPivoting) {
@@ -90,7 +130,7 @@ export function useBeeTableFillingResizingWidth(
           [
             columnIndex,
             {
-              isPivoting: false,
+              isPivoting: totalColumnResizingWidth.isPivoting, // Keep whatever this column has.
               value: nestedExpressionContainer.resizingWidth.value,
             },
           ],
@@ -102,6 +142,7 @@ export function useBeeTableFillingResizingWidth(
     columnIndex,
     fillingResizingWidth.isPivoting,
     nestedExpressionContainer.resizingWidth.value,
+    totalColumnResizingWidth.isPivoting,
     updateColumnResizingWidths,
   ]);
 
@@ -146,7 +187,7 @@ export function useBeeTableFillingResizingWidth(
         return acc; // Skip updating frozen columns.
       }
 
-      acc.set(columnIndex, { isPivoting: false, value: nextWidth });
+      acc.set(columnIndex, { isPivoting: true, value: nextWidth });
       return acc;
     }, new Map());
 
@@ -161,7 +202,7 @@ export function useBeeTableFillingResizingWidth(
     reactTableInstance,
   ]);
 
-  return { fillingResizingWidth, setFillingResizingWidth, fillingMinWidth, fillingWidth };
+  return { fillingResizingWidth, setFillingResizingWidth, fillingMinWidth, fillingWidth, setFillingWidth };
 }
 
 export function sumColumnPropertyRecursively(
