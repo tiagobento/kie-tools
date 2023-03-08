@@ -112,7 +112,7 @@ public class DecisionTable extends Expression {
         exactelyClonedDecisionTable.rule = rule.stream().map(DecisionRule::exactCopy).collect(Collectors.toList());
         exactelyClonedDecisionTable.annotations = Optional.ofNullable(annotations)
                 .map(annotationEntryList ->
-                        annotationEntryList.stream().map(RuleAnnotationClause::exactCopy).collect(Collectors.toList()))
+                        annotationEntryList.stream().map(RuleAnnotationClause::copy).collect(Collectors.toList()))
                 .orElse(null);
         exactelyClonedDecisionTable.hitPolicy = hitPolicy;
         exactelyClonedDecisionTable.aggregation = aggregation;

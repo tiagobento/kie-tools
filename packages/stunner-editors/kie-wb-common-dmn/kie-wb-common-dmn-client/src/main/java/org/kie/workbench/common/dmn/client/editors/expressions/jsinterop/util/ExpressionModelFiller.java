@@ -414,7 +414,6 @@ public class ExpressionModelFiller {
                 .stream(Optional.ofNullable(decisionTableProps.annotations).orElse(new Annotation[0]))
                 .map(annotation -> {
                     final RuleAnnotationClause ruleAnnotationClause = new RuleAnnotationClause();
-                    ruleAnnotationClause.setId(new Id(annotation.id));
                     ruleAnnotationClause.setName(new Name(annotation.name));
                     return ruleAnnotationClause;
                 })

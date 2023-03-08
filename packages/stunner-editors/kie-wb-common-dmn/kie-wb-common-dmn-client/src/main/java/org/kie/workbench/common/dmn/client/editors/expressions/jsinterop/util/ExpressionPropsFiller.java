@@ -289,9 +289,8 @@ public class ExpressionPropsFiller {
                     final RuleAnnotationClause ruleAnnotationClause = decisionTableExpression.getAnnotations().get(index);
                     final Double width = decisionTableExpression.getComponentWidths()
                             .get(decisionTableExpression.getInput().size() + decisionTableExpression.getOutput().size() + index + 1);
-                    final String annotationId = Optional.ofNullable(ruleAnnotationClause.getId()).orElse(new Id()).getValue();
                     final String annotationName = ruleAnnotationClause.getName().getValue();
-                    return new Annotation(annotationId, annotationName, width);
+                    return new Annotation(annotationName, width);
                 })
                 .toArray(Annotation[]::new);
     }

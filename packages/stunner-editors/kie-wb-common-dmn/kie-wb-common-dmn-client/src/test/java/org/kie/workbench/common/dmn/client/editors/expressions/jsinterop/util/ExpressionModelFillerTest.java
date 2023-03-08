@@ -279,10 +279,9 @@ public class ExpressionModelFillerTest {
     @Test
     public void testFillDecisionTableExpression() {
         final DecisionTable decisionTableExpression = new DecisionTable();
-        final String annotationId = "Annotation id";
         final String annotationName = "Annotation name";
         final double annotationWidth = 456d;
-        final Annotation[] annotations = new Annotation[]{new Annotation(annotationId, annotationName, annotationWidth)};
+        final Annotation[] annotations = new Annotation[]{new Annotation(annotationName, annotationWidth)};
         final String inputId = "Input id";
         final String inputColumn = "Input column";
         final String inputDataType = BuiltInType.DATE_TIME.asQName().getLocalPart();

@@ -21,9 +21,12 @@ import java.util.Optional;
 
 import org.jboss.errai.common.client.api.annotations.Portable;
 import org.kie.workbench.common.dmn.api.definition.HasName;
-import org.kie.workbench.common.dmn.api.property.dmn.Id;
 import org.kie.workbench.common.dmn.api.property.dmn.Name;
 
+/**
+ * RuleAnnotationClause extends DMNElement, but it doesn't store "id" and "description" fields.
+ * It's only field is "name". DMN Specs 8.3.2 - Table 35
+ */
 @Portable
 public class RuleAnnotationClause extends DMNElement implements HasName {
 
@@ -38,13 +41,6 @@ public class RuleAnnotationClause extends DMNElement implements HasName {
         clonedRuleAnnotationClause.name = Optional.ofNullable(name).map(Name::copy).orElse(null);
         return clonedRuleAnnotationClause;
     }
-
-    public RuleAnnotationClause exactCopy() {
-        final RuleAnnotationClause exactelyClonedRuleAnnotationClause = copy();
-        exactelyClonedRuleAnnotationClause.id = Optional.ofNullable(id).map(Id::copy).orElse(null);
-        return exactelyClonedRuleAnnotationClause;
-    }
-
     @Override
     public Name getName() {
         return this.name;
