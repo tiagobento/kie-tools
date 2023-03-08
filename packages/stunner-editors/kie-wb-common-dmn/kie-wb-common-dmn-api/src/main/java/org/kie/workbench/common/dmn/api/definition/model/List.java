@@ -73,10 +73,10 @@ public class List extends Expression {
         exactelyClonedList.description = Optional.ofNullable(description).map(Description::copy).orElse(null);
         exactelyClonedList.typeRef = Optional.ofNullable(typeRef).map(QName::copy).orElse(null);
         exactelyClonedList.componentWidths = new ArrayList<>(componentWidths);
-        exactelyClonedList.expression = expression.stream().map(expression ->
+        exactelyClonedList.expression = expression.stream().map(hasExpression ->
                 HasExpression.wrap(
                         exactelyClonedList,
-                        Optional.ofNullable(expression.getExpression()).map(Expression::exactCopy).orElse(null)
+                        Optional.ofNullable(hasExpression.getExpression()).map(Expression::exactCopy).orElse(null)
                 )).collect(Collectors.toList());
         return exactelyClonedList;
     }
