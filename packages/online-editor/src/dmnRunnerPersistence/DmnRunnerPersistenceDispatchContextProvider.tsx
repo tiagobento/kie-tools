@@ -17,69 +17,71 @@
 import * as React from "react";
 import { useCallback, useMemo } from "react";
 import { WorkspaceFile } from "@kie-tools-core/workspaces-git-fs/dist/context/WorkspacesContext";
-import { DmnRunnerInputsService, generateUuid } from "./DmnRunnerInputsService";
-import { DmnRunnerInputsDispatchContext } from "./DmnRunnerInputsDispatchContext";
+import { DmnRunnerPersistenceService, generateUuid } from "./DmnRunnerPersistenceService";
+import { DmnRunnerPersistenceDispatchContext } from "./DmnRunnerPersistenceDispatchContext";
 import { decoder } from "@kie-tools-core/workspaces-git-fs/dist/encoderdecoder/EncoderDecoder";
 import { useSyncedCompanionFs } from "../companionFs/CompanionFsHooks";
 
-export function DmnRunnerInputsDispatchContextProvider(props: React.PropsWithChildren<{}>) {
-  const dmnRunnerInputsService = useMemo(() => {
-    return new DmnRunnerInputsService();
+export function DmnRunnerPersistenceDispatchContextProvider(props: React.PropsWithChildren<{}>) {
+  const dmnRunnerPersistenceService = useMemo(() => {
+    return new DmnRunnerPersistenceService();
   }, []);
 
-  useSyncedCompanionFs(dmnRunnerInputsService.companionFsService);
+  useSyncedCompanionFs(dmnRunnerPersistenceService.companionFsService);
 
-  const deletePersistedInputRows = useCallback(
+  const deletePersistedJson = useCallback(
     async (workspaceFile: WorkspaceFile) => {
-      await dmnRunnerInputsService.companionFsService.delete({
+      await dmnRunnerPersistenceService.companionFsService.delete({
         workspaceId: workspaceFile.workspaceId,
         workspaceFileRelativePath: workspaceFile.relativePath,
       });
 
-      return dmnRunnerInputsService.companionFsService.createOrOverwrite(
+      return dmnRunnerPersistenceService.companionFsService.createOrOverwrite(
         { workspaceId: workspaceFile.workspaceId, workspaceFileRelativePath: workspaceFile.relativePath },
         JSON.stringify([{ id: generateUuid() }])
       );
     },
-    [dmnRunnerInputsService]
+    [dmnRunnerPersistenceService]
   );
 
-  const getInputRowsForDownload = useCallback(
+  const getPersistenceJsonForDownload = useCallback(
     async (workspaceFile: WorkspaceFile) => {
-      const inputs = await dmnRunnerInputsService.companionFsService.get({
+      const persistenceJson = await dmnRunnerPersistenceService.companionFsService.get({
         workspaceId: workspaceFile.workspaceId,
         workspaceFileRelativePath: workspaceFile.relativePath,
       });
-      return await inputs?.getFileContents().then((content) => new Blob([content], { type: "application/json" }));
+      return await persistenceJson
+        ?.getFileContents()
+        .then((content) => new Blob([content], { type: "application/json" }));
     },
-    [dmnRunnerInputsService]
+    [dmnRunnerPersistenceService]
   );
 
-  const uploadInputRows = useCallback(
+  const uploadPersistenceJson = useCallback(
     async (workspaceFile: WorkspaceFile, file: File) => {
       const content = await new Promise<string>((res) => {
         const reader = new FileReader();
         reader.onload = (event: ProgressEvent<FileReader>) => res(decoder.decode(event.target?.result as ArrayBuffer));
         reader.readAsArrayBuffer(file);
       });
-      await dmnRunnerInputsService.companionFsService.createOrOverwrite(
+      await dmnRunnerPersistenceService.companionFsService.createOrOverwrite(
         { workspaceId: workspaceFile.workspaceId, workspaceFileRelativePath: workspaceFile.relativePath },
         content
       );
     },
-    [dmnRunnerInputsService]
+    [dmnRunnerPersistenceService]
   );
 
   return (
-    <DmnRunnerInputsDispatchContext.Provider
+    <DmnRunnerPersistenceDispatchContext.Provider
       value={{
-        dmnRunnerInputsService,
-        deletePersistedInputRows,
-        getInputRowsForDownload,
-        uploadInputRows,
+        dmnRunnerPersistenceService,
+        deletePersistedJson,
+        getPersistenceJsonForDownload,
+        uploadPersistenceJson,
       }}
     >
       {props.children}
-    </DmnRunnerInputsDispatchContext.Provider>
+    </DmnRunnerPersistenceDispatchContext.Provider>
   );
 }

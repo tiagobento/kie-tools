@@ -18,21 +18,25 @@ import * as React from "react";
 import { useCallback, useEffect, useState } from "react";
 import { useCancelableEffect } from "@kie-tools-core/react-hooks/dist/useCancelableEffect";
 import { WorkspaceFile } from "@kie-tools-core/workspaces-git-fs/dist/context/WorkspacesContext";
-import { InputRow } from "@kie-tools/form-dmn";
-import { useDmnRunnerInputsDispatch } from "./DmnRunnerInputsDispatchContext";
+import { useDmnRunnerPersistenceDispatch } from "./DmnRunnerPersistenceDispatchContext";
 import { decoder } from "@kie-tools-core/workspaces-git-fs/dist/encoderdecoder/EncoderDecoder";
 import { CompanionFsServiceBroadcastEvents } from "../companionFs/CompanionFsService";
-import { EMPTY_DMN_RUNNER_INPUTS, generateUuid } from "./DmnRunnerInputsService";
+import {
+  DmnRunnerPersistenceJson,
+  EMPTY_DMN_RUNNER_INPUTS,
+  generateUuid,
+  EMPTY_DMN_RUNNER_PERSISTANCE_JSON,
+} from "./DmnRunnerPersistenceService";
 import isEqual from "lodash/isEqual";
 
-interface DmnRunnerInputs {
-  inputRows: Array<InputRow>;
-  setInputRows: React.Dispatch<React.SetStateAction<Array<InputRow>>>;
+interface DmnRunnerPersistenceHook {
+  dmnRunnerJson: DmnRunnerPersistenceJson;
+  setDmnRunnerJson: React.Dispatch<React.SetStateAction<DmnRunnerPersistenceJson>>;
 }
 
-export function useDmnRunnerInputs(workspaceFile: WorkspaceFile): DmnRunnerInputs {
-  const [inputRows, setInputRows] = useState<Array<InputRow>>(EMPTY_DMN_RUNNER_INPUTS);
-  const { dmnRunnerInputsService } = useDmnRunnerInputsDispatch();
+export function useDmnRunnerPersistence(workspaceFile: WorkspaceFile): DmnRunnerPersistenceHook {
+  const [dmnRunnerJson, setDmnRunnerJson] = useState<DmnRunnerPersistenceJson>(EMPTY_DMN_RUNNER_PERSISTANCE_JSON);
+  const { dmnRunnerPersistenceService } = useDmnRunnerPersistenceDispatch();
 
   // When another TAB updates the FS, it should sync up
   useCancelableEffect(
@@ -42,13 +46,14 @@ export function useDmnRunnerInputs(workspaceFile: WorkspaceFile): DmnRunnerInput
           return;
         }
 
-        const dmnRunnerInputsFileUniqueId = dmnRunnerInputsService.companionFsService.getUniqueFileIdentifier({
-          workspaceId: workspaceFile.workspaceId,
-          workspaceFileRelativePath: workspaceFile.relativePath,
-        });
+        const dmnRunnerPersistenceJsonFileUniqueId =
+          dmnRunnerPersistenceService.companionFsService.getUniqueFileIdentifier({
+            workspaceId: workspaceFile.workspaceId,
+            workspaceFileRelativePath: workspaceFile.relativePath,
+          });
 
-        console.debug(`Subscribing to ${dmnRunnerInputsFileUniqueId}`);
-        const broadcastChannel = new BroadcastChannel(dmnRunnerInputsFileUniqueId);
+        console.debug(`Subscribing to ${dmnRunnerPersistenceJsonFileUniqueId}`);
+        const broadcastChannel = new BroadcastChannel(dmnRunnerPersistenceJsonFileUniqueId);
         broadcastChannel.onmessage = ({ data: companionEvent }: MessageEvent<CompanionFsServiceBroadcastEvents>) => {
           if (canceled.get()) {
             return;
@@ -61,86 +66,85 @@ export function useDmnRunnerInputs(workspaceFile: WorkspaceFile): DmnRunnerInput
             companionEvent.type === "CFSF_ADD" ||
             companionEvent.type === "CFSF_DELETE"
           ) {
-            setInputRows((currentInputRows) => {
+            setDmnRunnerJson((currentDmnRunnerJson) => {
               // Triggered by the tab; shouldn't update; safe comparison;
-              if (isEqual(JSON.parse(companionEvent.content), currentInputRows)) {
-                return currentInputRows;
+              if (isEqual(JSON.parse(companionEvent.content), currentDmnRunnerJson)) {
+                return currentDmnRunnerJson;
               }
               // Triggered by the other tab; should update;
-              return dmnRunnerInputsService.parseDmnRunnerInputs(companionEvent.content);
+              return dmnRunnerPersistenceService.parseDmnRunnerPersistenceJson(companionEvent.content);
             });
           }
         };
 
         return () => {
-          console.debug(`Unsubscribing to ${dmnRunnerInputsFileUniqueId}`);
+          console.debug(`Unsubscribing to ${dmnRunnerPersistenceJsonFileUniqueId}`);
           broadcastChannel.close();
         };
       },
-      [dmnRunnerInputsService, workspaceFile, setInputRows]
+      [dmnRunnerPersistenceService, workspaceFile, setDmnRunnerJson]
     )
   );
 
-  // On first render load the inputs;
+  // On first render load the persistence json;
   useCancelableEffect(
     useCallback(
       ({ canceled }) => {
-        if (!workspaceFile || !dmnRunnerInputsService) {
+        if (!workspaceFile || !dmnRunnerPersistenceService) {
           return;
         }
 
-        dmnRunnerInputsService.companionFsService
+        dmnRunnerPersistenceService.companionFsService
           .get({ workspaceId: workspaceFile.workspaceId, workspaceFileRelativePath: workspaceFile.relativePath })
-          .then((inputs) => {
+          .then((persistenceJson) => {
             if (canceled.get()) {
               return;
             }
-            // If inputs don't exist, create then.
-            if (!inputs) {
-              dmnRunnerInputsService.companionFsService.createOrOverwrite(
+            // If persistence doesn't exist, create then.
+            if (!persistenceJson) {
+              dmnRunnerPersistenceService.companionFsService.createOrOverwrite(
                 { workspaceId: workspaceFile.workspaceId, workspaceFileRelativePath: workspaceFile.relativePath },
                 JSON.stringify([{ id: generateUuid() }])
               );
               return;
             }
 
-            inputs.getFileContents().then((content) => {
+            persistenceJson.getFileContents().then((content) => {
               if (canceled.get()) {
                 return;
               }
-              const inputRows = decoder.decode(content);
-              setInputRows(dmnRunnerInputsService.parseDmnRunnerInputs(inputRows));
+              const dmnRunnerJson = decoder.decode(content);
+              setDmnRunnerJson(dmnRunnerPersistenceService.parseDmnRunnerPersistenceJson(dmnRunnerJson));
             });
           });
       },
-      [dmnRunnerInputsService, workspaceFile, setInputRows]
+      [dmnRunnerPersistenceService, workspaceFile, setDmnRunnerJson]
     )
   );
 
-  // Updating the inputRows should update the FS
+  // Updating the dmnRunnerJson should update the FS
   useEffect(() => {
-    console.log("use effect triggered by input rows", inputRows);
     if (!workspaceFile.relativePath || !workspaceFile.workspaceId) {
       return;
     }
 
     // safe comparison, it compares to an array with an empty object;
     // used in the first render;
-    if (JSON.stringify(inputRows) === JSON.stringify(EMPTY_DMN_RUNNER_INPUTS)) {
+    if (JSON.stringify(dmnRunnerJson) === JSON.stringify(EMPTY_DMN_RUNNER_PERSISTANCE_JSON)) {
       return;
     }
 
-    dmnRunnerInputsService.companionFsService.update(
+    dmnRunnerPersistenceService.companionFsService.update(
       {
         workspaceId: workspaceFile.workspaceId,
         workspaceFileRelativePath: workspaceFile.relativePath,
       },
-      JSON.stringify(inputRows)
+      JSON.stringify(dmnRunnerJson)
     );
-  }, [dmnRunnerInputsService, workspaceFile.workspaceId, workspaceFile.relativePath, inputRows]);
+  }, [dmnRunnerPersistenceService, workspaceFile.workspaceId, workspaceFile.relativePath, dmnRunnerJson]);
 
   return {
-    inputRows,
-    setInputRows,
+    dmnRunnerJson,
+    setDmnRunnerJson,
   };
 }

@@ -15,18 +15,18 @@
  */
 
 import { createContext, useContext } from "react";
-import { DmnRunnerInputsService } from "./DmnRunnerInputsService";
+import { DmnRunnerPersistenceService } from "./DmnRunnerPersistenceService";
 import { WorkspaceFile } from "@kie-tools-core/workspaces-git-fs/dist/context/WorkspacesContext";
 
-interface DmnInputsDispatchContextType {
-  dmnRunnerInputsService: DmnRunnerInputsService;
-  deletePersistedInputRows: (workspaceFile: WorkspaceFile) => Promise<void>;
-  getInputRowsForDownload: (workspaceFile: WorkspaceFile) => Promise<Blob | undefined>;
-  uploadInputRows: (workspaceFile: WorkspaceFile, file: File) => void;
+interface DmnRunnerPersistenceDispatchContextType {
+  dmnRunnerPersistenceService: DmnRunnerPersistenceService;
+  deletePersistedJson: (workspaceFile: WorkspaceFile) => Promise<void>;
+  getPersistenceJsonForDownload: (workspaceFile: WorkspaceFile) => Promise<Blob | undefined>;
+  uploadPersistenceJson: (workspaceFile: WorkspaceFile, file: File) => void;
 }
 
-export const DmnRunnerInputsDispatchContext = createContext<DmnInputsDispatchContextType>({} as any);
+export const DmnRunnerPersistenceDispatchContext = createContext<DmnRunnerPersistenceDispatchContextType>({} as any);
 
-export function useDmnRunnerInputsDispatch(): DmnInputsDispatchContextType {
-  return useContext(DmnRunnerInputsDispatchContext);
+export function useDmnRunnerPersistenceDispatch(): DmnRunnerPersistenceDispatchContextType {
+  return useContext(DmnRunnerPersistenceDispatchContext);
 }
