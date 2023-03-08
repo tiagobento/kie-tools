@@ -22,7 +22,6 @@ import { useCellWidthToFitData } from "../../resizing/BeeTableCellWidthToFitData
 import { useBeeTableResizableCell } from "../../resizing/BeeTableResizableColumnsContext";
 import { Resizer } from "../../resizing/Resizer";
 import { ResizerStopBehavior } from "../../resizing/ResizingWidthsContext";
-import { DEFAULT_MIN_WIDTH } from "../../resizing/WidthConstants";
 import {
   BeeTableCellCoordinates,
   BeeTableCoordinatesContextProvider,
@@ -194,18 +193,17 @@ export function BeeTableTd<R extends object>({
           <>
             {tdContent}
 
-            {!(!column.width && !column.columns?.length) &&
-              (hoverInfo.isHovered || (resizingWidth?.isPivoting && isResizing)) && (
-                <Resizer
-                  getWidthToFitData={cellWidthToFitDataRef?.getWidthToFitData}
-                  minWidth={lastColumnMinWidth ?? cell.column.minWidth}
-                  width={cell.column.width}
-                  setWidth={cell.column.setWidth}
-                  resizingWidth={resizingWidth}
-                  setResizingWidth={setResizingWidth}
-                  setResizing={setResizing}
-                />
-              )}
+            {(hoverInfo.isHovered || (resizingWidth?.isPivoting && isResizing)) && (
+              <Resizer
+                getWidthToFitData={cellWidthToFitDataRef?.getWidthToFitData}
+                minWidth={lastColumnMinWidth ?? cell.column.minWidth}
+                width={cell.column.width}
+                setWidth={cell.column.setWidth}
+                resizingWidth={resizingWidth}
+                setResizingWidth={setResizingWidth}
+                setResizing={setResizing}
+              />
+            )}
           </>
         )}
 

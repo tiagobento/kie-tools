@@ -38,7 +38,7 @@ import { useBoxedExpressionEditorDispatch } from "../BoxedExpressionEditor/Boxed
 import { DEFAULT_EXPRESSION_NAME } from "../ExpressionDefinitionHeaderMenu";
 import "./ListExpression.css";
 import { ListItemCell } from "./ListItemCell";
-import { ResizerStopBehavior, ResizingWidth } from "../../resizing/ResizingWidthsContext";
+import { ResizerStopBehavior } from "../../resizing/ResizingWidthsContext";
 
 export type ROWTYPE = ContextExpressionDefinitionEntry;
 

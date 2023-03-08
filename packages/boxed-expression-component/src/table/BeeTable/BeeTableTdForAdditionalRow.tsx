@@ -78,15 +78,13 @@ export function BeeTableTdForAdditionalRow<R extends object>({
     >
       {children}
 
-      {!(!column.width && !column.columns?.length) && (
-        <Resizer
-          minWidth={lastColumnMinWidth ?? column.minWidth}
-          width={column.width}
-          setWidth={column.setWidth}
-          resizingWidth={resizingWidth}
-          setResizingWidth={setResizingWidth}
-        />
-      )}
+      <Resizer
+        minWidth={lastColumnMinWidth ?? column.minWidth}
+        width={column.width}
+        setWidth={column.setWidth}
+        resizingWidth={resizingWidth}
+        setResizingWidth={setResizingWidth}
+      />
     </td>
   );
 }
