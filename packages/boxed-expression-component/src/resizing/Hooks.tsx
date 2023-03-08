@@ -1,5 +1,5 @@
 import { useMemo, useEffect, useState } from "react";
-import { ExpressionDefinition, ExpressionDefinitionLogicType } from "../api";
+import { ExpressionDefinition } from "../api";
 import { BeeTableRef } from "../expressions";
 import {
   useNestedExpressionContainer,
@@ -112,7 +112,6 @@ export function useNestedExpressionContainerWithNestedExpressions({
   nestedExpressionMinWidth,
   extraWidth,
   expression,
-  beeTableRef,
   flexibleColumnIndex,
 }: {
   nestedExpressions: ExpressionDefinition[];
@@ -122,7 +121,6 @@ export function useNestedExpressionContainerWithNestedExpressions({
   nestedExpressionMinWidth: number;
   extraWidth: number;
   expression: ExpressionDefinition;
-  beeTableRef: React.RefObject<BeeTableRef>;
   flexibleColumnIndex: number;
 }) {
   const nestedExpressionContainer = useNestedExpressionContainer();

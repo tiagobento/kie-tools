@@ -15,7 +15,7 @@
  */
 
 import * as React from "react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import * as ReactTable from "react-table";
 import {
   BeeTableHeaderVisibility,
@@ -31,18 +31,15 @@ import {
 } from "../../api";
 import { useBoxedExpressionEditorI18n } from "../../i18n";
 import { useNestedExpressionContainerWithNestedExpressions } from "../../resizing/Hooks";
-import {
-  NestedExpressionContainerContext,
-  NestedExpressionContainerContextType,
-} from "../../resizing/NestedExpressionContainerContext";
-import { ResizerStopBehavior, ResizingWidth, useResizingWidthsDispatch } from "../../resizing/ResizingWidthsContext";
+import { NestedExpressionContainerContext } from "../../resizing/NestedExpressionContainerContext";
+import { ResizerStopBehavior, ResizingWidth } from "../../resizing/ResizingWidthsContext";
 import {
   CONTEXT_ENTRY_EXPRESSION_MIN_WIDTH,
   CONTEXT_ENTRY_INFO_MIN_WIDTH,
   CONTEXT_EXPRESSION_EXTRA_WIDTH,
 } from "../../resizing/WidthConstants";
 import { useBeeTableSelectableCellRef, useBeeTableCoordinates } from "../../selection/BeeTableSelectionContext";
-import { BeeTable, BeeTableColumnUpdate, BeeTableRef } from "../../table/BeeTable";
+import { BeeTable, BeeTableColumnUpdate } from "../../table/BeeTable";
 import { useBoxedExpressionEditorDispatch } from "../BoxedExpressionEditor/BoxedExpressionEditorContext";
 import { DEFAULT_EXPRESSION_NAME } from "../ExpressionDefinitionHeaderMenu";
 import { ContextEntryExpressionCell } from "./ContextEntryExpressionCell";
@@ -89,7 +86,6 @@ export function ContextExpression(contextExpression: ContextExpressionDefinition
   /// ///////////// RESIZING WIDTHS ////////////////////////
   /// //////////////////////////////////////////////////////
 
-  const beeTableRef = useRef<BeeTableRef>(null);
   const { nestedExpressionContainerValue, onColumnResizingWidthChange: onColumnResizingWidthChange2 } =
     useNestedExpressionContainerWithNestedExpressions(
       useMemo(() => {
@@ -105,7 +101,6 @@ export function ContextExpression(contextExpression: ContextExpressionDefinition
           extraWidth: CONTEXT_EXPRESSION_EXTRA_WIDTH,
           expression: contextExpression,
           flexibleColumnIndex: 2,
-          beeTableRef,
         };
       }, [contextExpression, entryInfoResizingWidth, entryInfoWidth])
     );
@@ -164,8 +159,7 @@ export function ContextExpression(contextExpression: ContextExpressionDefinition
   );
 
   const headerVisibility = useMemo(() => {
-    return BeeTableHeaderVisibility.AllLevels;
-    // return contextExpression.isNested ? BeeTableHeaderVisibility.None : BeeTableHeaderVisibility.SecondToLastLevel;
+    return contextExpression.isNested ? BeeTableHeaderVisibility.None : BeeTableHeaderVisibility.SecondToLastLevel;
   }, [contextExpression.isNested]);
 
   const updateEntry = useCallback(
@@ -300,7 +294,6 @@ export function ContextExpression(contextExpression: ContextExpressionDefinition
     <NestedExpressionContainerContext.Provider value={nestedExpressionContainerValue}>
       <div className={`context-expression ${contextExpression.id}`}>
         <BeeTable
-          forwardRef={beeTableRef}
           resizerStopBehavior={ResizerStopBehavior.SET_WIDTH_WHEN_SMALLER}
           tableId={contextExpression.id}
           headerLevelCountForAppendingRowIndexColumn={1}

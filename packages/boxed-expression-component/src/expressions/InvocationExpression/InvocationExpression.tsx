@@ -15,7 +15,7 @@
  */
 
 import * as React from "react";
-import { useCallback, useMemo, useRef } from "react";
+import { useCallback, useMemo } from "react";
 import * as ReactTable from "react-table";
 import {
   BeeTableHeaderVisibility,
@@ -38,7 +38,7 @@ import {
   INVOCATION_ARGUMENT_EXPRESSION_MIN_WIDTH,
   INVOCATION_EXTRA_WIDTH,
 } from "../../resizing/WidthConstants";
-import { BeeTable, BeeTableColumnUpdate, BeeTableRef } from "../../table/BeeTable";
+import { BeeTable, BeeTableColumnUpdate } from "../../table/BeeTable";
 import { useBoxedExpressionEditorDispatch } from "../BoxedExpressionEditor/BoxedExpressionEditorContext";
 import { useNestedExpressionContainerWithNestedExpressions } from "../../resizing/Hooks";
 import { ArgumentEntryExpressionCell } from "./ArgumentEntryExpressionCell";
@@ -77,7 +77,6 @@ export function InvocationExpression(invocationExpression: InvocationExpressionD
   /// ///////////// RESIZING WIDTHS ////////////////////////
   /// //////////////////////////////////////////////////////
 
-  const beeTableRef = useRef<BeeTableRef>(null);
   const { nestedExpressionContainerValue, onColumnResizingWidthChange: onColumnResizingWidthChange2 } =
     useNestedExpressionContainerWithNestedExpressions(
       useMemo(() => {
@@ -90,7 +89,6 @@ export function InvocationExpression(invocationExpression: InvocationExpressionD
           extraWidth: INVOCATION_EXTRA_WIDTH,
           expression: invocationExpression,
           flexibleColumnIndex: 2,
-          beeTableRef,
         };
       }, [parametersWidth, parametersResizingWidth, invocationExpression])
     );
@@ -186,12 +184,11 @@ export function InvocationExpression(invocationExpression: InvocationExpressionD
     [setExpression]
   );
 
-  const headerVisibility = useMemo(() => {
-    return BeeTableHeaderVisibility.AllLevels;
-    // return invocationExpression.isNested
-    //   ? BeeTableHeaderVisibility.SecondToLastLevel
-    //   : BeeTableHeaderVisibility.AllLevels;
-  }, [invocationExpression.isNested]);
+  const headerVisibility = useMemo(
+    () =>
+      invocationExpression.isNested ? BeeTableHeaderVisibility.SecondToLastLevel : BeeTableHeaderVisibility.AllLevels,
+    [invocationExpression.isNested]
+  );
 
   const getRowKey = useCallback((row: ReactTable.Row<ROWTYPE>) => {
     return row.original.entryInfo.id;
@@ -304,12 +301,11 @@ export function InvocationExpression(invocationExpression: InvocationExpressionD
     <NestedExpressionContainerContext.Provider value={nestedExpressionContainerValue}>
       <div className={`invocation-expression ${invocationExpression.id}`}>
         <BeeTable
-          forwardRef={beeTableRef}
           resizerStopBehavior={ResizerStopBehavior.SET_WIDTH_WHEN_SMALLER}
           tableId={invocationExpression.id}
           headerLevelCountForAppendingRowIndexColumn={2}
           headerVisibility={headerVisibility}
-          // skipLastHeaderGroup={true}
+          skipLastHeaderGroup={true}
           cellComponentByColumnAccessor={cellComponentByColumnAccessor}
           columns={beeTableColumns}
           rows={beeTableRows}

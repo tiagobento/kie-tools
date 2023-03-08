@@ -16,7 +16,7 @@
 
 import * as React from "react";
 import * as ReactTable from "react-table";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo } from "react";
 import {
   BeeTableHeaderVisibility,
   BeeTableOperation,
@@ -31,12 +31,9 @@ import {
 } from "../../api";
 import { useBoxedExpressionEditorI18n } from "../../i18n";
 import { useNestedExpressionContainerWithNestedExpressions } from "../../resizing/Hooks";
-import {
-  NestedExpressionContainerContext,
-  NestedExpressionContainerContextType,
-} from "../../resizing/NestedExpressionContainerContext";
+import { NestedExpressionContainerContext } from "../../resizing/NestedExpressionContainerContext";
 import { LIST_EXPRESSION_EXTRA_WIDTH, LIST_EXPRESSION_ITEM_MIN_WIDTH } from "../../resizing/WidthConstants";
-import { BeeTable, BeeTableColumnUpdate, BeeTableRef } from "../../table/BeeTable";
+import { BeeTable, BeeTableColumnUpdate } from "../../table/BeeTable";
 import { useBoxedExpressionEditorDispatch } from "../BoxedExpressionEditor/BoxedExpressionEditorContext";
 import { DEFAULT_EXPRESSION_NAME } from "../ExpressionDefinitionHeaderMenu";
 import "./ListExpression.css";
@@ -53,7 +50,6 @@ export function ListExpression(listExpression: ListExpressionDefinition & { isNe
   /// ///////////// RESIZING WIDTHS ////////////////////////
   /// //////////////////////////////////////////////////////
 
-  const beeTableRef = useRef<BeeTableRef>(null);
   const { nestedExpressionContainerValue, onColumnResizingWidthChange } =
     useNestedExpressionContainerWithNestedExpressions(
       useMemo(() => {
@@ -66,7 +62,6 @@ export function ListExpression(listExpression: ListExpressionDefinition & { isNe
           extraWidth: LIST_EXPRESSION_EXTRA_WIDTH,
           expression: listExpression,
           flexibleColumnIndex: 1,
-          beeTableRef,
         };
       }, [listExpression])
     );
@@ -186,7 +181,6 @@ export function ListExpression(listExpression: ListExpressionDefinition & { isNe
     <NestedExpressionContainerContext.Provider value={nestedExpressionContainerValue}>
       <div className={`${listExpression.id} list-expression`}>
         <BeeTable<ROWTYPE>
-          forwardRef={beeTableRef}
           onColumnResizingWidthChange={onColumnResizingWidthChange}
           resizerStopBehavior={ResizerStopBehavior.SET_WIDTH_WHEN_SMALLER}
           tableId={listExpression.id}

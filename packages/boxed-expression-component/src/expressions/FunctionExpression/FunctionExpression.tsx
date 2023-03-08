@@ -33,7 +33,7 @@ import * as React from "react";
 import _ from "lodash";
 import { PopoverMenu } from "../../contextMenu/PopoverMenu";
 import { useBoxedExpressionEditorI18n } from "../../i18n";
-import { BeeTableColumnUpdate, BeeTable, BeeTableRef } from "../../table/BeeTable";
+import { BeeTableColumnUpdate, BeeTable } from "../../table/BeeTable";
 import {
   useBoxedExpressionEditorDispatch,
   useBoxedExpressionEditor,
@@ -49,7 +49,7 @@ import {
   JAVA_FUNCTION_EXPRESSION_VALUES_MIN_WIDTH,
 } from "../../resizing/WidthConstants";
 import { ResizerStopBehavior } from "../../resizing/ResizingWidthsContext";
-import { useMemo, useRef } from "react";
+import { useMemo } from "react";
 import { useNestedExpressionContainerWithNestedExpressions } from "../../resizing/Hooks";
 import {
   NestedExpressionContainerContext,
@@ -253,7 +253,6 @@ export function FunctionExpression(functionExpression: FunctionExpressionDefinit
   /// ///////////// RESIZING WIDTHS ////////////////////////
   /// //////////////////////////////////////////////////////
 
-  const beeTableRef = useRef<BeeTableRef>(null);
   const { nestedExpressionContainerValue, onColumnResizingWidthChange } =
     useNestedExpressionContainerWithNestedExpressions(
       useMemo(() => {
@@ -269,7 +268,6 @@ export function FunctionExpression(functionExpression: FunctionExpressionDefinit
           extraWidth: FUNCTION_EXPRESSION_COMMON_EXTRA_WIDTH,
           expression: functionExpression,
           flexibleColumnIndex: 1,
-          beeTableRef,
         };
       }, [functionExpression])
     );
@@ -280,7 +278,6 @@ export function FunctionExpression(functionExpression: FunctionExpressionDefinit
     <NestedExpressionContainerContext.Provider value={nestedExpressionContainerValue}>
       <div className={`function-expression ${functionExpression.id}`}>
         <BeeTable
-          forwardRef={beeTableRef}
           resizerStopBehavior={ResizerStopBehavior.SET_WIDTH_WHEN_SMALLER}
           operationConfig={beeTableOperationConfig}
           onColumnUpdates={onColumnUpdates}

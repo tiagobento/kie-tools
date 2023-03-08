@@ -16,27 +16,15 @@
 
 import { PopoverPosition } from "@patternfly/react-core/dist/js/components/Popover";
 import * as React from "react";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import * as ReactTable from "react-table";
 import { ExpressionDefinition } from "../../api";
 import { ExpressionDefinitionHeaderMenu } from "../../expressions/ExpressionDefinitionHeaderMenu";
 import { Resizer } from "../../resizing/Resizer";
-import {
-  useBeeTableResizableCell,
-  useBeeTableResizableColumns,
-  useBeeTableResizableColumnsDispatch,
-} from "../../resizing/BeeTableResizableColumnsContext";
+import { useBeeTableResizableCell } from "../../resizing/BeeTableResizableColumnsContext";
 import { BeeTableTh, getHoverInfo, HoverInfo } from "./BeeTableTh";
-import { ResizerStopBehavior, ResizingWidth } from "../../resizing/ResizingWidthsContext";
-import { apportionColumnWidths } from "../../resizing/Hooks";
-import { useNestedExpressionContainer } from "../../resizing/NestedExpressionContainerContext";
-import {
-  findIndexOfColumn,
-  getFlatListOfSubColumns,
-  isFlexbileColumn,
-  isParentColumn,
-  useBeeTableFillingResizingWidth,
-} from "./BeeTableThController";
+import { ResizerStopBehavior } from "../../resizing/ResizingWidthsContext";
+import { isFlexbileColumn, isParentColumn, useFillingResizingWidth } from "../../resizing/FillingColumnResizingWidth";
 
 export interface BeeTableThResizableProps<R extends object> {
   onColumnAdded?: (args: { beforeIndex: number; groupType: string | undefined }) => void;
@@ -160,8 +148,14 @@ export function BeeTableThResizable<R extends object>({
   //   updateColumnResizingWidths,
   // ]);
 
-  const { fillingResizingWidth, setFillingResizingWidth, fillingWidth, fillingMinWidth, setFillingWidth } =
-    useBeeTableFillingResizingWidth(columnIndex, column, reactTableInstance);
+  const {
+    // Filling resizing widths are used for header columns that are either parent or flexible.
+    fillingResizingWidth,
+    setFillingResizingWidth,
+    fillingWidth,
+    setFillingWidth,
+    minFillingWidth,
+  } = useFillingResizingWidth(columnIndex, column, reactTableInstance);
 
   const [hoverInfo, setHoverInfo] = useState<HoverInfo>({ isHovered: false });
   const [isResizing, setResizing] = useState<boolean>(false);
@@ -227,7 +221,7 @@ export function BeeTableThResizable<R extends object>({
           headerCellInfo
         )}
       </div>
-      {/* resizingWidth. I.e., Exact columns. */}
+      {/* resizingWidth. I.e., Exact-sized columns. */}
       {column.width && resizingWidth && (hoverInfo.isHovered || (resizingWidth?.isPivoting && isResizing)) && (
         <Resizer
           minWidth={lastColumnMinWidth ?? column.minWidth}
@@ -239,11 +233,11 @@ export function BeeTableThResizable<R extends object>({
           setResizing={setResizing}
         />
       )}
-      {/* fillingResizingWidth. I.e., columns with or without subColumns that don't contain an exact width. */}
-      {(column.columns?.length || (!column.width && !column.columns?.length)) &&
+      {/* fillingResizingWidth. I.e., Flexible or parent columns. */}
+      {(isFlexbileColumn(column) || isParentColumn(column)) &&
         (hoverInfo.isHovered || (fillingResizingWidth?.isPivoting && isResizing)) && (
           <Resizer
-            minWidth={fillingMinWidth}
+            minWidth={minFillingWidth}
             width={fillingWidth}
             setWidth={setFillingWidth}
             resizingWidth={fillingResizingWidth}
