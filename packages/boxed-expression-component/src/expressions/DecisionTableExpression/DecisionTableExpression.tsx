@@ -220,7 +220,8 @@ export function DecisionTableExpression(
 
     const annotationColumns: ReactTable.Column<ROWTYPE>[] = (decisionTableExpression.annotations ?? []).map(
       (annotation, annotationIndex) => ({
-        accessor: generateUuid() as any,
+        accessor: annotation.id ?? (generateUuid() as any),
+        id: annotation.id,
         label: annotation.name,
         width: annotation.width ?? DECISION_TABLE_ANNOTATION_MIN_WIDTH,
         setWidth: setAnnotationColumnWidth(annotationIndex),
@@ -259,6 +260,7 @@ export function DecisionTableExpression(
 
     const annotationSection = {
       groupType: DecisionTableColumnType.Annotation,
+      id: "Annotations",
       accessor: "Annotations" as any,
       label: "Annotations",
       cssClasses: "decision-table--annotation",
@@ -520,6 +522,7 @@ export function DecisionTableExpression(
           case DecisionTableColumnType.Annotation:
             const newAnnotations = [...(prev.annotations ?? [])];
             newAnnotations.splice(sectionIndex, 0, {
+              id: generateUuid(),
               name: getNextAvailablePrefixedName(prev.annotations?.map((c) => c.name) ?? [], "annotation"),
               width: DECISION_TABLE_ANNOTATION_DEFAULT_WIDTH,
             });
