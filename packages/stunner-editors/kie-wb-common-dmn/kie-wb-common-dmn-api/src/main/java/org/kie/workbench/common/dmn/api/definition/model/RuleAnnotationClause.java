@@ -70,5 +70,4 @@ public class RuleAnnotationClause extends DMNElement implements HasName {
     public int hashCode() {
         return Objects.hash(name);
     }
-
 }
