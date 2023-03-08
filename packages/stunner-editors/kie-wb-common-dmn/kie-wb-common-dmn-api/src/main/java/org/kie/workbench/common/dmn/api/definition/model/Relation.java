@@ -78,7 +78,7 @@ public class Relation extends Expression {
         exactelyClonedRelation.typeRef = Optional.ofNullable(typeRef).map(QName::copy).orElse(null);
         exactelyClonedRelation.componentWidths = new ArrayList<>(componentWidths);
         exactelyClonedRelation.column = column.stream().map(InformationItem::exactCopy).collect(Collectors.toList());
-        exactelyClonedRelation.row = row.stream().map(List::copy).collect(Collectors.toList());
+        exactelyClonedRelation.row = row.stream().map(List::exactCopy).collect(Collectors.toList());
         return exactelyClonedRelation;
     }
 
