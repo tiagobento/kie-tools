@@ -18,7 +18,7 @@ import * as React from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDmnRunnerDispatch, useDmnRunnerState } from "./DmnRunnerContext";
 import { DmnRunnerMode } from "./DmnRunnerStatus";
-import { DecisionResult } from "@kie-tools/form-dmn";
+import { DecisionResult, InputRow } from "@kie-tools/form-dmn";
 import { PanelId } from "../EditorPageDockDrawer";
 import { useElementsThatStopKeyboardEventsPropagation } from "@kie-tools-core/keyboard-shortcuts/dist/channel";
 import { DmnRunnerLoading } from "./DmnRunnerLoading";
@@ -34,6 +34,7 @@ import { DmnRunnerOutputsTable } from "@kie-tools/unitables-dmn/dist/DmnRunnerOu
 import { DmnUnitablesValidator } from "@kie-tools/unitables-dmn/dist/DmnUnitablesValidator";
 import { useExtendedServices } from "../../kieSandboxExtendedServices/KieSandboxExtendedServicesContext";
 import "./DmnRunnerTable.css";
+import { deepCopyPersistenceJson } from "../../dmnRunnerPersistence/DmnRunnerPersistenceService";
 
 interface Props {
   setPanelOpen: React.Dispatch<React.SetStateAction<PanelId>>;
@@ -41,7 +42,7 @@ interface Props {
 
 export function DmnRunnerTable({ setPanelOpen }: Props) {
   const extendedServices = useExtendedServices();
-  const { error, inputRows, jsonSchema } = useDmnRunnerState();
+  const { error, dmnRunnerPersistenceJson, jsonSchema } = useDmnRunnerState();
   const {
     onRowAdded,
     onRowDuplicated,
@@ -50,17 +51,17 @@ export function DmnRunnerTable({ setPanelOpen }: Props) {
     preparePayload,
     setCurrentInputRowIndex,
     setError,
-    setInputRows,
+    setDmnRunnerPersistenceJson,
     setMode,
   } = useDmnRunnerDispatch();
   const [dmnRunnerTableError, setDmnRunnerTableError] = useState<boolean>(false);
   const dmnRunnerTableErrorBoundaryRef = useRef<ErrorBoundary>(null);
-
   const { i18n } = useOnlineI18n();
-
-  const rowCount = useMemo(() => {
-    return inputRows?.length ?? 1;
-  }, [inputRows?.length]);
+  const rows = useMemo(() => dmnRunnerPersistenceJson.inputs, [dmnRunnerPersistenceJson.inputs]);
+  const rowCount = useMemo(
+    () => dmnRunnerPersistenceJson?.inputs?.length ?? 1,
+    [dmnRunnerPersistenceJson?.inputs?.length]
+  );
 
   const jsonSchemaBridge = useMemo(
     () => new DmnUnitablesValidator(i18n.dmnRunner.table).getBridge(jsonSchema ?? {}),
@@ -92,7 +93,7 @@ export function DmnRunnerTable({ setPanelOpen }: Props) {
     [setMode, setCurrentInputRowIndex, setPanelOpen]
   );
 
-  // FIXME: Tiago -> !
+  // FIXME: Prevent shortcuts when editing on dmn runner table;
   // useElementsThatStopKeyboardEventsPropagation(
   //   window,
   //   useMemo(() => [".kie-tools--dmn-runner-table--drawer"], [])
@@ -102,7 +103,7 @@ export function DmnRunnerTable({ setPanelOpen }: Props) {
   useCancelableEffect(
     useCallback(
       ({ canceled }) => {
-        Promise.all(inputRows.map((data) => preparePayload(data)))
+        Promise.all(dmnRunnerPersistenceJson.inputs.map((data) => preparePayload(data)))
           .then((payloads) =>
             Promise.all(
               payloads.map((payload) => {
@@ -132,7 +133,7 @@ export function DmnRunnerTable({ setPanelOpen }: Props) {
             setDmnRunnerResults(runnerResults);
           });
       },
-      [preparePayload, setError, inputRows, extendedServices.client]
+      [preparePayload, setError, dmnRunnerPersistenceJson.inputs, extendedServices.client]
     )
   );
 
@@ -145,6 +146,25 @@ export function DmnRunnerTable({ setPanelOpen }: Props) {
     outputsScrollableElementRef.current.current =
       document.querySelector(".kie-tools--dmn-runner-table--drawer")?.querySelector(".pf-c-drawer__panel-main") ?? null;
   }, []);
+
+  const setRows = useCallback(
+    (newRows: (previous: Array<InputRow>) => Array<InputRow>) => {
+      setDmnRunnerPersistenceJson((previousPersistenceJson) => {
+        const newPersistenceJson = deepCopyPersistenceJson(previousPersistenceJson);
+        newPersistenceJson.inputs = newRows(previousPersistenceJson.inputs);
+        return newPersistenceJson;
+      });
+    },
+    [setDmnRunnerPersistenceJson]
+  );
+
+  // const setWidth = useCallback((newWidth) => {
+  //   setDmnRunnerPersistenceJson((previousPersistenceJson) => {
+  //     const newState = { ...previousPersistenceJson }
+  //     newState.configs.inputs;
+  //     return newState;
+  //   })
+  // }, [setDmnRunnerPersistenceJson])
 
   return (
     <div style={{ height: "100%" }}>
@@ -187,8 +207,8 @@ export function DmnRunnerTable({ setPanelOpen }: Props) {
                     i18n={i18n.dmnRunner.table}
                     jsonSchema={jsonSchema}
                     openRow={openRow}
-                    rows={inputRows}
-                    setInputRows={setInputRows}
+                    rows={rows}
+                    setRows={setRows}
                     error={error}
                     setError={setError}
                     jsonSchemaBridge={jsonSchemaBridge}

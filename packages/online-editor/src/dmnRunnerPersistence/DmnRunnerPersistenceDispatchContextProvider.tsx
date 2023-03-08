@@ -29,7 +29,7 @@ export function DmnRunnerPersistenceDispatchContextProvider(props: React.PropsWi
 
   useSyncedCompanionFs(dmnRunnerPersistenceService.companionFsService);
 
-  const deletePersistedJson = useCallback(
+  const deletePersistenceJson = useCallback(
     async (workspaceFile: WorkspaceFile) => {
       await dmnRunnerPersistenceService.companionFsService.delete({
         workspaceId: workspaceFile.workspaceId,
@@ -76,7 +76,7 @@ export function DmnRunnerPersistenceDispatchContextProvider(props: React.PropsWi
     <DmnRunnerPersistenceDispatchContext.Provider
       value={{
         dmnRunnerPersistenceService,
-        deletePersistedJson,
+        deletePersistenceJson,
         getPersistenceJsonForDownload,
         uploadPersistenceJson,
       }}

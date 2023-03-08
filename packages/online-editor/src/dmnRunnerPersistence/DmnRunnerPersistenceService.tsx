@@ -22,8 +22,10 @@ export const generateUuid = () => {
   return `_${uuid()}`.toLocaleUpperCase();
 };
 
+const DMN_RUNNER_PERSISTENCE_JSON_VERSION = "v1";
+
 interface DmnRunnerPersistenceJsonConfig {
-  width: number;
+  width?: number;
 }
 
 // Can't use Record<string, DmnRunnerConfig | ConfigInputRow>;
@@ -35,6 +37,7 @@ export enum DmnRunnerMode {
 }
 
 interface DmnRunnerPersistenceJsonConfigs {
+  version: string;
   mode: DmnRunnerMode;
   inputs: Array<ConfigInputRow>;
 }
@@ -44,31 +47,55 @@ export interface DmnRunnerPersistenceJson {
   inputs: Array<InputRow>;
 }
 
+// EMPTY VALUES
+// different reference for each one
+export const EMPTY_DMN_RUNNER_CONFIG_INPUTS = [{}];
+export const EMPTY_DMN_RUNNER_INPUTS = [{}];
+
 export const EMPTY_DMN_RUNNER_PERSISTANCE_JSON = {} as DmnRunnerPersistenceJson;
 
-// different reference for each one
-export const EMPTY_DMN_RUNNER_INPUTS_CONFIG = [{}];
-export const EMPTY_DMN_RUNNER_INPUTS = [{}];
+// DEFAULT VALUES
+export const DEFAULT_DMN_RUNNER_CONFIG_INPUT_WIDTH = 150;
+
+export const DEFAULT_DMN_RUNNER_CONFIG_INPUT: DmnRunnerPersistenceJsonConfig = {
+  width: DEFAULT_DMN_RUNNER_CONFIG_INPUT_WIDTH,
+};
 
 export const DEFAULT_DMN_RUNNER_PERSISTENCE_JSON: DmnRunnerPersistenceJson = {
   configs: {
+    version: DMN_RUNNER_PERSISTENCE_JSON_VERSION,
     mode: DmnRunnerMode.FORM,
-    inputs: EMPTY_DMN_RUNNER_INPUTS_CONFIG,
+    inputs: EMPTY_DMN_RUNNER_CONFIG_INPUTS,
   },
   inputs: EMPTY_DMN_RUNNER_INPUTS,
 };
 
+export function deepCopyPersistenceJson(persistenceJson: DmnRunnerPersistenceJson): DmnRunnerPersistenceJson {
+  const configCopy = { ...persistenceJson.configs };
+  const configInputsCopy = [...persistenceJson.configs.inputs];
+  const inputsCopy = [...persistenceJson.inputs];
+  return { configs: { ...configCopy, inputs: configInputsCopy }, inputs: inputsCopy };
+}
+
 export class DmnRunnerPersistenceService {
   public readonly companionFsService = new CompanionFsService({
-    storeNameSuffix: "dmn_runner_data",
+    storeNameSuffix: "dmn_runner_persistence",
     emptyFileContent: JSON.stringify(EMPTY_DMN_RUNNER_PERSISTANCE_JSON),
   });
 
   public parseDmnRunnerPersistenceJson(inputs: string): DmnRunnerPersistenceJson {
-    const parsedDmnRunnerPersistenceJsobn = JSON.parse(inputs) as DmnRunnerPersistenceJson;
-    if (Object.prototype.toString.call(parsedDmnRunnerPersistenceJsobn) === "[object Object]") {
-      parsedDmnRunnerPersistenceJsobn.inputs = parsedDmnRunnerPersistenceJsobn.inputs.map((e) => (e === null ? {} : e));
-      return parsedDmnRunnerPersistenceJsobn;
+    const parsedDmnRunnerPersistenceJson = JSON.parse(inputs) as DmnRunnerPersistenceJson;
+
+    // v0 to v1;
+    if (Array.isArray(parsedDmnRunnerPersistenceJson)) {
+      // backwards compatibility
+      // TODO: change config?
+      return { ...DEFAULT_DMN_RUNNER_PERSISTENCE_JSON, inputs: parsedDmnRunnerPersistenceJson };
+    }
+
+    if (Object.prototype.toString.call(parsedDmnRunnerPersistenceJson) === "[object Object]") {
+      parsedDmnRunnerPersistenceJson.inputs = parsedDmnRunnerPersistenceJson.inputs.map((e) => (e === null ? {} : e));
+      return parsedDmnRunnerPersistenceJson;
     }
     return EMPTY_DMN_RUNNER_PERSISTANCE_JSON;
   }

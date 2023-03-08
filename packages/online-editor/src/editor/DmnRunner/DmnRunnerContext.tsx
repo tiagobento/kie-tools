@@ -17,13 +17,14 @@
 import { InputRow, DmnSchema } from "@kie-tools/form-dmn";
 import * as React from "react";
 import { useContext } from "react";
+import { DmnRunnerPersistenceJson } from "../../dmnRunnerPersistence/DmnRunnerPersistenceService";
 import { KieSandboxExtendedServicesModelPayload } from "../../kieSandboxExtendedServices/KieSandboxExtendedServicesClient";
 import { DmnRunnerMode, DmnRunnerStatus } from "./DmnRunnerStatus";
 
 export interface DmnRunnerContextType {
   currentInputRowIndex: number;
   error: boolean;
-  inputRows: Array<InputRow>;
+  dmnRunnerPersistenceJson: DmnRunnerPersistenceJson;
   isExpanded: boolean;
   isVisible: boolean;
   jsonSchema?: DmnSchema;
@@ -40,7 +41,7 @@ export interface DmnRunnerCallbacksContextType {
   setError: React.Dispatch<React.SetStateAction<boolean>>;
   setExpanded: React.Dispatch<React.SetStateAction<boolean>>;
   setCurrentInputRowIndex: React.Dispatch<React.SetStateAction<number>>;
-  setInputRows: React.Dispatch<React.SetStateAction<Array<InputRow>>>;
+  setDmnRunnerPersistenceJson: React.Dispatch<React.SetStateAction<DmnRunnerPersistenceJson>>;
   setMode: React.Dispatch<React.SetStateAction<DmnRunnerMode>>;
 }
 

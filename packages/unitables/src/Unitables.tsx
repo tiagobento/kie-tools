@@ -31,13 +31,14 @@ import { useUnitablesColumns } from "./UnitablesColumns";
 import "./Unitables.css";
 import { UnitablesRow } from "./UnitablesRow";
 import isEqual from "lodash/isEqual";
+import { InputRow } from "@kie-tools/form-dmn";
 
 const EMPTY_UNITABLES_INPUTS = [{}];
 
 interface Props {
   jsonSchema: object;
   rows: object[];
-  setInputRows: React.Dispatch<React.SetStateAction<object[]>>;
+  setRows: (previousStateFunction: (previous: Array<InputRow>) => Array<InputRow>) => void;
   error: boolean;
   setError: React.Dispatch<React.SetStateAction<boolean>>;
   openRow: (rowIndex: number) => void;
@@ -50,11 +51,12 @@ interface Props {
   onRowDuplicated: (args: { rowIndex: number }) => void;
   onRowReset: (args: { rowIndex: number }) => void;
   onRowDeleted: (args: { rowIndex: number }) => void;
+  autoSaveDelay?: number;
 }
 
 export const Unitables = ({
   rows,
-  setInputRows,
+  setRows,
   setError,
   openRow,
   i18n,
@@ -66,14 +68,15 @@ export const Unitables = ({
   onRowDuplicated,
   onRowReset,
   onRowDeleted,
+  autoSaveDelay = 400,
 }: Props) => {
   const inputErrorBoundaryRef = useRef<ErrorBoundary>(null);
   const [formsDivRendered, setFormsDivRendered] = useState<boolean>(false);
-  const { columns: unitablesColumns } = useUnitablesColumns(jsonSchemaBridge, setInputRows, propertiesEntryPath);
+  const { columns: unitablesColumns } = useUnitablesColumns(jsonSchemaBridge, setRows, propertiesEntryPath);
   const inputUid = useMemo(() => nextId(), []);
-  const cachedRows = useRef<object[]>([...EMPTY_UNITABLES_INPUTS]);
 
-  // Erase cache;
+  // create cache to save inputs cache;
+  const cachedRows = useRef<object[]>([...EMPTY_UNITABLES_INPUTS]);
   useLayoutEffect(() => {
     if (isEqual(rows, EMPTY_UNITABLES_INPUTS)) {
       cachedRows.current = [...EMPTY_UNITABLES_INPUTS];
@@ -126,17 +129,20 @@ export const Unitables = ({
 
       timeout.current = window.setTimeout(() => {
         // Update all rows if a value was changed;
-        setInputRows?.((currentInputRows) => {
+        setRows((previousInputRows) => {
           // if cached length isn't equal to current a table event occured. e.g. add, delete;
           // if cached has the same value as current
-          if (cachedRows.current.length !== currentInputRows.length || isEqual(cachedRows.current, currentInputRows)) {
-            return currentInputRows;
+          if (
+            cachedRows.current.length !== previousInputRows.length ||
+            isEqual(cachedRows.current, previousInputRows)
+          ) {
+            return previousInputRows;
           }
-          return [...cachedRows.current];
+          return [...cachedRows.current] as Array<InputRow>;
         });
-      }, 400); // autoSaveDelay
+      }, autoSaveDelay);
     },
-    [setInputRows]
+    [setRows, autoSaveDelay]
   );
 
   const rowWrapper = useCallback(

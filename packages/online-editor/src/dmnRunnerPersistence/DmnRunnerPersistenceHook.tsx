@@ -23,19 +23,20 @@ import { decoder } from "@kie-tools-core/workspaces-git-fs/dist/encoderdecoder/E
 import { CompanionFsServiceBroadcastEvents } from "../companionFs/CompanionFsService";
 import {
   DmnRunnerPersistenceJson,
-  EMPTY_DMN_RUNNER_INPUTS,
   generateUuid,
   EMPTY_DMN_RUNNER_PERSISTANCE_JSON,
 } from "./DmnRunnerPersistenceService";
 import isEqual from "lodash/isEqual";
 
 interface DmnRunnerPersistenceHook {
-  dmnRunnerJson: DmnRunnerPersistenceJson;
-  setDmnRunnerJson: React.Dispatch<React.SetStateAction<DmnRunnerPersistenceJson>>;
+  dmnRunnerPersistenceJson: DmnRunnerPersistenceJson;
+  setDmnRunnerPersistenceJson: React.Dispatch<React.SetStateAction<DmnRunnerPersistenceJson>>;
 }
 
 export function useDmnRunnerPersistence(workspaceFile: WorkspaceFile): DmnRunnerPersistenceHook {
-  const [dmnRunnerJson, setDmnRunnerJson] = useState<DmnRunnerPersistenceJson>(EMPTY_DMN_RUNNER_PERSISTANCE_JSON);
+  const [dmnRunnerPersistenceJson, setDmnRunnerPersistenceJson] = useState<DmnRunnerPersistenceJson>(
+    EMPTY_DMN_RUNNER_PERSISTANCE_JSON
+  );
   const { dmnRunnerPersistenceService } = useDmnRunnerPersistenceDispatch();
 
   // When another TAB updates the FS, it should sync up
@@ -66,10 +67,10 @@ export function useDmnRunnerPersistence(workspaceFile: WorkspaceFile): DmnRunner
             companionEvent.type === "CFSF_ADD" ||
             companionEvent.type === "CFSF_DELETE"
           ) {
-            setDmnRunnerJson((currentDmnRunnerJson) => {
+            setDmnRunnerPersistenceJson((previousDmnRunnerPersistenceJson) => {
               // Triggered by the tab; shouldn't update; safe comparison;
-              if (isEqual(JSON.parse(companionEvent.content), currentDmnRunnerJson)) {
-                return currentDmnRunnerJson;
+              if (isEqual(JSON.parse(companionEvent.content), previousDmnRunnerPersistenceJson)) {
+                return previousDmnRunnerPersistenceJson;
               }
               // Triggered by the other tab; should update;
               return dmnRunnerPersistenceService.parseDmnRunnerPersistenceJson(companionEvent.content);
@@ -82,7 +83,7 @@ export function useDmnRunnerPersistence(workspaceFile: WorkspaceFile): DmnRunner
           broadcastChannel.close();
         };
       },
-      [dmnRunnerPersistenceService, workspaceFile, setDmnRunnerJson]
+      [dmnRunnerPersistenceService, workspaceFile, setDmnRunnerPersistenceJson]
     )
   );
 
@@ -114,11 +115,11 @@ export function useDmnRunnerPersistence(workspaceFile: WorkspaceFile): DmnRunner
                 return;
               }
               const dmnRunnerJson = decoder.decode(content);
-              setDmnRunnerJson(dmnRunnerPersistenceService.parseDmnRunnerPersistenceJson(dmnRunnerJson));
+              setDmnRunnerPersistenceJson(dmnRunnerPersistenceService.parseDmnRunnerPersistenceJson(dmnRunnerJson));
             });
           });
       },
-      [dmnRunnerPersistenceService, workspaceFile, setDmnRunnerJson]
+      [dmnRunnerPersistenceService, workspaceFile, setDmnRunnerPersistenceJson]
     )
   );
 
@@ -130,7 +131,7 @@ export function useDmnRunnerPersistence(workspaceFile: WorkspaceFile): DmnRunner
 
     // safe comparison, it compares to an array with an empty object;
     // used in the first render;
-    if (JSON.stringify(dmnRunnerJson) === JSON.stringify(EMPTY_DMN_RUNNER_PERSISTANCE_JSON)) {
+    if (JSON.stringify(dmnRunnerPersistenceJson) === JSON.stringify(EMPTY_DMN_RUNNER_PERSISTANCE_JSON)) {
       return;
     }
 
@@ -139,12 +140,12 @@ export function useDmnRunnerPersistence(workspaceFile: WorkspaceFile): DmnRunner
         workspaceId: workspaceFile.workspaceId,
         workspaceFileRelativePath: workspaceFile.relativePath,
       },
-      JSON.stringify(dmnRunnerJson)
+      JSON.stringify(dmnRunnerPersistenceJson)
     );
-  }, [dmnRunnerPersistenceService, workspaceFile.workspaceId, workspaceFile.relativePath, dmnRunnerJson]);
+  }, [dmnRunnerPersistenceService, workspaceFile.workspaceId, workspaceFile.relativePath, dmnRunnerPersistenceJson]);
 
   return {
-    dmnRunnerJson,
-    setDmnRunnerJson,
+    dmnRunnerPersistenceJson,
+    setDmnRunnerPersistenceJson,
   };
 }

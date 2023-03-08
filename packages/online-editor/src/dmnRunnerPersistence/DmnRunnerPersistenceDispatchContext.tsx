@@ -20,7 +20,7 @@ import { WorkspaceFile } from "@kie-tools-core/workspaces-git-fs/dist/context/Wo
 
 interface DmnRunnerPersistenceDispatchContextType {
   dmnRunnerPersistenceService: DmnRunnerPersistenceService;
-  deletePersistedJson: (workspaceFile: WorkspaceFile) => Promise<void>;
+  deletePersistenceJson: (workspaceFile: WorkspaceFile) => Promise<void>;
   getPersistenceJsonForDownload: (workspaceFile: WorkspaceFile) => Promise<Blob | undefined>;
   uploadPersistenceJson: (workspaceFile: WorkspaceFile, file: File) => void;
 }
