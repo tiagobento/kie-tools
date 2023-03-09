@@ -206,7 +206,7 @@ export function KieSandboxExtendedServicesButtons(props: Props) {
             </DropdownItem>,
             <React.Fragment key={"dmn-runner--delete-inputs"}>
               <Divider />
-              <DropdownItem component={"button"} style={{ padding: "4px" }}>
+              <DropdownItem component={"div"} style={{ padding: "4px" }}>
                 <DeleteDropdownWithConfirmation
                   onDelete={() => {
                     deletePersistenceJson(props.workspaceFile).then(() => {

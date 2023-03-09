@@ -56,6 +56,7 @@ export const AboutButton: React.FunctionComponent = () => {
         <InfoAltIcon />
       </Button>
       <Modal
+        aria-label={"about-modal"}
         header={
           <MastheadBrand style={{ textDecoration: "none" }}>
             <Flex alignItems={{ default: "alignItemsCenter" }}>
