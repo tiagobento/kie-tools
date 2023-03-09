@@ -132,6 +132,9 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
         // add default value;
         const newInputsRow = Object.entries(n.inputs[args.beforeIndex - 1]).reduce(
           (acc, [key, value]) => {
+            if (key === "id") {
+              return acc;
+            }
             if (typeof value === "string") {
               acc[key] = "";
             } else if (typeof value === "number") {
@@ -150,6 +153,9 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
 
         // add default configs;
         const newConfigInputsRow = Object.entries(n.inputs[args.beforeIndex - 1]).reduce((acc, [key, _]) => {
+          if (key === "id") {
+            return acc;
+          }
           acc[key] = { ...DEFAULT_DMN_RUNNER_CONFIG_INPUT };
           return acc;
         }, {} as any);
@@ -194,6 +200,9 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
         // reset to defaul values;
         const resetedInputRows = Object.entries(n.inputs[args.rowIndex]).reduce(
           (acc, [key, value]) => {
+            if (key === "id") {
+              return acc;
+            }
             if (typeof value === "string") {
               acc[key] = "";
             } else if (typeof value === "number") {
@@ -212,6 +221,9 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
 
         // reset default configs;
         const newConfigInputsRow = Object.entries(n.inputs[args.rowIndex]).reduce((acc, [key, _]) => {
+          if (key === "id") {
+            return acc;
+          }
           acc[key] = { ...DEFAULT_DMN_RUNNER_CONFIG_INPUT };
           return acc;
         }, {} as any);

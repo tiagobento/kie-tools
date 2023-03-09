@@ -31,6 +31,7 @@ interface DmnRunnerPersistenceJsonConfig {
 // Can't use Record<string, DmnRunnerConfig | ConfigInputRow>;
 type ConfigInputRow = { [x: string]: DmnRunnerPersistenceJsonConfig | ConfigInputRow };
 
+// TODO: use it!
 export enum DmnRunnerMode {
   FORM = "form",
   TABLE = "table",
@@ -55,6 +56,7 @@ export const EMPTY_DMN_RUNNER_INPUTS = [{}];
 export const EMPTY_DMN_RUNNER_PERSISTANCE_JSON = {} as DmnRunnerPersistenceJson;
 
 // DEFAULT VALUES
+// TODO: defualt width?
 export const DEFAULT_DMN_RUNNER_CONFIG_INPUT_WIDTH = 150;
 
 export const DEFAULT_DMN_RUNNER_CONFIG_INPUT: DmnRunnerPersistenceJsonConfig = {
@@ -94,7 +96,7 @@ export class DmnRunnerPersistenceService {
     }
 
     if (Object.prototype.toString.call(parsedDmnRunnerPersistenceJson) === "[object Object]") {
-      parsedDmnRunnerPersistenceJson.inputs = parsedDmnRunnerPersistenceJson.inputs.map((e) => (e === null ? {} : e));
+      // parsedDmnRunnerPersistenceJson.inputs = parsedDmnRunnerPersistenceJson.inputs.map((e) => (e === null ? {} : e));
       return parsedDmnRunnerPersistenceJson;
     }
     return EMPTY_DMN_RUNNER_PERSISTANCE_JSON;
