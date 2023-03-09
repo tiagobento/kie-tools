@@ -25,6 +25,7 @@ export interface DmnRunnerContextType {
   currentInputRowIndex: number;
   error: boolean;
   dmnRunnerPersistenceJson: DmnRunnerPersistenceJson;
+  inputs: Array<InputRow>;
   isExpanded: boolean;
   isVisible: boolean;
   jsonSchema?: DmnSchema;
@@ -42,7 +43,6 @@ export interface DmnRunnerCallbacksContextType {
   setExpanded: React.Dispatch<React.SetStateAction<boolean>>;
   setCurrentInputRowIndex: React.Dispatch<React.SetStateAction<number>>;
   setDmnRunnerPersistenceJson: React.Dispatch<React.SetStateAction<DmnRunnerPersistenceJson>>;
-  setMode: React.Dispatch<React.SetStateAction<DmnRunnerMode>>;
 }
 
 export const DmnRunnerStateContext = React.createContext<DmnRunnerContextType>({} as any);

@@ -91,12 +91,10 @@ export class DmnRunnerPersistenceService {
     // v0 to v1;
     if (Array.isArray(parsedDmnRunnerPersistenceJson)) {
       // backwards compatibility
-      // TODO: change config?
       return { ...DEFAULT_DMN_RUNNER_PERSISTENCE_JSON, inputs: parsedDmnRunnerPersistenceJson };
     }
 
     if (Object.prototype.toString.call(parsedDmnRunnerPersistenceJson) === "[object Object]") {
-      // parsedDmnRunnerPersistenceJson.inputs = parsedDmnRunnerPersistenceJson.inputs.map((e) => (e === null ? {} : e));
       return parsedDmnRunnerPersistenceJson;
     }
     return EMPTY_DMN_RUNNER_PERSISTANCE_JSON;

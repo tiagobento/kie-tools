@@ -44,6 +44,7 @@ import { DownloadIcon } from "@patternfly/react-icons/dist/js/icons/download-ico
 import { UploadIcon } from "@patternfly/react-icons/dist/js/icons/upload-icon";
 import { DeleteDropdownWithConfirmation } from "../DeleteDropdownWithConfirmation";
 import { useDmnRunnerPersistenceDispatch } from "../../dmnRunnerPersistence/DmnRunnerPersistenceDispatchContext";
+import { deepCopyPersistenceJson } from "../../dmnRunnerPersistence/DmnRunnerPersistenceService";
 
 interface Props {
   editorPageDock: EditorPageDockDrawerRef | undefined;
@@ -55,8 +56,8 @@ export function KieSandboxExtendedServicesButtons(props: Props) {
   const { i18n } = useOnlineI18n();
   const extendedServices = useExtendedServices();
   const devDeployments = useDevDeployments();
-  const { mode, isExpanded } = useDmnRunnerState();
-  const { setExpanded, setCurrentInputRowIndex, setMode } = useDmnRunnerDispatch();
+  const { dmnRunnerPersistenceJson, isExpanded, mode } = useDmnRunnerState();
+  const { setDmnRunnerPersistenceJson, setExpanded } = useDmnRunnerDispatch();
   const devDeploymentsDropdownItems = useDevDeploymentsDeployDropdownItems(props.workspace);
   const { getPersistenceJsonForDownload, uploadPersistenceJson, deletePersistenceJson } =
     useDmnRunnerPersistenceDispatch();
@@ -164,7 +165,14 @@ export function KieSandboxExtendedServicesButtons(props: Props) {
               icon={<ListIcon />}
               onClick={() => {
                 if (extendedServices.status === KieSandboxExtendedServicesStatus.RUNNING) {
-                  setMode(DmnRunnerMode.FORM);
+                  setDmnRunnerPersistenceJson((previousDmnRunnerPersistenceJson) => {
+                    if (previousDmnRunnerPersistenceJson.configs.mode === DmnRunnerMode.FORM) {
+                      return previousDmnRunnerPersistenceJson;
+                    }
+                    const newDmnRunnerPersistenceJson = deepCopyPersistenceJson(previousDmnRunnerPersistenceJson);
+                    newDmnRunnerPersistenceJson.configs.mode = DmnRunnerMode.FORM;
+                    return newDmnRunnerPersistenceJson;
+                  });
                   props.editorPageDock?.close();
                   setExpanded(true);
                 }
@@ -178,7 +186,14 @@ export function KieSandboxExtendedServicesButtons(props: Props) {
               icon={<TableIcon />}
               onClick={() => {
                 if (extendedServices.status === KieSandboxExtendedServicesStatus.RUNNING) {
-                  setMode(DmnRunnerMode.TABLE);
+                  setDmnRunnerPersistenceJson((previousDmnRunnerPersistenceJson) => {
+                    if (previousDmnRunnerPersistenceJson.configs.mode === DmnRunnerMode.TABLE) {
+                      return previousDmnRunnerPersistenceJson;
+                    }
+                    const newDmnRunnerPersistenceJson = deepCopyPersistenceJson(previousDmnRunnerPersistenceJson);
+                    newDmnRunnerPersistenceJson.configs.mode = DmnRunnerMode.TABLE;
+                    return newDmnRunnerPersistenceJson;
+                  });
                   props.editorPageDock?.open(PanelId.DMN_RUNNER_TABLE);
                   setExpanded(true);
                 }
@@ -209,9 +224,7 @@ export function KieSandboxExtendedServicesButtons(props: Props) {
               <DropdownItem component={"div"} style={{ padding: "4px" }}>
                 <DeleteDropdownWithConfirmation
                   onDelete={() => {
-                    deletePersistenceJson(props.workspaceFile).then(() => {
-                      setCurrentInputRowIndex(0);
-                    });
+                    deletePersistenceJson(dmnRunnerPersistenceJson, props.workspaceFile);
                   }}
                   item={`Delete DMN Runner inputs`}
                   label={" Delete inputs"}

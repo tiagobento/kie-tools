@@ -17,7 +17,14 @@
 import * as React from "react";
 import { useCallback, useMemo } from "react";
 import { WorkspaceFile } from "@kie-tools-core/workspaces-git-fs/dist/context/WorkspacesContext";
-import { DmnRunnerPersistenceService, generateUuid } from "./DmnRunnerPersistenceService";
+import {
+  DmnRunnerPersistenceService,
+  deepCopyPersistenceJson,
+  DEFAULT_DMN_RUNNER_PERSISTENCE_JSON,
+  DmnRunnerPersistenceJson,
+  generateUuid,
+  EMPTY_DMN_RUNNER_PERSISTANCE_JSON,
+} from "./DmnRunnerPersistenceService";
 import { DmnRunnerPersistenceDispatchContext } from "./DmnRunnerPersistenceDispatchContext";
 import { decoder } from "@kie-tools-core/workspaces-git-fs/dist/encoderdecoder/EncoderDecoder";
 import { useSyncedCompanionFs } from "../companionFs/CompanionFsHooks";
@@ -30,15 +37,19 @@ export function DmnRunnerPersistenceDispatchContextProvider(props: React.PropsWi
   useSyncedCompanionFs(dmnRunnerPersistenceService.companionFsService);
 
   const deletePersistenceJson = useCallback(
-    async (workspaceFile: WorkspaceFile) => {
+    async (previousDmnRunnerPersisnteceJson: DmnRunnerPersistenceJson, workspaceFile: WorkspaceFile) => {
       await dmnRunnerPersistenceService.companionFsService.delete({
         workspaceId: workspaceFile.workspaceId,
         workspaceFileRelativePath: workspaceFile.relativePath,
       });
 
+      const newPersistenceJson = deepCopyPersistenceJson(DEFAULT_DMN_RUNNER_PERSISTENCE_JSON);
+      newPersistenceJson.configs.mode = previousDmnRunnerPersisnteceJson.configs.mode;
+      newPersistenceJson.inputs = [{ id: generateUuid() }];
+
       return dmnRunnerPersistenceService.companionFsService.createOrOverwrite(
         { workspaceId: workspaceFile.workspaceId, workspaceFileRelativePath: workspaceFile.relativePath },
-        JSON.stringify([{ id: generateUuid() }])
+        JSON.stringify(newPersistenceJson)
       );
     },
     [dmnRunnerPersistenceService]

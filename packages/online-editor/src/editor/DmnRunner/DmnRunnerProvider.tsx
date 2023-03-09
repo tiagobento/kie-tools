@@ -27,6 +27,7 @@ import { DmnSchema, InputRow } from "@kie-tools/form-dmn";
 import { useDmnRunnerPersistence } from "../../dmnRunnerPersistence/DmnRunnerPersistenceHook";
 import { DmnLanguageService } from "@kie-tools/dmn-language-service";
 import { decoder } from "@kie-tools-core/workspaces-git-fs/dist/encoderdecoder/EncoderDecoder";
+import { EMPTY_DMN_RUNNER_INPUTS } from "../../dmnRunnerPersistence/DmnRunnerPersistenceService";
 import {
   generateUuid,
   DEFAULT_DMN_RUNNER_CONFIG_INPUT,
@@ -56,7 +57,6 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
   const [error, setError] = useState(false);
   const [jsonSchema, setJsonSchema] = useState<DmnSchema | undefined>(undefined);
   const [isExpanded, setExpanded] = useState(false);
-  const [mode, setMode] = useState(DmnRunnerMode.FORM);
   const [currentInputRowIndex, setCurrentInputRowIndex] = useState<number>(0);
 
   const status = useMemo(() => {
@@ -162,6 +162,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
 
         n.inputs.splice(args.beforeIndex, 0, newInputsRow);
         n.configs.inputs.splice(args.beforeIndex, 0, newConfigInputsRow);
+        setCurrentInputRowIndex(args.beforeIndex);
 
         return n;
       });
@@ -272,7 +273,6 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
       setError,
       setExpanded,
       setDmnRunnerPersistenceJson,
-      setMode,
     }),
     [
       onRowAdded,
@@ -284,7 +284,6 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
       setError,
       setExpanded,
       setDmnRunnerPersistenceJson,
-      setMode,
     ]
   );
 
@@ -293,13 +292,14 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
       currentInputRowIndex,
       error,
       dmnRunnerPersistenceJson,
+      inputs: dmnRunnerPersistenceJson?.inputs ?? EMPTY_DMN_RUNNER_INPUTS,
       isExpanded,
       isVisible,
       jsonSchema,
-      mode,
+      mode: dmnRunnerPersistenceJson?.configs?.mode ?? DmnRunnerMode.FORM,
       status,
     }),
-    [currentInputRowIndex, error, dmnRunnerPersistenceJson, isExpanded, isVisible, jsonSchema, mode, status]
+    [error, currentInputRowIndex, dmnRunnerPersistenceJson, isExpanded, isVisible, jsonSchema, status]
   );
 
   return (

@@ -21,7 +21,12 @@ import { WorkspaceFile } from "@kie-tools-core/workspaces-git-fs/dist/context/Wo
 import { useDmnRunnerPersistenceDispatch } from "./DmnRunnerPersistenceDispatchContext";
 import { decoder } from "@kie-tools-core/workspaces-git-fs/dist/encoderdecoder/EncoderDecoder";
 import { CompanionFsServiceBroadcastEvents } from "../companionFs/CompanionFsService";
-import { DmnRunnerPersistenceJson, EMPTY_DMN_RUNNER_PERSISTANCE_JSON } from "./DmnRunnerPersistenceService";
+import {
+  DmnRunnerPersistenceJson,
+  EMPTY_DMN_RUNNER_PERSISTANCE_JSON,
+  deepCopyPersistenceJson,
+  generateUuid,
+} from "./DmnRunnerPersistenceService";
 import isEqual from "lodash/isEqual";
 import { DEFAULT_DMN_RUNNER_PERSISTENCE_JSON } from "./DmnRunnerPersistenceService";
 
@@ -100,9 +105,11 @@ export function useDmnRunnerPersistence(workspaceFile: WorkspaceFile): DmnRunner
             }
             // If persistence doesn't exist, create then.
             if (!persistenceJson) {
+              const newDmnRunnerPersistenceJson = deepCopyPersistenceJson(DEFAULT_DMN_RUNNER_PERSISTENCE_JSON);
+              newDmnRunnerPersistenceJson.inputs = [{ id: generateUuid() }];
               dmnRunnerPersistenceService.companionFsService.createOrOverwrite(
                 { workspaceId: workspaceFile.workspaceId, workspaceFileRelativePath: workspaceFile.relativePath },
-                JSON.stringify(DEFAULT_DMN_RUNNER_PERSISTENCE_JSON)
+                JSON.stringify(newDmnRunnerPersistenceJson)
               );
               return;
             }

@@ -15,12 +15,15 @@
  */
 
 import { createContext, useContext } from "react";
-import { DmnRunnerPersistenceService } from "./DmnRunnerPersistenceService";
+import { DmnRunnerPersistenceService, DmnRunnerPersistenceJson } from "./DmnRunnerPersistenceService";
 import { WorkspaceFile } from "@kie-tools-core/workspaces-git-fs/dist/context/WorkspacesContext";
 
 interface DmnRunnerPersistenceDispatchContextType {
   dmnRunnerPersistenceService: DmnRunnerPersistenceService;
-  deletePersistenceJson: (workspaceFile: WorkspaceFile) => Promise<void>;
+  deletePersistenceJson: (
+    previousDmnRunnerPersisnteceJson: DmnRunnerPersistenceJson,
+    workspaceFile: WorkspaceFile
+  ) => Promise<void>;
   getPersistenceJsonForDownload: (workspaceFile: WorkspaceFile) => Promise<Blob | undefined>;
   uploadPersistenceJson: (workspaceFile: WorkspaceFile, file: File) => void;
 }
