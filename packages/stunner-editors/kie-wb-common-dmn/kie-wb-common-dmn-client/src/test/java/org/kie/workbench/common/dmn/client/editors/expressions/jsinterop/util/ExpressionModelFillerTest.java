@@ -62,6 +62,7 @@ public class ExpressionModelFillerTest {
 
     public static final String EXPRESSION_ID = "id1";
     public static final String EXPRESSION_NAME = "Expression Name";
+    public static final String RESULT_EXPRESSION_NAME = "Result Expression";
     public static final String DATA_TYPE = BuiltInType.UNDEFINED.asQName().getLocalPart();
     private static final String ENTRY_INFO_NAME = "Entry Info";
     private static final String ENTRY_INFO_DATA_TYPE = BuiltInType.STRING.asQName().getLocalPart();
@@ -98,8 +99,8 @@ public class ExpressionModelFillerTest {
         final Context contextExpression = new Context();
         final ContextEntryProps[] contextEntries = new ContextEntryProps[]{
                 buildContextEntryProps()
-        };
-        final ExpressionProps result = new LiteralProps("result-id", "Result Expression", BuiltInType.DATE.asQName().getLocalPart(), "", null);
+        }; //TODO CHECK THIS
+        final ExpressionProps result = new LiteralProps("result-id", RESULT_EXPRESSION_NAME, BuiltInType.UNDEFINED.asQName().getLocalPart(), "", null);
         final ContextProps contextProps = new ContextProps(EXPRESSION_ID, EXPRESSION_NAME, DATA_TYPE, contextEntries, result, ENTRY_INFO_WIDTH, ENTRY_EXPRESSION_WIDTH);
 
         ExpressionModelFiller.fillContextExpression(contextExpression, contextProps, qName -> qName);
@@ -122,7 +123,12 @@ public class ExpressionModelFillerTest {
         assertThat(contextExpression.getContextEntry())
                 .last()
                 .satisfies(contextEntry -> {
-                    assertThat(contextEntry).extracting(ContextEntry::getVariable).isNull();
+                    assertThat(contextEntry).extracting(ContextEntry::getVariable)
+                            .isNotNull()
+                            .isExactlyInstanceOf(InformationItem.class);
+                    assertThat(contextEntry).extracting(entry -> entry.getVariable().getValue().getValue()).isEqualTo(RESULT_EXPRESSION_NAME);
+                    assertThat(contextEntry).extracting(entry -> entry.getVariable().getTypeRef().getLocalPart()).isEqualTo(BuiltInType.UNDEFINED.asQName().getLocalPart());
+
                     assertThat(contextEntry).extracting(ContextEntry::getExpression)
                             .isNotNull()
                             .isExactlyInstanceOf(LiteralExpression.class);
