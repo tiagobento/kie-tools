@@ -225,10 +225,6 @@ public class ExpressionModelFiller {
                                                                        final UnaryOperator<QName> qNameNormalizer) {
         final ContextEntry contextEntryResult = new ContextEntry();
         if (contextProps.result != null) {
-            contextEntryResult.setVariable(buildInformationItem(contextProps.result.id,
-                                                                contextProps.result.name,
-                                                                contextProps.result.dataType,
-                                                                qNameNormalizer));
             contextEntryResult.setExpression(buildAndFillNestedExpression(contextProps.result, qNameNormalizer));
         }
         return contextEntryResult;

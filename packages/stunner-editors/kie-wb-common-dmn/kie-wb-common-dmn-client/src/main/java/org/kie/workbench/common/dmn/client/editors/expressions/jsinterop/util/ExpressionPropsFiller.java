@@ -110,11 +110,7 @@ public class ExpressionPropsFiller {
         final ContextEntry resultContextEntry = !contextExpression.getContextEntry().isEmpty() ?
                 contextExpression.getContextEntry().get(contextExpression.getContextEntry().size() - 1) :
                 new ContextEntry();
-        final String expressionId = resultContextEntry.getVariable() != null ? resultContextEntry.getVariable().getId().getValue() : new Id().getValue();
-        return buildAndFillJsInteropProp(resultContextEntry.getExpression(),
-                           "Result Expression",
-                                         UNDEFINED.getText(),
-                                         expressionId);
+        return buildAndFillJsInteropProp(resultContextEntry.getExpression(), "Result Expression", UNDEFINED.getText());
     }
 
     private static ContextEntryProps[] contextEntriesConvertForContextProps(final Context contextExpression) {
@@ -171,7 +167,7 @@ public class ExpressionPropsFiller {
         final String entryName = contextEntryVariable.getName().getValue();
         final String entryDataType = contextEntryVariable.getTypeRef().getLocalPart();
         final EntryInfo entryInfo = new EntryInfo(entryId, entryName, entryDataType);
-        final ExpressionProps entryExpression = buildAndFillJsInteropProp(expression, entryName, entryDataType, entryId);
+        final ExpressionProps entryExpression = buildAndFillJsInteropProp(expression, entryName, entryDataType);
         return new ContextEntryProps(entryInfo, entryExpression);
     }
 
