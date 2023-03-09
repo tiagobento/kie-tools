@@ -130,20 +130,23 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
       setDmnRunnerPersistenceJson((previousDmnRunnerPersistenceJson) => {
         const n = deepCopyPersistenceJson(previousDmnRunnerPersistenceJson);
         // add default value;
-        const newInputsRow = Object.entries(n.inputs[args.beforeIndex - 1]).reduce((acc, [key, value]) => {
-          if (typeof value === "string") {
-            acc[key] = "";
-          } else if (typeof value === "number") {
-            acc[key] = 0;
-          } else if (typeof value === "boolean") {
-            acc[key] = false;
-          } else if (Array.isArray(value)) {
-            acc[key] = [];
-          } else if (value === "object") {
-            acc[key] = {};
-          }
-          return acc;
-        }, {} as any);
+        const newInputsRow = Object.entries(n.inputs[args.beforeIndex - 1]).reduce(
+          (acc, [key, value]) => {
+            if (typeof value === "string") {
+              acc[key] = "";
+            } else if (typeof value === "number") {
+              acc[key] = 0;
+            } else if (typeof value === "boolean") {
+              acc[key] = false;
+            } else if (Array.isArray(value)) {
+              acc[key] = [];
+            } else if (typeof value === "object") {
+              acc[key] = {};
+            }
+            return acc;
+          },
+          { id: generateUuid() } as any
+        );
 
         // add default configs;
         const newConfigInputsRow = Object.entries(n.inputs[args.beforeIndex - 1]).reduce((acc, [key, _]) => {
@@ -151,8 +154,8 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
           return acc;
         }, {} as any);
 
-        n.inputs.splice(args.beforeIndex, 0, { ...newInputsRow, id: generateUuid() });
-        n.configs.inputs.splice(args.beforeIndex, 0, { ...newConfigInputsRow });
+        n.inputs.splice(args.beforeIndex, 0, newInputsRow);
+        n.configs.inputs.splice(args.beforeIndex, 0, newConfigInputsRow);
 
         return n;
       });
