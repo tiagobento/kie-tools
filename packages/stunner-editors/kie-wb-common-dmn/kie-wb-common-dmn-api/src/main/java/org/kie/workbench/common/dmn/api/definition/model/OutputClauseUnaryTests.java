@@ -82,7 +82,6 @@ public class OutputClauseUnaryTests extends DMNModelInstrumentedBase implements 
         );
     }
 
-
     public OutputClauseUnaryTests exactCopy() {
         return new OutputClauseUnaryTests(
                 Optional.ofNullable(id).map(Id::copy).orElse(null),
