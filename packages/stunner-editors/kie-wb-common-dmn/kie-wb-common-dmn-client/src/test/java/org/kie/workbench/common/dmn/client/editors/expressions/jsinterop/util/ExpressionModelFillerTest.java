@@ -38,7 +38,24 @@ import org.kie.workbench.common.dmn.api.definition.model.LiteralExpression;
 import org.kie.workbench.common.dmn.api.definition.model.OutputClause;
 import org.kie.workbench.common.dmn.api.definition.model.Relation;
 import org.kie.workbench.common.dmn.api.property.dmn.types.BuiltInType;
-import org.kie.workbench.common.dmn.client.editors.expressions.jsinterop.props.*;
+import org.kie.workbench.common.dmn.client.editors.expressions.jsinterop.props.Annotation;
+import org.kie.workbench.common.dmn.client.editors.expressions.jsinterop.props.Clause;
+import org.kie.workbench.common.dmn.client.editors.expressions.jsinterop.props.Column;
+import org.kie.workbench.common.dmn.client.editors.expressions.jsinterop.props.ContextEntryProps;
+import org.kie.workbench.common.dmn.client.editors.expressions.jsinterop.props.ContextProps;
+import org.kie.workbench.common.dmn.client.editors.expressions.jsinterop.props.DecisionTableProps;
+import org.kie.workbench.common.dmn.client.editors.expressions.jsinterop.props.DecisionTableRule;
+import org.kie.workbench.common.dmn.client.editors.expressions.jsinterop.props.EntryInfo;
+import org.kie.workbench.common.dmn.client.editors.expressions.jsinterop.props.ExpressionProps;
+import org.kie.workbench.common.dmn.client.editors.expressions.jsinterop.props.FeelFunctionProps;
+import org.kie.workbench.common.dmn.client.editors.expressions.jsinterop.props.InvocationFunctionProps;
+import org.kie.workbench.common.dmn.client.editors.expressions.jsinterop.props.InvocationProps;
+import org.kie.workbench.common.dmn.client.editors.expressions.jsinterop.props.JavaFunctionProps;
+import org.kie.workbench.common.dmn.client.editors.expressions.jsinterop.props.ListProps;
+import org.kie.workbench.common.dmn.client.editors.expressions.jsinterop.props.LiteralProps;
+import org.kie.workbench.common.dmn.client.editors.expressions.jsinterop.props.PmmlFunctionProps;
+import org.kie.workbench.common.dmn.client.editors.expressions.jsinterop.props.RelationProps;
+import org.kie.workbench.common.dmn.client.editors.expressions.jsinterop.props.Row;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -199,7 +216,7 @@ public class ExpressionModelFillerTest {
                 .isNotNull()
                 .isExactlyInstanceOf(LiteralExpression.class);
         assertThat(((LiteralExpression) invocationExpression.getExpression()).getText().getValue()).isEqualTo(invokedFunction);
-        assertThat(((LiteralExpression) invocationExpression.getExpression()).getId().getValue()).isEqualTo(functionID);
+        assertThat((invocationExpression.getExpression()).getId().getValue()).isEqualTo(functionID);
         assertThat(invocationExpression.getBinding())
                 .isNotNull()
                 .hasSize(1);
