@@ -41,6 +41,7 @@ public class RuleAnnotationClause extends DMNElement implements HasName {
         clonedRuleAnnotationClause.name = Optional.ofNullable(name).map(Name::copy).orElse(null);
         return clonedRuleAnnotationClause;
     }
+
     @Override
     public Name getName() {
         return this.name;
