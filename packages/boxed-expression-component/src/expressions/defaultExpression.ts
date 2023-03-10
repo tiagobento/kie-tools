@@ -206,7 +206,6 @@ export function getDefaultExpressionDefinitionByLogicType(
       ],
       annotations: [
         {
-          id: generateUuid(),
           name: "annotation-1",
           width: DECISION_TABLE_ANNOTATION_DEFAULT_WIDTH,
         },

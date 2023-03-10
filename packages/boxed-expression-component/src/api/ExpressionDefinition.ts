@@ -143,8 +143,6 @@ export interface DecisionTableExpressionDefinitionClause {
 }
 
 export interface DecisionTableExpressionDefinitionAnnotation {
-  /** Annotation identifier */
-  id: string;
   /** Annotation name */
   name: string;
   /** Annotation width */
