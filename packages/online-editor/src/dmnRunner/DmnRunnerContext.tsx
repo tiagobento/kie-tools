@@ -17,8 +17,8 @@
 import { InputRow, DmnSchema } from "@kie-tools/form-dmn";
 import * as React from "react";
 import { useContext } from "react";
-import { DmnRunnerPersistenceJson } from "../../dmnRunnerPersistence/DmnRunnerPersistenceService";
-import { KieSandboxExtendedServicesModelPayload } from "../../kieSandboxExtendedServices/KieSandboxExtendedServicesClient";
+import { DmnRunnerPersistenceJson } from "../dmnRunnerPersistence/DmnRunnerPersistenceService";
+import { KieSandboxExtendedServicesModelPayload } from "../kieSandboxExtendedServices/KieSandboxExtendedServicesClient";
 import { DmnRunnerMode, DmnRunnerStatus } from "./DmnRunnerStatus";
 
 export interface DmnRunnerContextType {

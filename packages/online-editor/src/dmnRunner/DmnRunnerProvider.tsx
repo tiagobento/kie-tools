@@ -19,20 +19,20 @@ import { PropsWithChildren, useCallback, useEffect, useMemo, useState } from "re
 import { useWorkspaces, WorkspaceFile } from "@kie-tools-core/workspaces-git-fs/dist/context/WorkspacesContext";
 import { DmnRunnerMode, DmnRunnerStatus } from "./DmnRunnerStatus";
 import { DmnRunnerDispatchContext, DmnRunnerStateContext } from "./DmnRunnerContext";
-import { KieSandboxExtendedServicesModelPayload } from "../../kieSandboxExtendedServices/KieSandboxExtendedServicesClient";
-import { KieSandboxExtendedServicesStatus } from "../../kieSandboxExtendedServices/KieSandboxExtendedServicesStatus";
+import { KieSandboxExtendedServicesModelPayload } from "../kieSandboxExtendedServices/KieSandboxExtendedServicesClient";
+import { KieSandboxExtendedServicesStatus } from "../kieSandboxExtendedServices/KieSandboxExtendedServicesStatus";
 import { usePrevious } from "@kie-tools-core/react-hooks/dist/usePrevious";
-import { useExtendedServices } from "../../kieSandboxExtendedServices/KieSandboxExtendedServicesContext";
+import { useExtendedServices } from "../kieSandboxExtendedServices/KieSandboxExtendedServicesContext";
 import { DmnSchema, InputRow } from "@kie-tools/form-dmn";
-import { useDmnRunnerPersistence } from "../../dmnRunnerPersistence/DmnRunnerPersistenceHook";
+import { useDmnRunnerPersistence } from "../dmnRunnerPersistence/DmnRunnerPersistenceHook";
 import { DmnLanguageService } from "@kie-tools/dmn-language-service";
 import { decoder } from "@kie-tools-core/workspaces-git-fs/dist/encoderdecoder/EncoderDecoder";
-import { EMPTY_DMN_RUNNER_INPUTS } from "../../dmnRunnerPersistence/DmnRunnerPersistenceService";
 import {
   generateUuid,
   DEFAULT_DMN_RUNNER_CONFIG_INPUT,
   deepCopyPersistenceJson,
-} from "../../dmnRunnerPersistence/DmnRunnerPersistenceService";
+  EMPTY_DMN_RUNNER_INPUTS,
+} from "../dmnRunnerPersistence/DmnRunnerPersistenceService";
 
 interface Props {
   isEditorReady?: boolean;

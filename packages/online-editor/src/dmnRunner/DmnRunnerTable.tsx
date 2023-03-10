@@ -19,7 +19,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDmnRunnerDispatch, useDmnRunnerState } from "./DmnRunnerContext";
 import { DmnRunnerMode } from "./DmnRunnerStatus";
 import { DecisionResult, InputRow } from "@kie-tools/form-dmn";
-import { PanelId } from "../EditorPageDockDrawer";
+import { PanelId } from "../editor/EditorPageDockDrawer";
 import { useElementsThatStopKeyboardEventsPropagation } from "@kie-tools-core/keyboard-shortcuts/dist/channel";
 import { DmnRunnerLoading } from "./DmnRunnerLoading";
 import { useCancelableEffect } from "@kie-tools-core/react-hooks/dist/useCancelableEffect";
@@ -28,13 +28,13 @@ import { EmptyState, EmptyStateBody, EmptyStateIcon } from "@patternfly/react-co
 import { ExclamationIcon } from "@patternfly/react-icons/dist/js/icons/exclamation-icon";
 import { Text, TextContent } from "@patternfly/react-core/dist/js/components/Text";
 import { ErrorBoundary } from "@kie-tools/form";
-import { useOnlineI18n } from "../../i18n";
+import { useOnlineI18n } from "../i18n";
 import { Unitables } from "@kie-tools/unitables/dist/Unitables";
 import { DmnRunnerOutputsTable } from "@kie-tools/unitables-dmn/dist/DmnRunnerOutputsTable";
 import { DmnUnitablesValidator } from "@kie-tools/unitables-dmn/dist/DmnUnitablesValidator";
-import { useExtendedServices } from "../../kieSandboxExtendedServices/KieSandboxExtendedServicesContext";
+import { useExtendedServices } from "../kieSandboxExtendedServices/KieSandboxExtendedServicesContext";
 import "./DmnRunnerTable.css";
-import { deepCopyPersistenceJson } from "../../dmnRunnerPersistence/DmnRunnerPersistenceService";
+import { deepCopyPersistenceJson } from "../dmnRunnerPersistence/DmnRunnerPersistenceService";
 import isEqual from "lodash/isEqual";
 
 interface Props {

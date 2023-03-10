@@ -26,14 +26,14 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import { useOnlineI18n } from "../../i18n";
 import { useDevDeployments } from "../../devDeployments/DevDeploymentsContext";
 import { useDevDeploymentsDeployDropdownItems } from "../../devDeployments/DevDeploymentsDeployDropdownItems";
-import { useDmnRunnerDispatch, useDmnRunnerState } from "../DmnRunner/DmnRunnerContext";
+import { useDmnRunnerDispatch, useDmnRunnerState } from "../../dmnRunner/DmnRunnerContext";
 import { FeatureDependentOnKieSandboxExtendedServices } from "../../kieSandboxExtendedServices/FeatureDependentOnKieSandboxExtendedServices";
 import {
   DependentFeature,
   useExtendedServices,
 } from "../../kieSandboxExtendedServices/KieSandboxExtendedServicesContext";
 import { KieSandboxExtendedServicesStatus } from "../../kieSandboxExtendedServices/KieSandboxExtendedServicesStatus";
-import { DmnRunnerMode } from "../DmnRunner/DmnRunnerStatus";
+import { DmnRunnerMode } from "../../dmnRunner/DmnRunnerStatus";
 import { EditorPageDockDrawerRef, PanelId } from "../EditorPageDockDrawer";
 import { ActiveWorkspace } from "@kie-tools-core/workspaces-git-fs/dist/model/ActiveWorkspace";
 import { ListIcon } from "@patternfly/react-icons/dist/js/icons/list-icon";

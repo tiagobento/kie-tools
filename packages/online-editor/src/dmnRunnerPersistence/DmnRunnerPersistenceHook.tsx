@@ -127,14 +127,14 @@ export function useDmnRunnerPersistence(workspaceFile: WorkspaceFile): DmnRunner
     )
   );
 
-  // Updating the dmnRunnerJson should update the FS
+  // Updating the dmnRunnerPersistenceJson should update the FS
   useEffect(() => {
     if (!workspaceFile.relativePath || !workspaceFile.workspaceId) {
       return;
     }
 
     // safe comparison, it compares to an array with an empty object;
-    // used in the first render;
+    // first render;
     if (JSON.stringify(dmnRunnerPersistenceJson) === JSON.stringify(EMPTY_DMN_RUNNER_PERSISTANCE_JSON)) {
       return;
     }

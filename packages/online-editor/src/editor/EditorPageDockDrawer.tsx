@@ -17,11 +17,11 @@
 import * as React from "react";
 import { PropsWithChildren, useCallback, useEffect, useImperativeHandle, useMemo, useState } from "react";
 import { ToggleGroup } from "@patternfly/react-core/dist/js/components/ToggleGroup";
-import { DmnRunnerMode } from "./DmnRunner/DmnRunnerStatus";
-import { useDmnRunnerState } from "./DmnRunner/DmnRunnerContext";
+import { DmnRunnerMode } from "../dmnRunner/DmnRunnerStatus";
+import { useDmnRunnerState } from "../dmnRunner/DmnRunnerContext";
 import { useOnlineI18n } from "../i18n";
 import { NotificationsPanel, NotificationsPanelRef } from "./NotificationsPanel/NotificationsPanel";
-import { DmnRunnerTable } from "./DmnRunner/DmnRunnerTable";
+import { DmnRunnerTable } from "../dmnRunner/DmnRunnerTable";
 import { Drawer, DrawerContent, DrawerPanelContent } from "@patternfly/react-core/dist/js/components/Drawer";
 import { WorkspaceFile } from "@kie-tools-core/workspaces-git-fs/dist/context/WorkspacesContext";
 import { DecisionResult } from "@kie-tools/form-dmn";
@@ -29,7 +29,7 @@ import {
   NotificationsPanelDockToggle,
   NotificationsPanelDockToggleRef,
 } from "./NotificationsPanel/NotificationsPanelDockToggle";
-import { DmnRunnerDockToggle } from "./DmnRunner/DmnRunnerDockToggle";
+import { DmnRunnerDockToggle } from "../dmnRunner/DmnRunnerDockToggle";
 import { useController } from "@kie-tools-core/react-hooks/dist/useController";
 import { Notification } from "@kie-tools-core/notifications/dist/api";
 import { useExtendedServices } from "../kieSandboxExtendedServices/KieSandboxExtendedServicesContext";
