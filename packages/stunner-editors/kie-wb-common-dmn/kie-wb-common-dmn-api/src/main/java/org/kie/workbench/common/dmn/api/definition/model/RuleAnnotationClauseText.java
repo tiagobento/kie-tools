@@ -39,12 +39,6 @@ public class RuleAnnotationClauseText extends DMNElement implements HasText {
         return clonedRuleAnnotationClauseText;
     }
 
-    public RuleAnnotationClauseText exactCopy() {
-        final RuleAnnotationClauseText exactelyClonedRuleAnnotationClauseText = copy();
-        exactelyClonedRuleAnnotationClauseText.id = Optional.ofNullable(id).map(Id::copy).orElse(null);
-        return exactelyClonedRuleAnnotationClauseText;
-    }
-
     @Override
     public Text getText() {
         return text;

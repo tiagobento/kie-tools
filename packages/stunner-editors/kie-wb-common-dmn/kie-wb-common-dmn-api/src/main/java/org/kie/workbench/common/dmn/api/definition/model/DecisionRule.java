@@ -76,7 +76,7 @@ public class DecisionRule extends DMNElement implements HasTypeRefs,
         exactelyClonedDecisionRule.outputEntry = outputEntry.stream().map(LiteralExpression::exactCopy).collect(Collectors.toList());
         exactelyClonedDecisionRule.annotationEntry = Optional.ofNullable(annotationEntry)
                 .map(annotationEntryList ->
-                        annotationEntryList.stream().map(RuleAnnotationClauseText::exactCopy).collect(Collectors.toList()))
+                        annotationEntryList.stream().map(RuleAnnotationClauseText::copy).collect(Collectors.toList()))
                 .orElse(null);
         return exactelyClonedDecisionRule;
     }
