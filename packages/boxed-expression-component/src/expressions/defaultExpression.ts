@@ -140,6 +140,10 @@ export function getDefaultExpressionDefinitionByLogicType(
           },
         },
       ],
+      invokedFunction: {
+        id: generateUuid(),
+        functionName: "FUNCTION",
+      },
     };
     return invocationExpression;
   } else if (logicType === ExpressionDefinitionLogicType.Relation) {

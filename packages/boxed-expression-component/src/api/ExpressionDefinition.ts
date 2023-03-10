@@ -174,13 +174,18 @@ export interface InvocationExpressionDefinition<T extends ExpressionDefinition =
   /** Logic type must be Invocation */
   logicType: ExpressionDefinitionLogicType.Invocation;
   /** Function to be invoked */
-  invokedFunction?: string;
+  invokedFunction: InvocationFunction;
   /** Collection of arguments used to invoke the function */
   // FIXME: Tiago -> Rename to argumentEntries
-  bindingEntries?: ContextExpressionDefinitionEntry<T>[];
+  bindingEntries: ContextExpressionDefinitionEntry<T>[];
   /** Entry info width */
   // FIXME: Tiago -> Rename to parametersInfoColumnWidth?
   entryInfoWidth?: number;
+}
+
+export interface InvocationFunction {
+  id: string;
+  functionName: string;
 }
 
 // UNDEFINED EXPRESSION
