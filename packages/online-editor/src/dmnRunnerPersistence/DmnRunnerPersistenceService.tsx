@@ -29,7 +29,7 @@ interface DmnRunnerPersistenceJsonConfig {
 }
 
 // Can't use Record<string, DmnRunnerConfig | ConfigInputRow>;
-type ConfigInputRow = { [x: string]: DmnRunnerPersistenceJsonConfig | ConfigInputRow };
+export type ConfigInputRow = { [x: string]: DmnRunnerPersistenceJsonConfig | ConfigInputRow };
 
 // TODO: use it!
 export enum DmnRunnerMode {
@@ -84,6 +84,21 @@ export class DmnRunnerPersistenceService {
     storeNameSuffix: "dmn_runner_persistence",
     emptyFileContent: JSON.stringify(EMPTY_DMN_RUNNER_PERSISTANCE_JSON),
   });
+
+  public parseDmnRunnerInputs(inputs: string): DmnRunnerPersistenceJson {
+    const parsedDmnRunnerPersistenceJson = JSON.parse(inputs) as DmnRunnerPersistenceJson;
+
+    // v0 to v1;
+    if (Array.isArray(parsedDmnRunnerPersistenceJson)) {
+      // backwards compatibility
+      return { ...DEFAULT_DMN_RUNNER_PERSISTENCE_JSON, inputs: parsedDmnRunnerPersistenceJson };
+    }
+
+    if (Object.prototype.toString.call(parsedDmnRunnerPersistenceJson) === "[object Object]") {
+      return parsedDmnRunnerPersistenceJson;
+    }
+    return EMPTY_DMN_RUNNER_PERSISTANCE_JSON;
+  }
 
   public parseDmnRunnerPersistenceJson(inputs: string): DmnRunnerPersistenceJson {
     const parsedDmnRunnerPersistenceJson = JSON.parse(inputs) as DmnRunnerPersistenceJson;

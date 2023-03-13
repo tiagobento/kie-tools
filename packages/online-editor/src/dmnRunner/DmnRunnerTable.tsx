@@ -52,7 +52,8 @@ export function DmnRunnerTable({ setPanelOpen }: Props) {
     preparePayload,
     setCurrentInputRowIndex,
     setError,
-    setDmnRunnerPersistenceJson,
+    setDmnRunnerInputs,
+    setDmnRunnerMode,
   } = useDmnRunnerDispatch();
   const [dmnRunnerTableError, setDmnRunnerTableError] = useState<boolean>(false);
   const dmnRunnerTableErrorBoundaryRef = useRef<ErrorBoundary>(null);
@@ -82,15 +83,11 @@ export function DmnRunnerTable({ setPanelOpen }: Props) {
 
   const openRow = useCallback(
     (rowIndex: number) => {
-      setDmnRunnerPersistenceJson((previousDmnRunnerPersistenceJson) => {
-        const newDmnRunnerPersistenceJson = deepCopyPersistenceJson(previousDmnRunnerPersistenceJson);
-        newDmnRunnerPersistenceJson.configs.mode = DmnRunnerMode.FORM;
-        setCurrentInputRowIndex(rowIndex);
-        return newDmnRunnerPersistenceJson;
-      });
+      setDmnRunnerMode(DmnRunnerMode.FORM);
+      setCurrentInputRowIndex(rowIndex);
       setPanelOpen(PanelId.NONE);
     },
-    [setDmnRunnerPersistenceJson, setCurrentInputRowIndex, setPanelOpen]
+    [setDmnRunnerMode, setCurrentInputRowIndex, setPanelOpen]
   );
 
   // FIXME: Prevent shortcuts when editing on dmn runner table;
@@ -149,16 +146,11 @@ export function DmnRunnerTable({ setPanelOpen }: Props) {
 
   const setRows = useCallback(
     (newRows: (previous: Array<InputRow>) => Array<InputRow>) => {
-      setDmnRunnerPersistenceJson((previousPersistenceJson) => {
-        const newPersistenceJson = deepCopyPersistenceJson(previousPersistenceJson);
-        newPersistenceJson.inputs = newRows(previousPersistenceJson.inputs);
-        if (isEqual(newPersistenceJson, previousPersistenceJson)) {
-          return previousPersistenceJson;
-        }
-        return newPersistenceJson;
+      setDmnRunnerInputs((previousInputRows) => {
+        return newRows(previousInputRows);
       });
     },
-    [setDmnRunnerPersistenceJson]
+    [setDmnRunnerInputs]
   );
 
   // const setWidth = useCallback((newWidth) => {

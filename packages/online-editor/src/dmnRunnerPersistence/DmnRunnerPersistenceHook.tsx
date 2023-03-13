@@ -15,7 +15,7 @@
  */
 
 import * as React from "react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useReducer } from "react";
 import { useCancelableEffect } from "@kie-tools-core/react-hooks/dist/useCancelableEffect";
 import { WorkspaceFile } from "@kie-tools-core/workspaces-git-fs/dist/context/WorkspacesContext";
 import { useDmnRunnerPersistenceDispatch } from "./DmnRunnerPersistenceDispatchContext";
@@ -26,20 +26,88 @@ import {
   EMPTY_DMN_RUNNER_PERSISTANCE_JSON,
   deepCopyPersistenceJson,
   generateUuid,
+  DmnRunnerPersistenceService,
 } from "./DmnRunnerPersistenceService";
 import isEqual from "lodash/isEqual";
 import { DEFAULT_DMN_RUNNER_PERSISTENCE_JSON } from "./DmnRunnerPersistenceService";
 
+export enum DmnRunnerPersistenceReducerActionType {
+  DEFAULT,
+  PREVIOUS,
+}
+
+export interface DmnRunnerPersistenceReducerActionPrevious {
+  type: DmnRunnerPersistenceReducerActionType.PREVIOUS;
+  newPersistenceJson: (previous: DmnRunnerPersistenceJson) => DmnRunnerPersistenceJson;
+}
+
+export interface DmnRunnerPersistenceReducerActionDefault {
+  type: DmnRunnerPersistenceReducerActionType.DEFAULT;
+  newPersistenceJson: DmnRunnerPersistenceJson;
+}
+
+type DmnRunnerPersistenceReducerAction = {
+  dmnRunnerPersistenceService: DmnRunnerPersistenceService;
+  workspaceFileRelativePath: string;
+  workspaceId: string;
+} & (DmnRunnerPersistenceReducerActionDefault | DmnRunnerPersistenceReducerActionPrevious);
+
 interface DmnRunnerPersistenceHook {
   dmnRunnerPersistenceJson: DmnRunnerPersistenceJson;
-  setDmnRunnerPersistenceJson: React.Dispatch<React.SetStateAction<DmnRunnerPersistenceJson>>;
+  dispatchDmnRunnerPersistenceJson: React.Dispatch<DmnRunnerPersistenceReducerAction>;
 }
 
 export function useDmnRunnerPersistence(workspaceFile: WorkspaceFile): DmnRunnerPersistenceHook {
-  const [dmnRunnerPersistenceJson, setDmnRunnerPersistenceJson] = useState<DmnRunnerPersistenceJson>(
-    EMPTY_DMN_RUNNER_PERSISTANCE_JSON
-  );
   const { dmnRunnerPersistenceService } = useDmnRunnerPersistenceDispatch();
+
+  const updateSomething = useCallback(
+    (newPersistence: any, dmnRunnerPersistenceService: any, workspaceId: string, relativePath: string) => {
+      dmnRunnerPersistenceService.companionFsService.update(
+        {
+          workspaceId: workspaceId,
+          workspaceFileRelativePath: relativePath,
+        },
+        JSON.stringify(newPersistence)
+      );
+    },
+    []
+  );
+
+  const [dmnRunnerPersistenceJson, dispatchDmnRunnerPersistenceJson] = useReducer(
+    (persistenceJson: DmnRunnerPersistenceJson, action: DmnRunnerPersistenceReducerAction) => {
+      if (action.type === DmnRunnerPersistenceReducerActionType.PREVIOUS) {
+        const newPersistenceJson = action.newPersistenceJson(persistenceJson);
+
+        // Check before update;
+        if (isEqual(persistenceJson, newPersistenceJson)) {
+          return persistenceJson;
+        }
+
+        updateSomething(
+          newPersistenceJson,
+          action.dmnRunnerPersistenceService,
+          action.workspaceId,
+          action.workspaceFileRelativePath
+        );
+        return newPersistenceJson;
+      }
+
+      // Check before update;
+      if (isEqual(persistenceJson, action.newPersistenceJson)) {
+        return persistenceJson;
+      }
+
+      // update FS; it's a async function;
+      updateSomething(
+        action.newPersistenceJson,
+        action.dmnRunnerPersistenceService,
+        action.workspaceId,
+        action.workspaceFileRelativePath
+      );
+      return action.newPersistenceJson;
+    },
+    DEFAULT_DMN_RUNNER_PERSISTENCE_JSON
+  );
 
   // When another TAB updates the FS, it should sync up
   useCancelableEffect(
@@ -69,13 +137,13 @@ export function useDmnRunnerPersistence(workspaceFile: WorkspaceFile): DmnRunner
             companionEvent.type === "CFSF_ADD" ||
             companionEvent.type === "CFSF_DELETE"
           ) {
-            setDmnRunnerPersistenceJson((previousDmnRunnerPersistenceJson) => {
-              // Triggered by the tab; shouldn't update; safe comparison;
-              if (isEqual(JSON.parse(companionEvent.content), previousDmnRunnerPersistenceJson)) {
-                return previousDmnRunnerPersistenceJson;
-              }
-              // Triggered by the other tab; should update;
-              return dmnRunnerPersistenceService.parseDmnRunnerPersistenceJson(companionEvent.content);
+            const dmnRunnerPersistenceJson: DmnRunnerPersistenceJson = JSON.parse(companionEvent.content);
+            dispatchDmnRunnerPersistenceJson({
+              dmnRunnerPersistenceService,
+              workspaceId: workspaceFile.workspaceId,
+              workspaceFileRelativePath: workspaceFile.relativePath,
+              type: DmnRunnerPersistenceReducerActionType.DEFAULT,
+              newPersistenceJson: dmnRunnerPersistenceJson,
             });
           }
         };
@@ -85,7 +153,7 @@ export function useDmnRunnerPersistence(workspaceFile: WorkspaceFile): DmnRunner
           broadcastChannel.close();
         };
       },
-      [dmnRunnerPersistenceService, workspaceFile, setDmnRunnerPersistenceJson]
+      [dmnRunnerPersistenceService, workspaceFile]
     )
   );
 
@@ -118,38 +186,25 @@ export function useDmnRunnerPersistence(workspaceFile: WorkspaceFile): DmnRunner
               if (canceled.get()) {
                 return;
               }
-              const dmnRunnerJson = decoder.decode(content);
-              setDmnRunnerPersistenceJson(dmnRunnerPersistenceService.parseDmnRunnerPersistenceJson(dmnRunnerJson));
+              const dmnRunnerPersistenceJson = dmnRunnerPersistenceService.parseDmnRunnerPersistenceJson(
+                decoder.decode(content)
+              );
+              dispatchDmnRunnerPersistenceJson({
+                dmnRunnerPersistenceService,
+                workspaceId: workspaceFile.workspaceId,
+                workspaceFileRelativePath: workspaceFile.relativePath,
+                type: DmnRunnerPersistenceReducerActionType.DEFAULT,
+                newPersistenceJson: dmnRunnerPersistenceJson,
+              });
             });
           });
       },
-      [dmnRunnerPersistenceService, workspaceFile, setDmnRunnerPersistenceJson]
+      [dmnRunnerPersistenceService, workspaceFile]
     )
   );
 
-  // Updating the dmnRunnerPersistenceJson should update the FS
-  useEffect(() => {
-    if (!workspaceFile.relativePath || !workspaceFile.workspaceId) {
-      return;
-    }
-
-    // safe comparison, it compares to an array with an empty object;
-    // first render;
-    if (JSON.stringify(dmnRunnerPersistenceJson) === JSON.stringify(EMPTY_DMN_RUNNER_PERSISTANCE_JSON)) {
-      return;
-    }
-
-    dmnRunnerPersistenceService.companionFsService.update(
-      {
-        workspaceId: workspaceFile.workspaceId,
-        workspaceFileRelativePath: workspaceFile.relativePath,
-      },
-      JSON.stringify(dmnRunnerPersistenceJson)
-    );
-  }, [dmnRunnerPersistenceService, workspaceFile.workspaceId, workspaceFile.relativePath, dmnRunnerPersistenceJson]);
-
   return {
     dmnRunnerPersistenceJson,
-    setDmnRunnerPersistenceJson,
+    dispatchDmnRunnerPersistenceJson,
   };
 }

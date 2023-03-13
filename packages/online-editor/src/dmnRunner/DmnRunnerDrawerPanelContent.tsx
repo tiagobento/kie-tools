@@ -51,8 +51,6 @@ import { CaretDownIcon } from "@patternfly/react-icons/dist/js/icons/caret-down-
 import { ToolbarItem } from "@patternfly/react-core/dist/js/components/Toolbar";
 import { DmnRunnerLoading } from "./DmnRunnerLoading";
 import { useExtendedServices } from "../kieSandboxExtendedServices/KieSandboxExtendedServicesContext";
-import isEqual from "lodash/isEqual";
-import { deepCopyPersistenceJson, generateUuid } from "../dmnRunnerPersistence/DmnRunnerPersistenceService";
 
 const KOGITO_JIRA_LINK = "https://issues.jboss.org/projects/KOGITO";
 
@@ -80,8 +78,15 @@ export function DmnRunnerDrawerPanelContent(props: Props) {
   const { i18n, locale } = useOnlineI18n();
   const [formRef, setFormRef] = useState<HTMLFormElement | null>();
   const { currentInputRowIndex, error, inputs, mode, status, isExpanded, jsonSchema } = useDmnRunnerState();
-  const { onRowAdded, preparePayload, setCurrentInputRowIndex, setError, setExpanded, setDmnRunnerPersistenceJson } =
-    useDmnRunnerDispatch();
+  const {
+    onRowAdded,
+    preparePayload,
+    setCurrentInputRowIndex,
+    setError,
+    setExpanded,
+    setDmnRunnerInputs,
+    setDmnRunnerMode,
+  } = useDmnRunnerDispatch();
   const [drawerError, setDrawerError] = useState<boolean>(false);
   const errorBoundaryRef = useRef<ErrorBoundary>(null);
   const [dmnRunnerResults, setDmnRunnerResults] = useState<DecisionResult[]>();
@@ -269,29 +274,19 @@ export function DmnRunnerDrawerPanelContent(props: Props) {
 
   // changing between rows re-calculate this function;
   const setFormInputs = useCallback(
-    (newFormInput) => {
-      setDmnRunnerPersistenceJson((previousPersistenceJson) => {
-        console.log("SET FORM INPUTS", previousPersistenceJson);
-
-        const newPersistenceJson = deepCopyPersistenceJson(previousPersistenceJson);
+    (newFormInput: (previousInputRow: InputRow) => InputRow | InputRow) => {
+      setDmnRunnerInputs((perviousInputRows) => {
+        console.log("SET FORM INPUTS", perviousInputRows);
+        const newInputRows = [...perviousInputRows];
         if (typeof newFormInput === "function") {
-          const newCalculatedFormInput = newFormInput(newPersistenceJson.inputs[currentInputRowIndex]);
-          // prevent unnecessary re-render after changing between rows;
-          if (!isEqual(newCalculatedFormInput, newPersistenceJson.inputs[currentInputRowIndex])) {
-            newPersistenceJson.inputs[currentInputRowIndex] = newCalculatedFormInput;
-            return newPersistenceJson;
-          }
-        } else {
-          // prevent unnecessary re-render after changing between rows;
-          if (!isEqual(newFormInput, newPersistenceJson.inputs[currentInputRowIndex])) {
-            newPersistenceJson.inputs[currentInputRowIndex] = newFormInput;
-            return newPersistenceJson;
-          }
+          newInputRows[currentInputRowIndex] = newFormInput(newInputRows[currentInputRowIndex]);
+          return newInputRows;
         }
-        return previousPersistenceJson;
+        newInputRows[currentInputRowIndex] = newFormInput;
+        return newInputRows;
       });
     },
-    [currentInputRowIndex, setDmnRunnerPersistenceJson]
+    [currentInputRowIndex, setDmnRunnerInputs]
   );
 
   const onSelectRow = useCallback((event) => {
@@ -327,13 +322,9 @@ export function DmnRunnerDrawerPanelContent(props: Props) {
   }, [onRowAdded, setCurrentInputRowIndex, getRow]);
 
   const onChangeToTableView = useCallback(() => {
-    setDmnRunnerPersistenceJson((previousDmnRunnerPersistenceJson) => {
-      const newDmnRunnerPersistenceJson = deepCopyPersistenceJson(previousDmnRunnerPersistenceJson);
-      newDmnRunnerPersistenceJson.configs.mode = DmnRunnerMode.TABLE;
-      return newDmnRunnerPersistenceJson;
-    });
+    setDmnRunnerMode(DmnRunnerMode.TABLE);
     props.editorPageDock?.toggle(PanelId.DMN_RUNNER_TABLE);
-  }, [setDmnRunnerPersistenceJson, props.editorPageDock]);
+  }, [setDmnRunnerMode, props.editorPageDock]);
 
   return (
     <DrawerPanelContent

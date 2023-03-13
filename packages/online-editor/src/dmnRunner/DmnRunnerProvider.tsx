@@ -24,15 +24,22 @@ import { KieSandboxExtendedServicesStatus } from "../kieSandboxExtendedServices/
 import { usePrevious } from "@kie-tools-core/react-hooks/dist/usePrevious";
 import { useExtendedServices } from "../kieSandboxExtendedServices/KieSandboxExtendedServicesContext";
 import { DmnSchema, InputRow } from "@kie-tools/form-dmn";
-import { useDmnRunnerPersistence } from "../dmnRunnerPersistence/DmnRunnerPersistenceHook";
+import {
+  DmnRunnerPersistenceReducerActionType,
+  useDmnRunnerPersistence,
+} from "../dmnRunnerPersistence/DmnRunnerPersistenceHook";
 import { DmnLanguageService } from "@kie-tools/dmn-language-service";
 import { decoder } from "@kie-tools-core/workspaces-git-fs/dist/encoderdecoder/EncoderDecoder";
+import { DmnRunnerPersistenceJson } from "../dmnRunnerPersistence/DmnRunnerPersistenceService";
 import {
   generateUuid,
   DEFAULT_DMN_RUNNER_CONFIG_INPUT,
   deepCopyPersistenceJson,
   EMPTY_DMN_RUNNER_INPUTS,
+  ConfigInputRow,
+  EMPTY_DMN_RUNNER_CONFIG_INPUTS,
 } from "../dmnRunnerPersistence/DmnRunnerPersistenceService";
+import { useDmnRunnerPersistenceDispatch } from "../dmnRunnerPersistence/DmnRunnerPersistenceDispatchContext";
 
 interface Props {
   isEditorReady?: boolean;
@@ -43,8 +50,145 @@ interface Props {
 export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
   const extendedServices = useExtendedServices();
   const workspaces = useWorkspaces();
+  const { dmnRunnerPersistenceService } = useDmnRunnerPersistenceDispatch();
+  const { dmnRunnerPersistenceJson, dispatchDmnRunnerPersistenceJson } = useDmnRunnerPersistence(props.workspaceFile);
 
   const [isVisible, setVisible] = useState<boolean>(false);
+  const [error, setError] = useState(false);
+  const [jsonSchema, setJsonSchema] = useState<DmnSchema | undefined>(undefined);
+  const [isExpanded, setExpanded] = useState(false);
+  const [currentInputRowIndex, setCurrentInputRowIndex] = useState<number>(0);
+
+  const dmnRunnerInputs = useMemo(
+    () => dmnRunnerPersistenceJson?.inputs ?? EMPTY_DMN_RUNNER_INPUTS,
+    [dmnRunnerPersistenceJson?.inputs]
+  );
+  const dmnRunnerMode = useMemo(
+    () => dmnRunnerPersistenceJson?.configs?.mode ?? DmnRunnerMode.FORM,
+    [dmnRunnerPersistenceJson?.configs?.mode]
+  );
+  // const dmnRunnerConfigInputs = useMemo(() => dmnRunnerPersistenceJson?.configs?.inputs ?? EMPTY_DMN_RUNNER_CONFIG_INPUTS, [dmnRunnerPersistenceJson?.configs?.inputs]);
+
+  const setDmnRunnerPersistenceJson = useCallback(
+    (args: {
+      newInputsRow?: (previousInputs: Array<InputRow>) => Array<InputRow> | Array<InputRow>;
+      newMode?: DmnRunnerMode;
+      newConfigInputs?: (previousConfigInputs: Array<ConfigInputRow>) => Array<ConfigInputRow> | Array<ConfigInputRow>;
+    }) => {
+      dispatchDmnRunnerPersistenceJson({
+        dmnRunnerPersistenceService,
+        workspaceFileRelativePath: props.workspaceFile.relativePath,
+        workspaceId: props.workspaceFile.workspaceId,
+        type: DmnRunnerPersistenceReducerActionType.PREVIOUS,
+        newPersistenceJson: (previousDmnRunnerPersistenceJson) => {
+          const newDmnRunnerPersistenceJson = deepCopyPersistenceJson(previousDmnRunnerPersistenceJson);
+          if (typeof args.newInputsRow === "function") {
+            newDmnRunnerPersistenceJson.inputs = args.newInputsRow(previousDmnRunnerPersistenceJson.inputs);
+          } else if (args.newInputsRow) {
+            newDmnRunnerPersistenceJson.inputs = args.newInputsRow;
+          }
+
+          if (args.newMode) {
+            newDmnRunnerPersistenceJson.configs.mode = args.newMode;
+          }
+
+          if (typeof args.newConfigInputs === "function") {
+            newDmnRunnerPersistenceJson.configs.inputs = args.newConfigInputs(
+              previousDmnRunnerPersistenceJson.configs.inputs
+            );
+          } else if (args.newConfigInputs) {
+            newDmnRunnerPersistenceJson.configs.inputs = args.newConfigInputs;
+          }
+          return newDmnRunnerPersistenceJson;
+        },
+      });
+    },
+    [
+      dispatchDmnRunnerPersistenceJson,
+      dmnRunnerPersistenceService,
+      props.workspaceFile.relativePath,
+      props.workspaceFile.workspaceId,
+    ]
+  );
+
+  const setDmnRunnerInputs = useCallback(
+    (newInputsRow: (previousInputs: Array<InputRow>) => Array<InputRow> | Array<InputRow>) => {
+      dispatchDmnRunnerPersistenceJson({
+        dmnRunnerPersistenceService,
+        workspaceFileRelativePath: props.workspaceFile.relativePath,
+        workspaceId: props.workspaceFile.workspaceId,
+        type: DmnRunnerPersistenceReducerActionType.PREVIOUS,
+        newPersistenceJson: (previousDmnRunnerPersistenceJson) => {
+          const newDmnRunnerPersistenceJson = deepCopyPersistenceJson(previousDmnRunnerPersistenceJson);
+          if (typeof newInputsRow === "function") {
+            newDmnRunnerPersistenceJson.inputs = newInputsRow(previousDmnRunnerPersistenceJson.inputs);
+          } else {
+            newDmnRunnerPersistenceJson.inputs = newInputsRow;
+          }
+          return newDmnRunnerPersistenceJson;
+        },
+      });
+    },
+    [
+      dispatchDmnRunnerPersistenceJson,
+      dmnRunnerPersistenceService,
+      props.workspaceFile.relativePath,
+      props.workspaceFile.workspaceId,
+    ]
+  );
+
+  const setDmnRunnerMode = useCallback(
+    (newMode: DmnRunnerMode) => {
+      dispatchDmnRunnerPersistenceJson({
+        dmnRunnerPersistenceService,
+        workspaceFileRelativePath: props.workspaceFile.relativePath,
+        workspaceId: props.workspaceFile.workspaceId,
+        type: DmnRunnerPersistenceReducerActionType.PREVIOUS,
+        newPersistenceJson: (previousDmnRunnerPersistenceJson) => {
+          const newDmnRunnerPersistenceJson = deepCopyPersistenceJson(previousDmnRunnerPersistenceJson);
+          newDmnRunnerPersistenceJson.configs.mode = newMode;
+          return newDmnRunnerPersistenceJson;
+        },
+      });
+    },
+    [
+      dispatchDmnRunnerPersistenceJson,
+      dmnRunnerPersistenceService,
+      props.workspaceFile.relativePath,
+      props.workspaceFile.workspaceId,
+    ]
+  );
+
+  const setDmnRunnerConfigInputs = useCallback(
+    (
+      newConfigInputs: (previousConfigInputs: Array<ConfigInputRow>) => Array<ConfigInputRow> | Array<ConfigInputRow>
+    ) => {
+      dispatchDmnRunnerPersistenceJson({
+        dmnRunnerPersistenceService,
+        workspaceFileRelativePath: props.workspaceFile.relativePath,
+        workspaceId: props.workspaceFile.workspaceId,
+        type: DmnRunnerPersistenceReducerActionType.PREVIOUS,
+        newPersistenceJson: (previousDmnRunnerPersistenceJson) => {
+          const newDmnRunnerPersistenceJson = deepCopyPersistenceJson(previousDmnRunnerPersistenceJson);
+          if (typeof newConfigInputs === "function") {
+            newDmnRunnerPersistenceJson.configs.inputs = newConfigInputs(
+              previousDmnRunnerPersistenceJson.configs.inputs
+            );
+          } else {
+            newDmnRunnerPersistenceJson.configs.inputs = newConfigInputs;
+          }
+          return newDmnRunnerPersistenceJson;
+        },
+      });
+    },
+    [
+      dispatchDmnRunnerPersistenceJson,
+      dmnRunnerPersistenceService,
+      props.workspaceFile.relativePath,
+      props.workspaceFile.workspaceId,
+    ]
+  );
+
   useEffect(() => {
     if (props.isEditorReady) {
       setVisible(true);
@@ -52,12 +196,6 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
       setVisible(false);
     }
   }, [props.isEditorReady]);
-
-  const { dmnRunnerPersistenceJson, setDmnRunnerPersistenceJson } = useDmnRunnerPersistence(props.workspaceFile);
-  const [error, setError] = useState(false);
-  const [jsonSchema, setJsonSchema] = useState<DmnSchema | undefined>(undefined);
-  const [isExpanded, setExpanded] = useState(false);
-  const [currentInputRowIndex, setCurrentInputRowIndex] = useState<number>(0);
 
   const status = useMemo(() => {
     return isExpanded ? DmnRunnerStatus.AVAILABLE : DmnRunnerStatus.UNAVAILABLE;
@@ -125,142 +263,116 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
     }
   }, [prevKieSandboxExtendedServicesStatus, extendedServices.status, props.workspaceFile.extension]);
 
-  const onRowAdded = useCallback(
-    (args: { beforeIndex: number }) => {
-      setDmnRunnerPersistenceJson((previousDmnRunnerPersistenceJson) => {
-        const n = deepCopyPersistenceJson(previousDmnRunnerPersistenceJson);
-        // add default value;
-        const newInputsRow = Object.entries(n.inputs[args.beforeIndex - 1]).reduce(
-          (acc, [key, value]) => {
-            if (key === "id") {
-              return acc;
-            }
-            if (typeof value === "string") {
-              acc[key] = "";
-            } else if (typeof value === "number") {
-              acc[key] = 0;
-            } else if (typeof value === "boolean") {
-              acc[key] = false;
-            } else if (Array.isArray(value)) {
-              acc[key] = [];
-            } else if (typeof value === "object") {
-              acc[key] = {};
-            }
-            return acc;
-          },
-          { id: generateUuid() } as any
-        );
+  const onRowAdded = useCallback((args: { beforeIndex: number }) => {
+    // setDmnRunnerPersistenceJson((previousDmnRunnerPersistenceJson) => {
+    //   const n = deepCopyPersistenceJson(previousDmnRunnerPersistenceJson);
+    //   // add default value;
+    //   const newInputsRow = Object.entries(n.inputs[args.beforeIndex - 1]).reduce(
+    //     (acc, [key, value]) => {
+    //       if (key === "id") {
+    //         return acc;
+    //       }
+    //       if (typeof value === "string") {
+    //         acc[key] = "";
+    //       } else if (typeof value === "number") {
+    //         acc[key] = 0;
+    //       } else if (typeof value === "boolean") {
+    //         acc[key] = false;
+    //       } else if (Array.isArray(value)) {
+    //         acc[key] = [];
+    //       } else if (typeof value === "object") {
+    //         acc[key] = {};
+    //       }
+    //       return acc;
+    //     },
+    //     { id: generateUuid() } as any
+    //   );
+    //   // add default configs;
+    //   const newConfigInputsRow = Object.entries(n.inputs[args.beforeIndex - 1]).reduce((acc, [key, _]) => {
+    //     if (key === "id") {
+    //       return acc;
+    //     }
+    //     acc[key] = { ...DEFAULT_DMN_RUNNER_CONFIG_INPUT };
+    //     return acc;
+    //   }, {} as any);
+    //   n.inputs.splice(args.beforeIndex, 0, newInputsRow);
+    //   n.configs.inputs.splice(args.beforeIndex, 0, newConfigInputsRow);
+    //   setCurrentInputRowIndex(args.beforeIndex);
+    //   return n;
+    // });
+  }, []);
 
-        // add default configs;
-        const newConfigInputsRow = Object.entries(n.inputs[args.beforeIndex - 1]).reduce((acc, [key, _]) => {
-          if (key === "id") {
-            return acc;
-          }
-          acc[key] = { ...DEFAULT_DMN_RUNNER_CONFIG_INPUT };
-          return acc;
-        }, {} as any);
+  const onRowDuplicated = useCallback((args: { rowIndex: number }) => {
+    // setDmnRunnerPersistenceJson((previousDmnRunnerPersistenceJson) => {
+    //   const n = deepCopyPersistenceJson(previousDmnRunnerPersistenceJson);
+    //   // duplicate inputs
+    //   n.inputs.splice(args.rowIndex, 0, {
+    //     ...JSON.parse(JSON.stringify(previousDmnRunnerPersistenceJson.inputs[args.rowIndex])),
+    //     id: generateUuid(),
+    //   });
+    //   // duplicate configs
+    //   n.configs.inputs.splice(args.rowIndex, 0, {
+    //     ...JSON.parse(JSON.stringify(previousDmnRunnerPersistenceJson.configs.inputs[args.rowIndex])),
+    //     id: generateUuid(),
+    //   });
+    //   return n;
+    // });
+  }, []);
 
-        n.inputs.splice(args.beforeIndex, 0, newInputsRow);
-        n.configs.inputs.splice(args.beforeIndex, 0, newConfigInputsRow);
-        setCurrentInputRowIndex(args.beforeIndex);
+  const onRowReset = useCallback((args: { rowIndex: number }) => {
+    // setDmnRunnerPersistenceJson((previousDmnRunnerPersistenceJson) => {
+    //   const n = deepCopyPersistenceJson(previousDmnRunnerPersistenceJson);
+    //   // reset to defaul values;
+    //   const resetedInputRows = Object.entries(n.inputs[args.rowIndex]).reduce(
+    //     (acc, [key, value]) => {
+    //       if (key === "id") {
+    //         return acc;
+    //       }
+    //       if (typeof value === "string") {
+    //         acc[key] = "";
+    //       } else if (typeof value === "number") {
+    //         acc[key] = 0;
+    //       } else if (typeof value === "boolean") {
+    //         acc[key] = false;
+    //       } else if (Array.isArray(value)) {
+    //         acc[key] = [];
+    //       } else if (value === "object") {
+    //         acc[key] = {};
+    //       }
+    //       return acc;
+    //     },
+    //     { id: generateUuid() } as any
+    //   );
+    //   // reset default configs;
+    //   const newConfigInputsRow = Object.entries(n.inputs[args.rowIndex]).reduce((acc, [key, _]) => {
+    //     if (key === "id") {
+    //       return acc;
+    //     }
+    //     acc[key] = { ...DEFAULT_DMN_RUNNER_CONFIG_INPUT };
+    //     return acc;
+    //   }, {} as any);
+    //   n.inputs[args.rowIndex] = resetedInputRows;
+    //   n.configs.inputs[args.rowIndex] = newConfigInputsRow;
+    //   return n;
+    // });
+  }, []);
 
-        return n;
-      });
-    },
-    [setDmnRunnerPersistenceJson]
-  );
-
-  const onRowDuplicated = useCallback(
-    (args: { rowIndex: number }) => {
-      setDmnRunnerPersistenceJson((previousDmnRunnerPersistenceJson) => {
-        const n = deepCopyPersistenceJson(previousDmnRunnerPersistenceJson);
-
-        // duplicate inputs
-        n.inputs.splice(args.rowIndex, 0, {
-          ...JSON.parse(JSON.stringify(previousDmnRunnerPersistenceJson.inputs[args.rowIndex])),
-          id: generateUuid(),
-        });
-
-        // duplicate configs
-        n.configs.inputs.splice(args.rowIndex, 0, {
-          ...JSON.parse(JSON.stringify(previousDmnRunnerPersistenceJson.configs.inputs[args.rowIndex])),
-          id: generateUuid(),
-        });
-
-        return n;
-      });
-    },
-    [setDmnRunnerPersistenceJson]
-  );
-
-  const onRowReset = useCallback(
-    (args: { rowIndex: number }) => {
-      setDmnRunnerPersistenceJson((previousDmnRunnerPersistenceJson) => {
-        const n = deepCopyPersistenceJson(previousDmnRunnerPersistenceJson);
-
-        // reset to defaul values;
-        const resetedInputRows = Object.entries(n.inputs[args.rowIndex]).reduce(
-          (acc, [key, value]) => {
-            if (key === "id") {
-              return acc;
-            }
-            if (typeof value === "string") {
-              acc[key] = "";
-            } else if (typeof value === "number") {
-              acc[key] = 0;
-            } else if (typeof value === "boolean") {
-              acc[key] = false;
-            } else if (Array.isArray(value)) {
-              acc[key] = [];
-            } else if (value === "object") {
-              acc[key] = {};
-            }
-            return acc;
-          },
-          { id: generateUuid() } as any
-        );
-
-        // reset default configs;
-        const newConfigInputsRow = Object.entries(n.inputs[args.rowIndex]).reduce((acc, [key, _]) => {
-          if (key === "id") {
-            return acc;
-          }
-          acc[key] = { ...DEFAULT_DMN_RUNNER_CONFIG_INPUT };
-          return acc;
-        }, {} as any);
-
-        n.inputs[args.rowIndex] = resetedInputRows;
-        n.configs.inputs[args.rowIndex] = newConfigInputsRow;
-
-        return n;
-      });
-    },
-    [setDmnRunnerPersistenceJson]
-  );
-
-  const onRowDeleted = useCallback(
-    (args: { rowIndex: number }) => {
-      setDmnRunnerPersistenceJson((previousDmnRunnerPersistenceJson) => {
-        const n = deepCopyPersistenceJson(previousDmnRunnerPersistenceJson);
-
-        // delete input row;
-        n.inputs.splice(args.rowIndex, 1);
-
-        // re-generate ids for rows above the deleted one
-        n.inputs.forEach((e, i, newInputRows) => {
-          if (i >= args.rowIndex) {
-            newInputRows[i] = { ...e, id: generateUuid() };
-          }
-        });
-
-        // delete config of input;
-        n.configs.inputs.splice(args.rowIndex, 1);
-
-        return n;
-      });
-    },
-    [setDmnRunnerPersistenceJson]
-  );
+  const onRowDeleted = useCallback((args: { rowIndex: number }) => {
+    // setDmnRunnerPersistenceJson((previousDmnRunnerPersistenceJson) => {
+    //   const n = deepCopyPersistenceJson(previousDmnRunnerPersistenceJson);
+    //   // delete input row;
+    //   n.inputs.splice(args.rowIndex, 1);
+    //   // re-generate ids for rows above the deleted one
+    //   n.inputs.forEach((e, i, newInputRows) => {
+    //     if (i >= args.rowIndex) {
+    //       newInputRows[i] = { ...e, id: generateUuid() };
+    //     }
+    //   });
+    //   // delete config of input;
+    //   n.configs.inputs.splice(args.rowIndex, 1);
+    //   return n;
+    // });
+  }, []);
 
   const dmnRunnerDispatch = useMemo(
     () => ({
@@ -273,6 +385,9 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
       setError,
       setExpanded,
       setDmnRunnerPersistenceJson,
+      setDmnRunnerInputs,
+      setDmnRunnerMode,
+      setDmnRunnerConfigInputs,
     }),
     [
       onRowAdded,
@@ -284,6 +399,9 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
       setError,
       setExpanded,
       setDmnRunnerPersistenceJson,
+      setDmnRunnerInputs,
+      setDmnRunnerMode,
+      setDmnRunnerConfigInputs,
     ]
   );
 
@@ -292,14 +410,24 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
       currentInputRowIndex,
       error,
       dmnRunnerPersistenceJson,
-      inputs: dmnRunnerPersistenceJson?.inputs ?? EMPTY_DMN_RUNNER_INPUTS,
+      inputs: dmnRunnerInputs,
       isExpanded,
       isVisible,
       jsonSchema,
-      mode: dmnRunnerPersistenceJson?.configs?.mode ?? DmnRunnerMode.FORM,
+      mode: dmnRunnerMode,
       status,
     }),
-    [error, currentInputRowIndex, dmnRunnerPersistenceJson, isExpanded, isVisible, jsonSchema, status]
+    [
+      error,
+      currentInputRowIndex,
+      dmnRunnerPersistenceJson,
+      dmnRunnerInputs,
+      dmnRunnerMode,
+      isExpanded,
+      isVisible,
+      jsonSchema,
+      status,
+    ]
   );
 
   return (

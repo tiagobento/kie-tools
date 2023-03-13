@@ -57,7 +57,7 @@ export function KieSandboxExtendedServicesButtons(props: Props) {
   const extendedServices = useExtendedServices();
   const devDeployments = useDevDeployments();
   const { dmnRunnerPersistenceJson, isExpanded, mode } = useDmnRunnerState();
-  const { setDmnRunnerPersistenceJson, setExpanded } = useDmnRunnerDispatch();
+  const { setDmnRunnerMode, setExpanded } = useDmnRunnerDispatch();
   const devDeploymentsDropdownItems = useDevDeploymentsDeployDropdownItems(props.workspace);
   const { getPersistenceJsonForDownload, uploadPersistenceJson, deletePersistenceJson } =
     useDmnRunnerPersistenceDispatch();
@@ -165,14 +165,7 @@ export function KieSandboxExtendedServicesButtons(props: Props) {
               icon={<ListIcon />}
               onClick={() => {
                 if (extendedServices.status === KieSandboxExtendedServicesStatus.RUNNING) {
-                  setDmnRunnerPersistenceJson((previousDmnRunnerPersistenceJson) => {
-                    if (previousDmnRunnerPersistenceJson.configs.mode === DmnRunnerMode.FORM) {
-                      return previousDmnRunnerPersistenceJson;
-                    }
-                    const newDmnRunnerPersistenceJson = deepCopyPersistenceJson(previousDmnRunnerPersistenceJson);
-                    newDmnRunnerPersistenceJson.configs.mode = DmnRunnerMode.FORM;
-                    return newDmnRunnerPersistenceJson;
-                  });
+                  setDmnRunnerMode(DmnRunnerMode.FORM);
                   props.editorPageDock?.close();
                   setExpanded(true);
                 }
@@ -186,14 +179,7 @@ export function KieSandboxExtendedServicesButtons(props: Props) {
               icon={<TableIcon />}
               onClick={() => {
                 if (extendedServices.status === KieSandboxExtendedServicesStatus.RUNNING) {
-                  setDmnRunnerPersistenceJson((previousDmnRunnerPersistenceJson) => {
-                    if (previousDmnRunnerPersistenceJson.configs.mode === DmnRunnerMode.TABLE) {
-                      return previousDmnRunnerPersistenceJson;
-                    }
-                    const newDmnRunnerPersistenceJson = deepCopyPersistenceJson(previousDmnRunnerPersistenceJson);
-                    newDmnRunnerPersistenceJson.configs.mode = DmnRunnerMode.TABLE;
-                    return newDmnRunnerPersistenceJson;
-                  });
+                  setDmnRunnerMode(DmnRunnerMode.TABLE);
                   props.editorPageDock?.open(PanelId.DMN_RUNNER_TABLE);
                   setExpanded(true);
                 }
