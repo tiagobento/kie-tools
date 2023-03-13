@@ -25,6 +25,7 @@ import org.kie.workbench.common.dmn.api.definition.HasExpression;
 import org.kie.workbench.common.dmn.api.definition.HasName;
 import org.kie.workbench.common.dmn.api.definition.HasVariable;
 import org.kie.workbench.common.dmn.api.definition.model.BusinessKnowledgeModel;
+import org.kie.workbench.common.dmn.api.definition.model.DMNModelInstrumentedBase;
 import org.kie.workbench.common.dmn.api.definition.model.Expression;
 import org.kie.workbench.common.dmn.api.definition.model.FunctionDefinition;
 import org.kie.workbench.common.dmn.api.definition.model.InformationItemPrimary;
@@ -134,7 +135,9 @@ public class ExpressionState {
     void restoreExpression() {
         if (getHasExpression().asDMNModelInstrumentedBase() instanceof BusinessKnowledgeModel) {
             BusinessKnowledgeModel bkModel = ((BusinessKnowledgeModel) getHasExpression().asDMNModelInstrumentedBase());
+            DMNModelInstrumentedBase bkModelParent = bkModel.getEncapsulatedLogic().getParent();
             bkModel.setEncapsulatedLogic((FunctionDefinition) getSavedExpression());
+            bkModel.getEncapsulatedLogic().setParent(bkModelParent);
         } else if (getHasExpression() instanceof HasExpression) {
             getHasExpression().setExpression(getSavedExpression());
         }
