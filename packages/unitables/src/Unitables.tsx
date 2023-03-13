@@ -32,6 +32,7 @@ import "./Unitables.css";
 import { UnitablesRow } from "./UnitablesRow";
 import isEqual from "lodash/isEqual";
 import { InputRow } from "@kie-tools/form-dmn";
+import { diff } from "deep-object-diff";
 
 const EMPTY_UNITABLES_INPUTS = [{}];
 
@@ -76,10 +77,12 @@ export const Unitables = ({
   const inputUid = useMemo(() => nextId(), []);
 
   // create cache to save inputs cache;
+  const cachedKeys = useRef<Map<number, Set<string>>>(new Map());
   const cachedRows = useRef<object[]>([...EMPTY_UNITABLES_INPUTS]);
   useLayoutEffect(() => {
     if (isEqual(rows, EMPTY_UNITABLES_INPUTS)) {
       cachedRows.current = [...EMPTY_UNITABLES_INPUTS];
+      cachedKeys.current.clear();
     }
   }, [rows]);
 
@@ -120,7 +123,30 @@ export const Unitables = ({
   const onValidateRow = useCallback(
     (rowInput: object, rowIndex: number) => {
       // Save all rowInputs before timeout;
-      cachedRows.current[rowIndex] = rowInput;
+
+      const difference = diff(cachedRows.current[rowIndex], rowInput);
+      // save into a map the row and keys that were changed;
+      // changing multiple rows/columns at the same time;
+      if (Object.keys(difference).length > 1) {
+        const filteredDifference = Object.entries(difference).reduce((acc, [key, value]) => {
+          if (cachedKeys.current.get(rowIndex)?.has(key)) {
+            return acc;
+          }
+          acc[key] = value;
+          const keySet = cachedKeys.current.get(rowIndex);
+          if (keySet) {
+            keySet.add(key);
+          } else {
+            cachedKeys.current.set(rowIndex, new Set([key]));
+          }
+          return acc;
+        }, {} as Record<string, any>);
+        cachedRows.current[rowIndex] = { ...cachedRows.current[rowIndex], ...filteredDifference };
+      } else {
+        // changing one cell at time;
+        cachedKeys.current.set(rowIndex, new Set(Object.keys(difference)));
+        cachedRows.current[rowIndex] = { ...cachedRows.current[rowIndex], ...difference };
+      }
 
       // Debounce;
       if (timeout.current) {
@@ -128,6 +154,7 @@ export const Unitables = ({
       }
 
       timeout.current = window.setTimeout(() => {
+        cachedKeys.current.clear();
         // Update all rows if a value was changed;
         setRows((previousInputRows) => {
           // if cached length isn't equal to current a table event occured. e.g. add, delete;

@@ -146,9 +146,7 @@ export function DmnRunnerTable({ setPanelOpen }: Props) {
 
   const setRows = useCallback(
     (newRows: (previous: Array<InputRow>) => Array<InputRow>) => {
-      setDmnRunnerInputs((previousInputRows) => {
-        return newRows(previousInputRows);
-      });
+      setDmnRunnerInputs((previousInputRows) => newRows(previousInputRows));
     },
     [setDmnRunnerInputs]
   );
