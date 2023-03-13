@@ -131,7 +131,8 @@ export function useDmnRunnerPersistence(
             companionEvent.type === "CFSF_ADD" ||
             companionEvent.type === "CFSF_DELETE"
           ) {
-            const dmnRunnerPersistenceJson: DmnRunnerPersistenceJson = JSON.parse(companionEvent.content);
+            const dmnRunnerPersistenceJson: DmnRunnerPersistenceJson =
+              dmnRunnerPersistenceService.parseDmnRunnerPersistenceJson(companionEvent.content);
             dispatchDmnRunnerPersistenceJson({
               dmnRunnerPersistenceService,
               workspaceId: workspaceId,

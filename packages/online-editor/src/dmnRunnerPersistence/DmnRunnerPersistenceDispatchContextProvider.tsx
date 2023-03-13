@@ -23,7 +23,6 @@ import {
   DEFAULT_DMN_RUNNER_PERSISTENCE_JSON,
   DmnRunnerPersistenceJson,
   generateUuid,
-  EMPTY_DMN_RUNNER_PERSISTANCE_JSON,
 } from "./DmnRunnerPersistenceService";
 import { DmnRunnerPersistenceDispatchContext } from "./DmnRunnerPersistenceDispatchContext";
 import { decoder } from "@kie-tools-core/workspaces-git-fs/dist/encoderdecoder/EncoderDecoder";

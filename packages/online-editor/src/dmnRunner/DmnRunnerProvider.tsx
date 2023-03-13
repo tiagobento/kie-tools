@@ -30,14 +30,12 @@ import {
 } from "../dmnRunnerPersistence/DmnRunnerPersistenceHook";
 import { DmnLanguageService } from "@kie-tools/dmn-language-service";
 import { decoder } from "@kie-tools-core/workspaces-git-fs/dist/encoderdecoder/EncoderDecoder";
-import { DmnRunnerPersistenceJson } from "../dmnRunnerPersistence/DmnRunnerPersistenceService";
 import {
   generateUuid,
   DEFAULT_DMN_RUNNER_CONFIG_INPUT,
   deepCopyPersistenceJson,
   EMPTY_DMN_RUNNER_INPUTS,
   ConfigInputRow,
-  EMPTY_DMN_RUNNER_CONFIG_INPUTS,
 } from "../dmnRunnerPersistence/DmnRunnerPersistenceService";
 import { useDmnRunnerPersistenceDispatch } from "../dmnRunnerPersistence/DmnRunnerPersistenceDispatchContext";
 
@@ -196,6 +194,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
         workspaceId: props.workspaceFile.workspaceId,
         type: DmnRunnerPersistenceReducerActionType.PREVIOUS,
         newPersistenceJson: (previousDmnRunnerPersistenceJson) => {
+          console.log(previousDmnRunnerPersistenceJson);
           const newDmnRunnerPersistenceJson = deepCopyPersistenceJson(previousDmnRunnerPersistenceJson);
           if (typeof newInputsRow === "function") {
             newDmnRunnerPersistenceJson.inputs = newInputsRow(previousDmnRunnerPersistenceJson.inputs);
