@@ -90,6 +90,7 @@ public class FunctionDefinition extends Expression implements HasExpression {
                 .collect(Collectors.toList());
         exactelyClonedFunctionDefinition.kind = kind;
         exactelyClonedFunctionDefinition.getAdditionalAttributes().putAll(cloneAdditionalAttributes());
+        exactelyClonedFunctionDefinition.setParent(this.getParent()); //TODO temporary
         return exactelyClonedFunctionDefinition;
     }
 
