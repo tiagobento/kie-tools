@@ -204,22 +204,13 @@ function UnitablesBeeTableCell({ joinedName }: BeeTableCellProps<ROWTYPE> & { jo
     useCallback(() => JSON.stringify(value), [value])
   );
 
-  const { onColumnResizingWidthChange, columnResizingWidths } = usePublishedBeeTableResizableColumns(
-    "something",
-    1,
-    true
-  );
-
-  const some = useMemo(() => {
-    return columnResizingWidths;
-  }, [columnResizingWidths]);
-
   return (
     <>
       <AutoField
         key={joinedName}
         name={joinedName}
         form={`${AUTO_ROW_ID}-${containerCellCoordinates?.rowIndex ?? 0}`}
+        style={{ height: "60px" }}
       />
     </>
   );
