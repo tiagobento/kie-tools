@@ -17,15 +17,39 @@
 import { createContext, useContext } from "react";
 import { DmnRunnerPersistenceService, DmnRunnerPersistenceJson } from "./DmnRunnerPersistenceService";
 import { WorkspaceFile } from "@kie-tools-core/workspaces-git-fs/dist/context/WorkspacesContext";
+import { DmnRunnerPersistenceQueue } from "./DmnRunnerPersistenceQueue";
+
+export enum DmnRunnerPersistenceReducerActionType {
+  DEFAULT,
+  PREVIOUS,
+}
+
+export interface DmnRunnerPersistenceReducerActionPrevious {
+  type: DmnRunnerPersistenceReducerActionType.PREVIOUS;
+  newPersistenceJson: (previous: DmnRunnerPersistenceJson) => DmnRunnerPersistenceJson;
+}
+
+export interface DmnRunnerPersistenceReducerActionDefault {
+  type: DmnRunnerPersistenceReducerActionType.DEFAULT;
+  newPersistenceJson: DmnRunnerPersistenceJson;
+}
+
+export type DmnRunnerPersistenceReducerAction = {
+  dmnRunnerPersistenceQueue: DmnRunnerPersistenceQueue;
+  workspaceFileRelativePath: string;
+  workspaceId: string;
+} & (DmnRunnerPersistenceReducerActionDefault | DmnRunnerPersistenceReducerActionPrevious);
 
 interface DmnRunnerPersistenceDispatchContextType {
   dmnRunnerPersistenceService: DmnRunnerPersistenceService;
   deletePersistenceJson: (
     previousDmnRunnerPersisnteceJson: DmnRunnerPersistenceJson,
     workspaceFile: WorkspaceFile
-  ) => Promise<void>;
+  ) => void;
   getPersistenceJsonForDownload: (workspaceFile: WorkspaceFile) => Promise<Blob | undefined>;
   uploadPersistenceJson: (workspaceFile: WorkspaceFile, file: File) => void;
+  dmnRunnerPersistenceJson: DmnRunnerPersistenceJson;
+  dispatchDmnRunnerPersistenceJson: React.Dispatch<DmnRunnerPersistenceReducerAction>;
 }
 
 export const DmnRunnerPersistenceDispatchContext = createContext<DmnRunnerPersistenceDispatchContextType>({} as any);

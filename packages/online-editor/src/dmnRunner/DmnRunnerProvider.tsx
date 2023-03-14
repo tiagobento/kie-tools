@@ -24,20 +24,20 @@ import { KieSandboxExtendedServicesStatus } from "../kieSandboxExtendedServices/
 import { usePrevious } from "@kie-tools-core/react-hooks/dist/usePrevious";
 import { useExtendedServices } from "../kieSandboxExtendedServices/KieSandboxExtendedServicesContext";
 import { DmnSchema, InputRow } from "@kie-tools/form-dmn";
-import {
-  DmnRunnerPersistenceReducerActionType,
-  useDmnRunnerPersistence,
-} from "../dmnRunnerPersistence/DmnRunnerPersistenceHook";
+import { useDmnRunnerPersistence } from "../dmnRunnerPersistence/DmnRunnerPersistenceHook";
 import { DmnLanguageService } from "@kie-tools/dmn-language-service";
 import { decoder } from "@kie-tools-core/workspaces-git-fs/dist/encoderdecoder/EncoderDecoder";
 import {
   generateUuid,
   DEFAULT_DMN_RUNNER_CONFIG_INPUT,
   deepCopyPersistenceJson,
-  EMPTY_DMN_RUNNER_INPUTS,
   ConfigInputRow,
 } from "../dmnRunnerPersistence/DmnRunnerPersistenceService";
-import { useDmnRunnerPersistenceDispatch } from "../dmnRunnerPersistence/DmnRunnerPersistenceDispatchContext";
+import {
+  useDmnRunnerPersistenceDispatch,
+  DmnRunnerPersistenceReducerActionType,
+} from "../dmnRunnerPersistence/DmnRunnerPersistenceDispatchContext";
+import { DmnRunnerPersistenceQueue } from "../dmnRunnerPersistence/DmnRunnerPersistenceQueue";
 
 interface Props {
   isEditorReady?: boolean;
@@ -48,11 +48,9 @@ interface Props {
 export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
   const extendedServices = useExtendedServices();
   const workspaces = useWorkspaces();
-  const { dmnRunnerPersistenceService } = useDmnRunnerPersistenceDispatch();
-  const { dmnRunnerPersistenceJson, dispatchDmnRunnerPersistenceJson } = useDmnRunnerPersistence(
-    props.workspaceFile.workspaceId,
-    props.workspaceFile.relativePath
-  );
+  const { dmnRunnerPersistenceService, dmnRunnerPersistenceJson, dispatchDmnRunnerPersistenceJson } =
+    useDmnRunnerPersistenceDispatch();
+  useDmnRunnerPersistence(props.workspaceFile.workspaceId, props.workspaceFile.relativePath);
 
   const [isVisible, setVisible] = useState<boolean>(false);
   const [error, setError] = useState(false);
@@ -60,14 +58,11 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
   const [isExpanded, setExpanded] = useState(false);
   const [currentInputRowIndex, setCurrentInputRowIndex] = useState<number>(0);
 
-  const dmnRunnerInputs = useMemo(
-    () => dmnRunnerPersistenceJson?.inputs ?? EMPTY_DMN_RUNNER_INPUTS,
-    [dmnRunnerPersistenceJson?.inputs]
-  );
-  const dmnRunnerMode = useMemo(
-    () => dmnRunnerPersistenceJson?.configs?.mode ?? DmnRunnerMode.FORM,
-    [dmnRunnerPersistenceJson?.configs?.mode]
-  );
+  const dmnRunnerInputs = useMemo(() => dmnRunnerPersistenceJson.inputs, [dmnRunnerPersistenceJson.inputs]);
+  const dmnRunnerMode = useMemo(() => dmnRunnerPersistenceJson.configs.mode, [dmnRunnerPersistenceJson.configs.mode]);
+  const dmnRunnerPersistenceQueue = useMemo(() => {
+    return new DmnRunnerPersistenceQueue(dmnRunnerPersistenceService.companionFsService);
+  }, [dmnRunnerPersistenceService.companionFsService]);
   // const dmnRunnerConfigInputs = useMemo(() => dmnRunnerPersistenceJson?.configs?.inputs ?? EMPTY_DMN_RUNNER_CONFIG_INPUTS, [dmnRunnerPersistenceJson?.configs?.inputs]);
 
   useEffect(() => {
@@ -151,7 +146,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
       newConfigInputs?: (previousConfigInputs: Array<ConfigInputRow>) => Array<ConfigInputRow> | Array<ConfigInputRow>;
     }) => {
       dispatchDmnRunnerPersistenceJson({
-        dmnRunnerPersistenceService,
+        dmnRunnerPersistenceQueue,
         workspaceFileRelativePath: props.workspaceFile.relativePath,
         workspaceId: props.workspaceFile.workspaceId,
         type: DmnRunnerPersistenceReducerActionType.PREVIOUS,
@@ -179,8 +174,8 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
       });
     },
     [
+      dmnRunnerPersistenceQueue,
       dispatchDmnRunnerPersistenceJson,
-      dmnRunnerPersistenceService,
       props.workspaceFile.relativePath,
       props.workspaceFile.workspaceId,
     ]
@@ -189,12 +184,11 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
   const setDmnRunnerInputs = useCallback(
     (newInputsRow: (previousInputs: Array<InputRow>) => Array<InputRow> | Array<InputRow>) => {
       dispatchDmnRunnerPersistenceJson({
-        dmnRunnerPersistenceService,
+        dmnRunnerPersistenceQueue,
         workspaceFileRelativePath: props.workspaceFile.relativePath,
         workspaceId: props.workspaceFile.workspaceId,
         type: DmnRunnerPersistenceReducerActionType.PREVIOUS,
         newPersistenceJson: (previousDmnRunnerPersistenceJson) => {
-          console.log(previousDmnRunnerPersistenceJson);
           const newDmnRunnerPersistenceJson = deepCopyPersistenceJson(previousDmnRunnerPersistenceJson);
           if (typeof newInputsRow === "function") {
             newDmnRunnerPersistenceJson.inputs = newInputsRow(previousDmnRunnerPersistenceJson.inputs);
@@ -206,8 +200,8 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
       });
     },
     [
+      dmnRunnerPersistenceQueue,
       dispatchDmnRunnerPersistenceJson,
-      dmnRunnerPersistenceService,
       props.workspaceFile.relativePath,
       props.workspaceFile.workspaceId,
     ]
@@ -216,7 +210,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
   const setDmnRunnerMode = useCallback(
     (newMode: DmnRunnerMode) => {
       dispatchDmnRunnerPersistenceJson({
-        dmnRunnerPersistenceService,
+        dmnRunnerPersistenceQueue,
         workspaceFileRelativePath: props.workspaceFile.relativePath,
         workspaceId: props.workspaceFile.workspaceId,
         type: DmnRunnerPersistenceReducerActionType.PREVIOUS,
@@ -228,8 +222,8 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
       });
     },
     [
+      dmnRunnerPersistenceQueue,
       dispatchDmnRunnerPersistenceJson,
-      dmnRunnerPersistenceService,
       props.workspaceFile.relativePath,
       props.workspaceFile.workspaceId,
     ]
@@ -240,7 +234,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
       newConfigInputs: (previousConfigInputs: Array<ConfigInputRow>) => Array<ConfigInputRow> | Array<ConfigInputRow>
     ) => {
       dispatchDmnRunnerPersistenceJson({
-        dmnRunnerPersistenceService,
+        dmnRunnerPersistenceQueue,
         workspaceFileRelativePath: props.workspaceFile.relativePath,
         workspaceId: props.workspaceFile.workspaceId,
         type: DmnRunnerPersistenceReducerActionType.PREVIOUS,
@@ -258,8 +252,8 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
       });
     },
     [
+      dmnRunnerPersistenceQueue,
       dispatchDmnRunnerPersistenceJson,
-      dmnRunnerPersistenceService,
       props.workspaceFile.relativePath,
       props.workspaceFile.workspaceId,
     ]
@@ -268,7 +262,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
   const onRowAdded = useCallback(
     (args: { beforeIndex: number }) => {
       dispatchDmnRunnerPersistenceJson({
-        dmnRunnerPersistenceService,
+        dmnRunnerPersistenceQueue,
         workspaceFileRelativePath: props.workspaceFile.relativePath,
         workspaceId: props.workspaceFile.workspaceId,
         type: DmnRunnerPersistenceReducerActionType.PREVIOUS,
@@ -314,8 +308,8 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
       });
     },
     [
+      dmnRunnerPersistenceQueue,
       dispatchDmnRunnerPersistenceJson,
-      dmnRunnerPersistenceService,
       props.workspaceFile.relativePath,
       props.workspaceFile.workspaceId,
     ]
@@ -324,7 +318,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
   const onRowDuplicated = useCallback(
     (args: { rowIndex: number }) => {
       dispatchDmnRunnerPersistenceJson({
-        dmnRunnerPersistenceService,
+        dmnRunnerPersistenceQueue,
         workspaceFileRelativePath: props.workspaceFile.relativePath,
         workspaceId: props.workspaceFile.workspaceId,
         type: DmnRunnerPersistenceReducerActionType.PREVIOUS,
@@ -345,8 +339,8 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
       });
     },
     [
+      dmnRunnerPersistenceQueue,
       dispatchDmnRunnerPersistenceJson,
-      dmnRunnerPersistenceService,
       props.workspaceFile.relativePath,
       props.workspaceFile.workspaceId,
     ]
@@ -355,7 +349,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
   const onRowReset = useCallback(
     (args: { rowIndex: number }) => {
       dispatchDmnRunnerPersistenceJson({
-        dmnRunnerPersistenceService,
+        dmnRunnerPersistenceQueue,
         workspaceFileRelativePath: props.workspaceFile.relativePath,
         workspaceId: props.workspaceFile.workspaceId,
         type: DmnRunnerPersistenceReducerActionType.PREVIOUS,
@@ -400,8 +394,8 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
       });
     },
     [
+      dmnRunnerPersistenceQueue,
       dispatchDmnRunnerPersistenceJson,
-      dmnRunnerPersistenceService,
       props.workspaceFile.relativePath,
       props.workspaceFile.workspaceId,
     ]
@@ -410,7 +404,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
   const onRowDeleted = useCallback(
     (args: { rowIndex: number }) => {
       dispatchDmnRunnerPersistenceJson({
-        dmnRunnerPersistenceService,
+        dmnRunnerPersistenceQueue,
         workspaceFileRelativePath: props.workspaceFile.relativePath,
         workspaceId: props.workspaceFile.workspaceId,
         type: DmnRunnerPersistenceReducerActionType.PREVIOUS,
@@ -431,8 +425,8 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
       });
     },
     [
+      dmnRunnerPersistenceQueue,
       dispatchDmnRunnerPersistenceJson,
-      dmnRunnerPersistenceService,
       props.workspaceFile.relativePath,
       props.workspaceFile.workspaceId,
     ]

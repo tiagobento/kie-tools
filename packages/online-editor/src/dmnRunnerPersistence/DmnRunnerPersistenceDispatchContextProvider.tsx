@@ -15,43 +15,115 @@
  */
 
 import * as React from "react";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useReducer } from "react";
 import { WorkspaceFile } from "@kie-tools-core/workspaces-git-fs/dist/context/WorkspacesContext";
 import {
   DmnRunnerPersistenceService,
-  deepCopyPersistenceJson,
-  DEFAULT_DMN_RUNNER_PERSISTENCE_JSON,
   DmnRunnerPersistenceJson,
-  generateUuid,
+  getNewDefaultDmnRunnerPersistenceJson,
 } from "./DmnRunnerPersistenceService";
-import { DmnRunnerPersistenceDispatchContext } from "./DmnRunnerPersistenceDispatchContext";
+import {
+  DmnRunnerPersistenceDispatchContext,
+  DmnRunnerPersistenceReducerActionType,
+  DmnRunnerPersistenceReducerAction,
+} from "./DmnRunnerPersistenceDispatchContext";
 import { decoder } from "@kie-tools-core/workspaces-git-fs/dist/encoderdecoder/EncoderDecoder";
 import { useSyncedCompanionFs } from "../companionFs/CompanionFsHooks";
+import isEqual from "lodash/isEqual";
+import { DmnRunnerPersistenceQueue } from "./DmnRunnerPersistenceQueue";
+
+// Update the state and update the FS;
+function dmnRunnerPersistenceJsonReducer(
+  persistenceJson: DmnRunnerPersistenceJson,
+  action: DmnRunnerPersistenceReducerAction
+) {
+  if (action.type === DmnRunnerPersistenceReducerActionType.PREVIOUS) {
+    const newPersistenceJson = action.newPersistenceJson(persistenceJson);
+    // Check for changes before update;
+    if (isEqual(persistenceJson, newPersistenceJson)) {
+      return persistenceJson;
+    }
+
+    // update FS;
+    action.dmnRunnerPersistenceQueue.post({
+      method: action.dmnRunnerPersistenceQueue.companionFsService.update,
+      args: [
+        {
+          workspaceId: action.workspaceId,
+          workspaceFileRelativePath: action.workspaceFileRelativePath,
+        },
+        JSON.stringify(newPersistenceJson),
+      ],
+    });
+    // action.dmnRunnerPersistenceService?.companionFsService.update(
+    //   {
+    //     workspaceId: action.workspaceId,
+    //     workspaceFileRelativePath: action.workspaceFileRelativePath,
+    //   },
+    //   JSON.stringify(newPersistenceJson)
+    // );
+    return newPersistenceJson;
+  }
+
+  // Check for changes before update;
+  if (isEqual(persistenceJson, action.newPersistenceJson)) {
+    return persistenceJson;
+  }
+
+  // update FS;
+  action.dmnRunnerPersistenceQueue.post({
+    method: action.dmnRunnerPersistenceQueue.companionFsService.update,
+    args: [
+      {
+        workspaceId: action.workspaceId,
+        workspaceFileRelativePath: action.workspaceFileRelativePath,
+      },
+      JSON.stringify(action.newPersistenceJson),
+    ],
+  });
+  // action.dmnRunnerPersistenceService?.companionFsService.update(
+  //   {
+  //     workspaceId: action.workspaceId,
+  //     workspaceFileRelativePath: action.workspaceFileRelativePath,
+  //   },
+  //   JSON.stringify(action.newPersistenceJson)
+  // );
+  return action.newPersistenceJson;
+}
+
+const initialDmnRunnerPersistenceJson = getNewDefaultDmnRunnerPersistenceJson();
 
 export function DmnRunnerPersistenceDispatchContextProvider(props: React.PropsWithChildren<{}>) {
   const dmnRunnerPersistenceService = useMemo(() => {
     return new DmnRunnerPersistenceService();
   }, []);
+  const dmnRunnerPersistenceQueue = useMemo(() => {
+    return new DmnRunnerPersistenceQueue(dmnRunnerPersistenceService.companionFsService);
+  }, [dmnRunnerPersistenceService.companionFsService]);
+
+  const [dmnRunnerPersistenceJson, dispatchDmnRunnerPersistenceJson] = useReducer(
+    dmnRunnerPersistenceJsonReducer,
+    initialDmnRunnerPersistenceJson
+  );
 
   useSyncedCompanionFs(dmnRunnerPersistenceService.companionFsService);
 
   const deletePersistenceJson = useCallback(
-    async (previousDmnRunnerPersisnteceJson: DmnRunnerPersistenceJson, workspaceFile: WorkspaceFile) => {
-      await dmnRunnerPersistenceService.companionFsService.delete({
+    (previousDmnRunnerPersisnteceJson: DmnRunnerPersistenceJson, workspaceFile: WorkspaceFile) => {
+      // overwrite the current persistenceJson with a new one;
+      const newPersistenceJson = getNewDefaultDmnRunnerPersistenceJson();
+      // keep current mode;
+      newPersistenceJson.configs.mode = previousDmnRunnerPersisnteceJson.configs.mode;
+
+      dispatchDmnRunnerPersistenceJson({
+        dmnRunnerPersistenceQueue,
         workspaceId: workspaceFile.workspaceId,
         workspaceFileRelativePath: workspaceFile.relativePath,
+        type: DmnRunnerPersistenceReducerActionType.DEFAULT,
+        newPersistenceJson,
       });
-
-      const newPersistenceJson = deepCopyPersistenceJson(DEFAULT_DMN_RUNNER_PERSISTENCE_JSON);
-      newPersistenceJson.configs.mode = previousDmnRunnerPersisnteceJson.configs.mode;
-      newPersistenceJson.inputs = [{ id: generateUuid() }];
-
-      return dmnRunnerPersistenceService.companionFsService.createOrOverwrite(
-        { workspaceId: workspaceFile.workspaceId, workspaceFileRelativePath: workspaceFile.relativePath },
-        JSON.stringify(newPersistenceJson)
-      );
     },
-    [dmnRunnerPersistenceService]
+    [dmnRunnerPersistenceQueue]
   );
 
   const getPersistenceJsonForDownload = useCallback(
@@ -89,6 +161,8 @@ export function DmnRunnerPersistenceDispatchContextProvider(props: React.PropsWi
         deletePersistenceJson,
         getPersistenceJsonForDownload,
         uploadPersistenceJson,
+        dmnRunnerPersistenceJson,
+        dispatchDmnRunnerPersistenceJson,
       }}
     >
       {props.children}

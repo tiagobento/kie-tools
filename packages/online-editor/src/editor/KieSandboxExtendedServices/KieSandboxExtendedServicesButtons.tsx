@@ -44,7 +44,6 @@ import { DownloadIcon } from "@patternfly/react-icons/dist/js/icons/download-ico
 import { UploadIcon } from "@patternfly/react-icons/dist/js/icons/upload-icon";
 import { DeleteDropdownWithConfirmation } from "../DeleteDropdownWithConfirmation";
 import { useDmnRunnerPersistenceDispatch } from "../../dmnRunnerPersistence/DmnRunnerPersistenceDispatchContext";
-import { deepCopyPersistenceJson } from "../../dmnRunnerPersistence/DmnRunnerPersistenceService";
 
 interface Props {
   editorPageDock: EditorPageDockDrawerRef | undefined;
@@ -57,7 +56,7 @@ export function KieSandboxExtendedServicesButtons(props: Props) {
   const extendedServices = useExtendedServices();
   const devDeployments = useDevDeployments();
   const { dmnRunnerPersistenceJson, isExpanded, mode } = useDmnRunnerState();
-  const { setDmnRunnerMode, setExpanded } = useDmnRunnerDispatch();
+  const { setDmnRunnerMode, setExpanded, setCurrentInputRowIndex } = useDmnRunnerDispatch();
   const devDeploymentsDropdownItems = useDevDeploymentsDeployDropdownItems(props.workspace);
   const { getPersistenceJsonForDownload, uploadPersistenceJson, deletePersistenceJson } =
     useDmnRunnerPersistenceDispatch();
@@ -210,6 +209,7 @@ export function KieSandboxExtendedServicesButtons(props: Props) {
               <DropdownItem component={"div"} style={{ padding: "4px" }}>
                 <DeleteDropdownWithConfirmation
                   onDelete={() => {
+                    setCurrentInputRowIndex(0);
                     deletePersistenceJson(dmnRunnerPersistenceJson, props.workspaceFile);
                   }}
                   item={`Delete DMN Runner inputs`}

@@ -15,93 +15,24 @@
  */
 
 import * as React from "react";
-import { useCallback, useReducer } from "react";
+import { useCallback, useMemo } from "react";
 import { useCancelableEffect } from "@kie-tools-core/react-hooks/dist/useCancelableEffect";
-import { WorkspaceFile } from "@kie-tools-core/workspaces-git-fs/dist/context/WorkspacesContext";
-import { useDmnRunnerPersistenceDispatch } from "./DmnRunnerPersistenceDispatchContext";
+import {
+  DmnRunnerPersistenceReducerActionType,
+  useDmnRunnerPersistenceDispatch,
+} from "./DmnRunnerPersistenceDispatchContext";
 import { decoder } from "@kie-tools-core/workspaces-git-fs/dist/encoderdecoder/EncoderDecoder";
 import { CompanionFsServiceBroadcastEvents } from "../companionFs/CompanionFsService";
-import {
-  DmnRunnerPersistenceJson,
-  EMPTY_DMN_RUNNER_PERSISTANCE_JSON,
-  deepCopyPersistenceJson,
-  generateUuid,
-  DmnRunnerPersistenceService,
-} from "./DmnRunnerPersistenceService";
-import isEqual from "lodash/isEqual";
-import { DEFAULT_DMN_RUNNER_PERSISTENCE_JSON } from "./DmnRunnerPersistenceService";
+import { DmnRunnerPersistenceJson } from "./DmnRunnerPersistenceService";
+import { getNewDefaultDmnRunnerPersistenceJson } from "./DmnRunnerPersistenceService";
+import { DmnRunnerPersistenceQueue } from "./DmnRunnerPersistenceQueue";
 
-export enum DmnRunnerPersistenceReducerActionType {
-  DEFAULT,
-  PREVIOUS,
-}
-
-export interface DmnRunnerPersistenceReducerActionPrevious {
-  type: DmnRunnerPersistenceReducerActionType.PREVIOUS;
-  newPersistenceJson: (previous: DmnRunnerPersistenceJson) => DmnRunnerPersistenceJson;
-}
-
-export interface DmnRunnerPersistenceReducerActionDefault {
-  type: DmnRunnerPersistenceReducerActionType.DEFAULT;
-  newPersistenceJson: DmnRunnerPersistenceJson;
-}
-
-type DmnRunnerPersistenceReducerAction = {
-  dmnRunnerPersistenceService: DmnRunnerPersistenceService;
-  workspaceFileRelativePath: string;
-  workspaceId: string;
-} & (DmnRunnerPersistenceReducerActionDefault | DmnRunnerPersistenceReducerActionPrevious);
-
-interface DmnRunnerPersistenceHook {
-  dmnRunnerPersistenceJson: DmnRunnerPersistenceJson;
-  dispatchDmnRunnerPersistenceJson: React.Dispatch<DmnRunnerPersistenceReducerAction>;
-}
-
-function reducer(persistenceJson: DmnRunnerPersistenceJson, action: DmnRunnerPersistenceReducerAction) {
-  if (action.type === DmnRunnerPersistenceReducerActionType.PREVIOUS) {
-    const newPersistenceJson = action.newPersistenceJson(persistenceJson);
-
-    // Check before update;
-    if (isEqual(persistenceJson, newPersistenceJson)) {
-      return persistenceJson;
-    }
-
-    action.dmnRunnerPersistenceService.companionFsService.update(
-      {
-        workspaceId: action.workspaceId,
-        workspaceFileRelativePath: action.workspaceFileRelativePath,
-      },
-      JSON.stringify(newPersistenceJson)
-    );
-    return newPersistenceJson;
-  }
-
-  // Check before update;
-  if (isEqual(persistenceJson, action.newPersistenceJson)) {
-    return persistenceJson;
-  }
-
-  // update FS; it's a async function;
-  action.dmnRunnerPersistenceService.companionFsService.update(
-    {
-      workspaceId: action.workspaceId,
-      workspaceFileRelativePath: action.workspaceFileRelativePath,
-    },
-    JSON.stringify(action.newPersistenceJson)
-  );
-  return action.newPersistenceJson;
-}
-
-export function useDmnRunnerPersistence(
-  workspaceId?: string,
-  workspaceFileRelativePath?: string
-): DmnRunnerPersistenceHook {
-  const { dmnRunnerPersistenceService } = useDmnRunnerPersistenceDispatch();
-
-  const [dmnRunnerPersistenceJson, dispatchDmnRunnerPersistenceJson] = useReducer(
-    reducer,
-    DEFAULT_DMN_RUNNER_PERSISTENCE_JSON
-  );
+// Handle the companion FS events;
+export function useDmnRunnerPersistence(workspaceId?: string, workspaceFileRelativePath?: string) {
+  const { dmnRunnerPersistenceService, dispatchDmnRunnerPersistenceJson } = useDmnRunnerPersistenceDispatch();
+  const dmnRunnerPersistenceQueue = useMemo(() => {
+    return new DmnRunnerPersistenceQueue(dmnRunnerPersistenceService.companionFsService);
+  }, [dmnRunnerPersistenceService.companionFsService]);
 
   // When another TAB updates the FS, it should sync up
   useCancelableEffect(
@@ -133,8 +64,9 @@ export function useDmnRunnerPersistence(
           ) {
             const dmnRunnerPersistenceJson: DmnRunnerPersistenceJson =
               dmnRunnerPersistenceService.parseDmnRunnerPersistenceJson(companionEvent.content);
+
             dispatchDmnRunnerPersistenceJson({
-              dmnRunnerPersistenceService,
+              dmnRunnerPersistenceQueue,
               workspaceId: workspaceId,
               workspaceFileRelativePath: workspaceFileRelativePath,
               type: DmnRunnerPersistenceReducerActionType.DEFAULT,
@@ -148,7 +80,13 @@ export function useDmnRunnerPersistence(
           broadcastChannel.close();
         };
       },
-      [dmnRunnerPersistenceService, workspaceId, workspaceFileRelativePath]
+      [
+        dmnRunnerPersistenceQueue,
+        dmnRunnerPersistenceService,
+        workspaceId,
+        workspaceFileRelativePath,
+        dispatchDmnRunnerPersistenceJson,
+      ]
     )
   );
 
@@ -168,8 +106,7 @@ export function useDmnRunnerPersistence(
             }
             // If persistence doesn't exist, create then.
             if (!persistenceJson) {
-              const newDmnRunnerPersistenceJson = deepCopyPersistenceJson(DEFAULT_DMN_RUNNER_PERSISTENCE_JSON);
-              newDmnRunnerPersistenceJson.inputs = [{ id: generateUuid() }];
+              const newDmnRunnerPersistenceJson = getNewDefaultDmnRunnerPersistenceJson();
               dmnRunnerPersistenceService.companionFsService.createOrOverwrite(
                 { workspaceId: workspaceId, workspaceFileRelativePath: workspaceFileRelativePath },
                 JSON.stringify(newDmnRunnerPersistenceJson)
@@ -185,7 +122,7 @@ export function useDmnRunnerPersistence(
                 decoder.decode(content)
               );
               dispatchDmnRunnerPersistenceJson({
-                dmnRunnerPersistenceService,
+                dmnRunnerPersistenceQueue,
                 workspaceId: workspaceId,
                 workspaceFileRelativePath: workspaceFileRelativePath,
                 type: DmnRunnerPersistenceReducerActionType.DEFAULT,
@@ -194,12 +131,13 @@ export function useDmnRunnerPersistence(
             });
           });
       },
-      [dmnRunnerPersistenceService, workspaceId, workspaceFileRelativePath]
+      [
+        dmnRunnerPersistenceQueue,
+        dmnRunnerPersistenceService,
+        workspaceId,
+        workspaceFileRelativePath,
+        dispatchDmnRunnerPersistenceJson,
+      ]
     )
   );
-
-  return {
-    dmnRunnerPersistenceJson,
-    dispatchDmnRunnerPersistenceJson,
-  };
 }
