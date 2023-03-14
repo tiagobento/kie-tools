@@ -31,8 +31,10 @@ import { useUnitablesColumns } from "./UnitablesColumns";
 import "./Unitables.css";
 import { UnitablesRow } from "./UnitablesRow";
 import isEqual from "lodash/isEqual";
+import set from "lodash/set";
 import { InputRow } from "@kie-tools/form-dmn";
 import { diff } from "deep-object-diff";
+import { isObject, mergeDeep } from "./object/mergeDeep";
 
 const EMPTY_UNITABLES_INPUTS = [{}];
 
@@ -53,6 +55,72 @@ interface Props {
   onRowReset: (args: { rowIndex: number }) => void;
   onRowDeleted: (args: { rowIndex: number }) => void;
   autoSaveDelay?: number;
+}
+
+// should set the deep key that is going to be changed;
+function recursiveCheckForKey(
+  rowIndex: number,
+  cachedRows: InputRow[],
+  cachedKeysOfRows: Map<number, Set<string>>,
+  parentProperty: Record<string, any>,
+  parentKey: string,
+  dontCheckForKey?: boolean
+): Record<string, any> {
+  return Object.entries(parentProperty).reduce((acc, [key, value]) => {
+    const fullKey = `${parentKey}.${key}`;
+    if (isObject(value)) {
+      return recursiveCheckForKey(rowIndex, cachedRows, cachedKeysOfRows, value, fullKey, dontCheckForKey);
+    }
+
+    if (!dontCheckForKey && cachedKeysOfRows.get(rowIndex)?.has(fullKey)) {
+      return acc;
+    }
+
+    // build object from path;
+    const objectFromPath: Record<string, any> = set({}, fullKey, value);
+
+    const keySet = cachedKeysOfRows.get(rowIndex);
+    if (keySet) {
+      keySet.add(fullKey);
+    } else {
+      cachedKeysOfRows.set(rowIndex, new Set([fullKey]));
+    }
+
+    return { ...acc, ...objectFromPath };
+  }, {} as Record<string, any>);
+}
+
+function filterDifference(
+  difference: Record<string, any>,
+  rowIndex: number,
+  cachedRows: Record<string, any>[],
+  cachedKeysOfRows: Map<number, Set<string>>,
+  dontCheckForKey?: boolean
+) {
+  return Object.entries(difference).reduce((acc, [key, value]) => {
+    if (key === "id") {
+      return acc;
+    }
+
+    if (isObject(value)) {
+      const recursive = recursiveCheckForKey(rowIndex, cachedRows, cachedKeysOfRows, value, key, dontCheckForKey);
+      return { ...acc, ...recursive };
+    }
+    // check if already changed a value of a key;
+    if (!dontCheckForKey && cachedKeysOfRows.get(rowIndex)?.has(key)) {
+      return acc;
+    }
+    acc[key] = value;
+
+    // add key to the cache;
+    const keySet = cachedKeysOfRows.get(rowIndex);
+    if (keySet) {
+      keySet.add(key);
+    } else {
+      cachedKeysOfRows.set(rowIndex, new Set([key]));
+    }
+    return acc;
+  }, {} as Record<string, any>);
 }
 
 export const Unitables = ({
@@ -77,12 +145,14 @@ export const Unitables = ({
   const inputUid = useMemo(() => nextId(), []);
 
   // create cache to save inputs cache;
-  const cachedKeys = useRef<Map<number, Set<string>>>(new Map());
-  const cachedRows = useRef<object[]>([...EMPTY_UNITABLES_INPUTS]);
+  const cachedKeysOfRows = useRef<Map<number, Set<string>>>(new Map());
+  const cachedRows = useRef<InputRow[]>([...EMPTY_UNITABLES_INPUTS]);
+
+  // reset cache when rows are updated;
   useLayoutEffect(() => {
     if (isEqual(rows, EMPTY_UNITABLES_INPUTS)) {
       cachedRows.current = [...EMPTY_UNITABLES_INPUTS];
-      cachedKeys.current.clear();
+      cachedKeysOfRows.current.clear();
     }
   }, [rows]);
 
@@ -121,32 +191,20 @@ export const Unitables = ({
   // Perform a autosaveDelay and update all rows simultaneously;
   const timeout = useRef<number | undefined>(undefined);
   const onValidateRow = useCallback(
-    (rowInput: object, rowIndex: number) => {
-      // Save all rowInputs before timeout;
-
+    (rowInput: Record<string, any>, rowIndex: number) => {
+      // check for differences between rowInput and current cache;
       const difference = diff(cachedRows.current[rowIndex], rowInput);
       // save into a map the row and keys that were changed;
       // changing multiple rows/columns at the same time;
+      let filteredDifference: Record<string, any> = {};
       if (Object.keys(difference).length > 1) {
-        const filteredDifference = Object.entries(difference).reduce((acc, [key, value]) => {
-          if (cachedKeys.current.get(rowIndex)?.has(key)) {
-            return acc;
-          }
-          acc[key] = value;
-          const keySet = cachedKeys.current.get(rowIndex);
-          if (keySet) {
-            keySet.add(key);
-          } else {
-            cachedKeys.current.set(rowIndex, new Set([key]));
-          }
-          return acc;
-        }, {} as Record<string, any>);
-        cachedRows.current[rowIndex] = { ...cachedRows.current[rowIndex], ...filteredDifference };
+        filteredDifference = filterDifference(difference, rowIndex, cachedRows.current, cachedKeysOfRows.current);
       } else {
-        // changing one cell at time;
-        cachedKeys.current.set(rowIndex, new Set(Object.keys(difference)));
-        cachedRows.current[rowIndex] = { ...cachedRows.current[rowIndex], ...difference };
+        filteredDifference = filterDifference(difference, rowIndex, cachedRows.current, cachedKeysOfRows.current, true);
       }
+
+      // merge with rowInput to use `id`
+      cachedRows.current[rowIndex] = mergeDeep(rowInput, cachedRows.current[rowIndex], filteredDifference);
 
       // Debounce;
       if (timeout.current) {
@@ -154,7 +212,7 @@ export const Unitables = ({
       }
 
       timeout.current = window.setTimeout(() => {
-        cachedKeys.current.clear();
+        cachedKeysOfRows.current.clear();
         // Update all rows if a value was changed;
         setRows((previousInputRows) => {
           // if cached length isn't equal to current a table event occured. e.g. add, delete;

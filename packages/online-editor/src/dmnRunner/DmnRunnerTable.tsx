@@ -144,13 +144,6 @@ export function DmnRunnerTable({ setPanelOpen }: Props) {
       document.querySelector(".kie-tools--dmn-runner-table--drawer")?.querySelector(".pf-c-drawer__panel-main") ?? null;
   }, []);
 
-  const setRows = useCallback(
-    (newRows: (previous: Array<InputRow>) => Array<InputRow>) => {
-      setDmnRunnerInputs((previousInputRows) => newRows(previousInputRows));
-    },
-    [setDmnRunnerInputs]
-  );
-
   // const setWidth = useCallback((newWidth) => {
   //   setDmnRunnerPersistenceJson((previousPersistenceJson) => {
   //     const newState = { ...previousPersistenceJson }
@@ -201,7 +194,7 @@ export function DmnRunnerTable({ setPanelOpen }: Props) {
                     jsonSchema={jsonSchema}
                     openRow={openRow}
                     rows={inputs}
-                    setRows={setRows}
+                    setRows={setDmnRunnerInputs}
                     error={error}
                     setError={setError}
                     jsonSchemaBridge={jsonSchemaBridge}

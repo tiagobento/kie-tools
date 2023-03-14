@@ -55,13 +55,6 @@ function dmnRunnerPersistenceJsonReducer(
         JSON.stringify(newPersistenceJson),
       ],
     });
-    // action.dmnRunnerPersistenceService?.companionFsService.update(
-    //   {
-    //     workspaceId: action.workspaceId,
-    //     workspaceFileRelativePath: action.workspaceFileRelativePath,
-    //   },
-    //   JSON.stringify(newPersistenceJson)
-    // );
     return newPersistenceJson;
   }
 
@@ -81,13 +74,6 @@ function dmnRunnerPersistenceJsonReducer(
       JSON.stringify(action.newPersistenceJson),
     ],
   });
-  // action.dmnRunnerPersistenceService?.companionFsService.update(
-  //   {
-  //     workspaceId: action.workspaceId,
-  //     workspaceFileRelativePath: action.workspaceFileRelativePath,
-  //   },
-  //   JSON.stringify(action.newPersistenceJson)
-  // );
   return action.newPersistenceJson;
 }
 

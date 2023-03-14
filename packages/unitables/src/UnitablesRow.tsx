@@ -51,7 +51,7 @@ export const UnitablesRow = React.forwardRef<UnitablesRowApi, PropsWithChildren<
       [onValidateRow, rowIndex]
     );
 
-    // Submits the form in the first render triggering the onValidate function
+    // Submits the table in the first render triggering the onValidate function
     useEffect(() => {
       autoRowRef.current?.submit();
     }, [autoRowRef]);

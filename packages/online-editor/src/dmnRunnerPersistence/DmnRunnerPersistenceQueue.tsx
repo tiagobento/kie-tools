@@ -38,9 +38,11 @@ export class DmnRunnerPersistenceQueue {
   constructor(public readonly companionFsService: CompanionFsService) {}
 
   public post(element: DmnRunnerPersistenceQueueElement) {
+    console.log("PUSH", element);
     this.queue.push(element);
 
     if (this.timeout) {
+      console.log("CANCEL TIMEOUT");
       window.clearTimeout(this.timeout);
     }
 
@@ -48,8 +50,9 @@ export class DmnRunnerPersistenceQueue {
     // if an event appears after the dispatch, it will not be lost;
     const length = this.queue.length;
     this.timeout = window.setTimeout(() => {
+      console.log("DISPATCH");
       this.dispatch(length);
-    }, 200);
+    }, 100);
   }
 
   private dispatch(length: number) {
@@ -61,8 +64,6 @@ export class DmnRunnerPersistenceQueue {
     }
 
     const { method, args } = element;
-
-    console.log("FS OPERATION, ", this.queue, args);
     method.call(this.companionFsService, ...args);
   }
 }
