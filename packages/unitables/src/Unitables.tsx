@@ -30,15 +30,12 @@ import { FORMS_ID, UnitablesJsonSchemaBridge } from "./uniforms";
 import { useUnitablesColumns } from "./UnitablesColumns";
 import "./Unitables.css";
 import { UnitablesRow } from "./UnitablesRow";
-import isEqual from "lodash/isEqual";
 import set from "lodash/set";
 import get from "lodash/get";
 import { InputRow } from "@kie-tools/form-dmn";
 import { diff } from "deep-object-diff";
-import { isObject, mergeDeep } from "./object/mergeDeep";
+import { isObject } from "./object/mergeDeep";
 import cloneDeep from "lodash/cloneDeep";
-
-const EMPTY_UNITABLES_INPUTS = [{}];
 
 interface Props {
   jsonSchema: object;
@@ -119,7 +116,35 @@ export const Unitables = ({
     inputErrorBoundaryRef.current?.reset();
   }, [jsonSchemaBridge]);
 
-  // Clear cache;
+  // Set in-cell input heights (begin)
+  // ensure the height of TimePicker, DatePicker and others;
+  // should set width too;
+  const searchRecursively = useCallback((child: any) => {
+    if (!child) {
+      return;
+    }
+    if (child.tagName === "svg") {
+      return;
+    }
+    if (child.style) {
+      child.style.height = "60px";
+    }
+    if (!child.childNodes) {
+      return;
+    }
+    child.childNodes.forEach(searchRecursively);
+  }, []);
+
+  useLayoutEffect(() => {
+    const tbody = containerRef.current?.getElementsByTagName("tbody")[0];
+    const inputsCells = Array.from(tbody?.getElementsByTagName("td") ?? []);
+    inputsCells.shift();
+    inputsCells.forEach((inputCell) => {
+      searchRecursively(inputCell.childNodes[0]);
+    });
+  }, [formsDivRendered, rows, containerRef, searchRecursively]);
+  // Set in-cell input heights (end)
+
   const timeout = useRef<number | undefined>(undefined);
   const onValidateRow = useCallback(
     (rowInput: InputRow, rowIndex: number, error: Record<string, any>) => {
@@ -127,10 +152,13 @@ export const Unitables = ({
         clearTimeout(timeout.current);
       }
 
+      // Clear the cache when this method is not called anymore;
       timeout.current = window.setTimeout(() => {
         cachedKeysOfRows.current.clear();
-      }, 0);
+      }, 0); // FIXME: updating cells fast enough will not work properly
 
+      // When  a cell is updated the cell key is saved in a cache, and the new value is used;
+      // if the same cell is edited before the cache reset, the used value will be the previous one;
       setRows((previousInputRows) => {
         const newInputRows = cloneDeep(previousInputRows);
         const clonedRowInput = cloneDeep(rowInput);

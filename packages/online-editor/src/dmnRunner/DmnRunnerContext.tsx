@@ -27,7 +27,7 @@ export interface DmnRunnerContextType {
   dmnRunnerPersistenceJson: DmnRunnerPersistenceJson;
   inputs: Array<InputRow>;
   isExpanded: boolean;
-  isVisible: boolean;
+  canBeVisualized: boolean;
   jsonSchema?: DmnSchema;
   mode: DmnRunnerMode;
   status: DmnRunnerStatus;

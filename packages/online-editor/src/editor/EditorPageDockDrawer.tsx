@@ -18,7 +18,7 @@ import * as React from "react";
 import { PropsWithChildren, useCallback, useEffect, useImperativeHandle, useMemo, useState } from "react";
 import { ToggleGroup } from "@patternfly/react-core/dist/js/components/ToggleGroup";
 import { DmnRunnerMode } from "../dmnRunner/DmnRunnerStatus";
-import { useDmnRunnerState } from "../dmnRunner/DmnRunnerContext";
+import { useDmnRunnerState, useDmnRunnerDispatch } from "../dmnRunner/DmnRunnerContext";
 import { useOnlineI18n } from "../i18n";
 import { NotificationsPanel, NotificationsPanelRef } from "./NotificationsPanel/NotificationsPanel";
 import { DmnRunnerTable } from "../dmnRunner/DmnRunnerTable";
@@ -58,7 +58,8 @@ export const EditorPageDockDrawer = React.forwardRef<
   PropsWithChildren<EditorPageDockDrawerProps>
 >((props, forwardRef) => {
   const { i18n } = useOnlineI18n();
-  const dmnRunnerState = useDmnRunnerState();
+  const { isExpanded, mode } = useDmnRunnerState();
+  const { setExpanded } = useDmnRunnerDispatch();
   const [panel, setPanel] = useState<PanelId>(PanelId.NONE);
   const [notificationsToggle, notificationsToggleRef] = useController<NotificationsPanelDockToggleRef>();
   const [notificationsPanel, notificationsPanelRef] = useController<NotificationsPanelRef>();
@@ -66,21 +67,13 @@ export const EditorPageDockDrawer = React.forwardRef<
 
   const notificationsPanelTabNames = useMemo(() => {
     if (
-      (props.workspaceFile.extension.toLowerCase() === "dmn" &&
-        dmnRunnerState.isExpanded &&
-        dmnRunnerState.mode === DmnRunnerMode.FORM) ||
-      dmnRunnerState.mode === DmnRunnerMode.TABLE
+      (props.workspaceFile.extension.toLowerCase() === "dmn" && isExpanded && mode === DmnRunnerMode.FORM) ||
+      mode === DmnRunnerMode.TABLE
     ) {
       return [i18n.terms.validation, i18n.terms.execution];
     }
     return [i18n.terms.validation];
-  }, [
-    props.workspaceFile.extension,
-    i18n.terms.validation,
-    i18n.terms.execution,
-    dmnRunnerState.mode,
-    dmnRunnerState.isExpanded,
-  ]);
+  }, [props.workspaceFile.extension, i18n.terms.validation, i18n.terms.execution, mode, isExpanded]);
 
   useEffect(() => {
     if (!notificationsPanelTabNames.includes(i18n.terms.execution)) {
@@ -94,14 +87,22 @@ export const EditorPageDockDrawer = React.forwardRef<
     }
   }, [i18n, notificationsPanel, notificationsPanelTabNames, notificationsToggle]);
 
-  const onToggle = useCallback((panel: PanelId) => {
-    setPanel((currentPanel) => {
-      if (currentPanel !== panel) {
-        return panel;
-      }
-      return PanelId.NONE;
-    });
-  }, []);
+  const onToggle = useCallback(
+    (panel: PanelId) => {
+      setPanel((currentPanel) => {
+        if (currentPanel !== panel) {
+          if (panel === PanelId.DMN_RUNNER_TABLE) {
+            setExpanded(true);
+          } else {
+            setExpanded(false);
+          }
+          return panel;
+        }
+        return PanelId.NONE;
+      });
+    },
+    [setExpanded]
+  );
 
   const setNotifications = useCallback(
     (tabName: string, path: string, notifications: Notification[]) => {
@@ -145,8 +146,8 @@ export const EditorPageDockDrawer = React.forwardRef<
   }, [extendedServices.status, props.workspaceFile.extension]);
 
   const isDmnTableMode = useMemo(
-    () => dmnRunnerState.mode === DmnRunnerMode.TABLE && props.workspaceFile.extension.toLowerCase() === "dmn",
-    [dmnRunnerState.mode, props.workspaceFile.extension]
+    () => mode === DmnRunnerMode.TABLE && props.workspaceFile.extension.toLowerCase() === "dmn",
+    [mode, props.workspaceFile.extension]
   );
 
   const toggleGroupItems = useMemo(() => {

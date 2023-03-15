@@ -52,7 +52,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
     useDmnRunnerPersistenceDispatch();
   useDmnRunnerPersistence(props.workspaceFile.workspaceId, props.workspaceFile.relativePath);
 
-  const [isVisible, setVisible] = useState<boolean>(false);
+  const [canBeVisualized, setCanBeVisualized] = useState<boolean>(false);
   const [error, setError] = useState(false);
   const [jsonSchema, setJsonSchema] = useState<DmnSchema | undefined>(undefined);
   const [isExpanded, setExpanded] = useState(false);
@@ -67,9 +67,9 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
 
   useEffect(() => {
     if (props.isEditorReady) {
-      setVisible(true);
+      setCanBeVisualized(true);
     } else {
-      setVisible(false);
+      setCanBeVisualized(false);
     }
   }, [props.isEditorReady]);
 
@@ -468,7 +468,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
       dmnRunnerPersistenceJson,
       inputs: dmnRunnerInputs,
       isExpanded,
-      isVisible,
+      canBeVisualized,
       jsonSchema,
       mode: dmnRunnerMode,
       status,
@@ -480,7 +480,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
       dmnRunnerInputs,
       dmnRunnerMode,
       isExpanded,
-      isVisible,
+      canBeVisualized,
       jsonSchema,
       status,
     ]
