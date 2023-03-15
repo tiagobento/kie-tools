@@ -32,9 +32,11 @@ import "./Unitables.css";
 import { UnitablesRow } from "./UnitablesRow";
 import isEqual from "lodash/isEqual";
 import set from "lodash/set";
+import get from "lodash/get";
 import { InputRow } from "@kie-tools/form-dmn";
 import { diff } from "deep-object-diff";
 import { isObject, mergeDeep } from "./object/mergeDeep";
+import cloneDeep from "lodash/cloneDeep";
 
 const EMPTY_UNITABLES_INPUTS = [{}];
 
@@ -54,73 +56,37 @@ interface Props {
   onRowDuplicated: (args: { rowIndex: number }) => void;
   onRowReset: (args: { rowIndex: number }) => void;
   onRowDeleted: (args: { rowIndex: number }) => void;
+  setWidth: (newWidth: number, columnIndex: number, rowIndex: number) => void;
   autoSaveDelay?: number;
 }
 
 // should set the deep key that is going to be changed;
 function recursiveCheckForKey(
   rowIndex: number,
-  cachedRows: InputRow[],
+  previousInputRows: InputRow,
+  newInputRow: InputRow,
   cachedKeysOfRows: Map<number, Set<string>>,
   parentProperty: Record<string, any>,
-  parentKey: string,
-  dontCheckForKey?: boolean
-): Record<string, any> {
-  return Object.entries(parentProperty).reduce((acc, [key, value]) => {
-    const fullKey = `${parentKey}.${key}`;
-    if (isObject(value)) {
-      return recursiveCheckForKey(rowIndex, cachedRows, cachedKeysOfRows, value, fullKey, dontCheckForKey);
-    }
-
-    if (!dontCheckForKey && cachedKeysOfRows.get(rowIndex)?.has(fullKey)) {
-      return acc;
-    }
-
-    // build object from path;
-    const objectFromPath: Record<string, any> = set({}, fullKey, value);
-
-    const keySet = cachedKeysOfRows.get(rowIndex);
-    if (keySet) {
-      keySet.add(fullKey);
-    } else {
-      cachedKeysOfRows.set(rowIndex, new Set([fullKey]));
-    }
-
-    return { ...acc, ...objectFromPath };
-  }, {} as Record<string, any>);
-}
-
-function filterDifference(
-  difference: Record<string, any>,
-  rowIndex: number,
-  cachedRows: Record<string, any>[],
-  cachedKeysOfRows: Map<number, Set<string>>,
-  dontCheckForKey?: boolean
+  parentKey: string
 ) {
-  return Object.entries(difference).reduce((acc, [key, value]) => {
-    if (key === "id") {
-      return acc;
-    }
-
+  for (const [key, value] of Object.entries(parentProperty)) {
+    const fullKey: string = `${parentKey}.${key}`;
     if (isObject(value)) {
-      const recursive = recursiveCheckForKey(rowIndex, cachedRows, cachedKeysOfRows, value, key, dontCheckForKey);
-      return { ...acc, ...recursive };
-    }
-    // check if already changed a value of a key;
-    if (!dontCheckForKey && cachedKeysOfRows.get(rowIndex)?.has(key)) {
-      return acc;
-    }
-    acc[key] = value;
-
-    // add key to the cache;
-    const keySet = cachedKeysOfRows.get(rowIndex);
-    if (keySet) {
-      keySet.add(key);
+      recursiveCheckForKey(rowIndex, previousInputRows, newInputRow, cachedKeysOfRows, value, fullKey);
     } else {
-      cachedKeysOfRows.set(rowIndex, new Set([key]));
+      const keySet = cachedKeysOfRows.get(rowIndex);
+      if (keySet) {
+        if (keySet.has(fullKey)) {
+          // key shouldnt be updated;
+          set(newInputRow, fullKey, get(previousInputRows, fullKey));
+        } else {
+          keySet.add(fullKey);
+        }
+      } else {
+        cachedKeysOfRows.set(rowIndex, new Set([fullKey]));
+      }
     }
-    return acc;
-  }, {} as Record<string, any>);
+  }
 }
 
 export const Unitables = ({
@@ -137,6 +103,7 @@ export const Unitables = ({
   onRowDuplicated,
   onRowReset,
   onRowDeleted,
+  setWidth,
   autoSaveDelay = 400,
 }: Props) => {
   const inputErrorBoundaryRef = useRef<ErrorBoundary>(null);
@@ -146,88 +113,59 @@ export const Unitables = ({
 
   // create cache to save inputs cache;
   const cachedKeysOfRows = useRef<Map<number, Set<string>>>(new Map());
-  const cachedRows = useRef<InputRow[]>([...EMPTY_UNITABLES_INPUTS]);
-
-  // reset cache when rows are updated;
-  useLayoutEffect(() => {
-    if (isEqual(rows, EMPTY_UNITABLES_INPUTS)) {
-      cachedRows.current = [...EMPTY_UNITABLES_INPUTS];
-      cachedKeysOfRows.current.clear();
-    }
-  }, [rows]);
 
   // Resets the ErrorBoundary everytime the FormSchema is updated
   useEffect(() => {
     inputErrorBoundaryRef.current?.reset();
   }, [jsonSchemaBridge]);
 
-  // Set in-cell input heights (begin)
-  const searchRecursively = useCallback((child: any) => {
-    if (!child) {
-      return;
-    }
-    if (child.tagName === "svg") {
-      return;
-    }
-    if (child.style) {
-      child.style.height = "60px";
-    }
-    if (!child.childNodes) {
-      return;
-    }
-    child.childNodes.forEach(searchRecursively);
-  }, []);
-
-  useLayoutEffect(() => {
-    const tbody = containerRef.current?.getElementsByTagName("tbody")[0];
-    const inputsCells = Array.from(tbody?.getElementsByTagName("td") ?? []);
-    inputsCells.shift();
-    inputsCells.forEach((inputCell) => {
-      searchRecursively(inputCell.childNodes[0]);
-    });
-  }, [formsDivRendered, rows, containerRef, searchRecursively]);
-  // Set in-cell input heights (end)
-
-  // Perform a autosaveDelay and update all rows simultaneously;
+  // Clear cache;
   const timeout = useRef<number | undefined>(undefined);
   const onValidateRow = useCallback(
-    (rowInput: Record<string, any>, rowIndex: number) => {
-      // check for differences between rowInput and current cache;
-      const difference = diff(cachedRows.current[rowIndex], rowInput);
-      // save into a map the row and keys that were changed;
-      // changing multiple rows/columns at the same time;
-      let filteredDifference: Record<string, any> = {};
-      if (Object.keys(difference).length > 1) {
-        filteredDifference = filterDifference(difference, rowIndex, cachedRows.current, cachedKeysOfRows.current);
-      } else {
-        filteredDifference = filterDifference(difference, rowIndex, cachedRows.current, cachedKeysOfRows.current, true);
-      }
-
-      // merge with rowInput to use `id`
-      cachedRows.current[rowIndex] = mergeDeep(rowInput, cachedRows.current[rowIndex], filteredDifference);
-
-      // Debounce;
+    (rowInput: InputRow, rowIndex: number) => {
       if (timeout.current) {
-        window.clearTimeout(timeout.current);
+        clearTimeout(timeout.current);
       }
 
       timeout.current = window.setTimeout(() => {
         cachedKeysOfRows.current.clear();
-        // Update all rows if a value was changed;
-        setRows((previousInputRows) => {
-          // if cached length isn't equal to current a table event occured. e.g. add, delete;
-          // if cached has the same value as current
-          if (
-            cachedRows.current.length !== previousInputRows.length ||
-            isEqual(cachedRows.current, previousInputRows)
-          ) {
-            return previousInputRows;
+      }, 0);
+
+      setRows((previousInputRows) => {
+        const newInputRows = cloneDeep(previousInputRows);
+        const clonedRowInput = cloneDeep(rowInput);
+        const difference: Record<string, any> = diff(rowInput, newInputRows[rowIndex]);
+
+        for (const [key, value] of Object.entries(difference)) {
+          if (isObject(value)) {
+            recursiveCheckForKey(
+              rowIndex,
+              newInputRows[rowIndex],
+              clonedRowInput,
+              cachedKeysOfRows.current,
+              value,
+              key
+            );
+          } else {
+            const keySet = cachedKeysOfRows.current.get(rowIndex);
+            if (keySet) {
+              if (keySet.has(key)) {
+                // key shouldnt be updated;
+                clonedRowInput[key] = get(newInputRows[rowIndex], key);
+              } else {
+                keySet.add(key);
+              }
+            } else {
+              cachedKeysOfRows.current.set(rowIndex, new Set([key]));
+            }
           }
-          return [...cachedRows.current] as Array<InputRow>;
-        });
-      }, autoSaveDelay);
+        }
+
+        newInputRows[rowIndex] = clonedRowInput;
+        return newInputRows;
+      });
     },
-    [setRows, autoSaveDelay]
+    [setRows]
   );
 
   const rowWrapper = useCallback(
@@ -291,6 +229,7 @@ export const Unitables = ({
               onRowDuplicated={onRowDuplicated}
               onRowReset={onRowReset}
               onRowDeleted={onRowDeleted}
+              setWidth={setWidth}
             />
           </div>
         </ErrorBoundary>

@@ -38,7 +38,6 @@ import { ResizerStopBehavior } from "@kie-tools/boxed-expression-component/dist/
 import { AutoField } from "@kie-tools/uniforms-patternfly/dist/esm";
 import { useField } from "uniforms";
 import { AUTO_ROW_ID } from "../uniforms/UnitablesJsonSchemaBridge";
-import { usePublishedBeeTableResizableColumns } from "@kie-tools/boxed-expression-component/dist/resizing/BeeTableResizableColumnsContext";
 
 export const UNITABLES_COLUMN_MIN_WIDTH = 150;
 
@@ -55,6 +54,7 @@ export interface UnitablesBeeTable {
   onRowDuplicated: (args: { rowIndex: number }) => void;
   onRowReset: (args: { rowIndex: number }) => void;
   onRowDeleted: (args: { rowIndex: number }) => void;
+  setWidth: (newWidth: number, columnIndex: number, rowIndex: number) => void;
 }
 
 export function UnitablesBeeTable({
@@ -68,6 +68,7 @@ export function UnitablesBeeTable({
   onRowDuplicated,
   onRowReset,
   onRowDeleted,
+  setWidth,
 }: UnitablesBeeTable) {
   const beeTableOperationConfig = useMemo<BeeTableOperationConfig>(
     () => [
@@ -108,9 +109,10 @@ export function UnitablesBeeTable({
     (inputIndex: number) => (newWidthAction: React.SetStateAction<number | undefined>) => {
       const newWidth = typeof newWidthAction === "function" ? newWidthAction(0) : newWidthAction;
       console.log(newWidth);
+      setWidth(newWidth ?? 0, inputIndex, 0);
       return newWidth;
     },
-    []
+    [setWidth]
   );
 
   const beeTableColumns = useMemo<ReactTable.Column<ROWTYPE>[]>(() => {

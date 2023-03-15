@@ -17,6 +17,7 @@
 import { InputRow } from "@kie-tools/form-dmn";
 import { CompanionFsService } from "../companionFs/CompanionFsService";
 import { v4 as uuid } from "uuid";
+import cloneDeep from "lodash/cloneDeep";
 
 export const generateUuid = () => {
   return `_${uuid()}`.toLocaleUpperCase();
@@ -68,10 +69,13 @@ export function getNewDefaultDmnRunnerPersistenceJson(): DmnRunnerPersistenceJso
 }
 
 export function deepCopyPersistenceJson(persistenceJson: DmnRunnerPersistenceJson): DmnRunnerPersistenceJson {
-  const configCopy = { ...persistenceJson.configs };
-  const configInputsCopy = [...persistenceJson.configs.inputs];
-  const inputsCopy = [...persistenceJson.inputs];
-  return { configs: { ...configCopy, inputs: configInputsCopy }, inputs: inputsCopy };
+  return cloneDeep(persistenceJson);
+  // return {
+  //   configs: {
+  //     ...persistenceJson.configs,
+  //     inputs: persistenceJson.configs.inputs.map((input) => ({ ...input }))
+  //   },
+  //   inputs: persistenceJson.inputs.map((input) => ({ ...input })) };
 }
 
 export class DmnRunnerPersistenceService {

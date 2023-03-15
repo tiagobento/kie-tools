@@ -80,17 +80,17 @@ function dmnRunnerPersistenceJsonReducer(
 const initialDmnRunnerPersistenceJson = getNewDefaultDmnRunnerPersistenceJson();
 
 export function DmnRunnerPersistenceDispatchContextProvider(props: React.PropsWithChildren<{}>) {
+  const [dmnRunnerPersistenceJson, dispatchDmnRunnerPersistenceJson] = useReducer(
+    dmnRunnerPersistenceJsonReducer,
+    initialDmnRunnerPersistenceJson
+  );
+
   const dmnRunnerPersistenceService = useMemo(() => {
     return new DmnRunnerPersistenceService();
   }, []);
   const dmnRunnerPersistenceQueue = useMemo(() => {
     return new DmnRunnerPersistenceQueue(dmnRunnerPersistenceService.companionFsService);
   }, [dmnRunnerPersistenceService.companionFsService]);
-
-  const [dmnRunnerPersistenceJson, dispatchDmnRunnerPersistenceJson] = useReducer(
-    dmnRunnerPersistenceJsonReducer,
-    initialDmnRunnerPersistenceJson
-  );
 
   useSyncedCompanionFs(dmnRunnerPersistenceService.companionFsService);
 

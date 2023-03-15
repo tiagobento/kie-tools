@@ -302,10 +302,10 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
           );
           newPersistenceJson.inputs.splice(args.beforeIndex, 0, newInputsRow);
           newPersistenceJson.configs.inputs.splice(args.beforeIndex, 0, newConfigInputsRow);
-          setCurrentInputRowIndex(args.beforeIndex);
           return newPersistenceJson;
         },
       });
+      setCurrentInputRowIndex(args.beforeIndex);
     },
     [
       dmnRunnerPersistenceQueue,

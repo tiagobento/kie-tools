@@ -55,6 +55,7 @@ export function DmnRunnerTable({ setPanelOpen }: Props) {
     setError,
     setDmnRunnerInputs,
     setDmnRunnerMode,
+    setDmnRunnerConfigInputs,
   } = useDmnRunnerDispatch();
   const [dmnRunnerTableError, setDmnRunnerTableError] = useState<boolean>(false);
   const dmnRunnerTableErrorBoundaryRef = useRef<ErrorBoundary>(null);
@@ -146,13 +147,14 @@ export function DmnRunnerTable({ setPanelOpen }: Props) {
       document.querySelector(".kie-tools--dmn-runner-table--drawer")?.querySelector(".pf-c-drawer__panel-main") ?? null;
   }, []);
 
-  // const setWidth = useCallback((newWidth) => {
-  //   setDmnRunnerPersistenceJson((previousPersistenceJson) => {
-  //     const newState = { ...previousPersistenceJson }
-  //     newState.configs.inputs;
-  //     return newState;
-  //   })
-  // }, [setDmnRunnerPersistenceJson])
+  const setWidth = useCallback((newWidth: number, columnIndex: number, rowIndex: number) => {
+    // setDmnRunnerConfigInputs((previousDmnRunnerConfigInputs) => {
+    //   console.log(newWidth, columnIndex, rowIndex);
+    //   const newDmnRunnerConfigInputs = [ ...previousDmnRunnerConfigInputs ]
+    //   // newDmnRunnerConfigInputs.configs.inputs;
+    //   return newDmnRunnerConfigInputs;
+    // })
+  }, []);
 
   return (
     <div style={{ height: "100%" }}>
@@ -207,6 +209,7 @@ export function DmnRunnerTable({ setPanelOpen }: Props) {
                       onRowDuplicated={onRowDuplicated}
                       onRowReset={onRowReset}
                       onRowDeleted={onRowDeleted}
+                      setWidth={setWidth}
                     />
                   ) : (
                     <DmnRunnerTableEmpty />
