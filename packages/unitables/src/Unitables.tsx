@@ -122,7 +122,7 @@ export const Unitables = ({
   // Clear cache;
   const timeout = useRef<number | undefined>(undefined);
   const onValidateRow = useCallback(
-    (rowInput: InputRow, rowIndex: number) => {
+    (rowInput: InputRow, rowIndex: number, error: Record<string, any>) => {
       if (timeout.current) {
         clearTimeout(timeout.current);
       }

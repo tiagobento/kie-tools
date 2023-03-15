@@ -25,12 +25,12 @@ interface Props {
   formsId: string;
   rowIndex: number;
   jsonSchemaBridge: UnitablesJsonSchemaBridge;
-  rowInput: object;
-  onValidateRow: (rowInput: object, index: number) => void;
+  rowInput: Record<string, any>;
+  onValidateRow: (rowInput: Record<string, any>, index: number, error: Record<string, any>) => void;
 }
 
 export interface UnitablesRowApi {
-  submit: (rowInput?: object) => void;
+  submit: (rowInput?: Record<string, any>) => void;
 }
 
 export const UnitablesRow = React.forwardRef<UnitablesRowApi, PropsWithChildren<Props>>(
@@ -38,15 +38,15 @@ export const UnitablesRow = React.forwardRef<UnitablesRowApi, PropsWithChildren<
     const autoRowRef = useRef<HTMLFormElement>(null);
 
     const onSubmit = useCallback(
-      (rowInput: object) => {
+      (rowInput: Record<string, any>) => {
         console.log("SUBMITTING ROW: " + rowIndex);
       },
       [rowIndex]
     );
 
     const onValidate = useCallback(
-      (rowInput: object, error: object) => {
-        onValidateRow(rowInput, rowIndex);
+      (rowInput: Record<string, any>, error: Record<string, any>) => {
+        onValidateRow(rowInput, rowIndex, error);
       },
       [onValidateRow, rowIndex]
     );

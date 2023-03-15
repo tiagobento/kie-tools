@@ -197,7 +197,23 @@ function getColumnAccessor(c: UnitablesColumnType) {
 function UnitablesBeeTableCell({ joinedName }: BeeTableCellProps<ROWTYPE> & { joinedName: string }) {
   const { containerCellCoordinates } = useBeeTableCoordinates();
 
-  const [{ value, onChange: setValue }] = useField(joinedName, {});
+  const [{ value, onChange, field }] = useField(joinedName, {});
+
+  const setValue = useCallback(
+    (newValue) => {
+      if (
+        (field.type === "number" && typeof newValue !== "number") ||
+        (field.type === "boolean" && typeof newValue !== "boolean") ||
+        (field.type === "string" && typeof newValue !== "string") ||
+        (field.type === "array" && !Array.isArray(newValue)) ||
+        (field.type === "object" && typeof newValue !== "object")
+      ) {
+        onChange(null);
+      }
+      onChange(newValue);
+    },
+    [onChange, field]
+  );
 
   useBeeTableSelectableCellRef(
     containerCellCoordinates?.rowIndex ?? 0,
