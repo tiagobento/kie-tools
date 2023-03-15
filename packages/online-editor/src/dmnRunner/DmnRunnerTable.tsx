@@ -26,6 +26,7 @@ import { useCancelableEffect } from "@kie-tools-core/react-hooks/dist/useCancela
 import { Drawer, DrawerContent, DrawerPanelContent } from "@patternfly/react-core/dist/js/components/Drawer";
 import { EmptyState, EmptyStateBody, EmptyStateIcon } from "@patternfly/react-core/dist/js/components/EmptyState";
 import { ExclamationIcon } from "@patternfly/react-icons/dist/js/icons/exclamation-icon";
+import { CubeIcon } from "@patternfly/react-icons/dist/js/icons/cube-icon";
 import { Text, TextContent } from "@patternfly/react-core/dist/js/components/Text";
 import { ErrorBoundary } from "@kie-tools/form";
 import { useOnlineI18n } from "../i18n";
@@ -59,6 +60,7 @@ export function DmnRunnerTable({ setPanelOpen }: Props) {
   const dmnRunnerTableErrorBoundaryRef = useRef<ErrorBoundary>(null);
   const { i18n } = useOnlineI18n();
   const rowCount = useMemo(() => inputs?.length ?? 1, [inputs?.length]);
+  const hasInputs = useMemo(() => !!jsonSchema?.definitions?.InputSet?.properties, [jsonSchema]);
 
   const jsonSchemaBridge = useMemo(
     () => new DmnUnitablesValidator(i18n.dmnRunner.table).getBridge(jsonSchema ?? {}),
@@ -188,29 +190,47 @@ export function DmnRunnerTable({ setPanelOpen }: Props) {
                   }
                 >
                   {/* DMN Runner Inputs */}
-                  <Unitables
-                    scrollableParentRef={inputsScrollableElementRef.current}
-                    i18n={i18n.dmnRunner.table}
-                    jsonSchema={jsonSchema}
-                    openRow={openRow}
-                    rows={inputs}
-                    setRows={setDmnRunnerInputs}
-                    error={error}
-                    setError={setError}
-                    jsonSchemaBridge={jsonSchemaBridge}
-                    propertiesEntryPath={"definitions.InputSet"}
-                    containerRef={inputsContainerRef}
-                    onRowAdded={onRowAdded}
-                    onRowDuplicated={onRowDuplicated}
-                    onRowReset={onRowReset}
-                    onRowDeleted={onRowDeleted}
-                  />
+                  {hasInputs ? (
+                    <Unitables
+                      scrollableParentRef={inputsScrollableElementRef.current}
+                      i18n={i18n.dmnRunner.table}
+                      jsonSchema={jsonSchema}
+                      openRow={openRow}
+                      rows={inputs}
+                      setRows={setDmnRunnerInputs}
+                      error={error}
+                      setError={setError}
+                      jsonSchemaBridge={jsonSchemaBridge}
+                      propertiesEntryPath={"definitions.InputSet"}
+                      containerRef={inputsContainerRef}
+                      onRowAdded={onRowAdded}
+                      onRowDuplicated={onRowDuplicated}
+                      onRowReset={onRowReset}
+                      onRowDeleted={onRowDeleted}
+                    />
+                  ) : (
+                    <DmnRunnerTableEmpty />
+                  )}
                 </DrawerContent>
               </Drawer>
             </ErrorBoundary>
           ))}
       </DmnRunnerLoading>
     </div>
+  );
+}
+
+function DmnRunnerTableEmpty() {
+  return (
+    <EmptyState>
+      <EmptyStateIcon icon={CubeIcon} />
+      <TextContent>
+        <Text component={"h2"}>No inputs node yet...</Text>
+      </TextContent>
+      <EmptyStateBody>
+        <TextContent>Add an input node and see a custom table here.</TextContent>
+      </EmptyStateBody>
+    </EmptyState>
   );
 }
 
