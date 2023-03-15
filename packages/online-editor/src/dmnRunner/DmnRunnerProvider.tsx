@@ -278,7 +278,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
               if (typeof value === "string") {
                 acc[key] = "";
               } else if (typeof value === "number") {
-                acc[key] = 0;
+                acc[key] = null;
               } else if (typeof value === "boolean") {
                 acc[key] = false;
               } else if (Array.isArray(value)) {
@@ -362,7 +362,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
               if (typeof value === "string") {
                 acc[key] = "";
               } else if (typeof value === "number") {
-                acc[key] = 0;
+                acc[key] = null;
               } else if (typeof value === "boolean") {
                 acc[key] = false;
               } else if (Array.isArray(value)) {

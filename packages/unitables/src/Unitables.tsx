@@ -64,10 +64,10 @@ function recursiveCheckForKey(
   newInputRow: InputRow,
   cachedKeysOfRows: Map<number, Set<string>>,
   parentProperty: Record<string, any>,
-  parentKey: string
+  parentKey?: string
 ) {
   for (const [key, value] of Object.entries(parentProperty)) {
-    const fullKey: string = `${parentKey}.${key}`;
+    const fullKey: string = parentKey ? `${parentKey}.${key}` : key;
     if (isObject(value)) {
       recursiveCheckForKey(rowIndex, previousInputRows, newInputRow, cachedKeysOfRows, value, fullKey);
     } else {
@@ -157,37 +157,14 @@ export const Unitables = ({
         cachedKeysOfRows.current.clear();
       }, 0); // FIXME: updating cells fast enough will not work properly
 
-      // When  a cell is updated the cell key is saved in a cache, and the new value is used;
+      // Before a cell is updated, the cell key is saved in a cache, and the new value is set;
       // if the same cell is edited before the cache reset, the used value will be the previous one;
       setRows((previousInputRows) => {
         const newInputRows = cloneDeep(previousInputRows);
         const clonedRowInput = cloneDeep(rowInput);
         const difference: Record<string, any> = diff(rowInput, newInputRows[rowIndex]);
 
-        for (const [key, value] of Object.entries(difference)) {
-          if (isObject(value)) {
-            recursiveCheckForKey(
-              rowIndex,
-              newInputRows[rowIndex],
-              clonedRowInput,
-              cachedKeysOfRows.current,
-              value,
-              key
-            );
-          } else {
-            const keySet = cachedKeysOfRows.current.get(rowIndex);
-            if (keySet) {
-              if (keySet.has(key)) {
-                // key shouldnt be updated;
-                clonedRowInput[key] = get(newInputRows[rowIndex], key);
-              } else {
-                keySet.add(key);
-              }
-            } else {
-              cachedKeysOfRows.current.set(rowIndex, new Set([key]));
-            }
-          }
-        }
+        recursiveCheckForKey(rowIndex, newInputRows[rowIndex], clonedRowInput, cachedKeysOfRows.current, difference);
 
         newInputRows[rowIndex] = clonedRowInput;
         return newInputRows;
