@@ -269,7 +269,8 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
         newPersistenceJson(previousPersistenceJson) {
           const newPersistenceJson = deepCopyPersistenceJson(previousPersistenceJson);
           // add default value;
-          const newInputsRow = Object.entries(newPersistenceJson.inputs[args.beforeIndex - 1]).reduce(
+          const index = args.beforeIndex === 0 ? 0 : args.beforeIndex - 1;
+          const newInputsRow = Object.entries(newPersistenceJson.inputs[index]).reduce(
             (acc, [key, value]) => {
               if (key === "id") {
                 return acc;
@@ -290,16 +291,13 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
             { id: generateUuid() } as any
           );
           // add default configs;
-          const newConfigInputsRow = Object.entries(newPersistenceJson.inputs[args.beforeIndex - 1]).reduce(
-            (acc, [key, _]) => {
-              if (key === "id") {
-                return acc;
-              }
-              acc[key] = { ...DEFAULT_DMN_RUNNER_CONFIG_INPUT };
+          const newConfigInputsRow = Object.entries(newPersistenceJson.inputs[index]).reduce((acc, [key, _]) => {
+            if (key === "id") {
               return acc;
-            },
-            {} as any
-          );
+            }
+            acc[key] = { ...DEFAULT_DMN_RUNNER_CONFIG_INPUT };
+            return acc;
+          }, {} as any);
           newPersistenceJson.inputs.splice(args.beforeIndex, 0, newInputsRow);
           newPersistenceJson.configs.inputs.splice(args.beforeIndex, 0, newConfigInputsRow);
           return newPersistenceJson;
