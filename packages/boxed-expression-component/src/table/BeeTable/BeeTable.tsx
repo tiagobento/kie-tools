@@ -428,26 +428,27 @@ export function BeeTableInternal<R extends object>({
       }
 
       // FIXME: Tiago -> This won't work well on non-macOS
-      // COPY/CUT/PASTE
-      if (!e.shiftKey && e.metaKey && e.key.toLowerCase() === "c") {
+      // COPY/CUT/PASTE ctrlKey
+      if (!e.shiftKey && e.ctrlKey && e.key.toLowerCase() === "c") {
         e.stopPropagation();
         e.preventDefault();
         copy();
       }
-      if (!e.shiftKey && e.metaKey && e.key.toLowerCase() === "x") {
+      if (!e.shiftKey && e.ctrlKey && e.key.toLowerCase() === "x") {
         e.stopPropagation();
         e.preventDefault();
         cut();
       }
-      if (!e.shiftKey && e.metaKey && e.key.toLowerCase() === "v") {
+      if (!e.shiftKey && e.ctrlKey && e.key.toLowerCase() === "v") {
         e.stopPropagation();
         e.preventDefault();
+        console.log("PASTE");
         paste();
       }
 
       // FIXME: Tiago -> This won't work well on non-macOS
       // SELECT ALL
-      if (!e.shiftKey && e.metaKey && e.key.toLowerCase() === "a") {
+      if (!e.shiftKey && e.ctrlKey && e.key.toLowerCase() === "a") {
         e.stopPropagation();
         e.preventDefault();
 

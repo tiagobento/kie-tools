@@ -30,7 +30,7 @@ import {
 import { decoder } from "@kie-tools-core/workspaces-git-fs/dist/encoderdecoder/EncoderDecoder";
 import { useSyncedCompanionFs } from "../companionFs/CompanionFsHooks";
 import isEqual from "lodash/isEqual";
-import { DmnRunnerPersistenceQueue } from "./DmnRunnerPersistenceQueue";
+import { DmnRunnerPersistenceDebouncer } from "./DmnRunnerPersistenceDebouncer";
 
 // Update the state and update the FS;
 function dmnRunnerPersistenceJsonReducer(
@@ -45,8 +45,8 @@ function dmnRunnerPersistenceJsonReducer(
     }
 
     // update FS;
-    action.dmnRunnerPersistenceQueue.post({
-      method: action.dmnRunnerPersistenceQueue.companionFsService.update,
+    action.dmnRunnerPersistenceDebouncer.debounce({
+      method: action.dmnRunnerPersistenceDebouncer.companionFsService.update,
       args: [
         {
           workspaceId: action.workspaceId,
@@ -64,8 +64,8 @@ function dmnRunnerPersistenceJsonReducer(
   }
 
   // update FS;
-  action.dmnRunnerPersistenceQueue.post({
-    method: action.dmnRunnerPersistenceQueue.companionFsService.update,
+  action.dmnRunnerPersistenceDebouncer.debounce({
+    method: action.dmnRunnerPersistenceDebouncer.companionFsService.update,
     args: [
       {
         workspaceId: action.workspaceId,
@@ -88,8 +88,8 @@ export function DmnRunnerPersistenceDispatchContextProvider(props: React.PropsWi
   const dmnRunnerPersistenceService = useMemo(() => {
     return new DmnRunnerPersistenceService();
   }, []);
-  const dmnRunnerPersistenceQueue = useMemo(() => {
-    return new DmnRunnerPersistenceQueue(dmnRunnerPersistenceService.companionFsService);
+  const dmnRunnerPersistenceDebouncer = useMemo(() => {
+    return new DmnRunnerPersistenceDebouncer(dmnRunnerPersistenceService.companionFsService);
   }, [dmnRunnerPersistenceService.companionFsService]);
 
   useSyncedCompanionFs(dmnRunnerPersistenceService.companionFsService);
@@ -102,14 +102,14 @@ export function DmnRunnerPersistenceDispatchContextProvider(props: React.PropsWi
       newPersistenceJson.configs.mode = previousDmnRunnerPersisnteceJson.configs.mode;
 
       dispatchDmnRunnerPersistenceJson({
-        dmnRunnerPersistenceQueue,
+        dmnRunnerPersistenceDebouncer,
         workspaceId: workspaceFile.workspaceId,
         workspaceFileRelativePath: workspaceFile.relativePath,
         type: DmnRunnerPersistenceReducerActionType.DEFAULT,
         newPersistenceJson,
       });
     },
-    [dmnRunnerPersistenceQueue]
+    [dmnRunnerPersistenceDebouncer]
   );
 
   const getPersistenceJsonForDownload = useCallback(

@@ -17,7 +17,7 @@
 import { createContext, useContext } from "react";
 import { DmnRunnerPersistenceService, DmnRunnerPersistenceJson } from "./DmnRunnerPersistenceService";
 import { WorkspaceFile } from "@kie-tools-core/workspaces-git-fs/dist/context/WorkspacesContext";
-import { DmnRunnerPersistenceQueue } from "./DmnRunnerPersistenceQueue";
+import { DmnRunnerPersistenceDebouncer } from "./DmnRunnerPersistenceDebouncer";
 
 export enum DmnRunnerPersistenceReducerActionType {
   DEFAULT,
@@ -35,7 +35,7 @@ export interface DmnRunnerPersistenceReducerActionDefault {
 }
 
 export type DmnRunnerPersistenceReducerAction = {
-  dmnRunnerPersistenceQueue: DmnRunnerPersistenceQueue;
+  dmnRunnerPersistenceDebouncer: DmnRunnerPersistenceDebouncer;
   workspaceFileRelativePath: string;
   workspaceId: string;
 } & (DmnRunnerPersistenceReducerActionDefault | DmnRunnerPersistenceReducerActionPrevious);

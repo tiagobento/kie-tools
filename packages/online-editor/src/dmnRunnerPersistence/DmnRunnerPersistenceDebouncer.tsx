@@ -22,7 +22,7 @@ import { CompanionFsService } from "../companionFs/CompanionFsService";
 
 type Parameter<Method> = Method extends (...args: infer Args) => any ? Args : never;
 
-export interface DmnRunnerPersistenceQueueElement<
+export interface DmnRunnerPersistenceDebouncerEvent<
   FS extends CompanionFsService = CompanionFsService,
   Methods extends keyof FS = keyof FS,
   Method = FS[Methods]
@@ -31,14 +31,14 @@ export interface DmnRunnerPersistenceQueueElement<
   args: Parameter<Method>;
 }
 
-export class DmnRunnerPersistenceQueue {
-  private readonly queue: DmnRunnerPersistenceQueueElement[] = [];
+export class DmnRunnerPersistenceDebouncer {
+  private readonly queue: DmnRunnerPersistenceDebouncerEvent[] = [];
   private timeout: number | undefined = undefined;
 
   constructor(public readonly companionFsService: CompanionFsService) {}
 
-  public post(element: DmnRunnerPersistenceQueueElement) {
-    this.queue.push(element);
+  public debounce(event: DmnRunnerPersistenceDebouncerEvent) {
+    this.queue.push(event);
 
     if (this.timeout) {
       window.clearTimeout(this.timeout);
@@ -49,18 +49,18 @@ export class DmnRunnerPersistenceQueue {
     const length = this.queue.length;
     this.timeout = window.setTimeout(() => {
       this.dispatch(length);
-    }, 100);
+    }, 400); // FIXME: performing a update in the timeout time will override changes;
   }
 
   private dispatch(length: number) {
     // erase the first elements;
     this.queue.splice(0, length - 1);
-    const element = this.queue.shift();
-    if (!element) {
+    const event = this.queue.shift();
+    if (!event) {
       return;
     }
 
-    const { method, args } = element;
+    const { method, args } = event;
     method.call(this.companionFsService, ...args);
   }
 }

@@ -30,7 +30,7 @@ import { CubeIcon } from "@patternfly/react-icons/dist/js/icons/cube-icon";
 import { Text, TextContent } from "@patternfly/react-core/dist/js/components/Text";
 import { ErrorBoundary } from "@kie-tools/form";
 import { useOnlineI18n } from "../i18n";
-import { Unitables } from "@kie-tools/unitables/dist/Unitables";
+import { UnitablesWrapper } from "@kie-tools/unitables/dist/UnitablesWrapper";
 import { DmnRunnerOutputsTable } from "@kie-tools/unitables-dmn/dist/DmnRunnerOutputsTable";
 import { DmnUnitablesValidator } from "@kie-tools/unitables-dmn/dist/DmnUnitablesValidator";
 import { useExtendedServices } from "../kieSandboxExtendedServices/KieSandboxExtendedServicesContext";
@@ -195,7 +195,7 @@ export function DmnRunnerTable({ setPanelOpen }: Props) {
                 >
                   {/* DMN Runner Inputs */}
                   {hasInputs ? (
-                    <Unitables
+                    <UnitablesWrapper
                       scrollableParentRef={inputsScrollableElementRef.current}
                       i18n={i18n.dmnRunner.table}
                       jsonSchema={jsonSchema}
