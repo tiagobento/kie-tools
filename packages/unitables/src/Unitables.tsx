@@ -143,7 +143,7 @@ export const Unitables = ({
     inputsCells.forEach((inputCell) => {
       searchRecursively(inputCell.childNodes[0]);
     });
-  }, [formsDivRendered, rows, containerRef, searchRecursively]);
+  }, [jsonSchemaBridge, formsDivRendered, rows, containerRef, searchRecursively]);
   // Set in-cell input heights (end)
 
   const timeout = useRef<number | undefined>(undefined);
