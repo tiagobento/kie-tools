@@ -35,9 +35,10 @@ import { UnitablesColumnType } from "../UnitablesTypes";
 import "@kie-tools/boxed-expression-component/dist/@types/react-table";
 import { ResizerStopBehavior } from "@kie-tools/boxed-expression-component/dist/resizing/ResizingWidthsContext";
 import { AutoField } from "@kie-tools/uniforms-patternfly/dist/esm";
-import { useField, joinName } from "uniforms";
-import { AUTO_ROW_ID, UnitablesJsonSchemaBridge } from "../uniforms/UnitablesJsonSchemaBridge";
+import { useField } from "uniforms";
+import { AUTO_ROW_ID } from "../uniforms/UnitablesJsonSchemaBridge";
 import get from "lodash/get";
+import { useUnitablesContext } from "../UnitablesContext";
 
 export const UNITABLES_COLUMN_MIN_WIDTH = 150;
 
@@ -196,12 +197,20 @@ function getColumnAccessor(c: UnitablesColumnType) {
 
 function UnitablesBeeTableCell({ joinedName }: BeeTableCellProps<ROWTYPE> & { joinedName: string }) {
   const { containerCellCoordinates } = useBeeTableCoordinates();
+  const { setInternalChange } = useUnitablesContext();
 
   const [{ field, value, onChange }, { schema }] = useField(joinedName, {});
 
   const setValue = useCallback(
     (newValue) => {
-      (schema as UnitablesJsonSchemaBridge).setInternalChange();
+      console.log("NEW VALUE", newValue);
+      // parseInt
+      // parseFloat
+
+      // JSON.parse()
+
+      //
+      setInternalChange(true);
       if (
         (field.type === "number" && typeof newValue !== "number") ||
         (field.type === "boolean" && typeof newValue !== "boolean") ||
@@ -223,7 +232,11 @@ function UnitablesBeeTableCell({ joinedName }: BeeTableCellProps<ROWTYPE> & { jo
     containerCellCoordinates?.rowIndex ?? 0,
     containerCellCoordinates?.columnIndex ?? 0,
     setValue,
-    useCallback(() => JSON.stringify(value), [value])
+    useCallback(() => {
+      console.log(value);
+      // remove " " from stringify
+      return JSON.stringify(value);
+    }, [value])
   );
 
   return (

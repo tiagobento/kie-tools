@@ -35,8 +35,9 @@ import get from "lodash/get";
 import { InputRow } from "@kie-tools/form-dmn";
 import { diff } from "deep-object-diff";
 import cloneDeep from "lodash/cloneDeep";
+import { useUnitablesContext } from "./UnitablesContext";
 
-interface Props {
+export interface UnitablesProps {
   jsonSchema: object;
   rows: object[];
   setRows: (previousStateFunction: (previous: Array<InputRow>) => Array<InputRow>) => void;
@@ -105,15 +106,17 @@ export const Unitables = ({
   onRowDeleted,
   rowsWidth,
   setWidth,
-}: Props) => {
-  const inputErrorBoundaryRef = useRef<ErrorBoundary>(null);
-  const [formsDivRendered, setFormsDivRendered] = useState<boolean>(false);
+}: UnitablesProps) => {
   const { columns: unitablesColumns } = useUnitablesColumns(jsonSchemaBridge, setRows, propertiesEntryPath);
+  const { internalChange, setInternalChange } = useUnitablesContext();
+
+  const [formsDivRendered, setFormsDivRendered] = useState<boolean>(false);
+
   const inputUid = useMemo(() => nextId(), []);
-  const [unitablesBeeTableKey, forceUpdate] = useReducer((x) => x + 1, 0);
 
   // create cache to save inputs cache;
   const cachedKeysOfRows = useRef<Map<number, Set<string>>>(new Map());
+  const inputErrorBoundaryRef = useRef<ErrorBoundary>(null);
 
   // Resets the ErrorBoundary everytime the FormSchema is updated
   useEffect(() => {
@@ -146,23 +149,22 @@ export const Unitables = ({
     inputsCells.forEach((inputCell) => {
       searchRecursively(inputCell.childNodes[0]);
     });
-  }, [unitablesBeeTableKey, jsonSchemaBridge, formsDivRendered, rows, containerRef, searchRecursively]);
+  }, [jsonSchemaBridge, formsDivRendered, rows, containerRef, searchRecursively]);
   // Set in-cell input heights (end)
 
   const timeout = useRef<number | undefined>(undefined);
   const onValidateRow = useCallback(
     (inputRow: InputRow, rowIndex: number, error: Record<string, any>) => {
       // After this method is not called by a period, clear the cache and reset the internalChange;
-      if (jsonSchemaBridge.isInternalChange()) {
+      if (internalChange) {
         if (timeout.current) {
           clearTimeout(timeout.current);
         }
 
         timeout.current = window.setTimeout(() => {
           cachedKeysOfRows.current.clear();
-          jsonSchemaBridge.unsetInternalChange();
-          // should trigger re-render here; select field can't be changed by outside events;
-          forceUpdate();
+          setInternalChange(false);
+          // FIXME: should trigger re-render of SelectField;
         }, 0);
       }
 
@@ -171,9 +173,10 @@ export const Unitables = ({
       setRows((previousInputRows) => {
         const newInputRows = cloneDeep(previousInputRows);
         const newInputRow = cloneDeep(inputRow);
-        const changedValues: Record<string, any> = diff(inputRow, newInputRows[rowIndex]);
+        console.log(newInputRow);
 
-        if (jsonSchemaBridge.isInternalChange()) {
+        if (internalChange) {
+          const changedValues: Record<string, any> = diff(inputRow, newInputRows[rowIndex]);
           recursiveCheckForChangedKey(
             rowIndex,
             newInputRows[rowIndex],
@@ -187,7 +190,7 @@ export const Unitables = ({
         return newInputRows;
       });
     },
-    [jsonSchemaBridge, setRows]
+    [internalChange, setRows]
   );
 
   const rowWrapper = useCallback(
@@ -241,7 +244,6 @@ export const Unitables = ({
               ))}
             </div>
             <UnitablesBeeTable
-              key={unitablesBeeTableKey}
               rowWrapper={rowWrapper}
               scrollableParentRef={scrollableParentRef}
               i18n={i18n}
