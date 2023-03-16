@@ -53,7 +53,6 @@ interface Props {
   onRowReset: (args: { rowIndex: number }) => void;
   onRowDeleted: (args: { rowIndex: number }) => void;
   setWidth: (newWidth: number, columnIndex: number, rowIndex: number) => void;
-  autoSaveDelay?: number;
 }
 
 function isObject(item: any): item is Record<string, any> {
@@ -104,7 +103,6 @@ export const Unitables = ({
   onRowReset,
   onRowDeleted,
   setWidth,
-  autoSaveDelay = 400,
 }: Props) => {
   const inputErrorBoundaryRef = useRef<ErrorBoundary>(null);
   const [formsDivRendered, setFormsDivRendered] = useState<boolean>(false);
@@ -149,8 +147,6 @@ export const Unitables = ({
   // Set in-cell input heights (end)
 
   const timeout = useRef<number | undefined>(undefined);
-  // const timeout = useRef<number | undefined>(undefined);
-
   const onValidateRow = useCallback(
     (inputRow: InputRow, rowIndex: number, error: Record<string, any>) => {
       // After this method is not called by a period, clear the cache and reset the internalChange;
