@@ -259,6 +259,29 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
     ]
   );
 
+  const getDefaultValuesForInputs = useCallback((inputs: InputRow) => {
+    return Object.entries(inputs).reduce(
+      (acc, [key, value]) => {
+        if (key === "id") {
+          return acc;
+        }
+        if (typeof value === "string") {
+          acc[key] = "";
+        } else if (typeof value === "number") {
+          acc[key] = null;
+        } else if (typeof value === "boolean") {
+          acc[key] = false;
+        } else if (Array.isArray(value)) {
+          acc[key] = [];
+        } else if (typeof value === "object") {
+          acc[key] = {};
+        }
+        return acc;
+      },
+      { id: generateUuid() } as Record<string, any>
+    );
+  }, []);
+
   const onRowAdded = useCallback(
     (args: { beforeIndex: number }) => {
       dispatchDmnRunnerPersistenceJson({
@@ -268,28 +291,11 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
         type: DmnRunnerPersistenceReducerActionType.PREVIOUS,
         newPersistenceJson(previousPersistenceJson) {
           const newPersistenceJson = deepCopyPersistenceJson(previousPersistenceJson);
-          // add default value;
           const index = args.beforeIndex === 0 ? 0 : args.beforeIndex - 1;
-          const newInputsRow = Object.entries(newPersistenceJson.inputs[index]).reduce(
-            (acc, [key, value]) => {
-              if (key === "id") {
-                return acc;
-              }
-              if (typeof value === "string") {
-                acc[key] = "";
-              } else if (typeof value === "number") {
-                acc[key] = null;
-              } else if (typeof value === "boolean") {
-                acc[key] = false;
-              } else if (Array.isArray(value)) {
-                acc[key] = [];
-              } else if (typeof value === "object") {
-                acc[key] = {};
-              }
-              return acc;
-            },
-            { id: generateUuid() } as any
-          );
+
+          // add default value;
+          const newInputsRow = getDefaultValuesForInputs(newPersistenceJson.inputs[index]);
+
           // add default configs;
           const newConfigInputsRow = Object.entries(newPersistenceJson.inputs[index]).reduce((acc, [key, _]) => {
             if (key === "id") {
@@ -306,6 +312,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
       setCurrentInputRowIndex(args.beforeIndex);
     },
     [
+      getDefaultValuesForInputs,
       dmnRunnerPersistenceQueue,
       dispatchDmnRunnerPersistenceJson,
       props.workspaceFile.relativePath,
@@ -354,26 +361,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
         newPersistenceJson(previousPersistenceJson) {
           const newPersistenceJson = deepCopyPersistenceJson(previousPersistenceJson);
           // reset to defaul values;
-          const resetedInputRows = Object.entries(newPersistenceJson.inputs[args.rowIndex]).reduce(
-            (acc, [key, value]) => {
-              if (key === "id") {
-                return acc;
-              }
-              if (typeof value === "string") {
-                acc[key] = "";
-              } else if (typeof value === "number") {
-                acc[key] = null;
-              } else if (typeof value === "boolean") {
-                acc[key] = false;
-              } else if (Array.isArray(value)) {
-                acc[key] = [];
-              } else if (value === "object") {
-                acc[key] = {};
-              }
-              return acc;
-            },
-            { id: generateUuid() } as any
-          );
+          const resetedInputRows = getDefaultValuesForInputs(newPersistenceJson.inputs[args.rowIndex]);
           // reset default configs;
           const newConfigInputsRow = Object.entries(newPersistenceJson.inputs[args.rowIndex]).reduce(
             (acc, [key, _]) => {
@@ -392,6 +380,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
       });
     },
     [
+      getDefaultValuesForInputs,
       dmnRunnerPersistenceQueue,
       dispatchDmnRunnerPersistenceJson,
       props.workspaceFile.relativePath,

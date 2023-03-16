@@ -34,7 +34,6 @@ import set from "lodash/set";
 import get from "lodash/get";
 import { InputRow } from "@kie-tools/form-dmn";
 import { diff } from "deep-object-diff";
-import { isObject } from "./object/mergeDeep";
 import cloneDeep from "lodash/cloneDeep";
 
 interface Props {
@@ -57,19 +56,23 @@ interface Props {
   autoSaveDelay?: number;
 }
 
+function isObject(item: any): item is Record<string, any> {
+  return item && typeof item === "object" && !Array.isArray(item);
+}
+
 // should set the deep key that is going to be changed;
-function recursiveCheckForKey(
+function recursiveCheckForChangedKey(
   rowIndex: number,
   previousInputRows: InputRow,
   newInputRow: InputRow,
   cachedKeysOfRows: Map<number, Set<string>>,
-  parentProperty: Record<string, any>,
+  changedProperties: Record<string, any>,
   parentKey?: string
 ) {
-  for (const [key, value] of Object.entries(parentProperty)) {
+  for (const [key, value] of Object.entries(changedProperties)) {
     const fullKey: string = parentKey ? `${parentKey}.${key}` : key;
     if (isObject(value)) {
-      recursiveCheckForKey(rowIndex, previousInputRows, newInputRow, cachedKeysOfRows, value, fullKey);
+      recursiveCheckForChangedKey(rowIndex, previousInputRows, newInputRow, cachedKeysOfRows, value, fullKey);
     } else {
       const keySet = cachedKeysOfRows.get(rowIndex);
       if (keySet) {
@@ -146,31 +149,44 @@ export const Unitables = ({
   // Set in-cell input heights (end)
 
   const timeout = useRef<number | undefined>(undefined);
-  const onValidateRow = useCallback(
-    (rowInput: InputRow, rowIndex: number, error: Record<string, any>) => {
-      if (timeout.current) {
-        clearTimeout(timeout.current);
-      }
+  // const timeout = useRef<number | undefined>(undefined);
 
-      // Clear the cache when this method is not called anymore;
-      timeout.current = window.setTimeout(() => {
-        cachedKeysOfRows.current.clear();
-      }, 0); // FIXME: updating cells fast enough will not work properly
+  const onValidateRow = useCallback(
+    (inputRow: InputRow, rowIndex: number, error: Record<string, any>) => {
+      // After this method is not called by a period, clear the cache and reset the internalChange;
+      if (jsonSchemaBridge.isInternalChange()) {
+        if (timeout.current) {
+          clearTimeout(timeout.current);
+        }
+
+        timeout.current = window.setTimeout(() => {
+          cachedKeysOfRows.current.clear();
+          jsonSchemaBridge.unsetInternalChange();
+        }, 0);
+      }
 
       // Before a cell is updated, the cell key is saved in a cache, and the new value is set;
       // if the same cell is edited before the cache reset, the used value will be the previous one;
       setRows((previousInputRows) => {
         const newInputRows = cloneDeep(previousInputRows);
-        const clonedRowInput = cloneDeep(rowInput);
-        const difference: Record<string, any> = diff(rowInput, newInputRows[rowIndex]);
+        const newInputRow = cloneDeep(inputRow);
+        const changedValues: Record<string, any> = diff(inputRow, newInputRows[rowIndex]);
 
-        recursiveCheckForKey(rowIndex, newInputRows[rowIndex], clonedRowInput, cachedKeysOfRows.current, difference);
+        if (jsonSchemaBridge.isInternalChange()) {
+          recursiveCheckForChangedKey(
+            rowIndex,
+            newInputRows[rowIndex],
+            newInputRow,
+            cachedKeysOfRows.current,
+            changedValues
+          );
+        }
 
-        newInputRows[rowIndex] = clonedRowInput;
+        newInputRows[rowIndex] = newInputRow;
         return newInputRows;
       });
     },
-    [setRows]
+    [jsonSchemaBridge, setRows]
   );
 
   const rowWrapper = useCallback(

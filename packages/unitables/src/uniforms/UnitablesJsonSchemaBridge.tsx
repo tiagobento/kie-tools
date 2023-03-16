@@ -30,6 +30,8 @@ const DEFAULT_DATE_TIME_CELL_WDITH = 296;
 const DEFAULT_DATE_CELL_WIDTH = 180;
 
 export class UnitablesJsonSchemaBridge extends JSONSchemaBridge {
+  private internalChange = false;
+
   constructor(
     public readonly formSchema: object,
     public readonly validator: (model: object) => void,
@@ -144,6 +146,18 @@ export class UnitablesJsonSchemaBridge extends JSONSchemaBridge {
         return fields;
       }
     }, []);
+  }
+
+  public isInternalChange() {
+    return this.internalChange;
+  }
+
+  public setInternalChange() {
+    this.internalChange = true;
+  }
+
+  public unsetInternalChange() {
+    this.internalChange = false;
   }
 }
 

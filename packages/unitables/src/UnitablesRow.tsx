@@ -33,53 +33,58 @@ export interface UnitablesRowApi {
   submit: (rowInput?: Record<string, any>) => void;
 }
 
-export const UnitablesRow = React.forwardRef<UnitablesRowApi, PropsWithChildren<Props>>(
-  ({ children, formsId, rowIndex, jsonSchemaBridge, rowInput, onValidateRow }, forwardRef) => {
-    const autoRowRef = useRef<HTMLFormElement>(null);
+export function UnitablesRow({
+  children,
+  formsId,
+  rowIndex,
+  jsonSchemaBridge,
+  rowInput,
+  onValidateRow,
+}: PropsWithChildren<Props>) {
+  const autoRowRef = useRef<HTMLFormElement>(null);
 
-    const onSubmit = useCallback(
-      (rowInput: Record<string, any>) => {
-        console.log("SUBMITTING ROW: " + rowIndex);
-      },
-      [rowIndex]
-    );
+  const onSubmit = useCallback(
+    (rowInput: Record<string, any>) => {
+      console.log("SUBMITTING ROW: " + rowIndex);
+    },
+    [rowIndex]
+  );
 
-    const onValidate = useCallback(
-      (rowInput: Record<string, any>, error: Record<string, any>) => {
-        onValidateRow(rowInput, rowIndex, error);
-      },
-      [onValidateRow, rowIndex]
-    );
+  const onValidate = useCallback(
+    (rowInput: Record<string, any>, error: Record<string, any>) => {
+      onValidateRow(rowInput, rowIndex, error);
+    },
+    [onValidateRow, rowIndex]
+  );
 
-    // Submits the table in the first render triggering the onValidate function
-    useEffect(() => {
-      autoRowRef.current?.submit();
-    }, [autoRowRef]);
+  // Submits the table in the first render triggering the onValidate function
+  useEffect(() => {
+    autoRowRef.current?.submit();
+  }, [autoRowRef]);
 
-    return (
-      <>
-        <AutoRow
-          ref={autoRowRef}
-          schema={jsonSchemaBridge}
-          model={rowInput}
-          onSubmit={onSubmit}
-          onValidate={onValidate}
-          placeholder={true}
-          validate={"onChange"}
-        >
-          <UniformsContext.Consumer>
-            {(uniformsContext) => (
-              <>
-                {createPortal(
-                  <form id={`${AUTO_ROW_ID}-${rowIndex}`} onSubmit={(data) => uniformsContext?.onSubmit(data)} />,
-                  document.getElementById(formsId)!
-                )}
-                {children}
-              </>
-            )}
-          </UniformsContext.Consumer>
-        </AutoRow>
-      </>
-    );
-  }
-);
+  return (
+    <>
+      <AutoRow
+        ref={autoRowRef}
+        schema={jsonSchemaBridge}
+        model={rowInput}
+        onSubmit={onSubmit}
+        onValidate={onValidate}
+        placeholder={true}
+        validate={"onChange"}
+      >
+        <UniformsContext.Consumer>
+          {(uniformsContext) => (
+            <>
+              {createPortal(
+                <form id={`${AUTO_ROW_ID}-${rowIndex}`} onSubmit={(data) => uniformsContext?.onSubmit(data)} />,
+                document.getElementById(formsId)!
+              )}
+              {children}
+            </>
+          )}
+        </UniformsContext.Consumer>
+      </AutoRow>
+    </>
+  );
+}
