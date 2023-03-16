@@ -32,12 +32,12 @@ import * as React from "react";
 import { useCallback, useMemo } from "react";
 import * as ReactTable from "react-table";
 import { UnitablesColumnType } from "../UnitablesTypes";
-
 import "@kie-tools/boxed-expression-component/dist/@types/react-table";
 import { ResizerStopBehavior } from "@kie-tools/boxed-expression-component/dist/resizing/ResizingWidthsContext";
 import { AutoField } from "@kie-tools/uniforms-patternfly/dist/esm";
-import { useField } from "uniforms";
+import { useField, joinName } from "uniforms";
 import { AUTO_ROW_ID, UnitablesJsonSchemaBridge } from "../uniforms/UnitablesJsonSchemaBridge";
+import get from "lodash/get";
 
 export const UNITABLES_COLUMN_MIN_WIDTH = 150;
 
@@ -54,7 +54,8 @@ export interface UnitablesBeeTable {
   onRowDuplicated: (args: { rowIndex: number }) => void;
   onRowReset: (args: { rowIndex: number }) => void;
   onRowDeleted: (args: { rowIndex: number }) => void;
-  setWidth: (newWidth: number, columnIndex: number, rowIndex: number) => void;
+  rowsWidth: object;
+  setWidth: (newWidth: number, fieldName: string) => void;
 }
 
 export function UnitablesBeeTable({
@@ -68,6 +69,7 @@ export function UnitablesBeeTable({
   onRowDuplicated,
   onRowReset,
   onRowDeleted,
+  rowsWidth,
   setWidth,
 }: UnitablesBeeTable) {
   const beeTableOperationConfig = useMemo<BeeTableOperationConfig>(
@@ -106,17 +108,15 @@ export function UnitablesBeeTable({
   }, [columns]);
 
   const setColumnWidth = useCallback(
-    (inputIndex: number) => (newWidthAction: React.SetStateAction<number | undefined>) => {
+    (fieldName: string) => (newWidthAction: React.SetStateAction<number | undefined>) => {
       const newWidth = typeof newWidthAction === "function" ? newWidthAction(0) : newWidthAction;
-      console.log(newWidth);
-      setWidth(newWidth ?? 0, inputIndex, 0);
+      setWidth(newWidth ?? 0, fieldName);
       return newWidth;
     },
     [setWidth]
   );
 
   const beeTableColumns = useMemo<ReactTable.Column<ROWTYPE>[]>(() => {
-    let columnIndex = 0;
     return columns.map((column) => {
       if (column.insideProperties) {
         return {
@@ -134,8 +134,8 @@ export function UnitablesBeeTable({
               accessor: getColumnAccessor(insideProperty),
               dataType: insideProperty.dataType,
               isRowIndexColumn: false,
-              width: insideProperty.width,
-              setWidth: setColumnWidth(columnIndex++),
+              width: get(rowsWidth, insideProperty.joinedName) ?? insideProperty.width,
+              setWidth: setColumnWidth(insideProperty.joinedName),
               minWidth: UNITABLES_COLUMN_MIN_WIDTH,
             };
           }),
@@ -147,13 +147,13 @@ export function UnitablesBeeTable({
           accessor: getColumnAccessor(column),
           dataType: column.dataType,
           isRowIndexColumn: false,
-          width: column.width as number,
-          setWidth: setColumnWidth(columnIndex++),
+          width: get(rowsWidth, column.name) ?? (column.width as number),
+          setWidth: setColumnWidth(column.name),
           minWidth: UNITABLES_COLUMN_MIN_WIDTH,
         };
       }
     });
-  }, [setColumnWidth, columns, uuid]);
+  }, [setColumnWidth, rowsWidth, columns, uuid]);
 
   const getColumnKey = useCallback((column: ReactTable.ColumnInstance<ROWTYPE>) => {
     return column.originalId ?? column.id;

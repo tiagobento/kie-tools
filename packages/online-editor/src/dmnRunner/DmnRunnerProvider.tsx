@@ -63,7 +63,10 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
   const dmnRunnerPersistenceQueue = useMemo(() => {
     return new DmnRunnerPersistenceQueue(dmnRunnerPersistenceService.companionFsService);
   }, [dmnRunnerPersistenceService.companionFsService]);
-  // const dmnRunnerConfigInputs = useMemo(() => dmnRunnerPersistenceJson?.configs?.inputs ?? EMPTY_DMN_RUNNER_CONFIG_INPUTS, [dmnRunnerPersistenceJson?.configs?.inputs]);
+  const dmnRunnerConfigInputs = useMemo(
+    () => dmnRunnerPersistenceJson?.configs?.inputs,
+    [dmnRunnerPersistenceJson?.configs?.inputs]
+  );
 
   useEffect(() => {
     if (props.isEditorReady) {
@@ -143,7 +146,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
     (args: {
       newInputsRow?: (previousInputs: Array<InputRow>) => Array<InputRow> | Array<InputRow>;
       newMode?: DmnRunnerMode;
-      newConfigInputs?: (previousConfigInputs: Array<ConfigInputRow>) => Array<ConfigInputRow> | Array<ConfigInputRow>;
+      newConfigInputs?: (previousConfigInputs: ConfigInputRow) => ConfigInputRow | ConfigInputRow;
     }) => {
       dispatchDmnRunnerPersistenceJson({
         dmnRunnerPersistenceQueue,
@@ -230,9 +233,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
   );
 
   const setDmnRunnerConfigInputs = useCallback(
-    (
-      newConfigInputs: (previousConfigInputs: Array<ConfigInputRow>) => Array<ConfigInputRow> | Array<ConfigInputRow>
-    ) => {
+    (newConfigInputs: (previousConfigInputs: ConfigInputRow) => ConfigInputRow | ConfigInputRow) => {
       dispatchDmnRunnerPersistenceJson({
         dmnRunnerPersistenceQueue,
         workspaceFileRelativePath: props.workspaceFile.relativePath,
@@ -305,7 +306,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
             return acc;
           }, {} as any);
           newPersistenceJson.inputs.splice(args.beforeIndex, 0, newInputsRow);
-          newPersistenceJson.configs.inputs.splice(args.beforeIndex, 0, newConfigInputsRow);
+          // newPersistenceJson.configs.inputs.splice(args.beforeIndex, 0, newConfigInputsRow);
           return newPersistenceJson;
         },
       });
@@ -335,10 +336,10 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
             id: generateUuid(),
           });
           // duplicate configs
-          newPersistenceJson.configs.inputs.splice(args.rowIndex, 0, {
-            ...JSON.parse(JSON.stringify(previousPersistenceJson.configs.inputs[args.rowIndex])),
-            id: generateUuid(),
-          });
+          // newPersistenceJson.configs.inputs.splice(args.rowIndex, 0, {
+          //   ...JSON.parse(JSON.stringify(previousPersistenceJson.configs.inputs[args.rowIndex])),
+          //   id: generateUuid(),
+          // });
           return newPersistenceJson;
         },
       });
@@ -406,7 +407,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
             }
           });
           // delete config of input;
-          newPersistenceJson.configs.inputs.splice(args.rowIndex, 1);
+          // newPersistenceJson.configs.inputs.splice(args.rowIndex, 1);
           return newPersistenceJson;
         },
       });
@@ -455,6 +456,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
       currentInputRowIndex,
       error,
       dmnRunnerPersistenceJson,
+      configs: dmnRunnerConfigInputs,
       inputs: dmnRunnerInputs,
       isExpanded,
       canBeVisualized,
@@ -465,6 +467,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
     [
       error,
       currentInputRowIndex,
+      dmnRunnerConfigInputs,
       dmnRunnerPersistenceJson,
       dmnRunnerInputs,
       dmnRunnerMode,

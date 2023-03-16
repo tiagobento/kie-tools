@@ -18,7 +18,7 @@ import * as React from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDmnRunnerDispatch, useDmnRunnerState } from "./DmnRunnerContext";
 import { DmnRunnerMode } from "./DmnRunnerStatus";
-import { DecisionResult, InputRow } from "@kie-tools/form-dmn";
+import { DecisionResult } from "@kie-tools/form-dmn";
 import { PanelId } from "../editor/EditorPageDockDrawer";
 import { useElementsThatStopKeyboardEventsPropagation } from "@kie-tools-core/keyboard-shortcuts/dist/channel";
 import { DmnRunnerLoading } from "./DmnRunnerLoading";
@@ -35,8 +35,8 @@ import { DmnRunnerOutputsTable } from "@kie-tools/unitables-dmn/dist/DmnRunnerOu
 import { DmnUnitablesValidator } from "@kie-tools/unitables-dmn/dist/DmnUnitablesValidator";
 import { useExtendedServices } from "../kieSandboxExtendedServices/KieSandboxExtendedServicesContext";
 import "./DmnRunnerTable.css";
-import { deepCopyPersistenceJson } from "../dmnRunnerPersistence/DmnRunnerPersistenceService";
-import isEqual from "lodash/isEqual";
+import set from "lodash/set";
+import cloneDeep from "lodash/cloneDeep";
 
 interface Props {
   setPanelOpen: React.Dispatch<React.SetStateAction<PanelId>>;
@@ -44,7 +44,7 @@ interface Props {
 
 export function DmnRunnerTable({ setPanelOpen }: Props) {
   const extendedServices = useExtendedServices();
-  const { error, inputs, jsonSchema } = useDmnRunnerState();
+  const { configs, error, inputs, jsonSchema } = useDmnRunnerState();
   const {
     onRowAdded,
     onRowDuplicated,
@@ -147,14 +147,16 @@ export function DmnRunnerTable({ setPanelOpen }: Props) {
       document.querySelector(".kie-tools--dmn-runner-table--drawer")?.querySelector(".pf-c-drawer__panel-main") ?? null;
   }, []);
 
-  const setWidth = useCallback((newWidth: number, columnIndex: number, rowIndex: number) => {
-    // setDmnRunnerConfigInputs((previousDmnRunnerConfigInputs) => {
-    //   console.log(newWidth, columnIndex, rowIndex);
-    //   const newDmnRunnerConfigInputs = [ ...previousDmnRunnerConfigInputs ]
-    //   // newDmnRunnerConfigInputs.configs.inputs;
-    //   return newDmnRunnerConfigInputs;
-    // })
-  }, []);
+  const setWidth = useCallback(
+    (newWidth: number, fieldName: string) => {
+      setDmnRunnerConfigInputs((previousDmnRunnerConfigInputs) => {
+        const newDmnRunnerConfigInputs = cloneDeep(previousDmnRunnerConfigInputs);
+        set(newDmnRunnerConfigInputs, fieldName, newWidth);
+        return newDmnRunnerConfigInputs;
+      });
+    },
+    [setDmnRunnerConfigInputs]
+  );
 
   return (
     <div style={{ height: "100%" }}>
@@ -209,6 +211,7 @@ export function DmnRunnerTable({ setPanelOpen }: Props) {
                       onRowDuplicated={onRowDuplicated}
                       onRowReset={onRowReset}
                       onRowDeleted={onRowDeleted}
+                      rowsWidth={configs}
                       setWidth={setWidth}
                     />
                   ) : (

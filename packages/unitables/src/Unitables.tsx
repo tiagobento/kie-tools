@@ -52,7 +52,8 @@ interface Props {
   onRowDuplicated: (args: { rowIndex: number }) => void;
   onRowReset: (args: { rowIndex: number }) => void;
   onRowDeleted: (args: { rowIndex: number }) => void;
-  setWidth: (newWidth: number, columnIndex: number, rowIndex: number) => void;
+  rowsWidth: object;
+  setWidth: (newWidth: number, fieldName: string) => void;
 }
 
 function isObject(item: any): item is Record<string, any> {
@@ -102,6 +103,7 @@ export const Unitables = ({
   onRowDuplicated,
   onRowReset,
   onRowDeleted,
+  rowsWidth,
   setWidth,
 }: Props) => {
   const inputErrorBoundaryRef = useRef<ErrorBoundary>(null);
@@ -250,6 +252,7 @@ export const Unitables = ({
               onRowDuplicated={onRowDuplicated}
               onRowReset={onRowReset}
               onRowDeleted={onRowDeleted}
+              rowsWidth={rowsWidth}
               setWidth={setWidth}
             />
           </div>

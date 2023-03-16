@@ -22,6 +22,7 @@ import { KieSandboxExtendedServicesModelPayload } from "../kieSandboxExtendedSer
 import { DmnRunnerMode, DmnRunnerStatus } from "./DmnRunnerStatus";
 
 export interface DmnRunnerContextType {
+  configs: ConfigInputRow;
   currentInputRowIndex: number;
   error: boolean;
   dmnRunnerPersistenceJson: DmnRunnerPersistenceJson;
@@ -45,12 +46,12 @@ export interface DmnRunnerCallbacksContextType {
   setDmnRunnerInputs: (newInputsRow: (previousInputs: Array<InputRow>) => Array<InputRow> | Array<InputRow>) => void;
   setDmnRunnerMode: (newMode: DmnRunnerMode) => void;
   setDmnRunnerConfigInputs: (
-    newConfigInputs: (previousConfigInputs: Array<ConfigInputRow>) => Array<ConfigInputRow> | Array<ConfigInputRow>
+    newConfigInputs: (previousConfigInputs: ConfigInputRow) => ConfigInputRow | ConfigInputRow
   ) => void;
   setDmnRunnerPersistenceJson: (args: {
     newInputsRow?: (previousInputs: Array<InputRow>) => Array<InputRow> | Array<InputRow>;
     newMode?: DmnRunnerMode;
-    newConfigInputs?: (previousConfigInputs: Array<ConfigInputRow>) => Array<ConfigInputRow> | Array<ConfigInputRow>;
+    newConfigInputs?: (previousConfigInputs: ConfigInputRow) => ConfigInputRow | ConfigInputRow;
   }) => void;
 }
 

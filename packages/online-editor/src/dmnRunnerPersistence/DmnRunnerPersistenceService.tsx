@@ -41,7 +41,7 @@ export enum DmnRunnerMode {
 interface DmnRunnerPersistenceJsonConfigs {
   version: string;
   mode: DmnRunnerMode;
-  inputs: Array<ConfigInputRow>;
+  inputs: ConfigInputRow;
 }
 
 export interface DmnRunnerPersistenceJson {
@@ -62,7 +62,7 @@ export function getNewDefaultDmnRunnerPersistenceJson(): DmnRunnerPersistenceJso
     configs: {
       version: DMN_RUNNER_PERSISTENCE_JSON_VERSION,
       mode: DmnRunnerMode.FORM,
-      inputs: [{}],
+      inputs: {},
     },
     inputs: [{ id: generateUuid() }],
   };
