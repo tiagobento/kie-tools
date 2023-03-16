@@ -210,6 +210,8 @@ function UnitablesBeeTableCell({ joinedName }: BeeTableCellProps<ROWTYPE> & { jo
         (field.type === "object" && typeof newValue !== "object")
       ) {
         onChange(null);
+      } else if (field.enum) {
+        onChange(field.placeholder);
       } else {
         onChange(newValue);
       }

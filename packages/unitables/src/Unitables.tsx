@@ -22,7 +22,7 @@ import { Tooltip } from "@patternfly/react-core/dist/js/components/Tooltip";
 import { ExclamationIcon } from "@patternfly/react-icons/dist/js/icons/exclamation-icon";
 import { ListIcon } from "@patternfly/react-icons/dist/js/icons/list-icon";
 import * as React from "react";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useReducer } from "react";
 import nextId from "react-id-generator";
 import { UnitablesBeeTable } from "./bee";
 import { UnitablesI18n } from "./i18n";
@@ -108,6 +108,7 @@ export const Unitables = ({
   const [formsDivRendered, setFormsDivRendered] = useState<boolean>(false);
   const { columns: unitablesColumns } = useUnitablesColumns(jsonSchemaBridge, setRows, propertiesEntryPath);
   const inputUid = useMemo(() => nextId(), []);
+  const [unitablesBeeTableKey, forceUpdate] = useReducer((x) => x + 1, 0);
 
   // create cache to save inputs cache;
   const cachedKeysOfRows = useRef<Map<number, Set<string>>>(new Map());
@@ -143,7 +144,7 @@ export const Unitables = ({
     inputsCells.forEach((inputCell) => {
       searchRecursively(inputCell.childNodes[0]);
     });
-  }, [jsonSchemaBridge, formsDivRendered, rows, containerRef, searchRecursively]);
+  }, [unitablesBeeTableKey, jsonSchemaBridge, formsDivRendered, rows, containerRef, searchRecursively]);
   // Set in-cell input heights (end)
 
   const timeout = useRef<number | undefined>(undefined);
@@ -158,6 +159,8 @@ export const Unitables = ({
         timeout.current = window.setTimeout(() => {
           cachedKeysOfRows.current.clear();
           jsonSchemaBridge.unsetInternalChange();
+          // should trigger re-render here; select field can't be changed by outside events;
+          forceUpdate();
         }, 0);
       }
 
@@ -236,6 +239,7 @@ export const Unitables = ({
               ))}
             </div>
             <UnitablesBeeTable
+              key={unitablesBeeTableKey}
               rowWrapper={rowWrapper}
               scrollableParentRef={scrollableParentRef}
               i18n={i18n}
