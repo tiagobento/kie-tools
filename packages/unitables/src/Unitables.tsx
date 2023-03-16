@@ -226,7 +226,7 @@ export const Unitables = ({
             >
               <OutsideRowMenu height={63} isFirstChild={true}>{`#`}</OutsideRowMenu>
               <OutsideRowMenu height={64.2} borderBottomSizeBasis={1}>{`#`}</OutsideRowMenu>
-              {rows.map((e, rowIndex) => (
+              {rows.map((_, rowIndex) => (
                 <Tooltip key={rowIndex} content={`Open row ${rowIndex + 1} in the form view`}>
                   <OutsideRowMenu height={60.8} isLastChild={rowIndex === rows.length - 1}>
                     <Button
@@ -297,6 +297,7 @@ function OutsideRowMenu({
       style={{
         width: "60px",
         height: `${height + (isFirstChild ? 3 : 0) + (isLastChild ? 1.6 : 0)}px`,
+        minHeight: `${height + (isFirstChild ? 3 : 0) + (isLastChild ? 1.6 : 0)}px`,
         display: "flex",
         fontSize: "16px",
         color: "gray",
