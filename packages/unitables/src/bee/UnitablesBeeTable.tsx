@@ -197,6 +197,10 @@ function getColumnAccessor(c: UnitablesColumnType) {
   return `field-${c.joinedName}`;
 }
 
+function replacer(_: any, value: string) {
+  return value.replace(/[^\w\s]/gi, "");
+}
+
 function UnitablesBeeTableCell({ joinedName }: BeeTableCellProps<ROWTYPE> & { joinedName: string }) {
   const { containerCellCoordinates } = useBeeTableCoordinates();
   const { internalChange } = useUnitablesContext();
@@ -212,6 +216,7 @@ function UnitablesBeeTableCell({ joinedName }: BeeTableCellProps<ROWTYPE> & { jo
         // force re-render of AutoField here;
       } else if (field.type === "string") {
         if (typeof newValue === "string") {
+          // TODO: Fix: x-dmn-type from field property: Any, Undefined, string, number, ...;
           onChange(newValue);
         } else {
           onChange("");
@@ -273,9 +278,10 @@ function UnitablesBeeTableCell({ joinedName }: BeeTableCellProps<ROWTYPE> & { jo
     containerCellCoordinates?.columnIndex ?? 0,
     setValue,
     useCallback(() => {
-      console.log(value);
       // TODO: remove " " from stringify
-      return JSON.stringify(value);
+      const a = JSON.stringify(value, replacer);
+      console.log(a);
+      return a;
     }, [value])
   );
 

@@ -299,17 +299,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
 
           // add default value;
           const newInputsRow = getDefaultValuesForInputs(newPersistenceJson.inputs[index]);
-
-          // add default configs;
-          const newConfigInputsRow = Object.entries(newPersistenceJson.inputs[index]).reduce((acc, [key, _]) => {
-            if (key === "id") {
-              return acc;
-            }
-            acc[key] = { ...DEFAULT_DMN_RUNNER_CONFIG_INPUT };
-            return acc;
-          }, {} as any);
           newPersistenceJson.inputs.splice(args.beforeIndex, 0, newInputsRow);
-          // newPersistenceJson.configs.inputs.splice(args.beforeIndex, 0, newConfigInputsRow);
           return newPersistenceJson;
         },
       });
@@ -338,11 +328,6 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
             ...JSON.parse(JSON.stringify(previousPersistenceJson.inputs[args.rowIndex])),
             id: generateUuid(),
           });
-          // duplicate configs
-          // newPersistenceJson.configs.inputs.splice(args.rowIndex, 0, {
-          //   ...JSON.parse(JSON.stringify(previousPersistenceJson.configs.inputs[args.rowIndex])),
-          //   id: generateUuid(),
-          // });
           return newPersistenceJson;
         },
       });
@@ -366,19 +351,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
           const newPersistenceJson = cloneDeep(previousPersistenceJson);
           // reset to defaul values;
           const resetedInputRows = getDefaultValuesForInputs(newPersistenceJson.inputs[args.rowIndex]);
-          // reset default configs;
-          const newConfigInputsRow = Object.entries(newPersistenceJson.inputs[args.rowIndex]).reduce(
-            (acc, [key, _]) => {
-              if (key === "id") {
-                return acc;
-              }
-              acc[key] = { ...DEFAULT_DMN_RUNNER_CONFIG_INPUT };
-              return acc;
-            },
-            {} as any
-          );
           newPersistenceJson.inputs[args.rowIndex] = resetedInputRows;
-          newPersistenceJson.configs.inputs[args.rowIndex] = newConfigInputsRow;
           return newPersistenceJson;
         },
       });
@@ -409,8 +382,6 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
               newInputRows[i] = { ...e, id: generateUuid() };
             }
           });
-          // delete config of input;
-          // newPersistenceJson.configs.inputs.splice(args.rowIndex, 1);
           return newPersistenceJson;
         },
       });

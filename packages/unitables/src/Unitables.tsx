@@ -128,8 +128,7 @@ export const Unitables = ({
   }, [jsonSchemaBridge]);
 
   // Set in-cell input heights (begin)
-  // ensure the height of TimePicker, DatePicker and others;
-  // should set width too;
+  // TODO: Ensure the width of TimePicker, DatePicker and others;
   const searchRecursively = useCallback((child: any) => {
     if (!child) {
       return;
@@ -167,7 +166,6 @@ export const Unitables = ({
         timeout.current = window.setTimeout(() => {
           cachedKeysOfRows.current.clear();
           internalChange.current = false;
-          // FIXME: should trigger re-render of SelectField;
         }, 0);
       }
 

@@ -85,7 +85,7 @@ export function DmnRunnerDrawerPanelContent(props: Props) {
     contentFlexDirection: "row",
     buttonPosition: ButtonPosition.OUTPUT,
   });
-  const [selectedRow, selectRow] = useState<string>(""); // TODO: remove?
+  const [selectedRow, selectRow] = useState<string>("Row 1");
   const [rowSelectionIsOpen, openRowSelection] = useState<boolean>(false);
 
   // REFs
@@ -310,7 +310,7 @@ export function DmnRunnerDrawerPanelContent(props: Props) {
             setCurrentInputRowIndex(rowIndex);
           }}
         >
-          Row {rowIndex + 1}
+          {getRow(rowIndex + 1)}
         </DropdownItem>
       )),
     [inputs, setCurrentInputRowIndex, selectRow, getRow]
@@ -320,7 +320,7 @@ export function DmnRunnerDrawerPanelContent(props: Props) {
     setCurrentInputRowIndex((currentInputRowIndex) => {
       const newInputRowIndex = currentInputRowIndex + 1;
       onRowAdded({ beforeIndex: newInputRowIndex });
-      selectRow(getRow(newInputRowIndex));
+      selectRow(getRow(newInputRowIndex + 1));
       return newInputRowIndex;
     });
   }, [onRowAdded, setCurrentInputRowIndex, getRow]);
@@ -387,7 +387,7 @@ export function DmnRunnerDrawerPanelContent(props: Props) {
                                 >
                                   <TextContent>
                                     <Text component={"h3"}>
-                                      {i18n.terms.inputs} (Row {currentInputRowIndex + 1}) <CaretDownIcon />
+                                      {i18n.terms.inputs} ({selectedRow}) <CaretDownIcon />
                                     </Text>
                                   </TextContent>
                                 </DropdownToggle>
