@@ -29,9 +29,9 @@ import {
   useBeeTableSelectableCellRef,
 } from "@kie-tools/boxed-expression-component/dist/selection/BeeTableSelectionContext";
 import * as React from "react";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useReducer } from "react";
 import * as ReactTable from "react-table";
-import { UnitablesColumnType } from "../UnitablesTypes";
+import { UnitablesColumnType, UnitablesInputsConfigs, UnitablesCellConfigs } from "../UnitablesTypes";
 import "@kie-tools/boxed-expression-component/dist/@types/react-table";
 import { ResizerStopBehavior } from "@kie-tools/boxed-expression-component/dist/resizing/ResizingWidthsContext";
 import { AutoField } from "@kie-tools/uniforms-patternfly/dist/esm";
@@ -55,7 +55,7 @@ export interface UnitablesBeeTable {
   onRowDuplicated: (args: { rowIndex: number }) => void;
   onRowReset: (args: { rowIndex: number }) => void;
   onRowDeleted: (args: { rowIndex: number }) => void;
-  rowsWidth: object;
+  configs: UnitablesInputsConfigs;
   setWidth: (newWidth: number, fieldName: string) => void;
 }
 
@@ -70,7 +70,7 @@ export function UnitablesBeeTable({
   onRowDuplicated,
   onRowReset,
   onRowDeleted,
-  rowsWidth,
+  configs,
   setWidth,
 }: UnitablesBeeTable) {
   const beeTableOperationConfig = useMemo<BeeTableOperationConfig>(
@@ -135,7 +135,9 @@ export function UnitablesBeeTable({
               accessor: getColumnAccessor(insideProperty),
               dataType: insideProperty.dataType,
               isRowIndexColumn: false,
-              width: getObjectValueByPath(rowsWidth, insideProperty.joinedName) ?? insideProperty.width,
+              width:
+                (getObjectValueByPath(configs, insideProperty.joinedName) as UnitablesCellConfigs)?.width ??
+                insideProperty.width,
               setWidth: setColumnWidth(insideProperty.joinedName),
               minWidth: UNITABLES_COLUMN_MIN_WIDTH,
             };
@@ -148,13 +150,13 @@ export function UnitablesBeeTable({
           accessor: getColumnAccessor(column),
           dataType: column.dataType,
           isRowIndexColumn: false,
-          width: getObjectValueByPath(rowsWidth, column.name) ?? (column.width as number),
+          width: (getObjectValueByPath(configs, column.name) as UnitablesCellConfigs)?.width ?? column.width,
           setWidth: setColumnWidth(column.name),
           minWidth: UNITABLES_COLUMN_MIN_WIDTH,
         };
       }
     });
-  }, [setColumnWidth, rowsWidth, columns, uuid]);
+  }, [setColumnWidth, configs, columns, uuid]);
 
   const getColumnKey = useCallback((column: ReactTable.ColumnInstance<ROWTYPE>) => {
     return column.originalId ?? column.id;
@@ -197,28 +199,73 @@ function getColumnAccessor(c: UnitablesColumnType) {
 
 function UnitablesBeeTableCell({ joinedName }: BeeTableCellProps<ROWTYPE> & { joinedName: string }) {
   const { containerCellCoordinates } = useBeeTableCoordinates();
-  const { setInternalChange } = useUnitablesContext();
+  const { internalChange } = useUnitablesContext();
   const [{ field, value, onChange }] = useField(joinedName, {});
+  const [autoFieldKey, forceUpdate] = useReducer((x) => x + 1, 0);
 
   const setValue = useCallback(
     (newValue) => {
-      // TODO: parse values before checks; parseInt, parseFloat, JSON.parse();
-      setInternalChange(true);
-      if (
-        (field.type === "number" && typeof newValue !== "number") ||
-        (field.type === "boolean" && typeof newValue !== "boolean") ||
-        (field.type === "string" && typeof newValue !== "string") ||
-        (field.type === "array" && !Array.isArray(newValue)) ||
-        (field.type === "object" && typeof newValue !== "object")
-      ) {
-        onChange(null);
-      } else if (field.enum) {
+      internalChange.current = true;
+      if (field.enum) {
         onChange(field.placeholder);
+        forceUpdate();
+        // force re-render of AutoField here;
+      } else if (field.type === "string") {
+        if (typeof newValue === "string") {
+          onChange(newValue);
+        } else {
+          onChange("");
+        }
+      } else if (field.type === "number") {
+        try {
+          const parsedValue = JSON.parse(newValue);
+          if (typeof parsedValue === "number") {
+            onChange(parsedValue);
+          } else {
+            onChange(null);
+          }
+        } catch (err) {
+          onChange(null);
+        }
+      } else if (field.type === "boolean") {
+        try {
+          const parsedValue = JSON.parse(newValue);
+          if (typeof parsedValue === "boolean") {
+            onChange(parsedValue);
+          } else {
+            onChange(false);
+          }
+        } catch (err) {
+          onChange(false);
+        }
+      } else if (field.type === "array") {
+        try {
+          const parsedValue = JSON.parse(newValue);
+          if (Array.isArray(parsedValue)) {
+            onChange(parsedValue);
+          } else {
+            onChange([]);
+          }
+        } catch (err) {
+          onChange([]);
+        }
+      } else if (field.type === "object" && typeof newValue !== "object") {
+        try {
+          const parsedValue = JSON.parse(newValue);
+          if (parsedValue && typeof parsedValue === "object" && !Array.isArray(parsedValue)) {
+            onChange(parsedValue);
+          } else {
+            onChange({});
+          }
+        } catch (err) {
+          onChange({});
+        }
+        onChange(null);
       } else {
         onChange(newValue);
       }
     },
-    [field, onChange, setInternalChange]
+    [internalChange, field, onChange]
   );
 
   useBeeTableSelectableCellRef(
@@ -227,7 +274,7 @@ function UnitablesBeeTableCell({ joinedName }: BeeTableCellProps<ROWTYPE> & { jo
     setValue,
     useCallback(() => {
       console.log(value);
-      // remove " " from stringify
+      // TODO: remove " " from stringify
       return JSON.stringify(value);
     }, [value])
   );
@@ -235,7 +282,7 @@ function UnitablesBeeTableCell({ joinedName }: BeeTableCellProps<ROWTYPE> & { jo
   return (
     <>
       <AutoField
-        key={joinedName}
+        key={joinedName + autoFieldKey}
         name={joinedName}
         form={`${AUTO_ROW_ID}-${containerCellCoordinates?.rowIndex ?? 0}`}
         style={{ height: "60px" }}

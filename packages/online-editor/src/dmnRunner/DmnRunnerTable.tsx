@@ -36,7 +36,7 @@ import { DmnUnitablesValidator } from "@kie-tools/unitables-dmn/dist/DmnUnitable
 import { useExtendedServices } from "../kieSandboxExtendedServices/KieSandboxExtendedServicesContext";
 import "./DmnRunnerTable.css";
 import setObjectValueByPath from "lodash/set";
-import cloneDeepObject from "lodash/cloneDeep";
+import cloneDeep from "lodash/cloneDeep";
 
 interface Props {
   setPanelOpen: React.Dispatch<React.SetStateAction<PanelId>>;
@@ -154,8 +154,8 @@ export function DmnRunnerTable({ setPanelOpen }: Props) {
   const setWidth = useCallback(
     (newWidth: number, fieldName: string) => {
       setDmnRunnerConfigInputs((previousDmnRunnerConfigInputs) => {
-        const newDmnRunnerConfigInputs = cloneDeepObject(previousDmnRunnerConfigInputs);
-        setObjectValueByPath(newDmnRunnerConfigInputs, fieldName, newWidth);
+        const newDmnRunnerConfigInputs = cloneDeep(previousDmnRunnerConfigInputs);
+        setObjectValueByPath(newDmnRunnerConfigInputs, `${fieldName}.width`, newWidth);
         return newDmnRunnerConfigInputs;
       });
     },
@@ -215,7 +215,7 @@ export function DmnRunnerTable({ setPanelOpen }: Props) {
                       onRowDuplicated={onRowDuplicated}
                       onRowReset={onRowReset}
                       onRowDeleted={onRowDeleted}
-                      rowsWidth={configs}
+                      configs={configs}
                       setWidth={setWidth}
                     />
                   ) : (

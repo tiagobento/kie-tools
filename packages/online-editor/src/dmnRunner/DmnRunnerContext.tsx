@@ -17,12 +17,13 @@
 import { InputRow, DmnSchema } from "@kie-tools/form-dmn";
 import * as React from "react";
 import { useContext } from "react";
-import { ConfigInputRow, DmnRunnerPersistenceJson } from "../dmnRunnerPersistence/DmnRunnerPersistenceService";
+import { DmnRunnerPersistenceJson } from "../dmnRunnerPersistence/DmnRunnerPersistenceService";
 import { KieSandboxExtendedServicesModelPayload } from "../kieSandboxExtendedServices/KieSandboxExtendedServicesClient";
 import { DmnRunnerMode, DmnRunnerStatus } from "./DmnRunnerStatus";
+import { UnitablesInputsConfigs } from "@kie-tools/unitables";
 
 export interface DmnRunnerContextType {
-  configs: ConfigInputRow;
+  configs: UnitablesInputsConfigs;
   currentInputRowIndex: number;
   error: boolean;
   dmnRunnerPersistenceJson: DmnRunnerPersistenceJson;
@@ -46,12 +47,12 @@ export interface DmnRunnerCallbacksContextType {
   setDmnRunnerInputs: (newInputsRow: (previousInputs: Array<InputRow>) => Array<InputRow> | Array<InputRow>) => void;
   setDmnRunnerMode: (newMode: DmnRunnerMode) => void;
   setDmnRunnerConfigInputs: (
-    newConfigInputs: (previousConfigInputs: ConfigInputRow) => ConfigInputRow | ConfigInputRow
+    newConfigInputs: (previousConfigInputs: UnitablesInputsConfigs) => UnitablesInputsConfigs | UnitablesInputsConfigs
   ) => void;
   setDmnRunnerPersistenceJson: (args: {
     newInputsRow?: (previousInputs: Array<InputRow>) => Array<InputRow> | Array<InputRow>;
     newMode?: DmnRunnerMode;
-    newConfigInputs?: (previousConfigInputs: ConfigInputRow) => ConfigInputRow | ConfigInputRow;
+    newConfigInputs?: (previousConfigInputs: UnitablesInputsConfigs) => UnitablesInputsConfigs | UnitablesInputsConfigs;
   }) => void;
 }
 

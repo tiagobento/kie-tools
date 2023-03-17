@@ -34,8 +34,9 @@ import setObjectValueByPath from "lodash/set";
 import getObjectValueByPath from "lodash/get";
 import { InputRow } from "@kie-tools/form-dmn";
 import { diff } from "deep-object-diff";
-import cloneDeepObject from "lodash/cloneDeep";
+import cloneDeep from "lodash/cloneDeep";
 import { useUnitablesContext } from "./UnitablesContext";
+import { UnitablesInputsConfigs } from "./UnitablesTypes";
 
 export interface UnitablesProps {
   jsonSchema: object;
@@ -53,7 +54,7 @@ export interface UnitablesProps {
   onRowDuplicated: (args: { rowIndex: number }) => void;
   onRowReset: (args: { rowIndex: number }) => void;
   onRowDeleted: (args: { rowIndex: number }) => void;
-  rowsWidth: object;
+  configs: UnitablesInputsConfigs;
   setWidth: (newWidth: number, fieldName: string) => void;
 }
 
@@ -104,7 +105,7 @@ export const Unitables = ({
   onRowDuplicated,
   onRowReset,
   onRowDeleted,
-  rowsWidth,
+  configs,
   setWidth,
 }: UnitablesProps) => {
   // STATEs
@@ -116,7 +117,7 @@ export const Unitables = ({
   const timeout = useRef<number | undefined>(undefined);
 
   // CUSTOM HOOKs
-  const { internalChange, setInternalChange } = useUnitablesContext();
+  const { internalChange } = useUnitablesContext();
   const { columns: unitablesColumns } = useUnitablesColumns(jsonSchemaBridge, setRows, propertiesEntryPath);
 
   const inputUid = useMemo(() => nextId(), []);
@@ -152,20 +153,20 @@ export const Unitables = ({
     inputsCells.forEach((inputCell) => {
       searchRecursively(inputCell.childNodes[0]);
     });
-  }, [jsonSchemaBridge, formsDivRendered, rows, containerRef, searchRecursively]);
+  }, [internalChange, jsonSchemaBridge, formsDivRendered, rows, containerRef, searchRecursively]);
   // Set in-cell input heights (end)
 
   const onValidateRow = useCallback(
     (inputRow: InputRow, rowIndex: number, error: Record<string, any>) => {
       // After this method is not called by a period, clear the cache and reset the internalChange;
-      if (internalChange) {
+      if (internalChange.current) {
         if (timeout.current) {
           clearTimeout(timeout.current);
         }
 
         timeout.current = window.setTimeout(() => {
           cachedKeysOfRows.current.clear();
-          setInternalChange(false);
+          internalChange.current = false;
           // FIXME: should trigger re-render of SelectField;
         }, 0);
       }
@@ -173,10 +174,10 @@ export const Unitables = ({
       // Before a cell is updated, the cell key is saved in a cache, and the new value is set;
       // if the same cell is edited before the cache reset, the used value will be the previous one;
       setRows((previousInputRows) => {
-        const newInputRows = cloneDeepObject(previousInputRows);
-        const newInputRow = cloneDeepObject(inputRow);
+        const newInputRows = cloneDeep(previousInputRows);
+        const newInputRow = cloneDeep(inputRow);
 
-        if (internalChange) {
+        if (internalChange.current) {
           const changedValues: Record<string, any> = diff(inputRow, newInputRows[rowIndex]);
           recursiveCheckForChangedKey(
             rowIndex,
@@ -191,7 +192,7 @@ export const Unitables = ({
         return newInputRows;
       });
     },
-    [internalChange, setRows, setInternalChange]
+    [internalChange, setRows]
   );
 
   const rowWrapper = useCallback(
@@ -255,7 +256,7 @@ export const Unitables = ({
               onRowDuplicated={onRowDuplicated}
               onRowReset={onRowReset}
               onRowDeleted={onRowDeleted}
-              rowsWidth={rowsWidth}
+              configs={configs}
               setWidth={setWidth}
             />
           </div>

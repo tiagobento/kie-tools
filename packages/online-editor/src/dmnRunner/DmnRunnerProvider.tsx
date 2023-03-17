@@ -27,17 +27,14 @@ import { DmnSchema, InputRow } from "@kie-tools/form-dmn";
 import { useDmnRunnerPersistence } from "../dmnRunnerPersistence/DmnRunnerPersistenceHook";
 import { DmnLanguageService } from "@kie-tools/dmn-language-service";
 import { decoder } from "@kie-tools-core/workspaces-git-fs/dist/encoderdecoder/EncoderDecoder";
-import {
-  generateUuid,
-  DEFAULT_DMN_RUNNER_CONFIG_INPUT,
-  deepCopyPersistenceJson,
-  ConfigInputRow,
-} from "../dmnRunnerPersistence/DmnRunnerPersistenceService";
+import { generateUuid, DEFAULT_DMN_RUNNER_CONFIG_INPUT } from "../dmnRunnerPersistence/DmnRunnerPersistenceService";
 import {
   useDmnRunnerPersistenceDispatch,
   DmnRunnerPersistenceReducerActionType,
 } from "../dmnRunnerPersistence/DmnRunnerPersistenceDispatchContext";
 import { DmnRunnerPersistenceDebouncer } from "../dmnRunnerPersistence/DmnRunnerPersistenceDebouncer";
+import cloneDeep from "lodash/cloneDeep";
+import { UnitablesInputsConfigs } from "@kie-tools/unitables";
 
 interface Props {
   isEditorReady?: boolean;
@@ -148,7 +145,9 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
     (args: {
       newInputsRow?: (previousInputs: Array<InputRow>) => Array<InputRow> | Array<InputRow>;
       newMode?: DmnRunnerMode;
-      newConfigInputs?: (previousConfigInputs: ConfigInputRow) => ConfigInputRow | ConfigInputRow;
+      newConfigInputs?: (
+        previousConfigInputs: UnitablesInputsConfigs
+      ) => UnitablesInputsConfigs | UnitablesInputsConfigs;
     }) => {
       dispatchDmnRunnerPersistenceJson({
         dmnRunnerPersistenceDebouncer,
@@ -156,7 +155,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
         workspaceId: props.workspaceFile.workspaceId,
         type: DmnRunnerPersistenceReducerActionType.PREVIOUS,
         newPersistenceJson: (previousDmnRunnerPersistenceJson) => {
-          const newDmnRunnerPersistenceJson = deepCopyPersistenceJson(previousDmnRunnerPersistenceJson);
+          const newDmnRunnerPersistenceJson = cloneDeep(previousDmnRunnerPersistenceJson);
           if (typeof args.newInputsRow === "function") {
             newDmnRunnerPersistenceJson.inputs = args.newInputsRow(previousDmnRunnerPersistenceJson.inputs);
           } else if (args.newInputsRow) {
@@ -194,7 +193,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
         workspaceId: props.workspaceFile.workspaceId,
         type: DmnRunnerPersistenceReducerActionType.PREVIOUS,
         newPersistenceJson: (previousDmnRunnerPersistenceJson) => {
-          const newDmnRunnerPersistenceJson = deepCopyPersistenceJson(previousDmnRunnerPersistenceJson);
+          const newDmnRunnerPersistenceJson = cloneDeep(previousDmnRunnerPersistenceJson);
           if (typeof newInputsRow === "function") {
             newDmnRunnerPersistenceJson.inputs = newInputsRow(previousDmnRunnerPersistenceJson.inputs);
           } else {
@@ -220,7 +219,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
         workspaceId: props.workspaceFile.workspaceId,
         type: DmnRunnerPersistenceReducerActionType.PREVIOUS,
         newPersistenceJson: (previousDmnRunnerPersistenceJson) => {
-          const newDmnRunnerPersistenceJson = deepCopyPersistenceJson(previousDmnRunnerPersistenceJson);
+          const newDmnRunnerPersistenceJson = cloneDeep(previousDmnRunnerPersistenceJson);
           newDmnRunnerPersistenceJson.configs.mode = newMode;
           return newDmnRunnerPersistenceJson;
         },
@@ -235,14 +234,16 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
   );
 
   const setDmnRunnerConfigInputs = useCallback(
-    (newConfigInputs: (previousConfigInputs: ConfigInputRow) => ConfigInputRow | ConfigInputRow) => {
+    (
+      newConfigInputs: (previousConfigInputs: UnitablesInputsConfigs) => UnitablesInputsConfigs | UnitablesInputsConfigs
+    ) => {
       dispatchDmnRunnerPersistenceJson({
         dmnRunnerPersistenceDebouncer,
         workspaceFileRelativePath: props.workspaceFile.relativePath,
         workspaceId: props.workspaceFile.workspaceId,
         type: DmnRunnerPersistenceReducerActionType.PREVIOUS,
         newPersistenceJson: (previousDmnRunnerPersistenceJson) => {
-          const newDmnRunnerPersistenceJson = deepCopyPersistenceJson(previousDmnRunnerPersistenceJson);
+          const newDmnRunnerPersistenceJson = cloneDeep(previousDmnRunnerPersistenceJson);
           if (typeof newConfigInputs === "function") {
             newDmnRunnerPersistenceJson.configs.inputs = newConfigInputs(
               previousDmnRunnerPersistenceJson.configs.inputs
@@ -293,7 +294,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
         workspaceId: props.workspaceFile.workspaceId,
         type: DmnRunnerPersistenceReducerActionType.PREVIOUS,
         newPersistenceJson(previousPersistenceJson) {
-          const newPersistenceJson = deepCopyPersistenceJson(previousPersistenceJson);
+          const newPersistenceJson = cloneDeep(previousPersistenceJson);
           const index = args.beforeIndex === 0 ? 0 : args.beforeIndex - 1;
 
           // add default value;
@@ -331,7 +332,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
         workspaceId: props.workspaceFile.workspaceId,
         type: DmnRunnerPersistenceReducerActionType.PREVIOUS,
         newPersistenceJson(previousPersistenceJson) {
-          const newPersistenceJson = deepCopyPersistenceJson(previousPersistenceJson);
+          const newPersistenceJson = cloneDeep(previousPersistenceJson);
           // duplicate inputs
           newPersistenceJson.inputs.splice(args.rowIndex, 0, {
             ...JSON.parse(JSON.stringify(previousPersistenceJson.inputs[args.rowIndex])),
@@ -362,7 +363,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
         workspaceId: props.workspaceFile.workspaceId,
         type: DmnRunnerPersistenceReducerActionType.PREVIOUS,
         newPersistenceJson(previousPersistenceJson) {
-          const newPersistenceJson = deepCopyPersistenceJson(previousPersistenceJson);
+          const newPersistenceJson = cloneDeep(previousPersistenceJson);
           // reset to defaul values;
           const resetedInputRows = getDefaultValuesForInputs(newPersistenceJson.inputs[args.rowIndex]);
           // reset default configs;
@@ -399,7 +400,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
         workspaceId: props.workspaceFile.workspaceId,
         type: DmnRunnerPersistenceReducerActionType.PREVIOUS,
         newPersistenceJson(previousPersistenceJson) {
-          const newPersistenceJson = deepCopyPersistenceJson(previousPersistenceJson);
+          const newPersistenceJson = cloneDeep(previousPersistenceJson);
           // delete input row;
           newPersistenceJson.inputs.splice(args.rowIndex, 1);
           // re-generate ids for rows above the deleted one
