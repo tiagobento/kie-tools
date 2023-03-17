@@ -30,11 +30,11 @@ import { FORMS_ID, UnitablesJsonSchemaBridge } from "./uniforms";
 import { useUnitablesColumns } from "./UnitablesColumns";
 import "./Unitables.css";
 import { UnitablesRow } from "./UnitablesRow";
-import set from "lodash/set";
-import get from "lodash/get";
+import setObjectValueByPath from "lodash/set";
+import getObjectValueByPath from "lodash/get";
 import { InputRow } from "@kie-tools/form-dmn";
 import { diff } from "deep-object-diff";
-import cloneDeep from "lodash/cloneDeep";
+import cloneDeepObject from "lodash/cloneDeep";
 import { useUnitablesContext } from "./UnitablesContext";
 
 export interface UnitablesProps {
@@ -79,7 +79,7 @@ function recursiveCheckForChangedKey(
       if (keySet) {
         if (keySet.has(fullKey)) {
           // key shouldnt be updated;
-          set(newInputRow, fullKey, get(previousInputRows, fullKey));
+          setObjectValueByPath(newInputRow, fullKey, getObjectValueByPath(previousInputRows, fullKey));
         } else {
           keySet.add(fullKey);
         }
@@ -107,16 +107,19 @@ export const Unitables = ({
   rowsWidth,
   setWidth,
 }: UnitablesProps) => {
-  const { columns: unitablesColumns } = useUnitablesColumns(jsonSchemaBridge, setRows, propertiesEntryPath);
-  const { internalChange, setInternalChange } = useUnitablesContext();
-
+  // STATEs
   const [formsDivRendered, setFormsDivRendered] = useState<boolean>(false);
 
-  const inputUid = useMemo(() => nextId(), []);
-
-  // create cache to save inputs cache;
-  const cachedKeysOfRows = useRef<Map<number, Set<string>>>(new Map());
+  // REFs
+  const cachedKeysOfRows = useRef<Map<number, Set<string>>>(new Map()); // create cache to save changed keys;
   const inputErrorBoundaryRef = useRef<ErrorBoundary>(null);
+  const timeout = useRef<number | undefined>(undefined);
+
+  // CUSTOM HOOKs
+  const { internalChange, setInternalChange } = useUnitablesContext();
+  const { columns: unitablesColumns } = useUnitablesColumns(jsonSchemaBridge, setRows, propertiesEntryPath);
+
+  const inputUid = useMemo(() => nextId(), []);
 
   // Resets the ErrorBoundary everytime the FormSchema is updated
   useEffect(() => {
@@ -152,7 +155,6 @@ export const Unitables = ({
   }, [jsonSchemaBridge, formsDivRendered, rows, containerRef, searchRecursively]);
   // Set in-cell input heights (end)
 
-  const timeout = useRef<number | undefined>(undefined);
   const onValidateRow = useCallback(
     (inputRow: InputRow, rowIndex: number, error: Record<string, any>) => {
       // After this method is not called by a period, clear the cache and reset the internalChange;
@@ -171,9 +173,8 @@ export const Unitables = ({
       // Before a cell is updated, the cell key is saved in a cache, and the new value is set;
       // if the same cell is edited before the cache reset, the used value will be the previous one;
       setRows((previousInputRows) => {
-        const newInputRows = cloneDeep(previousInputRows);
-        const newInputRow = cloneDeep(inputRow);
-        console.log(newInputRow);
+        const newInputRows = cloneDeepObject(previousInputRows);
+        const newInputRow = cloneDeepObject(inputRow);
 
         if (internalChange) {
           const changedValues: Record<string, any> = diff(inputRow, newInputRows[rowIndex]);
@@ -190,7 +191,7 @@ export const Unitables = ({
         return newInputRows;
       });
     },
-    [internalChange, setRows]
+    [internalChange, setRows, setInternalChange]
   );
 
   const rowWrapper = useCallback(

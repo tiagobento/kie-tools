@@ -56,25 +56,27 @@ function dmnRunnerPersistenceJsonReducer(
       ],
     });
     return newPersistenceJson;
-  }
+  } else if (action.type === DmnRunnerPersistenceReducerActionType.DEFAULT) {
+    // Check for changes before update;
+    if (isEqual(persistenceJson, action.newPersistenceJson)) {
+      return persistenceJson;
+    }
 
-  // Check for changes before update;
-  if (isEqual(persistenceJson, action.newPersistenceJson)) {
-    return persistenceJson;
+    // update FS;
+    action.dmnRunnerPersistenceDebouncer.debounce({
+      method: action.dmnRunnerPersistenceDebouncer.companionFsService.update,
+      args: [
+        {
+          workspaceId: action.workspaceId,
+          workspaceFileRelativePath: action.workspaceFileRelativePath,
+        },
+        JSON.stringify(action.newPersistenceJson),
+      ],
+    });
+    return action.newPersistenceJson;
+  } else {
+    throw new Error("");
   }
-
-  // update FS;
-  action.dmnRunnerPersistenceDebouncer.debounce({
-    method: action.dmnRunnerPersistenceDebouncer.companionFsService.update,
-    args: [
-      {
-        workspaceId: action.workspaceId,
-        workspaceFileRelativePath: action.workspaceFileRelativePath,
-      },
-      JSON.stringify(action.newPersistenceJson),
-    ],
-  });
-  return action.newPersistenceJson;
 }
 
 const initialDmnRunnerPersistenceJson = getNewDefaultDmnRunnerPersistenceJson();

@@ -35,15 +35,28 @@ import { DmnRunnerOutputsTable } from "@kie-tools/unitables-dmn/dist/DmnRunnerOu
 import { DmnUnitablesValidator } from "@kie-tools/unitables-dmn/dist/DmnUnitablesValidator";
 import { useExtendedServices } from "../kieSandboxExtendedServices/KieSandboxExtendedServicesContext";
 import "./DmnRunnerTable.css";
-import set from "lodash/set";
-import cloneDeep from "lodash/cloneDeep";
+import setObjectValueByPath from "lodash/set";
+import cloneDeepObject from "lodash/cloneDeep";
 
 interface Props {
   setPanelOpen: React.Dispatch<React.SetStateAction<PanelId>>;
 }
 
 export function DmnRunnerTable({ setPanelOpen }: Props) {
+  // STATEs
+  const [dmnRunnerTableError, setDmnRunnerTableError] = useState<boolean>(false);
+  const [dmnRunnerResults, setDmnRunnerResults] = useState<Array<DecisionResult[] | undefined>>([]); // TODO: move results to provider;
+
+  // REFs
+  const dmnRunnerTableErrorBoundaryRef = useRef<ErrorBoundary>(null);
+  const inputsContainerRef = useRef<HTMLDivElement>(null);
+  const outputsContainerRef = useRef<HTMLDivElement>(null);
+  const inputsScrollableElementRef = useRef<{ current: HTMLDivElement | null }>({ current: null });
+  const outputsScrollableElementRef = useRef<{ current: HTMLDivElement | null }>({ current: null });
+
+  // CUSTOM HOOKs
   const extendedServices = useExtendedServices();
+  const { i18n } = useOnlineI18n();
   const { configs, error, inputs, jsonSchema } = useDmnRunnerState();
   const {
     onRowAdded,
@@ -57,12 +70,15 @@ export function DmnRunnerTable({ setPanelOpen }: Props) {
     setDmnRunnerMode,
     setDmnRunnerConfigInputs,
   } = useDmnRunnerDispatch();
-  const [dmnRunnerTableError, setDmnRunnerTableError] = useState<boolean>(false);
-  const dmnRunnerTableErrorBoundaryRef = useRef<ErrorBoundary>(null);
-  const { i18n } = useOnlineI18n();
+  const { drawerPanelDefaultSize, drawerPanelMinSize, drawerPanelMaxSize, forceDrawerPanelRefresh } =
+    useAnchoredUnitablesDrawerPanel({
+      inputsContainerRef,
+      outputsContainerRef,
+    });
+
+  // MEMOs
   const rowCount = useMemo(() => inputs?.length ?? 1, [inputs?.length]);
   const hasInputs = useMemo(() => !!jsonSchema?.definitions?.InputSet?.properties, [jsonSchema]);
-
   const jsonSchemaBridge = useMemo(
     () => new DmnUnitablesValidator(i18n.dmnRunner.table).getBridge(jsonSchema ?? {}),
     [i18n, jsonSchema]
@@ -71,14 +87,6 @@ export function DmnRunnerTable({ setPanelOpen }: Props) {
   useEffect(() => {
     dmnRunnerTableErrorBoundaryRef.current?.reset();
   }, [jsonSchema]);
-
-  const inputsContainerRef = useRef<HTMLDivElement>(null);
-  const outputsContainerRef = useRef<HTMLDivElement>(null);
-  const { drawerPanelDefaultSize, drawerPanelMinSize, drawerPanelMaxSize, forceDrawerPanelRefresh } =
-    useAnchoredUnitablesDrawerPanel({
-      inputsContainerRef,
-      outputsContainerRef,
-    });
 
   useEffect(() => {
     forceDrawerPanelRefresh();
@@ -99,7 +107,6 @@ export function DmnRunnerTable({ setPanelOpen }: Props) {
   //   useMemo(() => [".kie-tools--dmn-runner-table--drawer"], [])
   // );
 
-  const [dmnRunnerResults, setDmnRunnerResults] = useState<Array<DecisionResult[] | undefined>>([]);
   useCancelableEffect(
     useCallback(
       ({ canceled }) => {
@@ -137,9 +144,6 @@ export function DmnRunnerTable({ setPanelOpen }: Props) {
     )
   );
 
-  const inputsScrollableElementRef = useRef<{ current: HTMLDivElement | null }>({ current: null });
-  const outputsScrollableElementRef = useRef<{ current: HTMLDivElement | null }>({ current: null });
-
   useEffect(() => {
     inputsScrollableElementRef.current.current =
       document.querySelector(".kie-tools--dmn-runner-table--drawer")?.querySelector(".pf-c-drawer__content") ?? null;
@@ -150,8 +154,8 @@ export function DmnRunnerTable({ setPanelOpen }: Props) {
   const setWidth = useCallback(
     (newWidth: number, fieldName: string) => {
       setDmnRunnerConfigInputs((previousDmnRunnerConfigInputs) => {
-        const newDmnRunnerConfigInputs = cloneDeep(previousDmnRunnerConfigInputs);
-        set(newDmnRunnerConfigInputs, fieldName, newWidth);
+        const newDmnRunnerConfigInputs = cloneDeepObject(previousDmnRunnerConfigInputs);
+        setObjectValueByPath(newDmnRunnerConfigInputs, fieldName, newWidth);
         return newDmnRunnerConfigInputs;
       });
     },

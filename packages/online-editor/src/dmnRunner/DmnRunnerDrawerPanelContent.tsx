@@ -74,9 +74,25 @@ interface DmnRunnerStylesConfig {
 }
 
 export function DmnRunnerDrawerPanelContent(props: Props) {
+  // STATEs
+  const [formRef, setFormRef] = useState<HTMLFormElement | null>();
+  const [drawerError, setDrawerError] = useState<boolean>(false);
+  const [dmnRunnerResults, setDmnRunnerResults] = useState<DecisionResult[]>(); // TODO: move results to provider;
+  const [dmnRunnerResponseDiffs, setDmnRunnerResponseDiffs] = useState<object[]>();
+  const [dmnRunnerStylesConfig, setDmnRunnerStylesConfig] = useState<DmnRunnerStylesConfig>({
+    contentWidth: "50%",
+    contentHeight: "100%",
+    contentFlexDirection: "row",
+    buttonPosition: ButtonPosition.OUTPUT,
+  });
+  const [selectedRow, selectRow] = useState<string>(""); // TODO: remove?
+  const [rowSelectionIsOpen, openRowSelection] = useState<boolean>(false);
+
+  // REFs
+  const errorBoundaryRef = useRef<ErrorBoundary>(null);
+
   const extendedServices = useExtendedServices();
   const { i18n, locale } = useOnlineI18n();
-  const [formRef, setFormRef] = useState<HTMLFormElement | null>();
   const { currentInputRowIndex, error, inputs, mode, status, isExpanded, jsonSchema } = useDmnRunnerState();
   const {
     onRowAdded,
@@ -87,18 +103,7 @@ export function DmnRunnerDrawerPanelContent(props: Props) {
     setDmnRunnerInputs,
     setDmnRunnerMode,
   } = useDmnRunnerDispatch();
-  const [drawerError, setDrawerError] = useState<boolean>(false);
-  const errorBoundaryRef = useRef<ErrorBoundary>(null);
-  const [dmnRunnerResults, setDmnRunnerResults] = useState<DecisionResult[]>();
-  const [dmnRunnerResponseDiffs, setDmnRunnerResponseDiffs] = useState<object[]>();
-  const [dmnRunnerStylesConfig, setDmnRunnerStylesConfig] = useState<DmnRunnerStylesConfig>({
-    contentWidth: "50%",
-    contentHeight: "100%",
-    contentFlexDirection: "row",
-    buttonPosition: ButtonPosition.OUTPUT,
-  });
-  const [selectedRow, selectRow] = useState<string>("");
-  const [rowSelectionIsOpen, openRowSelection] = useState<boolean>(false);
+  const previousFormError = usePrevious(error);
 
   const formInputs: InputRow = useMemo(() => inputs[currentInputRowIndex], [inputs, currentInputRowIndex]);
 
@@ -206,7 +211,6 @@ export function DmnRunnerDrawerPanelContent(props: Props) {
     )
   );
 
-  const previousFormError = usePrevious(error);
   useCancelableEffect(
     useCallback(
       ({ canceled }) => {

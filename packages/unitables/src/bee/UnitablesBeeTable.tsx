@@ -37,7 +37,7 @@ import { ResizerStopBehavior } from "@kie-tools/boxed-expression-component/dist/
 import { AutoField } from "@kie-tools/uniforms-patternfly/dist/esm";
 import { useField } from "uniforms";
 import { AUTO_ROW_ID } from "../uniforms/UnitablesJsonSchemaBridge";
-import get from "lodash/get";
+import getObjectValueByPath from "lodash/get";
 import { useUnitablesContext } from "../UnitablesContext";
 
 export const UNITABLES_COLUMN_MIN_WIDTH = 150;
@@ -135,7 +135,7 @@ export function UnitablesBeeTable({
               accessor: getColumnAccessor(insideProperty),
               dataType: insideProperty.dataType,
               isRowIndexColumn: false,
-              width: get(rowsWidth, insideProperty.joinedName) ?? insideProperty.width,
+              width: getObjectValueByPath(rowsWidth, insideProperty.joinedName) ?? insideProperty.width,
               setWidth: setColumnWidth(insideProperty.joinedName),
               minWidth: UNITABLES_COLUMN_MIN_WIDTH,
             };
@@ -148,7 +148,7 @@ export function UnitablesBeeTable({
           accessor: getColumnAccessor(column),
           dataType: column.dataType,
           isRowIndexColumn: false,
-          width: get(rowsWidth, column.name) ?? (column.width as number),
+          width: getObjectValueByPath(rowsWidth, column.name) ?? (column.width as number),
           setWidth: setColumnWidth(column.name),
           minWidth: UNITABLES_COLUMN_MIN_WIDTH,
         };
@@ -198,18 +198,11 @@ function getColumnAccessor(c: UnitablesColumnType) {
 function UnitablesBeeTableCell({ joinedName }: BeeTableCellProps<ROWTYPE> & { joinedName: string }) {
   const { containerCellCoordinates } = useBeeTableCoordinates();
   const { setInternalChange } = useUnitablesContext();
-
-  const [{ field, value, onChange }, { schema }] = useField(joinedName, {});
+  const [{ field, value, onChange }] = useField(joinedName, {});
 
   const setValue = useCallback(
     (newValue) => {
-      console.log("NEW VALUE", newValue);
-      // parseInt
-      // parseFloat
-
-      // JSON.parse()
-
-      //
+      // TODO: parse values before checks; parseInt, parseFloat, JSON.parse();
       setInternalChange(true);
       if (
         (field.type === "number" && typeof newValue !== "number") ||
@@ -225,7 +218,7 @@ function UnitablesBeeTableCell({ joinedName }: BeeTableCellProps<ROWTYPE> & { jo
         onChange(newValue);
       }
     },
-    [field, onChange, schema]
+    [field, onChange, setInternalChange]
   );
 
   useBeeTableSelectableCellRef(

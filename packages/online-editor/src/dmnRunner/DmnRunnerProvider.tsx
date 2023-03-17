@@ -46,27 +46,34 @@ interface Props {
 }
 
 export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
-  const extendedServices = useExtendedServices();
-  const workspaces = useWorkspaces();
-  const { dmnRunnerPersistenceService, dmnRunnerPersistenceJson, dispatchDmnRunnerPersistenceJson } =
-    useDmnRunnerPersistenceDispatch();
-  useDmnRunnerPersistence(props.workspaceFile.workspaceId, props.workspaceFile.relativePath);
-
+  //  STATEs; TODO: change to reducer;
   const [canBeVisualized, setCanBeVisualized] = useState<boolean>(false);
   const [error, setError] = useState(false);
   const [jsonSchema, setJsonSchema] = useState<DmnSchema | undefined>(undefined);
   const [isExpanded, setExpanded] = useState(false);
   const [currentInputRowIndex, setCurrentInputRowIndex] = useState<number>(0);
 
+  // CUSTOM HOOKs
+  const extendedServices = useExtendedServices();
+  const workspaces = useWorkspaces();
+  const { dmnRunnerPersistenceService, dmnRunnerPersistenceJson, dispatchDmnRunnerPersistenceJson } =
+    useDmnRunnerPersistenceDispatch();
+  useDmnRunnerPersistence(props.workspaceFile.workspaceId, props.workspaceFile.relativePath);
+  const prevKieSandboxExtendedServicesStatus = usePrevious(extendedServices.status);
+
   const dmnRunnerInputs = useMemo(() => dmnRunnerPersistenceJson.inputs, [dmnRunnerPersistenceJson.inputs]);
   const dmnRunnerMode = useMemo(() => dmnRunnerPersistenceJson.configs.mode, [dmnRunnerPersistenceJson.configs.mode]);
-  const dmnRunnerPersistenceDebouncer = useMemo(() => {
-    return new DmnRunnerPersistenceDebouncer(dmnRunnerPersistenceService.companionFsService);
-  }, [dmnRunnerPersistenceService.companionFsService]);
+
+  const dmnRunnerPersistenceDebouncer = useMemo(
+    () => new DmnRunnerPersistenceDebouncer(dmnRunnerPersistenceService.companionFsService),
+    [dmnRunnerPersistenceService.companionFsService]
+  );
+
   const dmnRunnerConfigInputs = useMemo(
     () => dmnRunnerPersistenceJson?.configs?.inputs,
     [dmnRunnerPersistenceJson?.configs?.inputs]
   );
+  const status = useMemo(() => (isExpanded ? DmnRunnerStatus.AVAILABLE : DmnRunnerStatus.UNAVAILABLE), [isExpanded]);
 
   useEffect(() => {
     if (props.isEditorReady) {
@@ -75,10 +82,6 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
       setCanBeVisualized(false);
     }
   }, [props.isEditorReady]);
-
-  const status = useMemo(() => {
-    return isExpanded ? DmnRunnerStatus.AVAILABLE : DmnRunnerStatus.UNAVAILABLE;
-  }, [isExpanded]);
 
   const preparePayload = useCallback(
     async (formData?: InputRow) => {
@@ -128,7 +131,6 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
       });
   }, [extendedServices.status, extendedServices.client, props.workspaceFile.extension, preparePayload]);
 
-  const prevKieSandboxExtendedServicesStatus = usePrevious(extendedServices.status);
   useEffect(() => {
     if (props.workspaceFile.extension !== "dmn") {
       return;
