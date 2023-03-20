@@ -29,7 +29,7 @@ import {
   useBeeTableSelectableCellRef,
 } from "@kie-tools/boxed-expression-component/dist/selection/BeeTableSelectionContext";
 import * as React from "react";
-import { useCallback, useMemo, useReducer } from "react";
+import { useCallback, useMemo, useReducer, useEffect } from "react";
 import * as ReactTable from "react-table";
 import { UnitablesColumnType, UnitablesInputsConfigs, UnitablesCellConfigs } from "../UnitablesTypes";
 import "@kie-tools/boxed-expression-component/dist/@types/react-table";
@@ -204,19 +204,20 @@ function replacer(_: any, value: string) {
 function UnitablesBeeTableCell({ joinedName }: BeeTableCellProps<ROWTYPE> & { joinedName: string }) {
   const { containerCellCoordinates } = useBeeTableCoordinates();
   const { internalChange } = useUnitablesContext();
-  const [{ field, value, onChange }] = useField(joinedName, {});
+  const [{ name, field, value, onChange }] = useField(joinedName, {});
   const [autoFieldKey, forceUpdate] = useReducer((x) => x + 1, 0);
 
+  // TODO: Fix: x-dmn-type from field property: Any, Undefined, string, number, ...;
   const setValue = useCallback(
     (newValue) => {
       internalChange.current = true;
       if (field.enum) {
         onChange(field.placeholder);
+        // Changing the values using onChange will not re-render <select> fields;
+        // This ensure a re-render of the SelectField;
         forceUpdate();
-        // force re-render of AutoField here;
       } else if (field.type === "string") {
         if (typeof newValue === "string") {
-          // TODO: Fix: x-dmn-type from field property: Any, Undefined, string, number, ...;
           onChange(newValue);
         } else {
           onChange("");
@@ -273,17 +274,24 @@ function UnitablesBeeTableCell({ joinedName }: BeeTableCellProps<ROWTYPE> & { jo
     [internalChange, field, onChange]
   );
 
-  useBeeTableSelectableCellRef(
+  const { isActive } = useBeeTableSelectableCellRef(
     containerCellCoordinates?.rowIndex ?? 0,
     containerCellCoordinates?.columnIndex ?? 0,
     setValue,
     useCallback(() => {
       // TODO: remove " " from stringify
-      const a = JSON.stringify(value, replacer);
-      console.log(a);
-      return a;
+      return JSON.stringify(value, replacer);
     }, [value])
   );
+
+  // This useEffect forces the focus into the selected cell;
+  useEffect(() => {
+    if (isActive) {
+      (document.getElementsByName(name) as NodeListOf<HTMLInputElement> | undefined)?.[
+        containerCellCoordinates?.rowIndex ?? 0
+      ]?.focus();
+    }
+  }, [name, isActive, containerCellCoordinates]);
 
   return (
     <>
