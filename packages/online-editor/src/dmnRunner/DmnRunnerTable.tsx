@@ -39,11 +39,7 @@ import setObjectValueByPath from "lodash/set";
 import cloneDeep from "lodash/cloneDeep";
 import { DmnRunnerProviderActionType } from "./DmnRunnerProvider";
 
-interface Props {
-  setPanelOpen: React.Dispatch<React.SetStateAction<PanelId>>;
-}
-
-export function DmnRunnerTable({ setPanelOpen }: Props) {
+export function DmnRunnerTable() {
   // STATEs
   const [dmnRunnerTableError, setDmnRunnerTableError] = useState<boolean>(false);
   const [dmnRunnerResults, setDmnRunnerResults] = useState<Array<DecisionResult[] | undefined>>([]); // TODO: move results to provider;

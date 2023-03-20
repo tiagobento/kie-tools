@@ -56,6 +56,7 @@ interface EditorPageDockDrawerProps {
 
 export interface EditorPageDockDrawerRef {
   open: (panelId: PanelId) => void;
+  toggle: (panelId: PanelId) => void;
   close: () => void;
   getNotificationsPanel: () => NotificationsPanelRef | undefined;
   setNotifications: (tabName: string, path: string, notifications: Notification[]) => void;
@@ -108,34 +109,37 @@ export const EditorPageDockDrawer = React.forwardRef<
     [notificationsPanel, notificationsToggle]
   );
 
-  const onOpen = useCallback((panelId: PanelId) => {
-    setPanel((previousPanel) => {
-      if (previousPanel !== panelId) {
-        return panelId;
-      }
-      return PanelId.NONE;
-    });
-  }, []);
+  const onToggle = useCallback(
+    (panelId: PanelId) => {
+      setPanel((previousPanel) => {
+        if (previousPanel !== panelId) {
+          if (panelId === PanelId.DMN_RUNNER_TABLE && !isExpanded) {
+            dmnRunnerDispatcher({ type: DmnRunnerProviderActionType.DEFAULT, newState: { isExpanded: true } });
+          }
+          return panelId;
+        }
+        return PanelId.NONE;
+      });
+    },
+    [isExpanded, dmnRunnerDispatcher]
+  );
 
   useLayoutEffect(() => {
-    if (mode === DmnRunnerMode.TABLE && isExpanded) {
-      setPanel(PanelId.DMN_RUNNER_TABLE);
-    } else if (mode === DmnRunnerMode.TABLE) {
-      dmnRunnerDispatcher({ type: DmnRunnerProviderActionType.DEFAULT, newState: { isExpanded: true } });
-    } else if (!isExpanded) {
+    if (mode === DmnRunnerMode.FORM && panel === PanelId.DMN_RUNNER_TABLE) {
       setPanel(PanelId.NONE);
     }
-  }, [mode, isExpanded, dmnRunnerDispatcher]);
+  }, [mode, panel]);
 
   useImperativeHandle(
     forwardRef,
     () => ({
-      open: (panelId: PanelId) => onOpen(panelId),
-      close: () => onOpen(PanelId.NONE),
+      open: (panelId: PanelId) => setPanel(panelId),
+      toggle: (panelId: PanelId) => onToggle(panelId),
+      close: () => setPanel(PanelId.NONE),
       getNotificationsPanel: () => notificationsPanel,
       setNotifications,
     }),
-    [notificationsPanel, onOpen, setNotifications]
+    [notificationsPanel, onToggle, setNotifications]
   );
 
   const dockIsDisabled = useMemo(() => {
@@ -169,7 +173,7 @@ export const EditorPageDockDrawer = React.forwardRef<
           isDisabled={dockIsDisabled}
           disabledReason={dockIsDisabledReason}
           isSelected={panel === PanelId.DMN_RUNNER_TABLE}
-          onChange={(id) => onOpen(id)}
+          onChange={(id) => onToggle(id)}
         />
       );
     }
@@ -180,12 +184,12 @@ export const EditorPageDockDrawer = React.forwardRef<
         disabledReason={dockIsDisabledReason}
         ref={notificationsToggleRef}
         isSelected={panel === PanelId.NOTIFICATIONS_PANEL}
-        onChange={(id) => onOpen(id)}
+        onChange={(id) => onToggle(id)}
       />
     );
 
     return items;
-  }, [isDmnTableMode, dockIsDisabled, panel, dockIsDisabledReason, onOpen, notificationsToggleRef]);
+  }, [isDmnTableMode, dockIsDisabled, panel, dockIsDisabledReason, notificationsToggleRef, onToggle]);
 
   useEffect(() => {
     if (
@@ -193,9 +197,9 @@ export const EditorPageDockDrawer = React.forwardRef<
         extendedServices.status === KieSandboxExtendedServicesStatus.NOT_RUNNING) &&
       panel === PanelId.DMN_RUNNER_TABLE
     ) {
-      onOpen(PanelId.NONE);
+      setPanel(PanelId.NONE);
     }
-  }, [extendedServices.status, panel, props.workspaceFile.relativePath, onOpen]);
+  }, [extendedServices.status, panel, props.workspaceFile.relativePath]);
 
   return (
     <>
@@ -207,7 +211,7 @@ export const EditorPageDockDrawer = React.forwardRef<
                 {panel === PanelId.NOTIFICATIONS_PANEL && (
                   <NotificationsPanel ref={notificationsPanelRef} tabNames={notificationsPanelTabNames} />
                 )}
-                {panel === PanelId.DMN_RUNNER_TABLE && isDmnTableMode && <DmnRunnerTable setPanelOpen={onOpen} />}
+                {panel === PanelId.DMN_RUNNER_TABLE && isDmnTableMode && isExpanded && <DmnRunnerTable />}
               </DrawerPanelContent>
             )
           }

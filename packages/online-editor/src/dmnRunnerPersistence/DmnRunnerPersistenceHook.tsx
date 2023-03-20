@@ -25,14 +25,11 @@ import { decoder } from "@kie-tools-core/workspaces-git-fs/dist/encoderdecoder/E
 import { CompanionFsServiceBroadcastEvents } from "../companionFs/CompanionFsService";
 import { DmnRunnerPersistenceJson } from "./DmnRunnerPersistenceService";
 import { getNewDefaultDmnRunnerPersistenceJson } from "./DmnRunnerPersistenceService";
-import { DmnRunnerPersistenceDebouncer } from "./DmnRunnerPersistenceDebouncer";
 
 // Handle the companion FS events;
 export function useDmnRunnerPersistence(workspaceId?: string, workspaceFileRelativePath?: string) {
-  const { dmnRunnerPersistenceService, dmnRunnerPersistenceJsonDispatcher } = useDmnRunnerPersistenceDispatch();
-  const dmnRunnerPersistenceDebouncer = useMemo(() => {
-    return new DmnRunnerPersistenceDebouncer(dmnRunnerPersistenceService.companionFsService);
-  }, [dmnRunnerPersistenceService.companionFsService]);
+  const { dmnRunnerPersistenceService, dmnRunnerPersistenceJsonDispatcher, updatePersistenceJsonDebouce } =
+    useDmnRunnerPersistenceDispatch();
 
   // When another TAB updates the FS, it should sync up
   useCancelableEffect(
@@ -66,7 +63,7 @@ export function useDmnRunnerPersistence(workspaceId?: string, workspaceFileRelat
               dmnRunnerPersistenceService.parseDmnRunnerPersistenceJson(companionEvent.content);
 
             dmnRunnerPersistenceJsonDispatcher({
-              dmnRunnerPersistenceDebouncer,
+              updatePersistenceJsonDebouce,
               workspaceId: workspaceId,
               workspaceFileRelativePath: workspaceFileRelativePath,
               type: DmnRunnerPersistenceReducerActionType.DEFAULT,
@@ -81,7 +78,7 @@ export function useDmnRunnerPersistence(workspaceId?: string, workspaceFileRelat
         };
       },
       [
-        dmnRunnerPersistenceDebouncer,
+        updatePersistenceJsonDebouce,
         dmnRunnerPersistenceService,
         workspaceId,
         workspaceFileRelativePath,
@@ -122,7 +119,7 @@ export function useDmnRunnerPersistence(workspaceId?: string, workspaceFileRelat
                 decoder.decode(content)
               );
               dmnRunnerPersistenceJsonDispatcher({
-                dmnRunnerPersistenceDebouncer,
+                updatePersistenceJsonDebouce,
                 workspaceId: workspaceId,
                 workspaceFileRelativePath: workspaceFileRelativePath,
                 type: DmnRunnerPersistenceReducerActionType.DEFAULT,
@@ -132,7 +129,7 @@ export function useDmnRunnerPersistence(workspaceId?: string, workspaceFileRelat
           });
       },
       [
-        dmnRunnerPersistenceDebouncer,
+        updatePersistenceJsonDebouce,
         dmnRunnerPersistenceService,
         workspaceId,
         workspaceFileRelativePath,

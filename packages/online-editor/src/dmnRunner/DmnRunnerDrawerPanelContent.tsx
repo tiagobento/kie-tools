@@ -311,17 +311,13 @@ export function DmnRunnerDrawerPanelContent(props: Props) {
   );
 
   const onAddNewRow = useCallback(() => {
-    dmnRunnerDispatcher({
-      type: DmnRunnerProviderActionType.ADD_ROW,
-      newState: (previous) => {
-        onRowAdded({ beforeIndex: previous.currentInputIndex + 1 });
-      },
-    });
-  }, [onRowAdded, dmnRunnerDispatcher]);
+    onRowAdded({ beforeIndex: currentInputIndex + 1 });
+  }, [onRowAdded, currentInputIndex]);
 
   const onChangeToTableView = useCallback(() => {
     setDmnRunnerMode(DmnRunnerMode.TABLE);
-  }, [setDmnRunnerMode]);
+    props.editorPageDock?.open(PanelId.DMN_RUNNER_TABLE);
+  }, [props.editorPageDock, setDmnRunnerMode]);
 
   return (
     <DrawerPanelContent
