@@ -29,7 +29,7 @@ import { DmnRunnerPersistenceDebouncer } from "./DmnRunnerPersistenceDebouncer";
 
 // Handle the companion FS events;
 export function useDmnRunnerPersistence(workspaceId?: string, workspaceFileRelativePath?: string) {
-  const { dmnRunnerPersistenceService, dispatchDmnRunnerPersistenceJson } = useDmnRunnerPersistenceDispatch();
+  const { dmnRunnerPersistenceService, dmnRunnerPersistenceJsonDispatcher } = useDmnRunnerPersistenceDispatch();
   const dmnRunnerPersistenceDebouncer = useMemo(() => {
     return new DmnRunnerPersistenceDebouncer(dmnRunnerPersistenceService.companionFsService);
   }, [dmnRunnerPersistenceService.companionFsService]);
@@ -65,7 +65,7 @@ export function useDmnRunnerPersistence(workspaceId?: string, workspaceFileRelat
             const dmnRunnerPersistenceJson: DmnRunnerPersistenceJson =
               dmnRunnerPersistenceService.parseDmnRunnerPersistenceJson(companionEvent.content);
 
-            dispatchDmnRunnerPersistenceJson({
+            dmnRunnerPersistenceJsonDispatcher({
               dmnRunnerPersistenceDebouncer,
               workspaceId: workspaceId,
               workspaceFileRelativePath: workspaceFileRelativePath,
@@ -85,7 +85,7 @@ export function useDmnRunnerPersistence(workspaceId?: string, workspaceFileRelat
         dmnRunnerPersistenceService,
         workspaceId,
         workspaceFileRelativePath,
-        dispatchDmnRunnerPersistenceJson,
+        dmnRunnerPersistenceJsonDispatcher,
       ]
     )
   );
@@ -121,7 +121,7 @@ export function useDmnRunnerPersistence(workspaceId?: string, workspaceFileRelat
               const dmnRunnerPersistenceJson = dmnRunnerPersistenceService.parseDmnRunnerPersistenceJson(
                 decoder.decode(content)
               );
-              dispatchDmnRunnerPersistenceJson({
+              dmnRunnerPersistenceJsonDispatcher({
                 dmnRunnerPersistenceDebouncer,
                 workspaceId: workspaceId,
                 workspaceFileRelativePath: workspaceFileRelativePath,
@@ -136,7 +136,7 @@ export function useDmnRunnerPersistence(workspaceId?: string, workspaceFileRelat
         dmnRunnerPersistenceService,
         workspaceId,
         workspaceFileRelativePath,
-        dispatchDmnRunnerPersistenceJson,
+        dmnRunnerPersistenceJsonDispatcher,
       ]
     )
   );

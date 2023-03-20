@@ -82,7 +82,7 @@ function dmnRunnerPersistenceJsonReducer(
 const initialDmnRunnerPersistenceJson = getNewDefaultDmnRunnerPersistenceJson();
 
 export function DmnRunnerPersistenceDispatchContextProvider(props: React.PropsWithChildren<{}>) {
-  const [dmnRunnerPersistenceJson, dispatchDmnRunnerPersistenceJson] = useReducer(
+  const [dmnRunnerPersistenceJson, dmnRunnerPersistenceJsonDispatcher] = useReducer(
     dmnRunnerPersistenceJsonReducer,
     initialDmnRunnerPersistenceJson
   );
@@ -103,7 +103,7 @@ export function DmnRunnerPersistenceDispatchContextProvider(props: React.PropsWi
       // keep current mode;
       newPersistenceJson.configs.mode = previousDmnRunnerPersisnteceJson.configs.mode;
 
-      dispatchDmnRunnerPersistenceJson({
+      dmnRunnerPersistenceJsonDispatcher({
         dmnRunnerPersistenceDebouncer,
         workspaceId: workspaceFile.workspaceId,
         workspaceFileRelativePath: workspaceFile.relativePath,
@@ -150,7 +150,7 @@ export function DmnRunnerPersistenceDispatchContextProvider(props: React.PropsWi
         getPersistenceJsonForDownload,
         uploadPersistenceJson,
         dmnRunnerPersistenceJson,
-        dispatchDmnRunnerPersistenceJson,
+        dmnRunnerPersistenceJsonDispatcher,
       }}
     >
       {props.children}

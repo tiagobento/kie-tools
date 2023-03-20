@@ -15,7 +15,7 @@
  */
 
 import * as React from "react";
-import { PropsWithChildren, useCallback, useEffect, useMemo, useState } from "react";
+import { PropsWithChildren, useCallback, useEffect, useMemo, useState, useReducer } from "react";
 import { useWorkspaces, WorkspaceFile } from "@kie-tools-core/workspaces-git-fs/dist/context/WorkspacesContext";
 import { DmnRunnerMode, DmnRunnerStatus } from "./DmnRunnerStatus";
 import { DmnRunnerDispatchContext, DmnRunnerStateContext } from "./DmnRunnerContext";
@@ -27,7 +27,7 @@ import { DmnSchema, InputRow } from "@kie-tools/form-dmn";
 import { useDmnRunnerPersistence } from "../dmnRunnerPersistence/DmnRunnerPersistenceHook";
 import { DmnLanguageService } from "@kie-tools/dmn-language-service";
 import { decoder } from "@kie-tools-core/workspaces-git-fs/dist/encoderdecoder/EncoderDecoder";
-import { generateUuid, DEFAULT_DMN_RUNNER_CONFIG_INPUT } from "../dmnRunnerPersistence/DmnRunnerPersistenceService";
+import { generateUuid } from "../dmnRunnerPersistence/DmnRunnerPersistenceService";
 import {
   useDmnRunnerPersistenceDispatch,
   DmnRunnerPersistenceReducerActionType,
@@ -42,18 +42,65 @@ interface Props {
   dmnLanguageService?: DmnLanguageService;
 }
 
+export interface DmnRunnerProviderState {
+  error: boolean;
+  isExpanded: boolean;
+  currentInputIndex: number;
+}
+
+const initialState: DmnRunnerProviderState = {
+  error: false,
+  isExpanded: false,
+  currentInputIndex: 0,
+};
+
+export enum DmnRunnerProviderActionType {
+  DEFAULT,
+  ADD_ROW,
+  TOGGLE_EXPANDED,
+}
+
+interface DmnRunnerProviderActionToggleExpanded {
+  type: DmnRunnerProviderActionType.TOGGLE_EXPANDED;
+}
+
+interface DmnRunnerProviderActionAddRow {
+  type: DmnRunnerProviderActionType.ADD_ROW;
+  newState: (previous: DmnRunnerProviderState) => void;
+}
+
+interface DmnRunnerProviderActionDefault {
+  type: DmnRunnerProviderActionType.DEFAULT;
+  newState: Partial<DmnRunnerProviderState>;
+}
+
+export type DmnRunnerProviderAction =
+  | DmnRunnerProviderActionDefault
+  | DmnRunnerProviderActionAddRow
+  | DmnRunnerProviderActionToggleExpanded;
+
+function dmnRunnerProviderReducer(dmnRunnerProvider: DmnRunnerProviderState, action: DmnRunnerProviderAction) {
+  switch (action.type) {
+    case DmnRunnerProviderActionType.ADD_ROW:
+      action.newState(dmnRunnerProvider);
+      return { ...dmnRunnerProvider, currentInputIndex: dmnRunnerProvider.currentInputIndex + 1 };
+    case DmnRunnerProviderActionType.TOGGLE_EXPANDED:
+      return { ...dmnRunnerProvider, isExpanded: !dmnRunnerProvider.isExpanded };
+    default:
+      return { ...dmnRunnerProvider, ...action.newState };
+  }
+}
+
 export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
-  //  STATEs; TODO: change to reducer;
+  const [dmnRunnerProvider, dmnRunnerDispatcher] = useReducer(dmnRunnerProviderReducer, initialState);
+
   const [canBeVisualized, setCanBeVisualized] = useState<boolean>(false);
-  const [error, setError] = useState(false);
   const [jsonSchema, setJsonSchema] = useState<DmnSchema | undefined>(undefined);
-  const [isExpanded, setExpanded] = useState(false);
-  const [currentInputRowIndex, setCurrentInputRowIndex] = useState<number>(0);
 
   // CUSTOM HOOKs
   const extendedServices = useExtendedServices();
   const workspaces = useWorkspaces();
-  const { dmnRunnerPersistenceService, dmnRunnerPersistenceJson, dispatchDmnRunnerPersistenceJson } =
+  const { dmnRunnerPersistenceService, dmnRunnerPersistenceJson, dmnRunnerPersistenceJsonDispatcher } =
     useDmnRunnerPersistenceDispatch();
   useDmnRunnerPersistence(props.workspaceFile.workspaceId, props.workspaceFile.relativePath);
   const prevKieSandboxExtendedServicesStatus = usePrevious(extendedServices.status);
@@ -70,7 +117,10 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
     () => dmnRunnerPersistenceJson?.configs?.inputs,
     [dmnRunnerPersistenceJson?.configs?.inputs]
   );
-  const status = useMemo(() => (isExpanded ? DmnRunnerStatus.AVAILABLE : DmnRunnerStatus.UNAVAILABLE), [isExpanded]);
+  const status = useMemo(
+    () => (dmnRunnerProvider.isExpanded ? DmnRunnerStatus.AVAILABLE : DmnRunnerStatus.UNAVAILABLE),
+    [dmnRunnerProvider]
+  );
 
   useEffect(() => {
     if (props.isEditorReady) {
@@ -112,7 +162,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
       props.workspaceFile.extension !== "dmn" ||
       extendedServices.status !== KieSandboxExtendedServicesStatus.RUNNING
     ) {
-      setExpanded(false);
+      dmnRunnerDispatcher({ type: DmnRunnerProviderActionType.DEFAULT, newState: { isExpanded: false } });
       return;
     }
 
@@ -124,7 +174,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
       })
       .catch((err) => {
         console.error(err);
-        setError(true);
+        dmnRunnerDispatcher({ type: DmnRunnerProviderActionType.DEFAULT, newState: { error: true } });
       });
   }, [extendedServices.status, extendedServices.client, props.workspaceFile.extension, preparePayload]);
 
@@ -137,7 +187,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
       extendedServices.status === KieSandboxExtendedServicesStatus.STOPPED ||
       extendedServices.status === KieSandboxExtendedServicesStatus.NOT_RUNNING
     ) {
-      setExpanded(false);
+      dmnRunnerDispatcher({ type: DmnRunnerProviderActionType.DEFAULT, newState: { isExpanded: false } });
     }
   }, [prevKieSandboxExtendedServicesStatus, extendedServices.status, props.workspaceFile.extension]);
 
@@ -149,7 +199,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
         previousConfigInputs: UnitablesInputsConfigs
       ) => UnitablesInputsConfigs | UnitablesInputsConfigs;
     }) => {
-      dispatchDmnRunnerPersistenceJson({
+      dmnRunnerPersistenceJsonDispatcher({
         dmnRunnerPersistenceDebouncer,
         workspaceFileRelativePath: props.workspaceFile.relativePath,
         workspaceId: props.workspaceFile.workspaceId,
@@ -179,7 +229,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
     },
     [
       dmnRunnerPersistenceDebouncer,
-      dispatchDmnRunnerPersistenceJson,
+      dmnRunnerPersistenceJsonDispatcher,
       props.workspaceFile.relativePath,
       props.workspaceFile.workspaceId,
     ]
@@ -187,7 +237,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
 
   const setDmnRunnerInputs = useCallback(
     (newInputsRow: (previousInputs: Array<InputRow>) => Array<InputRow> | Array<InputRow>) => {
-      dispatchDmnRunnerPersistenceJson({
+      dmnRunnerPersistenceJsonDispatcher({
         dmnRunnerPersistenceDebouncer,
         workspaceFileRelativePath: props.workspaceFile.relativePath,
         workspaceId: props.workspaceFile.workspaceId,
@@ -205,7 +255,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
     },
     [
       dmnRunnerPersistenceDebouncer,
-      dispatchDmnRunnerPersistenceJson,
+      dmnRunnerPersistenceJsonDispatcher,
       props.workspaceFile.relativePath,
       props.workspaceFile.workspaceId,
     ]
@@ -213,7 +263,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
 
   const setDmnRunnerMode = useCallback(
     (newMode: DmnRunnerMode) => {
-      dispatchDmnRunnerPersistenceJson({
+      dmnRunnerPersistenceJsonDispatcher({
         dmnRunnerPersistenceDebouncer,
         workspaceFileRelativePath: props.workspaceFile.relativePath,
         workspaceId: props.workspaceFile.workspaceId,
@@ -227,7 +277,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
     },
     [
       dmnRunnerPersistenceDebouncer,
-      dispatchDmnRunnerPersistenceJson,
+      dmnRunnerPersistenceJsonDispatcher,
       props.workspaceFile.relativePath,
       props.workspaceFile.workspaceId,
     ]
@@ -237,7 +287,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
     (
       newConfigInputs: (previousConfigInputs: UnitablesInputsConfigs) => UnitablesInputsConfigs | UnitablesInputsConfigs
     ) => {
-      dispatchDmnRunnerPersistenceJson({
+      dmnRunnerPersistenceJsonDispatcher({
         dmnRunnerPersistenceDebouncer,
         workspaceFileRelativePath: props.workspaceFile.relativePath,
         workspaceId: props.workspaceFile.workspaceId,
@@ -257,7 +307,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
     },
     [
       dmnRunnerPersistenceDebouncer,
-      dispatchDmnRunnerPersistenceJson,
+      dmnRunnerPersistenceJsonDispatcher,
       props.workspaceFile.relativePath,
       props.workspaceFile.workspaceId,
     ]
@@ -288,7 +338,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
 
   const onRowAdded = useCallback(
     (args: { beforeIndex: number }) => {
-      dispatchDmnRunnerPersistenceJson({
+      dmnRunnerPersistenceJsonDispatcher({
         dmnRunnerPersistenceDebouncer,
         workspaceFileRelativePath: props.workspaceFile.relativePath,
         workspaceId: props.workspaceFile.workspaceId,
@@ -303,12 +353,15 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
           return newPersistenceJson;
         },
       });
-      setCurrentInputRowIndex(args.beforeIndex);
+      dmnRunnerDispatcher({
+        type: DmnRunnerProviderActionType.DEFAULT,
+        newState: { currentInputIndex: args.beforeIndex },
+      });
     },
     [
       getDefaultValuesForInputs,
       dmnRunnerPersistenceDebouncer,
-      dispatchDmnRunnerPersistenceJson,
+      dmnRunnerPersistenceJsonDispatcher,
       props.workspaceFile.relativePath,
       props.workspaceFile.workspaceId,
     ]
@@ -316,7 +369,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
 
   const onRowDuplicated = useCallback(
     (args: { rowIndex: number }) => {
-      dispatchDmnRunnerPersistenceJson({
+      dmnRunnerPersistenceJsonDispatcher({
         dmnRunnerPersistenceDebouncer,
         workspaceFileRelativePath: props.workspaceFile.relativePath,
         workspaceId: props.workspaceFile.workspaceId,
@@ -334,7 +387,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
     },
     [
       dmnRunnerPersistenceDebouncer,
-      dispatchDmnRunnerPersistenceJson,
+      dmnRunnerPersistenceJsonDispatcher,
       props.workspaceFile.relativePath,
       props.workspaceFile.workspaceId,
     ]
@@ -342,7 +395,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
 
   const onRowReset = useCallback(
     (args: { rowIndex: number }) => {
-      dispatchDmnRunnerPersistenceJson({
+      dmnRunnerPersistenceJsonDispatcher({
         dmnRunnerPersistenceDebouncer,
         workspaceFileRelativePath: props.workspaceFile.relativePath,
         workspaceId: props.workspaceFile.workspaceId,
@@ -359,7 +412,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
     [
       getDefaultValuesForInputs,
       dmnRunnerPersistenceDebouncer,
-      dispatchDmnRunnerPersistenceJson,
+      dmnRunnerPersistenceJsonDispatcher,
       props.workspaceFile.relativePath,
       props.workspaceFile.workspaceId,
     ]
@@ -367,7 +420,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
 
   const onRowDeleted = useCallback(
     (args: { rowIndex: number }) => {
-      dispatchDmnRunnerPersistenceJson({
+      dmnRunnerPersistenceJsonDispatcher({
         dmnRunnerPersistenceDebouncer,
         workspaceFileRelativePath: props.workspaceFile.relativePath,
         workspaceId: props.workspaceFile.workspaceId,
@@ -388,7 +441,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
     },
     [
       dmnRunnerPersistenceDebouncer,
-      dispatchDmnRunnerPersistenceJson,
+      dmnRunnerPersistenceJsonDispatcher,
       props.workspaceFile.relativePath,
       props.workspaceFile.workspaceId,
     ]
@@ -396,57 +449,50 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
 
   const dmnRunnerDispatch = useMemo(
     () => ({
+      dmnRunnerDispatcher,
       onRowAdded,
+      onRowDeleted,
       onRowDuplicated,
       onRowReset,
-      onRowDeleted,
       preparePayload,
-      setCurrentInputRowIndex,
-      setError,
-      setExpanded,
-      setDmnRunnerPersistenceJson,
+      setDmnRunnerConfigInputs,
       setDmnRunnerInputs,
       setDmnRunnerMode,
-      setDmnRunnerConfigInputs,
+      setDmnRunnerPersistenceJson,
     }),
     [
       onRowAdded,
+      onRowDeleted,
       onRowDuplicated,
       onRowReset,
-      onRowDeleted,
       preparePayload,
-      setCurrentInputRowIndex,
-      setError,
-      setExpanded,
-      setDmnRunnerPersistenceJson,
+      setDmnRunnerConfigInputs,
       setDmnRunnerInputs,
       setDmnRunnerMode,
-      setDmnRunnerConfigInputs,
+      setDmnRunnerPersistenceJson,
     ]
   );
 
   const dmnRunnerState = useMemo(
     () => ({
-      currentInputRowIndex,
-      error,
+      currentInputIndex: dmnRunnerProvider.currentInputIndex,
+      error: dmnRunnerProvider.error,
       dmnRunnerPersistenceJson,
       configs: dmnRunnerConfigInputs,
       inputs: dmnRunnerInputs,
-      isExpanded,
+      isExpanded: dmnRunnerProvider.isExpanded,
       canBeVisualized,
       jsonSchema,
       mode: dmnRunnerMode,
       status,
     }),
     [
-      error,
-      currentInputRowIndex,
+      canBeVisualized,
       dmnRunnerConfigInputs,
-      dmnRunnerPersistenceJson,
       dmnRunnerInputs,
       dmnRunnerMode,
-      isExpanded,
-      canBeVisualized,
+      dmnRunnerPersistenceJson,
+      dmnRunnerProvider,
       jsonSchema,
       status,
     ]

@@ -37,6 +37,7 @@ import { useExtendedServices } from "../kieSandboxExtendedServices/KieSandboxExt
 import "./DmnRunnerTable.css";
 import setObjectValueByPath from "lodash/set";
 import cloneDeep from "lodash/cloneDeep";
+import { DmnRunnerProviderActionType } from "./DmnRunnerProvider";
 
 interface Props {
   setPanelOpen: React.Dispatch<React.SetStateAction<PanelId>>;
@@ -59,13 +60,12 @@ export function DmnRunnerTable({ setPanelOpen }: Props) {
   const { i18n } = useOnlineI18n();
   const { configs, error, inputs, jsonSchema } = useDmnRunnerState();
   const {
+    dmnRunnerDispatcher,
     onRowAdded,
     onRowDuplicated,
     onRowReset,
     onRowDeleted,
     preparePayload,
-    setCurrentInputRowIndex,
-    setError,
     setDmnRunnerInputs,
     setDmnRunnerMode,
     setDmnRunnerConfigInputs,
@@ -95,10 +95,9 @@ export function DmnRunnerTable({ setPanelOpen }: Props) {
   const openRow = useCallback(
     (rowIndex: number) => {
       setDmnRunnerMode(DmnRunnerMode.FORM);
-      setCurrentInputRowIndex(rowIndex);
-      setPanelOpen(PanelId.NONE);
+      dmnRunnerDispatcher({ type: DmnRunnerProviderActionType.DEFAULT, newState: { currentInputIndex: rowIndex } });
     },
-    [setDmnRunnerMode, setCurrentInputRowIndex, setPanelOpen]
+    [setDmnRunnerMode, dmnRunnerDispatcher]
   );
 
   // FIXME: Prevent shortcuts when editing on dmn runner table;
@@ -129,7 +128,7 @@ export function DmnRunnerTable({ setPanelOpen }: Props) {
             const runnerResults: Array<DecisionResult[] | undefined> = [];
             for (const result of results) {
               if (Object.hasOwnProperty.call(result, "details") && Object.hasOwnProperty.call(result, "stack")) {
-                setError(true);
+                dmnRunnerDispatcher({ type: DmnRunnerProviderActionType.DEFAULT, newState: { error: true } });
                 break;
               }
               if (result) {
@@ -140,7 +139,7 @@ export function DmnRunnerTable({ setPanelOpen }: Props) {
             setDmnRunnerResults(runnerResults);
           });
       },
-      [preparePayload, setError, inputs, extendedServices.client]
+      [preparePayload, dmnRunnerDispatcher, inputs, extendedServices.client]
     )
   );
 
@@ -207,7 +206,9 @@ export function DmnRunnerTable({ setPanelOpen }: Props) {
                       rows={inputs}
                       setRows={setDmnRunnerInputs}
                       error={error}
-                      setError={setError}
+                      setError={(error: boolean) =>
+                        dmnRunnerDispatcher({ type: DmnRunnerProviderActionType.DEFAULT, newState: { error } })
+                      }
                       jsonSchemaBridge={jsonSchemaBridge}
                       propertiesEntryPath={"definitions.InputSet"}
                       containerRef={inputsContainerRef}

@@ -49,7 +49,7 @@ interface DmnRunnerPersistenceDispatchContextType {
   getPersistenceJsonForDownload: (workspaceFile: WorkspaceFile) => Promise<Blob | undefined>;
   uploadPersistenceJson: (workspaceFile: WorkspaceFile, file: File) => void;
   dmnRunnerPersistenceJson: DmnRunnerPersistenceJson;
-  dispatchDmnRunnerPersistenceJson: React.Dispatch<DmnRunnerPersistenceReducerAction>;
+  dmnRunnerPersistenceJsonDispatcher: React.Dispatch<DmnRunnerPersistenceReducerAction>;
 }
 
 export const DmnRunnerPersistenceDispatchContext = createContext<DmnRunnerPersistenceDispatchContextType>({} as any);
