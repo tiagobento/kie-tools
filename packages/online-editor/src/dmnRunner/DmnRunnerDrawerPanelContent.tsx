@@ -85,7 +85,6 @@ export function DmnRunnerDrawerPanelContent(props: Props) {
     contentFlexDirection: "row",
     buttonPosition: ButtonPosition.OUTPUT,
   });
-  const [selectedRow, selectRow] = useState<string>("Row 1");
   const [rowSelectionIsOpen, openRowSelection] = useState<boolean>(false);
 
   // REFs
@@ -306,24 +305,23 @@ export function DmnRunnerDrawerPanelContent(props: Props) {
           component={"button"}
           key={rowIndex}
           onClick={() => {
-            selectRow(getRow(rowIndex + 1));
             setCurrentInputRowIndex(rowIndex);
           }}
         >
           {getRow(rowIndex + 1)}
         </DropdownItem>
       )),
-    [inputs, setCurrentInputRowIndex, selectRow, getRow]
+    [inputs, setCurrentInputRowIndex, getRow]
   );
 
   const onAddNewRow = useCallback(() => {
     setCurrentInputRowIndex((currentInputRowIndex) => {
       const newInputRowIndex = currentInputRowIndex + 1;
       onRowAdded({ beforeIndex: newInputRowIndex });
-      selectRow(getRow(newInputRowIndex + 1));
+      setCurrentInputRowIndex(newInputRowIndex);
       return newInputRowIndex;
     });
-  }, [onRowAdded, setCurrentInputRowIndex, getRow]);
+  }, [onRowAdded, setCurrentInputRowIndex]);
 
   const onChangeToTableView = useCallback(() => {
     setDmnRunnerMode(DmnRunnerMode.TABLE);
@@ -387,7 +385,7 @@ export function DmnRunnerDrawerPanelContent(props: Props) {
                                 >
                                   <TextContent>
                                     <Text component={"h3"}>
-                                      {i18n.terms.inputs} ({selectedRow}) <CaretDownIcon />
+                                      {i18n.terms.inputs} ({getRow(currentInputRowIndex + 1)}) <CaretDownIcon />
                                     </Text>
                                   </TextContent>
                                 </DropdownToggle>
