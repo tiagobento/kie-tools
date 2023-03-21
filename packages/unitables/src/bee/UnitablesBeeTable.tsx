@@ -29,7 +29,7 @@ import {
   useBeeTableSelectableCellRef,
 } from "@kie-tools/boxed-expression-component/dist/selection/BeeTableSelectionContext";
 import * as React from "react";
-import { useCallback, useMemo, useReducer, useEffect } from "react";
+import { useCallback, useMemo, useReducer, useEffect, useRef } from "react";
 import * as ReactTable from "react-table";
 import { UnitablesColumnType, UnitablesInputsConfigs, UnitablesCellConfigs } from "../UnitablesTypes";
 import "@kie-tools/boxed-expression-component/dist/@types/react-table";
@@ -204,8 +204,9 @@ function replacer(_: any, value: string) {
 function UnitablesBeeTableCell({ joinedName }: BeeTableCellProps<ROWTYPE> & { joinedName: string }) {
   const { containerCellCoordinates } = useBeeTableCoordinates();
   const { internalChange } = useUnitablesContext();
-  const [{ name, field, value, onChange }] = useField(joinedName, {});
+  const [{ field, value, onChange }] = useField(joinedName, {});
   const [autoFieldKey, forceUpdate] = useReducer((x) => x + 1, 0);
+  const cellRef = useRef<HTMLDivElement | null>(null);
 
   // TODO: Fix: x-dmn-type from field property: Any, Undefined, string, number, ...;
   const setValue = useCallback(
@@ -213,7 +214,7 @@ function UnitablesBeeTableCell({ joinedName }: BeeTableCellProps<ROWTYPE> & { jo
       internalChange.current = true;
       if (field.enum) {
         onChange(field.placeholder);
-        // Changing the values using onChange will not re-render <select> fields;
+        // Changing the values using onChange will not re-render <select> nodes;
         // This ensure a re-render of the SelectField;
         forceUpdate();
       } else if (field.type === "string") {
@@ -287,20 +288,39 @@ function UnitablesBeeTableCell({ joinedName }: BeeTableCellProps<ROWTYPE> & { jo
   // This useEffect forces the focus into the selected cell;
   useEffect(() => {
     if (isActive) {
-      (document.getElementsByName(name) as NodeListOf<HTMLInputElement> | undefined)?.[
-        containerCellCoordinates?.rowIndex ?? 0
-      ]?.focus();
+      const input = cellRef.current?.getElementsByTagName("input")?.[0] as HTMLInputElement | undefined;
+      const listener = (e: KeyboardEvent) => {
+        // ignore for "keydown"
+        if (e.ctrlKey || e.metaKey || e.shiftKey) {
+          return;
+        }
+
+        // ignore for "keyup"
+        if (e.key === "Control" || e.key === "Meta" || e.key === "Shift") {
+          return;
+        }
+
+        input?.focus();
+      };
+
+      // keyup handles "enter" key
+      document?.addEventListener("keyup", listener);
+      document?.addEventListener("keydown", listener);
+      return () => {
+        document?.removeEventListener("keyup", listener);
+        document?.removeEventListener("keydown", listener);
+      };
     }
-  }, [name, isActive, containerCellCoordinates]);
+  }, [isActive]);
 
   return (
-    <>
+    <div ref={cellRef}>
       <AutoField
         key={joinedName + autoFieldKey}
         name={joinedName}
         form={`${AUTO_ROW_ID}-${containerCellCoordinates?.rowIndex ?? 0}`}
         style={{ height: "60px" }}
       />
-    </>
+    </div>
   );
 }
