@@ -25,6 +25,7 @@ import { decoder } from "@kie-tools-core/workspaces-git-fs/dist/encoderdecoder/E
 import { CompanionFsServiceBroadcastEvents } from "../companionFs/CompanionFsService";
 import { DmnRunnerPersistenceJson } from "./DmnRunnerPersistenceService";
 import { getNewDefaultDmnRunnerPersistenceJson } from "./DmnRunnerPersistenceService";
+import { LOCK } from "./DmnRunnerPersistenceDispatchContextProvider";
 
 // Handle the companion FS events;
 export function useDmnRunnerPersistence(workspaceId?: string, workspaceFileRelativePath?: string) {
@@ -62,6 +63,7 @@ export function useDmnRunnerPersistence(workspaceId?: string, workspaceFileRelat
             const dmnRunnerPersistenceJson: DmnRunnerPersistenceJson =
               dmnRunnerPersistenceService.parseDmnRunnerPersistenceJson(companionEvent.content);
 
+            LOCK.fsUpdate = true;
             dmnRunnerPersistenceJsonDispatcher({
               updatePersistenceJsonDebouce,
               workspaceId: workspaceId,

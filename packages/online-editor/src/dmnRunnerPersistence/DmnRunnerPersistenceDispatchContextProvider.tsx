@@ -32,6 +32,10 @@ import { decoder } from "@kie-tools-core/workspaces-git-fs/dist/encoderdecoder/E
 import { useSyncedCompanionFs } from "../companionFs/CompanionFsHooks";
 import isEqual from "lodash/isEqual";
 
+export const LOCK = {
+  fsUpdate: false,
+};
+
 // Update the state and update the FS;
 function dmnRunnerPersistenceJsonReducer(
   persistenceJson: DmnRunnerPersistenceJson,
@@ -44,13 +48,36 @@ function dmnRunnerPersistenceJsonReducer(
       return persistenceJson;
     }
 
+    if (LOCK.fsUpdate && !isEqual(persistenceJson, newPersistenceJson)) {
+      // update in current tab; happened a FS update;
+    }
+
+    // SCENARIO 1
+    // type "a"
+    // trigger deboucer "a"
+    // return "a"
+    // type "b" ("ab")
+    // execute debouncer "a";
+    // trigger debouncer "ab";
+    // return "ab";
+    // response from debouncer "a" (should be ignored)
+    // execute debouncer for "ab";
+
+    // SCENARIO 2 (other tab)
+    // ...
+
     // update FS;
     action.updatePersistenceJsonDebouce({
       workspaceId: action.workspaceId,
       workspaceFileRelativePath: action.workspaceFileRelativePath,
       content: JSON.stringify(newPersistenceJson),
     });
-    return newPersistenceJson;
+
+    if (!LOCK.fsUpdate) {
+      return newPersistenceJson;
+    } else {
+      return persistenceJson;
+    }
   } else if (action.type === DmnRunnerPersistenceReducerActionType.DEFAULT) {
     // Check for changes before update;
     if (isEqual(persistenceJson, action.newPersistenceJson)) {
@@ -58,14 +85,21 @@ function dmnRunnerPersistenceJsonReducer(
     }
 
     // update FS;
-    action.updatePersistenceJsonDebouce({
-      workspaceId: action.workspaceId,
-      workspaceFileRelativePath: action.workspaceFileRelativePath,
-      content: JSON.stringify(action.newPersistenceJson),
-    });
-    return action.newPersistenceJson;
+    if (!LOCK) {
+      action.updatePersistenceJsonDebouce({
+        workspaceId: action.workspaceId,
+        workspaceFileRelativePath: action.workspaceFileRelativePath,
+        content: JSON.stringify(action.newPersistenceJson),
+      });
+    }
+
+    if (!LOCK) {
+      return action.newPersistenceJson;
+    } else {
+      return persistenceJson;
+    }
   } else {
-    throw new Error("");
+    throw new Error("Invalid action for DmnRunnerPersistence reducer");
   }
 }
 
@@ -92,6 +126,7 @@ export function DmnRunnerPersistenceDispatchContextProvider(props: React.PropsWi
       }
 
       timeout.current = window.setTimeout(() => {
+        LOCK.fsUpdate = true;
         dmnRunnerPersistenceService.companionFsService.update(
           {
             workspaceId: args.workspaceId,
@@ -99,7 +134,7 @@ export function DmnRunnerPersistenceDispatchContextProvider(props: React.PropsWi
           },
           args.content
         );
-      }, 400); // FIXME: performing a update in the timeout time will override changes;
+      }, 100);
     },
     [dmnRunnerPersistenceService]
   );

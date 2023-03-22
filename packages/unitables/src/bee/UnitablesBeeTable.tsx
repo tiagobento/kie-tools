@@ -127,7 +127,7 @@ export function UnitablesBeeTable({
           dataType: column.dataType,
           isRowIndexColumn: false,
           width: undefined,
-          minWidth: UNITABLES_COLUMN_MIN_WIDTH,
+          minWidth: UNITABLES_COLUMN_MIN_WIDTH, // TODO: FIXME;
           columns: column.insideProperties.map((insideProperty) => {
             return {
               originalId: uuid + `field-${insideProperty.joinedName}`,
@@ -210,42 +210,28 @@ function UnitablesBeeTableCell({ joinedName }: BeeTableCellProps<ROWTYPE> & { jo
 
   // TODO: Fix: x-dmn-type from field property: Any, Undefined, string, number, ...;
   const setValue = useCallback(
-    (newValue) => {
+    (newValue: string) => {
       internalChange.current = true;
+      const newValueWithoutSymbols = newValue.replace(/\r/g, "");
+
       if (field.enum) {
         onChange(field.placeholder);
         // Changing the values using onChange will not re-render <select> nodes;
         // This ensure a re-render of the SelectField;
         forceUpdate();
       } else if (field.type === "string") {
-        if (typeof newValue === "string") {
-          onChange(newValue);
-        } else {
-          onChange("");
-        }
+        console.log("STRING", newValueWithoutSymbols);
+        onChange(newValueWithoutSymbols);
       } else if (field.type === "number") {
-        try {
-          const parsedValue = JSON.parse(newValue);
-          if (typeof parsedValue === "number") {
-            onChange(parsedValue);
-          } else {
-            onChange(null);
-          }
-        } catch (err) {
-          onChange(null);
-        }
+        console.log("NUMBER", newValueWithoutSymbols);
+        const numberValue = parseFloat(newValueWithoutSymbols);
+        onChange(isNaN(numberValue) ? undefined : numberValue);
       } else if (field.type === "boolean") {
-        try {
-          const parsedValue = JSON.parse(newValue);
-          if (typeof parsedValue === "boolean") {
-            onChange(parsedValue);
-          } else {
-            onChange(false);
-          }
-        } catch (err) {
-          onChange(false);
-        }
+        console.log("BOOLEAN", newValueWithoutSymbols);
+        onChange(newValueWithoutSymbols === "true");
       } else if (field.type === "array") {
+        console.log("ARRAY", newValue);
+        // TODO: check ListField;
         try {
           const parsedValue = JSON.parse(newValue);
           if (Array.isArray(parsedValue)) {
@@ -257,6 +243,7 @@ function UnitablesBeeTableCell({ joinedName }: BeeTableCellProps<ROWTYPE> & { jo
           onChange([]);
         }
       } else if (field.type === "object" && typeof newValue !== "object") {
+        console.log("OBJECT", newValue);
         try {
           const parsedValue = JSON.parse(newValue);
           if (parsedValue && typeof parsedValue === "object" && !Array.isArray(parsedValue)) {
@@ -267,7 +254,6 @@ function UnitablesBeeTableCell({ joinedName }: BeeTableCellProps<ROWTYPE> & { jo
         } catch (err) {
           onChange({});
         }
-        onChange(null);
       } else {
         onChange(newValue);
       }
@@ -275,14 +261,12 @@ function UnitablesBeeTableCell({ joinedName }: BeeTableCellProps<ROWTYPE> & { jo
     [internalChange, field, onChange]
   );
 
+  // TODO: use isEditing, stoppropagation for OnKeyDown BeeTable.tsx
   const { isActive } = useBeeTableSelectableCellRef(
     containerCellCoordinates?.rowIndex ?? 0,
     containerCellCoordinates?.columnIndex ?? 0,
     setValue,
-    useCallback(() => {
-      // TODO: remove " " from stringify
-      return JSON.stringify(value, replacer);
-    }, [value])
+    useCallback(() => `${value ?? ""}`, [value])
   );
 
   // This useEffect forces the focus into the selected cell;
@@ -291,16 +275,22 @@ function UnitablesBeeTableCell({ joinedName }: BeeTableCellProps<ROWTYPE> & { jo
       const input = cellRef.current?.getElementsByTagName("input")?.[0] as HTMLInputElement | undefined;
       const listener = (e: KeyboardEvent) => {
         // ignore for "keydown"
-        if (e.ctrlKey || e.metaKey || e.shiftKey) {
+        if (
+          (e.ctrlKey || e.metaKey) &&
+          (e.key.toLowerCase() === "c" ||
+            e.key.toLowerCase() === "v" ||
+            e.key.toLowerCase() === "x" ||
+            e.key.toLowerCase() === "a")
+        ) {
           return;
         }
 
         // ignore for "keyup"
-        if (e.key === "Control" || e.key === "Meta" || e.key === "Shift") {
+        if (e.key === "Control" || e.key === "Meta") {
           return;
         }
 
-        input?.focus();
+        input?.select();
       };
 
       // keyup handles "enter" key
