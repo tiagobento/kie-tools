@@ -33,8 +33,37 @@ import { useSyncedCompanionFs } from "../companionFs/CompanionFsHooks";
 import isEqual from "lodash/isEqual";
 
 export const LOCK = {
-  fsUpdate: false,
+  localFsUpdate: false,
 };
+
+function checkIfHasChangesAndUpdateFs(
+  persistenceJson: DmnRunnerPersistenceJson,
+  newPersistenceJson: DmnRunnerPersistenceJson,
+  updatePersistenceJsonDebouce: (args: DmnRunnerUpdatePersistenceJsonDeboucerArgs) => void,
+  workspaceId: string,
+  workspaceFileRelativePath: string
+): DmnRunnerPersistenceJson {
+  // Check for changes before update;
+  if (isEqual(persistenceJson, newPersistenceJson)) {
+    LOCK.localFsUpdate = false;
+    return persistenceJson;
+  }
+
+  // Updates from local FS and the current value is different from the change, hence, a change occured while the FS was updated;
+  if (LOCK.localFsUpdate) {
+    LOCK.localFsUpdate = false;
+    return persistenceJson;
+  }
+
+  // update FS;
+  updatePersistenceJsonDebouce({
+    workspaceId: workspaceId,
+    workspaceFileRelativePath: workspaceFileRelativePath,
+    content: JSON.stringify(newPersistenceJson),
+  });
+
+  return newPersistenceJson;
+}
 
 // Update the state and update the FS;
 function dmnRunnerPersistenceJsonReducer(
@@ -42,62 +71,21 @@ function dmnRunnerPersistenceJsonReducer(
   action: DmnRunnerPersistenceReducerAction
 ) {
   if (action.type === DmnRunnerPersistenceReducerActionType.PREVIOUS) {
-    const newPersistenceJson = action.newPersistenceJson(persistenceJson);
-    // Check for changes before update;
-    if (isEqual(persistenceJson, newPersistenceJson)) {
-      return persistenceJson;
-    }
-
-    if (LOCK.fsUpdate && !isEqual(persistenceJson, newPersistenceJson)) {
-      // update in current tab; happened a FS update;
-    }
-
-    // SCENARIO 1
-    // type "a"
-    // trigger deboucer "a"
-    // return "a"
-    // type "b" ("ab")
-    // execute debouncer "a";
-    // trigger debouncer "ab";
-    // return "ab";
-    // response from debouncer "a" (should be ignored)
-    // execute debouncer for "ab";
-
-    // SCENARIO 2 (other tab)
-    // ...
-
-    // update FS;
-    action.updatePersistenceJsonDebouce({
-      workspaceId: action.workspaceId,
-      workspaceFileRelativePath: action.workspaceFileRelativePath,
-      content: JSON.stringify(newPersistenceJson),
-    });
-
-    if (!LOCK.fsUpdate) {
-      return newPersistenceJson;
-    } else {
-      return persistenceJson;
-    }
+    return checkIfHasChangesAndUpdateFs(
+      persistenceJson,
+      action.newPersistenceJson(persistenceJson),
+      action.updatePersistenceJsonDebouce,
+      action.workspaceId,
+      action.workspaceFileRelativePath
+    );
   } else if (action.type === DmnRunnerPersistenceReducerActionType.DEFAULT) {
-    // Check for changes before update;
-    if (isEqual(persistenceJson, action.newPersistenceJson)) {
-      return persistenceJson;
-    }
-
-    // update FS;
-    if (!LOCK) {
-      action.updatePersistenceJsonDebouce({
-        workspaceId: action.workspaceId,
-        workspaceFileRelativePath: action.workspaceFileRelativePath,
-        content: JSON.stringify(action.newPersistenceJson),
-      });
-    }
-
-    if (!LOCK) {
-      return action.newPersistenceJson;
-    } else {
-      return persistenceJson;
-    }
+    return checkIfHasChangesAndUpdateFs(
+      persistenceJson,
+      action.newPersistenceJson,
+      action.updatePersistenceJsonDebouce,
+      action.workspaceId,
+      action.workspaceFileRelativePath
+    );
   } else {
     throw new Error("Invalid action for DmnRunnerPersistence reducer");
   }
@@ -126,7 +114,6 @@ export function DmnRunnerPersistenceDispatchContextProvider(props: React.PropsWi
       }
 
       timeout.current = window.setTimeout(() => {
-        LOCK.fsUpdate = true;
         dmnRunnerPersistenceService.companionFsService.update(
           {
             workspaceId: args.workspaceId,

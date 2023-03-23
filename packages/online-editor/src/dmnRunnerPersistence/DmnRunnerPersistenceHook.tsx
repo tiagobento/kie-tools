@@ -63,7 +63,7 @@ export function useDmnRunnerPersistence(workspaceId?: string, workspaceFileRelat
             const dmnRunnerPersistenceJson: DmnRunnerPersistenceJson =
               dmnRunnerPersistenceService.parseDmnRunnerPersistenceJson(companionEvent.content);
 
-            LOCK.fsUpdate = true;
+            LOCK.localFsUpdate = true;
             dmnRunnerPersistenceJsonDispatcher({
               updatePersistenceJsonDebouce,
               workspaceId: workspaceId,
