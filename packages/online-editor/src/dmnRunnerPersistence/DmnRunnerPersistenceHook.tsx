@@ -15,7 +15,7 @@
  */
 
 import * as React from "react";
-import { useCallback, useMemo } from "react";
+import { useCallback } from "react";
 import { useCancelableEffect } from "@kie-tools-core/react-hooks/dist/useCancelableEffect";
 import {
   DmnRunnerPersistenceReducerActionType,
@@ -25,7 +25,6 @@ import { decoder } from "@kie-tools-core/workspaces-git-fs/dist/encoderdecoder/E
 import { CompanionFsServiceBroadcastEvents } from "../companionFs/CompanionFsService";
 import { DmnRunnerPersistenceJson } from "./DmnRunnerPersistenceService";
 import { getNewDefaultDmnRunnerPersistenceJson } from "./DmnRunnerPersistenceService";
-import { LOCK } from "./DmnRunnerPersistenceDispatchContextProvider";
 
 // Handle the companion FS events;
 export function useDmnRunnerPersistence(workspaceId?: string, workspaceFileRelativePath?: string) {
@@ -63,13 +62,13 @@ export function useDmnRunnerPersistence(workspaceId?: string, workspaceFileRelat
             const dmnRunnerPersistenceJson: DmnRunnerPersistenceJson =
               dmnRunnerPersistenceService.parseDmnRunnerPersistenceJson(companionEvent.content);
 
-            LOCK.localFsUpdate = true;
             dmnRunnerPersistenceJsonDispatcher({
               updatePersistenceJsonDebouce,
               workspaceId: workspaceId,
               workspaceFileRelativePath: workspaceFileRelativePath,
               type: DmnRunnerPersistenceReducerActionType.DEFAULT,
               newPersistenceJson: dmnRunnerPersistenceJson,
+              fsUpdate: true,
             });
           }
         };
@@ -126,6 +125,7 @@ export function useDmnRunnerPersistence(workspaceId?: string, workspaceFileRelat
                 workspaceFileRelativePath: workspaceFileRelativePath,
                 type: DmnRunnerPersistenceReducerActionType.DEFAULT,
                 newPersistenceJson: dmnRunnerPersistenceJson,
+                fsUpdate: true,
               });
             });
           });

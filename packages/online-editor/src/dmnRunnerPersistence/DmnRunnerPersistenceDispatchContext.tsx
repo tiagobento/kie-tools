@@ -43,6 +43,7 @@ export type DmnRunnerPersistenceReducerAction = {
   updatePersistenceJsonDebouce: (args: DmnRunnerUpdatePersistenceJsonDeboucerArgs) => void;
   workspaceFileRelativePath: string;
   workspaceId: string;
+  fsUpdate?: boolean;
 } & (DmnRunnerPersistenceReducerActionDefault | DmnRunnerPersistenceReducerActionPrevious);
 
 interface DmnRunnerPersistenceDispatchContextType {

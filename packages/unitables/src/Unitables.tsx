@@ -155,7 +155,7 @@ export const Unitables = ({
   }, [internalChange, jsonSchemaBridge, formsDivRendered, rows, containerRef, searchRecursively]);
   // Set in-cell input heights (end)
 
-  const onValidateRow = useCallback(
+  const onSubmitRow = useCallback(
     (inputRow: InputRow, rowIndex: number, error: Record<string, any>) => {
       // After this method is not called by a period, clear the cache and reset the internalChange;
       if (internalChange.current) {
@@ -209,13 +209,13 @@ export const Unitables = ({
           rowIndex={rowIndex}
           rowInput={row}
           jsonSchemaBridge={jsonSchemaBridge}
-          onValidateRow={onValidateRow}
+          onSubmitRow={onSubmitRow}
         >
           {children}
         </UnitablesRow>
       );
     },
-    [jsonSchemaBridge, onValidateRow]
+    [jsonSchemaBridge, onSubmitRow]
   );
 
   return (

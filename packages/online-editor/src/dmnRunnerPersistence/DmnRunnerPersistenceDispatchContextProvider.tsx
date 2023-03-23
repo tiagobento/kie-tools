@@ -32,27 +32,33 @@ import { decoder } from "@kie-tools-core/workspaces-git-fs/dist/encoderdecoder/E
 import { useSyncedCompanionFs } from "../companionFs/CompanionFsHooks";
 import isEqual from "lodash/isEqual";
 
-export const LOCK = {
-  localFsUpdate: false,
-};
+let localUpdate = false;
 
 function checkIfHasChangesAndUpdateFs(
   persistenceJson: DmnRunnerPersistenceJson,
   newPersistenceJson: DmnRunnerPersistenceJson,
   updatePersistenceJsonDebouce: (args: DmnRunnerUpdatePersistenceJsonDeboucerArgs) => void,
   workspaceId: string,
-  workspaceFileRelativePath: string
+  workspaceFileRelativePath: string,
+  fsUpdate = false
 ): DmnRunnerPersistenceJson {
   // Check for changes before update;
   if (isEqual(persistenceJson, newPersistenceJson)) {
-    LOCK.localFsUpdate = false;
+    localUpdate = false;
     return persistenceJson;
   }
 
   // Updates from local FS and the current value is different from the change, hence, a change occured while the FS was updated;
-  if (LOCK.localFsUpdate) {
-    LOCK.localFsUpdate = false;
-    return persistenceJson;
+  if (fsUpdate) {
+    if (localUpdate) {
+      // the last change was made by this tab; invalidate fsUpdate;
+      localUpdate = false;
+      return persistenceJson;
+    } else {
+      // state wasn't changed by this tab; overwrite
+      localUpdate = false;
+      return newPersistenceJson;
+    }
   }
 
   // update FS;
@@ -62,6 +68,7 @@ function checkIfHasChangesAndUpdateFs(
     content: JSON.stringify(newPersistenceJson),
   });
 
+  localUpdate = true;
   return newPersistenceJson;
 }
 
@@ -76,7 +83,8 @@ function dmnRunnerPersistenceJsonReducer(
       action.newPersistenceJson(persistenceJson),
       action.updatePersistenceJsonDebouce,
       action.workspaceId,
-      action.workspaceFileRelativePath
+      action.workspaceFileRelativePath,
+      action.fsUpdate
     );
   } else if (action.type === DmnRunnerPersistenceReducerActionType.DEFAULT) {
     return checkIfHasChangesAndUpdateFs(
@@ -84,7 +92,8 @@ function dmnRunnerPersistenceJsonReducer(
       action.newPersistenceJson,
       action.updatePersistenceJsonDebouce,
       action.workspaceId,
-      action.workspaceFileRelativePath
+      action.workspaceFileRelativePath,
+      action.fsUpdate
     );
   } else {
     throw new Error("Invalid action for DmnRunnerPersistence reducer");
@@ -101,9 +110,7 @@ export function DmnRunnerPersistenceDispatchContextProvider(props: React.PropsWi
     initialDmnRunnerPersistenceJson
   );
 
-  const dmnRunnerPersistenceService = useMemo(() => {
-    return new DmnRunnerPersistenceService();
-  }, []);
+  const dmnRunnerPersistenceService = useMemo(() => new DmnRunnerPersistenceService(), []);
 
   useSyncedCompanionFs(dmnRunnerPersistenceService.companionFsService);
 
