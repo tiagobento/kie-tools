@@ -128,7 +128,6 @@ export const Unitables = ({
   }, [jsonSchemaBridge]);
 
   // Set in-cell input heights (begin)
-  // TODO: Ensure the width of TimePicker, DatePicker and others;
   const searchRecursively = useCallback((child: any) => {
     if (!child) {
       return;
