@@ -22,7 +22,7 @@ import { Tooltip } from "@patternfly/react-core/dist/js/components/Tooltip";
 import { ExclamationIcon } from "@patternfly/react-icons/dist/js/icons/exclamation-icon";
 import { ListIcon } from "@patternfly/react-icons/dist/js/icons/list-icon";
 import * as React from "react";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useReducer } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import nextId from "react-id-generator";
 import { UnitablesBeeTable } from "./bee";
 import { UnitablesI18n } from "./i18n";

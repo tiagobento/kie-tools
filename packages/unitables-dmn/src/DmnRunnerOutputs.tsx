@@ -15,11 +15,12 @@
  */
 
 import * as React from "react";
-import { useCallback, useMemo } from "react";
+import { useMemo } from "react";
 import { DmnBuiltInDataType } from "@kie-tools/boxed-expression-component/dist/api";
 import { DmnUnitablesJsonSchemaBridge } from "./uniforms/DmnUnitablesJsonSchemaBridge";
-import { DecisionResult, DmnSchemaProperties } from "./DmnTypes";
+import { DmnSchemaProperties } from "./DmnTypes";
 import { DMN_RUNNER_OUTPUT_COLUMN_MIN_WIDTH } from "./DmnRunnerOutputsTable";
+import { DecisionResult } from "@kie-tools/form-dmn";
 
 interface OutputField {
   dataType: DmnBuiltInDataType;
