@@ -15,7 +15,7 @@ export function BeeTableDefaultCell<R extends object>({
   navigateVertically,
 }: {
   isReadOnly: boolean;
-  cellProps: ReactTable.CellProps<R>;
+  cellProps: ReactTable.CellProps<R, string | { content: string; id: string }>;
   onCellUpdates?: (cellUpdates: BeeTableCellUpdate<R>[]) => void;
   columnIndex: number;
   setEditing: React.Dispatch<React.SetStateAction<boolean>>;
@@ -38,7 +38,7 @@ export function BeeTableDefaultCell<R extends object>({
   );
 
   const getValue = useCallback(() => {
-    return cellProps.value;
+    return typeof cellProps.value === "string" ? cellProps.value : cellProps.value.content;
   }, [cellProps.value]);
 
   const { isActive, isEditing } = useBeeTableSelectableCellRef(
@@ -54,10 +54,11 @@ export function BeeTableDefaultCell<R extends object>({
       isActive={isActive}
       setEditing={setEditing}
       onChange={onCellChanged}
-      value={cellProps.value}
+      value={typeof cellProps.value === "string" ? cellProps.value : cellProps.value.content}
       isReadOnly={isReadOnly}
       onFeelEnterKeyDown={navigateVertically}
       onFeelTabKeyDown={navigateHorizontally}
+      cellId={typeof cellProps.value === "string" ? "" : cellProps.value.id}
     />
   );
 }
