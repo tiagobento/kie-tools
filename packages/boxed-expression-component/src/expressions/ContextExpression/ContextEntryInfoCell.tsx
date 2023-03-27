@@ -18,11 +18,13 @@ import { ContextExpressionDefinitionEntry, DmnBuiltInDataType, ExpressionDefinit
 import * as React from "react";
 import { useCallback, useMemo } from "react";
 import * as _ from "lodash";
-import { useBeeTableSelectableCellRef } from "../../selection/BeeTableSelectionContext";
+import { useBeeTableSelectableCellRef, useBeeTableSelection } from "../../selection/BeeTableSelectionContext";
 import { DEFAULT_EXPRESSION_NAME, ExpressionDefinitionHeaderMenu } from "../ExpressionDefinitionHeaderMenu";
 import "./ContextEntryInfoCell.css";
 import { useCellWidthToFitDataRef } from "../../resizing/BeeTableCellWidthToFitDataContext";
 import { getCanvasFont, getTextWidth } from "../../resizing/WidthsToFitData";
+import { useBeeTableStickyHeaders } from "../../stickyHeaders/BeeTableStickyHeadersContext";
+import { getThZindex } from "../../stickyHeaders/StickyHeadersMaths";
 
 export interface ContextEntryInfoCellProps {
   // This name ('data') can't change, as this is used on "cellComponentByColumnAccessor".
@@ -115,16 +117,30 @@ export const ContextEntryInfoCell: React.FunctionComponent<ContextEntryInfoCellP
     [entryInfo]
   );
 
+  const { depth } = useBeeTableSelection();
+  const stickyHeaders = useBeeTableStickyHeaders();
+
   return (
-    <div className="context-entry-info-cell">
-      <div className={`${entryInfo.id} entry-info`}>
-        <ExpressionDefinitionHeaderMenu
-          selectedExpressionName={entryInfo.name}
-          selectedDataType={entryInfo.dataType}
-          onExpressionHeaderUpdated={onContextEntryInfoUpdated}
-        >
-          {renderEntryDefinition({ additionalCssClass: "with-popover-menu" })}
-        </ExpressionDefinitionHeaderMenu>
+    <div style={{ height: "100%", position: "relative", background: "white" }}>
+      <div
+        className="context-entry-info-cell"
+        style={{
+          position: "sticky",
+          top: `${stickyHeaders.offsetTop}px`,
+          left: `${stickyHeaders.offsetLeft}px`,
+          zIndex: getThZindex(depth),
+          height: "50px",
+        }}
+      >
+        <div className={`${entryInfo.id} entry-info`}>
+          <ExpressionDefinitionHeaderMenu
+            selectedExpressionName={entryInfo.name}
+            selectedDataType={entryInfo.dataType}
+            onExpressionHeaderUpdated={onContextEntryInfoUpdated}
+          >
+            {renderEntryDefinition({ additionalCssClass: "with-popover-menu" })}
+          </ExpressionDefinitionHeaderMenu>
+        </div>
       </div>
     </div>
   );

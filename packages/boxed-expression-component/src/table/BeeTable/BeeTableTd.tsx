@@ -26,13 +26,17 @@ import {
   BeeTableCellCoordinates,
   BeeTableCoordinatesContextProvider,
   useBeeTableSelectableCell,
+  useBeeTableSelection,
 } from "../../selection/BeeTableSelectionContext";
+import { useBeeTableStickyHeaders } from "../../stickyHeaders/BeeTableStickyHeadersContext";
+import { getTdZindex } from "../../stickyHeaders/StickyHeadersMaths";
 
 export interface BeeTableTdProps<R extends object> {
   // Individual cells are not immutable referecens, By referencing the row, we avoid multiple re-renders and bugs.
   onRowAdded?: (args: { beforeIndex: number }) => void;
   isActive: boolean;
   shouldRenderInlineButtons: boolean;
+  shouldRenderRowIndexColumn: boolean;
   shouldShowRowsInlineControls: boolean;
   rowIndex: number;
   row: ReactTable.Row<R>;
@@ -61,6 +65,7 @@ export function BeeTableTd<R extends object>({
   resizerStopBehavior,
   onRowAdded,
   lastColumnMinWidth,
+  shouldRenderRowIndexColumn,
 }: BeeTableTdProps<R>) {
   const [isResizing, setResizing] = useState(false);
   const [hoverInfo, setHoverInfo] = useState<HoverInfo>({ isHovered: false });
@@ -170,6 +175,9 @@ export function BeeTableTd<R extends object>({
     return cell.render("Cell");
   }, [cell]);
 
+  const { depth } = useBeeTableSelection();
+  const stickyHeaders = useBeeTableStickyHeaders();
+
   return (
     <BeeTableCoordinatesContextProvider coordinates={coordinates}>
       <td
@@ -185,10 +193,30 @@ export function BeeTableTd<R extends object>({
           width: column.width ? resizingWidth?.value : "100%",
           minWidth: column.width ? resizingWidth?.value : "100%",
           maxWidth: column.width ? resizingWidth?.value : "100%",
+          ...(column.isRowIndexColumn || (columnIndex === 1 && !shouldRenderRowIndexColumn)
+            ? {
+                position: "sticky",
+                left: `${stickyHeaders.offsetLeft - stickyHeaders.selfLeft}px`,
+                zIndex: getTdZindex(depth),
+                height: "inherit",
+              }
+            : {}),
         }}
       >
         {column.isRowIndexColumn ? (
-          <>{rowIndexLabel}</>
+          <div
+            style={{
+              position: "sticky",
+              top: `${stickyHeaders.offsetTop - stickyHeaders.selfTop}px`,
+              zIndex: getTdZindex(depth),
+              height: "60px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-around",
+            }}
+          >
+            {rowIndexLabel}
+          </div>
         ) : (
           <>
             {tdContent}

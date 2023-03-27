@@ -21,9 +21,11 @@ import * as ReactTable from "react-table";
 import {
   BeeTableCellCoordinates,
   BeeTableCoordinatesContextProvider,
-  useBeeTableSelectionDispatch,
+  useBeeTableSelection,
 } from "../../selection/BeeTableSelectionContext";
 import { useBeeTableSelectableCell } from "../../selection/BeeTableSelectionContext";
+import { useBeeTableStickyHeaders } from "../../stickyHeaders/BeeTableStickyHeadersContext";
+import { getThZindex } from "../../stickyHeaders/StickyHeadersMaths";
 
 export interface BeeTableThProps<R extends object> {
   groupType: string | undefined;
@@ -146,12 +148,26 @@ export function BeeTableTh<R extends object>({
     [columnIndex, rowIndex]
   );
 
+  const { depth } = useBeeTableSelection();
+  const stickyHeaders = useBeeTableStickyHeaders();
+
   return (
     <BeeTableCoordinatesContextProvider coordinates={coordinates}>
       <th
         rowSpan={rowSpan}
         {...thProps}
-        style={{ ...thProps.style, display: "table-cell" }}
+        style={{
+          ...thProps.style,
+          display: "table-cell",
+          ...(column.isRowIndexColumn
+            ? {
+                position: "sticky",
+                top: `${stickyHeaders.offsetTop - stickyHeaders.selfTop}px`,
+                left: `${stickyHeaders.offsetLeft - stickyHeaders.selfLeft}px`,
+                zIndex: getThZindex(depth),
+              }
+            : {}),
+        }}
         ref={thRef}
         onMouseDown={onMouseDown}
         onDoubleClick={onDoubleClick}

@@ -39,6 +39,12 @@ import {
   CONTEXT_EXPRESSION_EXTRA_WIDTH,
 } from "../../resizing/WidthConstants";
 import { useBeeTableSelectableCellRef, useBeeTableCoordinates } from "../../selection/BeeTableSelectionContext";
+import {
+  BeeTableStickyHeadersProvider,
+  BeeTableStickyHeadersType,
+  useBeeTableStickyHeaders,
+} from "../../stickyHeaders/BeeTableStickyHeadersContext";
+import { HEADER_HEIGHT_FOR_STICKY_HEADERS } from "../../stickyHeaders/StickyHeadersMaths";
 import { BeeTable, BeeTableColumnUpdate } from "../../table/BeeTable";
 import { useBoxedExpressionEditorDispatch } from "../BoxedExpressionEditor/BoxedExpressionEditorContext";
 import { DEFAULT_EXPRESSION_NAME } from "../ExpressionDefinitionHeaderMenu";
@@ -290,31 +296,51 @@ export function ContextExpression(contextExpression: ContextExpressionDefinition
     [getDefaultContextEntry, setExpression]
   );
 
+  const parentStickyHeadersOffsets = useBeeTableStickyHeaders();
+
+  const stickyHeadersOffsets = useMemo<BeeTableStickyHeadersType>(
+    () => ({
+      offsetTop:
+        parentStickyHeadersOffsets.offsetTop + (contextExpression.isNested ? 0 : HEADER_HEIGHT_FOR_STICKY_HEADERS),
+      offsetLeft: parentStickyHeadersOffsets.offsetLeft + entryInfoResizingWidth.value + 1,
+      selfTop: contextExpression.isNested ? 0 : HEADER_HEIGHT_FOR_STICKY_HEADERS,
+      selfLeft: entryInfoResizingWidth.value + 1,
+    }),
+    [
+      contextExpression.isNested,
+      entryInfoResizingWidth.value,
+      parentStickyHeadersOffsets.offsetLeft,
+      parentStickyHeadersOffsets.offsetTop,
+    ]
+  );
+
   return (
-    <NestedExpressionContainerContext.Provider value={nestedExpressionContainerValue}>
-      <div className={`context-expression ${contextExpression.id}`}>
-        <BeeTable
-          resizerStopBehavior={ResizerStopBehavior.SET_WIDTH_WHEN_SMALLER}
-          tableId={contextExpression.id}
-          headerLevelCountForAppendingRowIndexColumn={1}
-          headerVisibility={headerVisibility}
-          cellComponentByColumnAccessor={cellComponentByColumnAccessor}
-          columns={beeTableColumns}
-          rows={contextExpression.contextEntries}
-          onColumnUpdates={onColumnUpdates}
-          operationConfig={beeTableOperationConfig}
-          getRowKey={getRowKey}
-          additionalRow={beeTableAdditionalRow}
-          onRowAdded={onRowAdded}
-          onRowReset={onRowReset}
-          onRowDeleted={onRowDeleted}
-          onColumnResizingWidthChange={onColumnResizingWidthChange}
-          shouldRenderRowIndexColumn={false}
-          shouldShowRowsInlineControls={true}
-          shouldShowColumnsInlineControls={false}
-        />
-      </div>
-    </NestedExpressionContainerContext.Provider>
+    <BeeTableStickyHeadersProvider value={stickyHeadersOffsets}>
+      <NestedExpressionContainerContext.Provider value={nestedExpressionContainerValue}>
+        <div className={`context-expression ${contextExpression.id}`}>
+          <BeeTable
+            resizerStopBehavior={ResizerStopBehavior.SET_WIDTH_WHEN_SMALLER}
+            tableId={contextExpression.id}
+            headerLevelCountForAppendingRowIndexColumn={1}
+            headerVisibility={headerVisibility}
+            cellComponentByColumnAccessor={cellComponentByColumnAccessor}
+            columns={beeTableColumns}
+            rows={contextExpression.contextEntries}
+            onColumnUpdates={onColumnUpdates}
+            operationConfig={beeTableOperationConfig}
+            getRowKey={getRowKey}
+            additionalRow={beeTableAdditionalRow}
+            onRowAdded={onRowAdded}
+            onRowReset={onRowReset}
+            onRowDeleted={onRowDeleted}
+            onColumnResizingWidthChange={onColumnResizingWidthChange}
+            shouldRenderRowIndexColumn={false}
+            shouldShowRowsInlineControls={true}
+            shouldShowColumnsInlineControls={false}
+          />
+        </div>
+      </NestedExpressionContainerContext.Provider>
+    </BeeTableStickyHeadersProvider>
   );
 }
 

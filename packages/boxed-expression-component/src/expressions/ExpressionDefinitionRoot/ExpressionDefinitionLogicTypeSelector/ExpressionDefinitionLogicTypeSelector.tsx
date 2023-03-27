@@ -35,6 +35,9 @@ import { MenuItemWithHelp } from "../../../contextMenu/MenuWithHelp/MenuItemWith
 import { PopoverMenu } from "../../../contextMenu/PopoverMenu";
 import { useBoxedExpressionEditorI18n } from "../../../i18n";
 import { useNestedExpressionContainer } from "../../../resizing/NestedExpressionContainerContext";
+import { useBeeTableSelection } from "../../../selection/BeeTableSelectionContext";
+import { useBeeTableStickyHeaders } from "../../../stickyHeaders/BeeTableStickyHeadersContext";
+import { getTheadTrZindex, getThZindex } from "../../../stickyHeaders/StickyHeadersMaths";
 import {
   useBoxedExpressionEditor,
   useBoxedExpressionEditorDispatch,
@@ -360,6 +363,9 @@ export function ExpressionDefinitionLogicTypeSelector({
     setVisibleHelp((previousHelp) => (previousHelp !== help ? help : ""));
   }, []);
 
+  const { depth } = useBeeTableSelection();
+  const stickyHeaders = useBeeTableStickyHeaders();
+
   return (
     <>
       <div
@@ -374,10 +380,19 @@ export function ExpressionDefinitionLogicTypeSelector({
         {isLogicTypeSelected ? (
           <>
             {showExpressionHeader && (
-              <div className={"logic-type-selected-header"}>
+              <div
+                className={"logic-type-selected-header"}
+                style={{
+                  position: "sticky",
+                  top: `${stickyHeaders.offsetTop + 4}px`,
+                  zIndex: getThZindex(depth + 2),
+                  background: "white",
+                }}
+              >
                 <Dropdown
                   isPlain={true}
                   isOpen={isDropdownOpen}
+                  menuAppendTo={editorRef.current!}
                   toggle={
                     <DropdownToggle
                       icon={<>{logicTypeIcon(expression.logicType)}</>}
@@ -390,6 +405,12 @@ export function ExpressionDefinitionLogicTypeSelector({
                         ` (${expression.functionKind})`}
                     </DropdownToggle>
                   }
+                  style={{
+                    position: "sticky",
+                    left: `${stickyHeaders.offsetLeft + 16}px`,
+                    zIndex: getThZindex(depth + 2),
+                    background: "white",
+                  }}
                 >
                   <Menu className="table-context-menu" style={{ width: "200px", fontSize: "larger" }}>
                     <>{contextMenuItems}</>

@@ -48,6 +48,15 @@ import {
 import { DEFAULT_EXPRESSION_NAME } from "../ExpressionDefinitionHeaderMenu";
 import { useFunctionExpressionControllerCell, useFunctionExpressionParametersColumnHeader } from "./FunctionExpression";
 import { ExpressionContainer } from "../ExpressionDefinitionRoot/ExpressionContainer";
+import {
+  BeeTableStickyHeadersProvider,
+  BeeTableStickyHeadersType,
+  useBeeTableStickyHeaders,
+} from "../../stickyHeaders/BeeTableStickyHeadersContext";
+import {
+  HEADER_HEIGHT_FOR_STICKY_HEADERS,
+  ROW_INDEX_COLUMN_WIDTH_FOR_STICKY_HEADERS,
+} from "../../stickyHeaders/StickyHeadersMaths";
 
 export type FEEL_ROWTYPE = { functionExpression: FunctionExpressionDefinition };
 
@@ -156,29 +165,46 @@ export function FeelFunctionExpression({
     );
 
   /// //////////////////////////////////////////////////////
+  const parentStickyHeadersOffsets = useBeeTableStickyHeaders();
+
+  const stickyHeadersOffsets = useMemo<BeeTableStickyHeadersType>(
+    () => ({
+      offsetTop:
+        parentStickyHeadersOffsets.offsetTop +
+        (functionExpression.isNested ? HEADER_HEIGHT_FOR_STICKY_HEADERS : 2 * HEADER_HEIGHT_FOR_STICKY_HEADERS + 1),
+      offsetLeft: parentStickyHeadersOffsets.offsetLeft + ROW_INDEX_COLUMN_WIDTH_FOR_STICKY_HEADERS,
+      selfTop: functionExpression.isNested
+        ? HEADER_HEIGHT_FOR_STICKY_HEADERS
+        : 2 * HEADER_HEIGHT_FOR_STICKY_HEADERS + 1,
+      selfLeft: ROW_INDEX_COLUMN_WIDTH_FOR_STICKY_HEADERS,
+    }),
+    [functionExpression.isNested, parentStickyHeadersOffsets.offsetLeft, parentStickyHeadersOffsets.offsetTop]
+  );
 
   return (
-    <NestedExpressionContainerContext.Provider value={nestedExpressionContainerValue}>
-      <div className={`function-expression ${functionExpression.id}`}>
-        <BeeTable
-          onColumnResizingWidthChange={onColumnResizingWidthChange}
-          resizerStopBehavior={ResizerStopBehavior.SET_WIDTH_WHEN_SMALLER}
-          operationConfig={beeTableOperationConfig}
-          onColumnUpdates={onColumnUpdates}
-          getRowKey={getRowKey}
-          onRowReset={onRowReset}
-          columns={beeTableColumns}
-          rows={beeTableRows}
-          headerLevelCountForAppendingRowIndexColumn={1}
-          headerVisibility={headerVisibility}
-          controllerCell={controllerCell}
-          cellComponentByColumnAccessor={cellComponentByColumnAccessor}
-          shouldRenderRowIndexColumn={true}
-          shouldShowRowsInlineControls={false}
-          shouldShowColumnsInlineControls={false}
-        />
-      </div>
-    </NestedExpressionContainerContext.Provider>
+    <BeeTableStickyHeadersProvider value={stickyHeadersOffsets}>
+      <NestedExpressionContainerContext.Provider value={nestedExpressionContainerValue}>
+        <div className={`function-expression ${functionExpression.id}`}>
+          <BeeTable
+            onColumnResizingWidthChange={onColumnResizingWidthChange}
+            resizerStopBehavior={ResizerStopBehavior.SET_WIDTH_WHEN_SMALLER}
+            operationConfig={beeTableOperationConfig}
+            onColumnUpdates={onColumnUpdates}
+            getRowKey={getRowKey}
+            onRowReset={onRowReset}
+            columns={beeTableColumns}
+            rows={beeTableRows}
+            headerLevelCountForAppendingRowIndexColumn={1}
+            headerVisibility={headerVisibility}
+            controllerCell={controllerCell}
+            cellComponentByColumnAccessor={cellComponentByColumnAccessor}
+            shouldRenderRowIndexColumn={true}
+            shouldShowRowsInlineControls={false}
+            shouldShowColumnsInlineControls={false}
+          />
+        </div>
+      </NestedExpressionContainerContext.Provider>
+    </BeeTableStickyHeadersProvider>
   );
 }
 

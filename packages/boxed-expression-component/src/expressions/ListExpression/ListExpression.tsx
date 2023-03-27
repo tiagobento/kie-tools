@@ -39,6 +39,15 @@ import { DEFAULT_EXPRESSION_NAME } from "../ExpressionDefinitionHeaderMenu";
 import "./ListExpression.css";
 import { ListItemCell } from "./ListItemCell";
 import { ResizerStopBehavior } from "../../resizing/ResizingWidthsContext";
+import {
+  BeeTableStickyHeadersProvider,
+  BeeTableStickyHeadersType,
+  useBeeTableStickyHeaders,
+} from "../../stickyHeaders/BeeTableStickyHeadersContext";
+import {
+  HEADER_HEIGHT_FOR_STICKY_HEADERS,
+  ROW_INDEX_COLUMN_WIDTH_FOR_STICKY_HEADERS,
+} from "../../stickyHeaders/StickyHeadersMaths";
 
 export type ROWTYPE = ContextExpressionDefinitionEntry;
 
@@ -177,28 +186,45 @@ export function ListExpression(listExpression: ListExpressionDefinition & { isNe
     [setExpression]
   );
 
+  /// STICKY HEADERS
+  const parentStickyHeadersOffsets = useBeeTableStickyHeaders();
+
+  const stickyHeadersOffsets = useMemo<BeeTableStickyHeadersType>(
+    () => ({
+      offsetTop:
+        parentStickyHeadersOffsets.offsetTop + (listExpression.isNested ? 0 : HEADER_HEIGHT_FOR_STICKY_HEADERS),
+      offsetLeft: parentStickyHeadersOffsets.offsetLeft + ROW_INDEX_COLUMN_WIDTH_FOR_STICKY_HEADERS,
+      selfTop: listExpression.isNested ? 0 : HEADER_HEIGHT_FOR_STICKY_HEADERS,
+      selfLeft: ROW_INDEX_COLUMN_WIDTH_FOR_STICKY_HEADERS,
+    }),
+    [listExpression.isNested, parentStickyHeadersOffsets.offsetLeft, parentStickyHeadersOffsets.offsetTop]
+  );
+  ///
+
   return (
-    <NestedExpressionContainerContext.Provider value={nestedExpressionContainerValue}>
-      <div className={`${listExpression.id} list-expression`}>
-        <BeeTable<ROWTYPE>
-          onColumnResizingWidthChange={onColumnResizingWidthChange}
-          resizerStopBehavior={ResizerStopBehavior.SET_WIDTH_WHEN_SMALLER}
-          tableId={listExpression.id}
-          headerVisibility={beeTableHeaderVisibility}
-          cellComponentByColumnAccessor={cellComponentByColumnAccessor}
-          columns={beeTableColumns}
-          rows={beeTableRows}
-          operationConfig={beeTableOperationConfig}
-          getRowKey={getRowKey}
-          onRowAdded={onRowAdded}
-          onRowDeleted={onRowDeleted}
-          onRowReset={onRowReset}
-          onColumnUpdates={onColumnUpdates}
-          shouldRenderRowIndexColumn={true}
-          shouldShowRowsInlineControls={true}
-          shouldShowColumnsInlineControls={false}
-        />
-      </div>
-    </NestedExpressionContainerContext.Provider>
+    <BeeTableStickyHeadersProvider value={stickyHeadersOffsets}>
+      <NestedExpressionContainerContext.Provider value={nestedExpressionContainerValue}>
+        <div className={`${listExpression.id} list-expression`}>
+          <BeeTable<ROWTYPE>
+            onColumnResizingWidthChange={onColumnResizingWidthChange}
+            resizerStopBehavior={ResizerStopBehavior.SET_WIDTH_WHEN_SMALLER}
+            tableId={listExpression.id}
+            headerVisibility={beeTableHeaderVisibility}
+            cellComponentByColumnAccessor={cellComponentByColumnAccessor}
+            columns={beeTableColumns}
+            rows={beeTableRows}
+            operationConfig={beeTableOperationConfig}
+            getRowKey={getRowKey}
+            onRowAdded={onRowAdded}
+            onRowDeleted={onRowDeleted}
+            onRowReset={onRowReset}
+            onColumnUpdates={onColumnUpdates}
+            shouldRenderRowIndexColumn={true}
+            shouldShowRowsInlineControls={true}
+            shouldShowColumnsInlineControls={false}
+          />
+        </div>
+      </NestedExpressionContainerContext.Provider>
+    </BeeTableStickyHeadersProvider>
   );
 }

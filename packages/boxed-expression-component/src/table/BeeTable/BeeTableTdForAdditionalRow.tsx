@@ -19,13 +19,16 @@ import * as React from "react";
 import { useRef } from "react";
 import { Resizer } from "../../resizing/Resizer";
 import { useBeeTableResizableCell } from "../../resizing/BeeTableResizableColumnsContext";
-import { useBeeTableSelectableCell } from "../../selection/BeeTableSelectionContext";
+import { useBeeTableSelectableCell, useBeeTableSelection } from "../../selection/BeeTableSelectionContext";
 import { ResizerStopBehavior } from "../../resizing/ResizingWidthsContext";
+import { getTdZindex } from "../../stickyHeaders/StickyHeadersMaths";
+import { useBeeTableStickyHeaders } from "../../stickyHeaders/BeeTableStickyHeadersContext";
 
 export interface BeeTableTdForAdditionalRowProps<R extends object> {
   children?: React.ReactElement;
   isEmptyCell: boolean;
   isLastColumn: boolean;
+  shouldRenderRowIndexColumn: boolean;
   rowIndex: number;
   row: ReactTable.Row<R>;
   columnIndex: number;
@@ -41,6 +44,7 @@ export function BeeTableTdForAdditionalRow<R extends object>({
   column,
   rowIndex,
   isLastColumn,
+  shouldRenderRowIndexColumn,
   resizerStopBehavior,
   lastColumnMinWidth,
 }: BeeTableTdForAdditionalRowProps<R>) {
@@ -57,6 +61,9 @@ export function BeeTableTdForAdditionalRow<R extends object>({
 
   const { cssClasses, onMouseDown, onDoubleClick } = useBeeTableSelectableCell(tdRef, rowIndex, columnIndex);
 
+  const { depth } = useBeeTableSelection();
+  const stickyHeaders = useBeeTableStickyHeaders();
+
   return isEmptyCell ? (
     <td
       ref={tdRef}
@@ -64,6 +71,13 @@ export function BeeTableTdForAdditionalRow<R extends object>({
       className={`empty-cell ${cssClasses}`}
       onMouseDown={onMouseDown}
       onDoubleClick={onDoubleClick}
+      style={{
+        position: "sticky",
+        left: `${stickyHeaders.offsetLeft - stickyHeaders.selfLeft}px`,
+        zIndex: getTdZindex(depth),
+        height: "inherit",
+        background: "white",
+      }}
     >
       <br />
     </td>
@@ -75,6 +89,17 @@ export function BeeTableTdForAdditionalRow<R extends object>({
       tabIndex={-1}
       onMouseDown={onMouseDown}
       onDoubleClick={onDoubleClick}
+      style={
+        !shouldRenderRowIndexColumn && columnIndex === 1
+          ? {
+              position: "sticky",
+              left: `${stickyHeaders.offsetLeft - stickyHeaders.selfLeft}px`,
+              zIndex: getTdZindex(depth),
+              height: "inherit",
+              background: "white",
+            }
+          : {}
+      }
     >
       {children}
 

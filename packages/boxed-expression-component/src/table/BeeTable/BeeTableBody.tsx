@@ -66,7 +66,12 @@ export function BeeTableBody<R extends object>({
       reactTableInstance.prepareRow(row);
 
       const renderTr = () => (
-        <tr className={rowKey} key={rowKey} data-ouia-component-id={`expression-row-${rowIndex}`}>
+        <tr
+          className={rowKey}
+          key={rowKey}
+          data-ouia-component-id={`expression-row-${rowIndex}`}
+          style={{ position: "relative", height: "1px" }} // That's necessary for `height: 100%` to work on divs inside tds.
+        >
           {row.cells.map((cell, cellIndex) => {
             const columnKey = getColumnKey(reactTableInstance.allColumns[cellIndex]);
             return (
@@ -81,6 +86,7 @@ export function BeeTableBody<R extends object>({
                     column={reactTableInstance.allColumns[cellIndex]}
                     onRowAdded={onRowAdded}
                     isActive={false}
+                    shouldRenderRowIndexColumn={shouldRenderRowIndexColumn}
                     shouldRenderInlineButtons={
                       shouldRenderRowIndexColumn
                         ? reactTableInstance.allColumns[cellIndex].isRowIndexColumn
@@ -140,7 +146,11 @@ export function BeeTableBody<R extends object>({
       })}
 
       {additionalRow && (
-        <tr className={"additional-row"} data-ouia-component-id={"additional-row"}>
+        <tr
+          className={"additional-row"}
+          data-ouia-component-id={"additional-row"}
+          style={{ position: "relative", height: "1px" }} // That's necessary for `height: 100%` to work on divs inside tds.
+        >
           {shouldRenderRowIndexColumn && (
             <BeeTableCoordinatesContextProvider coordinates={{ rowIndex: additionalRowIndex, columnIndex: 0 }}>
               <BeeTableTdForAdditionalRow
@@ -151,6 +161,7 @@ export function BeeTableBody<R extends object>({
                 isLastColumn={false}
                 isEmptyCell={true}
                 resizerStopBehavior={resizerStopBehavior}
+                shouldRenderRowIndexColumn={shouldRenderRowIndexColumn}
               />
             </BeeTableCoordinatesContextProvider>
           )}
@@ -171,6 +182,7 @@ export function BeeTableBody<R extends object>({
                   isEmptyCell={false}
                   resizerStopBehavior={resizerStopBehavior}
                   lastColumnMinWidth={columnIndex === additionalRow.length - 1 ? lastColumnMinWidth : undefined}
+                  shouldRenderRowIndexColumn={shouldRenderRowIndexColumn}
                 >
                   {elem}
                 </BeeTableTdForAdditionalRow>

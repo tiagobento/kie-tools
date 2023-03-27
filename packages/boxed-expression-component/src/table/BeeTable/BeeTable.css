@@ -19,6 +19,10 @@
   font-style: normal;
 }
 
+.expression-container .table-component table thead th.counter-header-cell {
+  background-color: white;
+}
+
 .expression-container .table-component,
 .expression-container .table-component table,
 .expression-container .table-component table thead,
@@ -102,7 +106,7 @@
   content: "";
   width: 100%;
   height: 100%;
-  z-index: 15;
+  z-index: 10015;
   background-color: rgba(0, 0, 0, 0.06);
 }
 .expression-container .table-component table tbody td.row-index-column-cell.selected {
@@ -145,7 +149,7 @@
   content: "";
   width: calc(100% + 2px);
   height: calc(100% + 2px);
-  z-index: 5;
+  z-index: 10005;
 }
 
 .expression-container .table-component table thead th:after,
@@ -195,7 +199,7 @@
   content: "";
   width: calc(100% + 4px) !important;
   height: calc(100% + 4px) !important;
-  z-index: 6 !important;
+  z-index: 10006 !important;
   border: 3px solid #438cb1 !important;
   border-radius: 3px !important;
 }
@@ -227,6 +231,7 @@
 
 .expression-container .table-component table tbody tr td.row-index-column-cell {
   align-items: center;
+  background: white;
 }
 
 .expression-container .table-component table tbody tr .empty-cell {
@@ -267,7 +272,7 @@
 }
 
 .expression-container .pf-c-drawer .pf-c-drawer__splitter {
-  z-index: 10;
+  z-index: 10010;
   background-color: #00000010;
 }
 
@@ -311,7 +316,7 @@
   border-radius: 18px;
   background-color: white;
   font-size: 0.65em;
-  z-index: 20;
+  z-index: 10020;
   cursor: pointer;
 }
 
@@ -335,7 +340,7 @@
   border-radius: 18px;
   background-color: #def3ff;
   font-size: 0.65em;
-  z-index: 20;
+  z-index: 10020;
   cursor: pointer;
 }
 
@@ -350,4 +355,8 @@
 .logic-type-popover .pf-c-menu {
   box-shadow: none;
   min-width: 210px;
+}
+
+.expression-container .pf-c-dropdown__menu {
+  z-index: 11000;
 }

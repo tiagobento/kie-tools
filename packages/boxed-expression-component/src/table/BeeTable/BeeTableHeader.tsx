@@ -27,7 +27,13 @@ import { ResizerStopBehavior } from "../../resizing/ResizingWidthsContext";
 import { getCanvasFont, getTextWidth } from "../../resizing/WidthsToFitData";
 import { BeeTableThController } from "./BeeTableThController";
 import { assertUnreachable } from "../../expressions/ExpressionDefinitionRoot/ExpressionDefinitionLogicTypeSelector";
-import { SelectionPart, useBeeTableSelectionDispatch } from "../../selection/BeeTableSelectionContext";
+import {
+  SelectionPart,
+  useBeeTableSelection,
+  useBeeTableSelectionDispatch,
+} from "../../selection/BeeTableSelectionContext";
+import { useBeeTableStickyHeaders } from "../../stickyHeaders/BeeTableStickyHeadersContext";
+import { getTheadTrZindex, HEADER_HEIGHT_FOR_STICKY_HEADERS } from "../../stickyHeaders/StickyHeadersMaths";
 
 export interface BeeTableColumnUpdate<R extends object> {
   dataType: DmnBuiltInDataType;
@@ -290,6 +296,9 @@ export function BeeTableHeader<R extends object>({
     [headerVisibility, skipLastHeaderGroup]
   );
 
+  const { depth } = useBeeTableSelection();
+  const stickyHeaders = useBeeTableStickyHeaders();
+
   const renderHeaderGroups = useCallback(() => {
     const done = new Set<ReactTable.ColumnInstance<R>>();
 
@@ -300,9 +309,21 @@ export function BeeTableHeader<R extends object>({
       const rowIndex = -(reactTableInstance.headerGroups.length - 1 - index + 1);
 
       const { key, ...props } = { ...headerGroup.getHeaderGroupProps(), style: {} };
+      let renderedIndex = -1;
       if (shouldRenderHeaderGroup(rowIndex)) {
+        renderedIndex += 1;
         return (
-          <tr key={key} {...props}>
+          <tr
+            key={key}
+            {...props}
+            style={{
+              position: "sticky",
+              top: `${
+                renderedIndex * HEADER_HEIGHT_FOR_STICKY_HEADERS + stickyHeaders.offsetTop - stickyHeaders.selfTop
+              }px`,
+              zIndex: getTheadTrZindex(depth),
+            }}
+          >
             {headerGroup.headers.map((column, columnIndex) => renderColumn(rowIndex, column, columnIndex, done))}
           </tr>
         );
@@ -322,7 +343,16 @@ export function BeeTableHeader<R extends object>({
         );
       }
     });
-  }, [getColumnKey, reactTableInstance, renderColumn, shouldRenderHeaderGroup, shouldRenderRowIndexColumn]);
+  }, [
+    depth,
+    getColumnKey,
+    reactTableInstance,
+    renderColumn,
+    shouldRenderHeaderGroup,
+    shouldRenderRowIndexColumn,
+    stickyHeaders.offsetTop,
+    stickyHeaders.selfTop,
+  ]);
 
-  return <>{<thead>{renderHeaderGroups()}</thead>}</>;
+  return <>{<thead style={{ position: "relative" }}>{renderHeaderGroups()}</thead>}</>;
 }

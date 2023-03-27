@@ -16,7 +16,7 @@
 
 import "@patternfly/react-styles/css/utilities/Text/text.css";
 import * as React from "react";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import * as ReactTable from "react-table";
 import {
   BeeTableHeaderVisibility,
@@ -26,7 +26,6 @@ import {
   generateUuid,
   getNextAvailablePrefixedName,
   RelationExpressionDefinition,
-  RelationExpressionDefinitionColumn,
   RelationExpressionDefinitionRow,
 } from "../../api";
 import { useBoxedExpressionEditorI18n } from "../../i18n";
@@ -38,6 +37,15 @@ import {
   RELATION_EXPRESSION_COLUMN_DEFAULT_WIDTH,
   RELATION_EXPRESSION_COLUMN_MIN_WIDTH,
 } from "../../resizing/WidthConstants";
+import {
+  BeeTableStickyHeadersProvider,
+  BeeTableStickyHeadersType,
+  useBeeTableStickyHeaders,
+} from "../../stickyHeaders/BeeTableStickyHeadersContext";
+import {
+  HEADER_HEIGHT_FOR_STICKY_HEADERS,
+  ROW_INDEX_COLUMN_WIDTH_FOR_STICKY_HEADERS,
+} from "../../stickyHeaders/StickyHeadersMaths";
 import { BeeTable, BeeTableCellUpdate, BeeTableColumnUpdate, BeeTableRef } from "../../table/BeeTable";
 import { useBoxedExpressionEditorDispatch } from "../BoxedExpressionEditor/BoxedExpressionEditorContext";
 import { DEFAULT_EXPRESSION_NAME } from "../ExpressionDefinitionHeaderMenu";
@@ -298,31 +306,51 @@ export function RelationExpression(relationExpression: RelationExpressionDefinit
     return relationExpression.isNested ? BeeTableHeaderVisibility.LastLevel : BeeTableHeaderVisibility.AllLevels;
   }, [relationExpression.isNested]);
 
+  /// STICKY HEADERS
+  const parentStickyHeadersOffsets = useBeeTableStickyHeaders();
+
+  const stickyHeadersOffsets = useMemo<BeeTableStickyHeadersType>(
+    () => ({
+      offsetTop:
+        parentStickyHeadersOffsets.offsetTop +
+        (relationExpression.isNested ? HEADER_HEIGHT_FOR_STICKY_HEADERS : 2 * HEADER_HEIGHT_FOR_STICKY_HEADERS + 1),
+      offsetLeft: parentStickyHeadersOffsets.offsetLeft + ROW_INDEX_COLUMN_WIDTH_FOR_STICKY_HEADERS,
+      selfTop: relationExpression.isNested
+        ? HEADER_HEIGHT_FOR_STICKY_HEADERS
+        : 2 * HEADER_HEIGHT_FOR_STICKY_HEADERS + 1,
+      selfLeft: ROW_INDEX_COLUMN_WIDTH_FOR_STICKY_HEADERS,
+    }),
+    [relationExpression.isNested, parentStickyHeadersOffsets.offsetLeft, parentStickyHeadersOffsets.offsetTop]
+  );
+  ///
+
   return (
-    <div className={`relation-expression`}>
-      <BeeTable
-        resizerStopBehavior={
-          isPivoting ? ResizerStopBehavior.SET_WIDTH_ALWAYS : ResizerStopBehavior.SET_WIDTH_WHEN_SMALLER
-        }
-        forwardRef={beeTableRef}
-        headerLevelCountForAppendingRowIndexColumn={1}
-        editColumnLabel={i18n.editRelation}
-        columns={beeTableColumns}
-        headerVisibility={beeTableHeaderVisibility}
-        rows={beeTableRows}
-        onCellUpdates={onCellUpdates}
-        onColumnUpdates={onColumnUpdates}
-        operationConfig={beeTableOperationConfig}
-        onRowAdded={onRowAdded}
-        onRowDeleted={onRowDeleted}
-        onColumnAdded={onColumnAdded}
-        onColumnDeleted={onColumnDeleted}
-        onColumnResizingWidthChange={onColumnResizingWidthChange}
-        shouldRenderRowIndexColumn={true}
-        shouldShowRowsInlineControls={true}
-        shouldShowColumnsInlineControls={true}
-        // lastColumnMinWidth={lastColumnMinWidth} // FIXME: Tiago -> What to do?
-      />
-    </div>
+    <BeeTableStickyHeadersProvider value={stickyHeadersOffsets}>
+      <div className={`relation-expression`}>
+        <BeeTable
+          resizerStopBehavior={
+            isPivoting ? ResizerStopBehavior.SET_WIDTH_ALWAYS : ResizerStopBehavior.SET_WIDTH_WHEN_SMALLER
+          }
+          forwardRef={beeTableRef}
+          headerLevelCountForAppendingRowIndexColumn={1}
+          editColumnLabel={i18n.editRelation}
+          columns={beeTableColumns}
+          headerVisibility={beeTableHeaderVisibility}
+          rows={beeTableRows}
+          onCellUpdates={onCellUpdates}
+          onColumnUpdates={onColumnUpdates}
+          operationConfig={beeTableOperationConfig}
+          onRowAdded={onRowAdded}
+          onRowDeleted={onRowDeleted}
+          onColumnAdded={onColumnAdded}
+          onColumnDeleted={onColumnDeleted}
+          onColumnResizingWidthChange={onColumnResizingWidthChange}
+          shouldRenderRowIndexColumn={true}
+          shouldShowRowsInlineControls={true}
+          shouldShowColumnsInlineControls={true}
+          // lastColumnMinWidth={lastColumnMinWidth} // FIXME: Tiago -> What to do?
+        />
+      </div>
+    </BeeTableStickyHeadersProvider>
   );
 }

@@ -53,6 +53,15 @@ import { DEFAULT_EXPRESSION_NAME } from "../ExpressionDefinitionHeaderMenu";
 import { assertUnreachable } from "../ExpressionDefinitionRoot/ExpressionDefinitionLogicTypeSelector";
 import { HitPolicySelector, HIT_POLICIES_THAT_SUPPORT_AGGREGATION } from "./HitPolicySelector";
 import "./DecisionTableExpression.css";
+import {
+  BeeTableStickyHeadersProvider,
+  BeeTableStickyHeadersType,
+  useBeeTableStickyHeaders,
+} from "../../stickyHeaders/BeeTableStickyHeadersContext";
+import {
+  HEADER_HEIGHT_FOR_STICKY_HEADERS,
+  ROW_INDEX_COLUMN_WIDTH_FOR_STICKY_HEADERS,
+} from "../../stickyHeaders/StickyHeadersMaths";
 
 type ROWTYPE = any; // FIXME: Tiago
 
@@ -647,33 +656,53 @@ export function DecisionTableExpression(
     return decisionTableExpression.isNested ? BeeTableHeaderVisibility.LastLevel : BeeTableHeaderVisibility.AllLevels;
   }, [decisionTableExpression.isNested]);
 
+  const parentStickyHeadersOffsets = useBeeTableStickyHeaders();
+
+  const stickyHeadersOffsets = useMemo<BeeTableStickyHeadersType>(
+    () => ({
+      offsetTop:
+        parentStickyHeadersOffsets.offsetTop +
+        (decisionTableExpression.isNested
+          ? HEADER_HEIGHT_FOR_STICKY_HEADERS
+          : 2 * HEADER_HEIGHT_FOR_STICKY_HEADERS + 1),
+      offsetLeft: parentStickyHeadersOffsets.offsetLeft + ROW_INDEX_COLUMN_WIDTH_FOR_STICKY_HEADERS,
+      selfTop: decisionTableExpression.isNested
+        ? HEADER_HEIGHT_FOR_STICKY_HEADERS
+        : 2 * HEADER_HEIGHT_FOR_STICKY_HEADERS + 1,
+      selfLeft: ROW_INDEX_COLUMN_WIDTH_FOR_STICKY_HEADERS,
+    }),
+    [decisionTableExpression.isNested, parentStickyHeadersOffsets.offsetLeft, parentStickyHeadersOffsets.offsetTop]
+  );
+
   return (
-    <div className={`decision-table-expression ${decisionTableExpression.id}`}>
-      <BeeTable
-        resizerStopBehavior={
-          isPivoting ? ResizerStopBehavior.SET_WIDTH_ALWAYS : ResizerStopBehavior.SET_WIDTH_WHEN_SMALLER
-        }
-        forwardRef={beeTableRef}
-        headerLevelCountForAppendingRowIndexColumn={1}
-        headerVisibility={beeTableHeaderVisibility}
-        editColumnLabel={getEditColumnLabel}
-        operationConfig={beeTableOperationConfig}
-        columns={beeTableColumns}
-        rows={beeTableRows}
-        onColumnUpdates={onColumnUpdates}
-        onCellUpdates={onCellUpdates}
-        controllerCell={controllerCell}
-        onRowAdded={onRowAdded}
-        onRowDeleted={onRowDeleted}
-        onRowDuplicated={onRowDuplicated}
-        onColumnAdded={onColumnAdded}
-        onColumnDeleted={onColumnDeleted}
-        onColumnResizingWidthChange={onColumnResizingWidthChange}
-        shouldRenderRowIndexColumn={true}
-        shouldShowRowsInlineControls={true}
-        shouldShowColumnsInlineControls={true}
-        // lastColumnMinWidth={lastColumnMinWidth} // FIXME: Tiago -> What to do?
-      />
-    </div>
+    <BeeTableStickyHeadersProvider value={stickyHeadersOffsets}>
+      <div className={`decision-table-expression ${decisionTableExpression.id}`}>
+        <BeeTable
+          resizerStopBehavior={
+            isPivoting ? ResizerStopBehavior.SET_WIDTH_ALWAYS : ResizerStopBehavior.SET_WIDTH_WHEN_SMALLER
+          }
+          forwardRef={beeTableRef}
+          headerLevelCountForAppendingRowIndexColumn={1}
+          headerVisibility={beeTableHeaderVisibility}
+          editColumnLabel={getEditColumnLabel}
+          operationConfig={beeTableOperationConfig}
+          columns={beeTableColumns}
+          rows={beeTableRows}
+          onColumnUpdates={onColumnUpdates}
+          onCellUpdates={onCellUpdates}
+          controllerCell={controllerCell}
+          onRowAdded={onRowAdded}
+          onRowDeleted={onRowDeleted}
+          onRowDuplicated={onRowDuplicated}
+          onColumnAdded={onColumnAdded}
+          onColumnDeleted={onColumnDeleted}
+          onColumnResizingWidthChange={onColumnResizingWidthChange}
+          shouldRenderRowIndexColumn={true}
+          shouldShowRowsInlineControls={true}
+          shouldShowColumnsInlineControls={true}
+          // lastColumnMinWidth={lastColumnMinWidth} // FIXME: Tiago -> What to do?
+        />
+      </div>
+    </BeeTableStickyHeadersProvider>
   );
 }
