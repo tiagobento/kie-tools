@@ -119,16 +119,19 @@ function dmnRunnerResultsReducer(dmnRunnerResults: DmnRunnerResults, action: Dmn
 export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
   const { i18n } = useOnlineI18n();
 
-  // states that can be changed down in the tree;
+  // States that can be changed down in the tree with dmnRunnerDispatcher;
   const [{ currentInputIndex, error, isExpanded }, dmnRunnerDispatcher] = useReducer(
     dmnRunnerProviderReducer,
     initialState
   );
-  const [dmnRunnerResults, dmnRunnerResultsDispatcher] = useReducer(dmnRunnerResultsReducer, initialDmnRunnerResults);
 
-  // states that are set inside the provider;
+  // States that are in controll of the DmnRunnerProvider;
   const [canBeVisualized, setCanBeVisualized] = useState<boolean>(false);
   const [jsonSchema, setJsonSchema] = useState<DmnSchema | undefined>(undefined);
+  const [{ results, resultsDifference }, dmnRunnerResultsDispatcher] = useReducer(
+    dmnRunnerResultsReducer,
+    initialDmnRunnerResults
+  );
 
   // CUSTOM HOOKs
   const extendedServices = useExtendedServices();
@@ -140,7 +143,6 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
 
   const dmnRunnerInputs = useMemo(() => dmnRunnerPersistenceJson.inputs, [dmnRunnerPersistenceJson.inputs]);
   const dmnRunnerMode = useMemo(() => dmnRunnerPersistenceJson.configs.mode, [dmnRunnerPersistenceJson.configs.mode]);
-
   const dmnRunnerConfigInputs = useMemo(
     () => dmnRunnerPersistenceJson?.configs?.inputs,
     [dmnRunnerPersistenceJson?.configs?.inputs]
@@ -182,27 +184,34 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
     [props.workspaceFile, workspaces, props.dmnLanguageService]
   );
 
-  // TODO: CHANGE TO useCancelableEffect -> PAYLOAD, CAN BE CANCELLED
-  useEffect(() => {
-    if (
-      props.workspaceFile.extension !== "dmn" ||
-      extendedServices.status !== KieSandboxExtendedServicesStatus.RUNNING
-    ) {
-      dmnRunnerDispatcher({ type: DmnRunnerProviderActionType.DEFAULT, newState: { isExpanded: false } });
-      return;
-    }
+  useCancelableEffect(
+    useCallback(
+      ({ canceled }) => {
+        if (
+          props.workspaceFile.extension !== "dmn" ||
+          extendedServices.status !== KieSandboxExtendedServicesStatus.RUNNING
+        ) {
+          dmnRunnerDispatcher({ type: DmnRunnerProviderActionType.DEFAULT, newState: { isExpanded: false } });
+          return;
+        }
 
-    preparePayload()
-      .then((payload) => {
-        extendedServices.client.formSchema(payload).then((jsonSchema) => {
-          setJsonSchema(jsonSchema);
-        });
-      })
-      .catch((err) => {
-        console.error(err);
-        dmnRunnerDispatcher({ type: DmnRunnerProviderActionType.DEFAULT, newState: { error: true } });
-      });
-  }, [extendedServices.status, extendedServices.client, props.workspaceFile.extension, preparePayload]);
+        preparePayload()
+          .then((payload) => {
+            if (canceled.get() || payload === undefined) {
+              return;
+            }
+            extendedServices.client.formSchema(payload).then((jsonSchema) => {
+              setJsonSchema(jsonSchema);
+            });
+          })
+          .catch((err) => {
+            console.error(err);
+            dmnRunnerDispatcher({ type: DmnRunnerProviderActionType.DEFAULT, newState: { error: true } });
+          });
+      },
+      [extendedServices.status, extendedServices.client, props.workspaceFile.extension, preparePayload]
+    )
+  );
 
   useEffect(() => {
     if (props.workspaceFile.extension !== "dmn") {
@@ -217,6 +226,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
     }
   }, [prevKieSandboxExtendedServicesStatus, extendedServices.status, props.workspaceFile.extension]);
 
+  // RESULTS
   useCancelableEffect(
     useCallback(
       ({ canceled }) => {
@@ -246,8 +256,6 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
                 runnerResults.push(result.decisionResults);
               }
             }
-            // setExecutionNotifications(result);
-
             dmnRunnerResultsDispatcher({ newResults: runnerResults });
           })
           .catch((err) => {
@@ -258,18 +266,19 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
     )
   );
 
+  // Set execution tab on Problems panel;
   useEffect(() => {
     if (!props.editorPageDock) {
       return;
     }
 
-    const decisionNameByDecisionId = dmnRunnerResults.results[currentInputIndex]?.reduce(
+    const decisionNameByDecisionId = results[currentInputIndex]?.reduce(
       (acc: Map<string, string>, decisionResult) => acc.set(decisionResult.decisionId, decisionResult.decisionName),
       new Map<string, string>()
     );
 
     const messagesBySourceId =
-      dmnRunnerResults.results[currentInputIndex]?.reduce((acc, decisionResult) => {
+      results[currentInputIndex]?.reduce((acc, decisionResult) => {
         decisionResult.messages?.forEach((message) => {
           const messageEntry = acc.get(message.sourceId);
           if (!messageEntry) {
@@ -292,7 +301,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
     });
 
     props.editorPageDock?.setNotifications(i18n.terms.execution, "", notifications as any);
-  }, [props.editorPageDock, i18n.terms.execution, dmnRunnerResults, currentInputIndex]);
+  }, [props.editorPageDock, i18n.terms.execution, results, currentInputIndex]);
 
   const setDmnRunnerPersistenceJson = useCallback(
     (args: {
@@ -585,8 +594,8 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
       isExpanded,
       jsonSchema,
       mode: dmnRunnerMode,
-      results: dmnRunnerResults.results,
-      resultsDifference: dmnRunnerResults.resultsDifference,
+      results,
+      resultsDifference,
       status,
     }),
     [
@@ -599,7 +608,8 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
       error,
       isExpanded,
       jsonSchema,
-      dmnRunnerResults,
+      results,
+      resultsDifference,
       status,
     ]
   );
