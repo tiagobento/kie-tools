@@ -20,8 +20,6 @@ import * as React from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { NavigationKeysUtils } from "../../keysUtils";
 import "./BeeTableEditableCellContent.css";
-import { BeeGwtService } from "../../api";
-import { useBoxedExpressionEditor } from "../../expressions/BoxedExpressionEditor/BoxedExpressionEditorContext";
 
 const CELL_LINE_HEIGHT = 20;
 
@@ -48,7 +46,6 @@ export interface BeeTableEditableCellContentProps {
   setEditing: React.Dispatch<React.SetStateAction<boolean>>;
   onFeelTabKeyDown?: (args: { isShiftPressed: boolean }) => void;
   onFeelEnterKeyDown?: (args: { isShiftPressed: boolean }) => void;
-  cellId: string;
 }
 
 export function BeeTableEditableCellContent({
@@ -60,13 +57,11 @@ export function BeeTableEditableCellContent({
   setEditing,
   onFeelTabKeyDown,
   onFeelEnterKeyDown,
-  cellId,
 }: BeeTableEditableCellContentProps) {
   const [cellHeight, setCellHeight] = useState(CELL_LINE_HEIGHT * 3);
   const [preview, setPreview] = useState<string>(value);
   const [previousValue, setPreviousValue] = useState(value);
   const [editingValue, setEditingValue] = useState(value);
-  const { beeGwtService } = useBoxedExpressionEditor();
   const feelInputRef = useRef<FeelInputRef>(null);
 
   const mode = useMemo(() => {
@@ -77,12 +72,6 @@ export function BeeTableEditableCellContent({
     setPreviousValue((prev) => (isEditing ? prev : value));
     setEditingValue((prev) => (isEditing ? prev : value));
   }, [isEditing, value]);
-
-  useEffect(() => {
-    if (isActive) {
-      beeGwtService?.selectObject(cellId);
-    }
-  }, [isActive, beeGwtService, cellId]);
 
   const updateValue = useCallback(
     (newValue: string) => {

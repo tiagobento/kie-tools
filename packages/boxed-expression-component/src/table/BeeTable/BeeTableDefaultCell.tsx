@@ -1,8 +1,9 @@
 import * as React from "react";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { BeeTableCellUpdate } from ".";
 import { BeeTableEditableCellContent } from "./BeeTableEditableCellContent";
 import { useBeeTableSelectableCellRef } from "../../selection/BeeTableSelectionContext";
+import { useBoxedExpressionEditor } from "../../expressions/BoxedExpressionEditor/BoxedExpressionEditorContext";
 import * as ReactTable from "react-table";
 
 export function BeeTableDefaultCell<R extends object>({
@@ -48,6 +49,14 @@ export function BeeTableDefaultCell<R extends object>({
     getValue
   );
 
+  const { beeGwtService } = useBoxedExpressionEditor();
+
+  useEffect(() => {
+    if (isActive) {
+      beeGwtService?.selectObject(typeof cellProps.value === "string" ? "" : cellProps.value.id);
+    }
+  }, [isActive, beeGwtService, cellProps]);
+
   return (
     <BeeTableEditableCellContent
       isEditing={isEditing}
@@ -58,7 +67,6 @@ export function BeeTableDefaultCell<R extends object>({
       isReadOnly={isReadOnly}
       onFeelEnterKeyDown={navigateVertically}
       onFeelTabKeyDown={navigateHorizontally}
-      cellId={typeof cellProps.value === "string" ? "" : cellProps.value.id}
     />
   );
 }
