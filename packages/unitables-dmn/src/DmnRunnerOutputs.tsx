@@ -160,17 +160,6 @@ function deepGenerateOutputTypesMapFields(
   });
 }
 
-// TODO: not used;
-function deepFlattenOutput(acc: any, entry: string, value: object) {
-  return Object.entries(value).map(([deepEntry, deepValue]) => {
-    if (typeof deepValue === "object" && deepValue !== null) {
-      deepFlattenOutput(acc, deepEntry, deepValue);
-    }
-    acc[`${entry}-${deepEntry}`] = deepValue;
-    return acc;
-  });
-}
-
 export function isOutputWithInsideProperties(
   toBeDetermined: OutputTypesAndNormalFields
 ): toBeDetermined is OutputWithInsideProperties {

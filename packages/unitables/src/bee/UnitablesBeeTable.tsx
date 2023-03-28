@@ -208,7 +208,7 @@ function UnitablesBeeTableCell({ joinedName }: BeeTableCellProps<ROWTYPE> & { jo
   const [autoFieldKey, forceUpdate] = useReducer((x) => x + 1, 0);
   const cellRef = useRef<HTMLDivElement | null>(null);
 
-  // TODO: Fix: x-dmn-type from field property: Any, Undefined, string, number, ...;
+  // TODO: Luiz - Fix: x-dmn-type from field property: Any, Undefined, string, number, ...;
   const setValue = useCallback(
     (newValue: string) => {
       internalChange.current = true;
@@ -231,7 +231,7 @@ function UnitablesBeeTableCell({ joinedName }: BeeTableCellProps<ROWTYPE> & { jo
         onChange(newValueWithoutSymbols === "true");
       } else if (field.type === "array") {
         console.log("ARRAY", newValue);
-        // TODO: check ListField;
+        // TODO: Luiz - paste can be afected by this. check ListField;
         try {
           const parsedValue = JSON.parse(newValue);
           if (Array.isArray(parsedValue)) {
@@ -261,8 +261,7 @@ function UnitablesBeeTableCell({ joinedName }: BeeTableCellProps<ROWTYPE> & { jo
     [internalChange, field, onChange]
   );
 
-  // TODO: use isEditing, stoppropagation for OnKeyDown BeeTable.tsx
-  const { isActive } = useBeeTableSelectableCellRef(
+  const { isActive, isEditing } = useBeeTableSelectableCellRef(
     containerCellCoordinates?.rowIndex ?? 0,
     containerCellCoordinates?.columnIndex ?? 0,
     setValue,
