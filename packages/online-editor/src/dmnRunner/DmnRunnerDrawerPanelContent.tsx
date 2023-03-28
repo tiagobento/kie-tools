@@ -108,7 +108,7 @@ export function DmnRunnerDrawerPanelContent(props: Props) {
     }
   }, []);
 
-  // When form breaks, with the user make a new edit that fixes it, it will reset the form, and submit the inputs;
+  // When the form breaks, if the user makes a new edit that fixes it, it will reset the form, and re-submit the inputs;
   useCancelableEffect(
     useCallback(
       ({ canceled }) => {
