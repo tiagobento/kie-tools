@@ -271,28 +271,38 @@ function UnitablesBeeTableCell({ joinedName }: BeeTableCellProps<ROWTYPE> & { jo
   // This useEffect forces the focus into the selected cell;
   useEffect(() => {
     if (isActive) {
-      const input = cellRef.current?.getElementsByTagName("input")?.[0] as HTMLInputElement | undefined;
       const listener = (e: KeyboardEvent) => {
-        // ignore for "keydown"
+        const input = cellRef.current?.getElementsByTagName("input")?.[0] as HTMLInputElement | undefined;
+
+        if (e.type === "keyup") {
+          if (e.code.toLowerCase() === "control" || e.code.toLowerCase() === "meta") {
+            return;
+          }
+          if (e.code.toLowerCase() === "enter") {
+            input?.focus();
+            return;
+          }
+          return;
+        }
+
         if (
           (e.ctrlKey || e.metaKey) &&
-          (e.key.toLowerCase() === "c" ||
-            e.key.toLowerCase() === "v" ||
-            e.key.toLowerCase() === "x" ||
-            e.key.toLowerCase() === "a")
+          (e.code.toLowerCase() === "c" ||
+            e.code.toLowerCase() === "v" ||
+            e.code.toLowerCase() === "x" ||
+            e.code.toLowerCase() === "a")
         ) {
           return;
         }
 
-        // ignore for "keyup"
-        if (e.key === "Control" || e.key === "Meta") {
+        if (e.code.toLowerCase() === "tab") {
           return;
         }
 
         input?.select();
       };
 
-      // keyup handles "enter" key
+      // keyup handles "enter" code
       document?.addEventListener("keyup", listener);
       document?.addEventListener("keydown", listener);
       return () => {
@@ -300,10 +310,40 @@ function UnitablesBeeTableCell({ joinedName }: BeeTableCellProps<ROWTYPE> & { jo
         document?.removeEventListener("keydown", listener);
       };
     }
-  }, [isActive]);
+  }, [isActive, isEditing]);
+
+  const onKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (isEditing && e.code.toLowerCase() === "tab") {
+        return;
+      }
+
+      if (isEditing && e.code.toLowerCase() === "enter") {
+        return;
+      }
+
+      if (isEditing) {
+        e.stopPropagation();
+      }
+    },
+    [isEditing]
+  );
+
+  const onKeyUp = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (isEditing && e.code.toLowerCase() === "enter") {
+        return;
+      }
+
+      if (isEditing) {
+        e.stopPropagation();
+      }
+    },
+    [isEditing]
+  );
 
   return (
-    <div ref={cellRef}>
+    <div ref={cellRef} onKeyDown={onKeyDown} onKeyUp={onKeyUp}>
       <AutoField
         key={joinedName + autoFieldKey}
         name={joinedName}
