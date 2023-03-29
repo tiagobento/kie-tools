@@ -827,7 +827,7 @@ public class ExpressionEditorViewImplTest {
 
         view.setExpression(NODE_UUID, hasExpression, Optional.empty(), false);
 
-        ExpressionProps expressionProps = view.getDefaultExpressionDefinition(LITERAL_EXPRESSION.getText());
+        ExpressionProps expressionProps = view.getDefaultExpressionDefinition(LITERAL_EXPRESSION.getText(), BuiltInType.UNDEFINED.getName());
 
         verify(literalExpressionEditorDefinition).enrich(any(), any(), any());
 
@@ -836,5 +836,9 @@ public class ExpressionEditorViewImplTest {
                 .isNotNull()
                 .extracting(expression -> expression.logicType)
                 .isEqualTo(LITERAL_EXPRESSION.getText());
+
+        assertThat(expressionProps)
+                .extracting(expression -> expression.dataType)
+                .isEqualTo(BuiltInType.UNDEFINED.getName());
     }
 }

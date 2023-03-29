@@ -17,7 +17,6 @@
 package org.kie.workbench.common.dmn.client.editors.expressions.types;
 
 import java.util.Optional;
-import java.util.Spliterator;
 
 import org.kie.workbench.common.dmn.api.definition.HasExpression;
 import org.kie.workbench.common.dmn.api.definition.model.Expression;
