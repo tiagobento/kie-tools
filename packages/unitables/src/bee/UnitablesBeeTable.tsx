@@ -142,7 +142,7 @@ export function UnitablesBeeTable({
           dataType: column.dataType,
           isRowIndexColumn: false,
           width: undefined,
-          minWidth: UNITABLES_COLUMN_MIN_WIDTH, // TODO: FIXME;
+          minWidth: UNITABLES_COLUMN_MIN_WIDTH, // TODO: Luiz - set the correct width for different dataTypes;
           columns: column.insideProperties.map((insideProperty) => {
             return {
               originalId: uuid + `field-${insideProperty.joinedName}`,

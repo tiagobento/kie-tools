@@ -26,8 +26,8 @@ import { UnitablesColumnType } from "../UnitablesTypes";
 export const FORMS_ID = "unitables-forms";
 export const AUTO_ROW_ID = "unitables-row";
 
-const DEFAULT_DATE_TIME_CELL_WDITH = 296;
-const DEFAULT_DATE_CELL_WIDTH = 180;
+const DEFAULT_DATE_TIME_CELL_WDITH = 340;
+const DEFAULT_DATE_CELL_WIDTH = 193;
 
 export class UnitablesJsonSchemaBridge extends JSONSchemaBridge {
   constructor(
@@ -69,7 +69,7 @@ export class UnitablesJsonSchemaBridge extends JSONSchemaBridge {
   }
 
   public getDataType(field: Record<string, any>) {
-    const type = field.type ?? "string";
+    const type = field["x-dmn-type"]?.split(":")?.[1] ?? "string";
 
     switch (type) {
       case "<Undefined>":
