@@ -105,7 +105,7 @@ export function UnitablesBeeTable({
               {...props}
               joinedName={insideProperty.joinedName}
               rowCount={rows.length}
-              columnCount={columns.length}
+              columnCount={columns.length + 1}
             />
           );
         }
@@ -115,7 +115,7 @@ export function UnitablesBeeTable({
             {...props}
             joinedName={column.joinedName}
             rowCount={rows.length}
-            columnCount={columns.length}
+            columnCount={columns.length + 1}
           />
         );
       }
@@ -220,7 +220,6 @@ function UnitablesBeeTableCell({
   const [{ field, value, onChange }] = useField(joinedName, {});
 
   const cellRef = useRef<HTMLDivElement | null>(null);
-  const previousValue = useRef(value);
 
   const [autoFieldKey, forceUpdate] = useReducer((x) => x + 1, 0);
 
@@ -257,7 +256,7 @@ function UnitablesBeeTableCell({
     [internalChange, field, onChange]
   );
 
-  const { isActive } = useBeeTableSelectableCellRef(
+  const { isActive, isEditing } = useBeeTableSelectableCellRef(
     containerCellCoordinates?.rowIndex ?? 0,
     containerCellCoordinates?.columnIndex ?? 0,
     setValue,
@@ -265,19 +264,37 @@ function UnitablesBeeTableCell({
   );
   const { mutateSelection } = useBeeTableSelectionDispatch();
 
+  const columnCountCallback = useCallback(() => columnCount, [columnCount]);
+
   const navigateVertically = useCallback(
     (args: { isShiftPressed: boolean }) => {
       mutateSelection({
         part: SelectionPart.ActiveCell,
-        columnCount: () => columnCount,
+        columnCount: columnCountCallback,
         rowCount,
         deltaColumns: 0,
         deltaRows: args.isShiftPressed ? -1 : 1,
-        isEditingActiveCell: true,
+        isEditingActiveCell: false,
         keepInsideSelection: true,
       });
     },
-    [mutateSelection, columnCount, rowCount]
+    [mutateSelection, rowCount, columnCountCallback]
+  );
+
+  const setEditing = useCallback(
+    (isEditing: boolean) => {
+      console.log("setEditing", isEditing);
+      mutateSelection({
+        part: SelectionPart.ActiveCell,
+        columnCount: columnCountCallback,
+        rowCount,
+        deltaColumns: 0,
+        deltaRows: 0,
+        isEditingActiveCell: isEditing,
+        keepInsideSelection: true,
+      });
+    },
+    [mutateSelection, rowCount, columnCountCallback]
   );
 
   // This useEffect forces the focus into the selected cell;
@@ -288,36 +305,17 @@ function UnitablesBeeTableCell({
 
     const keyDownListener = (e: KeyboardEvent) => {
       console.log("KEYDOWN", e);
-      const complementaryKey =
-        (getOperatingSystem() === OperatingSystem.MACOS && e.metaKey) ||
-        (getOperatingSystem() !== OperatingSystem.MACOS && e.ctrlKey);
-
-      if (
-        complementaryKey &&
-        (e.key.toLowerCase() === "c" ||
-          e.key.toLowerCase() === "v" ||
-          e.key.toLowerCase() === "x" ||
-          e.key.toLowerCase() === "a")
-      ) {
-        return;
+      if (isEditModeTriggeringKey(e as any)) {
+        setEditing(true);
+        cellRef.current?.getElementsByTagName("input")?.[0]?.select();
       }
-
-      if (complementaryKey || e.altKey || e.key.toLowerCase() === "shift" || e.key.toLowerCase() === "capslock") {
-        return;
-      }
-
-      if (e.key.toLowerCase() === "tab") {
-        return;
-      }
-
-      cellRef.current?.getElementsByTagName("input")?.[0]?.select();
     };
 
     document?.addEventListener("keydown", keyDownListener);
     return () => {
       document?.removeEventListener("keydown", keyDownListener);
     };
-  }, [isActive]);
+  }, [isActive, setEditing]);
 
   useEffect(() => {
     if (!isActive) {
@@ -327,6 +325,7 @@ function UnitablesBeeTableCell({
     const keyUpListener = (e: KeyboardEvent) => {
       console.log("KEYUP", e);
       if (e.key.toLowerCase() === "enter") {
+        setEditing(true);
         cellRef.current?.getElementsByTagName("input")?.[0]?.focus();
       }
     };
@@ -335,33 +334,52 @@ function UnitablesBeeTableCell({
     return () => {
       document?.removeEventListener("keyup", keyUpListener);
     };
-  }, [isActive]);
+  }, [isActive, setEditing]);
 
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
       console.log("DIV KEYDOWN", e);
       if (e.key.toLowerCase() === "tab") {
+        setEditing(false);
         return;
       }
 
       if (e.key.toLowerCase() === "escape") {
+        setEditing(false);
+        return;
         // setValue(`${previousValue.current ?? ""}`);
       }
 
       if (e.key.toLowerCase() === "enter") {
+        setEditing(false);
         navigateVertically({ isShiftPressed: e.shiftKey });
+        return;
+      }
+
+      if (isEditModeTriggeringKey(e)) {
+        setEditing(true);
+        return;
       }
 
       e.stopPropagation();
     },
-    [navigateVertically]
+    [navigateVertically, setEditing]
   );
 
-  // useEffect(() => {
-  //   if (!isActive) {
-  //     previousValue.current = value;
-  //   }
-  // }, [isActive, value])
+  useEffect(() => {
+    console.log(
+      "coordinates x,y=",
+      containerCellCoordinates?.rowIndex,
+      containerCellCoordinates?.columnIndex,
+      " IS ACTIVE=",
+      isActive,
+      ", IS EDITING=",
+      isEditing
+    );
+    if (isActive) {
+      // previousValue.current = value;
+    }
+  }, [containerCellCoordinates, isActive, isEditing]);
 
   return (
     <div ref={cellRef} onKeyDown={onKeyDown}>
@@ -373,4 +391,12 @@ function UnitablesBeeTableCell({
       />
     </div>
   );
+}
+
+function isEditModeTriggeringKey(e: React.KeyboardEvent) {
+  if (e.altKey || e.ctrlKey || e.metaKey) {
+    return false;
+  }
+
+  return /^[\d\w ()[\]{},.\-_'"/?<>+\\|]$/.test(e.key);
 }

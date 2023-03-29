@@ -421,6 +421,7 @@ export function BeeTableSelectionContextProvider({ children }: React.PropsWithCh
                 },
               };
             case SelectionPart.ActiveCell:
+              console.log("SelectionPart.ActiveCell", newColumnIndex);
               if (!isExpanded || !keepInsideSelection) {
                 return {
                   active: {
