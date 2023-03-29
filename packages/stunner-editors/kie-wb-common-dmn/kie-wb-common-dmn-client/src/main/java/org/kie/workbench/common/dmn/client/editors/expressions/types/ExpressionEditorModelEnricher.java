@@ -17,6 +17,7 @@
 package org.kie.workbench.common.dmn.client.editors.expressions.types;
 
 import java.util.Optional;
+import java.util.Spliterator;
 
 import org.kie.workbench.common.dmn.api.definition.HasExpression;
 import org.kie.workbench.common.dmn.api.definition.model.Expression;
@@ -26,5 +27,24 @@ public interface ExpressionEditorModelEnricher<T extends Expression> {
     default void enrich(final Optional<String> nodeUUID,
                         final HasExpression hasExpression,
                         final Optional<T> expression) {
+    }
+
+    /**
+     * It enriches a ROOT expression, typically when managing the new React based Boxed Expression.
+     * In this scenario, additional info are required to correctly enrich the Expression. To customize its
+     * behavior, you need to explicitly override this method, otherwise it will be redirected to the "old"
+     * enricher currently used by the old GWT based editor.
+     * @param nodeUUID
+     * @param rootExpression
+     * @param enrichedExpression
+     * @param dataType
+     */
+    default void enrichRootExpression(final String nodeUUID,
+                                      final HasExpression rootExpression,
+                                      final T enrichedExpression,
+                                      final String dataType) {
+        enrich(nodeUUID != null ? Optional.ofNullable(nodeUUID) : Optional.empty(),
+                rootExpression,
+                enrichedExpression != null ? Optional.of(enrichedExpression) : Optional.empty());
     }
 }
