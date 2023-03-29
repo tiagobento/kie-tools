@@ -51,6 +51,11 @@ export function UnitablesRow({
     [onSubmitRow, rowIndex]
   );
 
+  const onValidate = useCallback((inputs, error) => {
+    // returns the validation errors;
+    return null;
+  }, []);
+
   // Submits the table in the first render triggering the onValidate function
   useEffect(() => {
     autoRowRef.current?.submit();
@@ -66,6 +71,7 @@ export function UnitablesRow({
         placeholder={true}
         autosave={true}
         validate={"onChange"}
+        onValidate={onValidate}
       >
         <UniformsContext.Consumer>
           {(uniformsContext) => (
