@@ -94,10 +94,10 @@ const INITIAL_EXPRESSION: ExpressionDefinition = {
 
 //Defining global function that will be available in the Window namespace and used by the BoxedExpressionEditor component
 const beeGwtService: BeeGwtService = {
-  getDefaultExpressionDefinition(logicType: string): ExpressionDefinition {
+  getDefaultExpressionDefinition(logicType: string, dataType: string): ExpressionDefinition {
     return getDefaultExpressionDefinitionByLogicType(
       logicType as ExpressionDefinitionLogicType,
-      { dataType: DmnBuiltInDataType.Undefined } as ExpressionDefinition,
+      dataType as ExpressionDefinition,
       0
     );
   },
