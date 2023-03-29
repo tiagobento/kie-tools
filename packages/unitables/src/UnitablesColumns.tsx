@@ -68,12 +68,13 @@ export function useUnitablesColumns(
         getObjectByPath(jsonSchemaBridge?.schema, propertiesEntryPath) ?? {}
       );
 
-      const updatedData = newRows.map((row) => {
+      const updateInputs = newRows.map((row) => {
         return Object.entries(propertiesDifference).reduce(
           (row, [property, value]) => {
             if (Object.keys(row).length === 0) {
               return row;
             }
+
             if (!value || value.type || value.$ref) {
               delete row[property];
             }
@@ -86,7 +87,7 @@ export function useUnitablesColumns(
         );
       });
 
-      return updatedData;
+      return updateInputs;
     });
   }, [defaultInputValues, jsonSchemaBridge, previousBridge, propertiesEntryPath, setRows]);
 
