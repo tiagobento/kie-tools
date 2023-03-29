@@ -41,9 +41,15 @@ public class TypeRefUtils {
         return hasTypeRef;
     }
 
-    public static QName getQNameOfExpression(final String dataType,
-                                             final UnaryOperator<QName> qNameNormalizer) {
-        return qNameNormalizer.apply(makeQName(dataType));
+    public static <E extends Expression> QName getQNameOfExpression(final HasExpression hasExpression,
+                                                                    final E expression,
+                                                                    final String dataType,
+                                                                    final UnaryOperator<QName> qNameNormalizer) {
+        if (dataType != null && !dataType.isEmpty()) {
+            return qNameNormalizer.apply(makeQName(dataType));
+        } else {
+            return getTypeRefOfExpression(expression, hasExpression).getTypeRef();
+        }
     }
 
     private static QName makeQName(String dataType) {
