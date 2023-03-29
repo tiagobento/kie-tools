@@ -7267,6 +7267,9 @@ importers:
       "@kie-tools-core/notifications":
         specifier: workspace:*
         version: link:../notifications
+      "@kie-tools-core/operating-system":
+        specifier: workspace:*
+        version: link:../operating-system
       "@kie-tools/boxed-expression-component":
         specifier: workspace:*
         version: link:../boxed-expression-component
