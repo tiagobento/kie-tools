@@ -217,13 +217,18 @@ function UnitablesBeeTableCell({
   rowCount,
   columnCount,
 }: BeeTableCellProps<ROWTYPE> & { joinedName: string; rowCount: number; columnCount: number }) {
+  const [{ field, value, onChange }] = useField(joinedName, {});
+
+  const cellRef = useRef<HTMLDivElement | null>(null);
+  const previousValue = useRef(value);
+
+  const [autoFieldKey, forceUpdate] = useReducer((x) => x + 1, 0);
+
   const { containerCellCoordinates } = useBeeTableCoordinates();
   const { internalChange } = useUnitablesContext();
-  const [{ field, value, onChange }] = useField(joinedName, {});
-  const [autoFieldKey, forceUpdate] = useReducer((x) => x + 1, 0);
-  const cellRef = useRef<HTMLDivElement | null>(null);
 
   // TODO: Luiz - Fix: x-dmn-type from field property: Any, Undefined, string, number, ...;
+  // this is useful in case we have a "time", "date", "date and time" fields;
   const setValue = useCallback(
     (newValue: string) => {
       internalChange.current = true;
@@ -235,20 +240,15 @@ function UnitablesBeeTableCell({
         // This ensure a re-render of the SelectField;
         forceUpdate();
       } else if (field.type === "string") {
-        console.log("STRING", newValueWithoutSymbols);
         onChange(newValueWithoutSymbols);
       } else if (field.type === "number") {
-        console.log("NUMBER", newValueWithoutSymbols);
         const numberValue = parseFloat(newValueWithoutSymbols);
         onChange(isNaN(numberValue) ? undefined : numberValue);
       } else if (field.type === "boolean") {
-        console.log("BOOLEAN", newValueWithoutSymbols);
         onChange(newValueWithoutSymbols === "true");
       } else if (field.type === "array") {
-        console.log("ARRAY", newValue);
-        // FIXME: Luiz - array fields are still not supported;
+        // FIXME: Luiz - array fields are still not supported by DMN Runner Table;
       } else if (field.type === "object" && typeof newValue !== "object") {
-        console.log("OBJECT", newValue);
         // objects are flattened in a single row - this case shouldn't happen;
       } else {
         onChange(newValue);
@@ -257,14 +257,14 @@ function UnitablesBeeTableCell({
     [internalChange, field, onChange]
   );
 
-  const { isActive, isEditing } = useBeeTableSelectableCellRef(
+  const { isActive } = useBeeTableSelectableCellRef(
     containerCellCoordinates?.rowIndex ?? 0,
     containerCellCoordinates?.columnIndex ?? 0,
     setValue,
     useCallback(() => `${value ?? ""}`, [value])
   );
-
   const { mutateSelection } = useBeeTableSelectionDispatch();
+
   const navigateVertically = useCallback(
     (args: { isShiftPressed: boolean }) => {
       mutateSelection({
@@ -273,7 +273,7 @@ function UnitablesBeeTableCell({
         rowCount,
         deltaColumns: 0,
         deltaRows: args.isShiftPressed ? -1 : 1,
-        isEditingActiveCell: false,
+        isEditingActiveCell: true,
         keepInsideSelection: true,
       });
     },
@@ -282,86 +282,89 @@ function UnitablesBeeTableCell({
 
   // This useEffect forces the focus into the selected cell;
   useEffect(() => {
-    if (isActive) {
-      const input = cellRef.current?.getElementsByTagName("input")?.[0] as HTMLInputElement | undefined;
-
-      const keyDownListener = (e: KeyboardEvent) => {
-        const complementaryKey =
-          (getOperatingSystem() === OperatingSystem.MACOS && e.metaKey) ||
-          (getOperatingSystem() !== OperatingSystem.MACOS && e.ctrlKey);
-
-        if (
-          complementaryKey &&
-          (e.key.toLowerCase() === "c" ||
-            e.key.toLowerCase() === "v" ||
-            e.key.toLowerCase() === "x" ||
-            e.key.toLowerCase() === "a")
-        ) {
-          return;
-        }
-
-        if (complementaryKey || e.altKey || e.key.toLowerCase() === "shift" || e.key.toLowerCase() === "capslock") {
-          return;
-        }
-
-        if (e.key.toLowerCase() === "tab") {
-          return;
-        }
-
-        input?.select();
-      };
-
-      const keyUpListener = (e: KeyboardEvent) => {
-        if (e.key.toLowerCase() === "enter") {
-          input?.focus();
-          return;
-        }
-        return;
-      };
-
-      // keyup handles "enter" code
-      document?.addEventListener("keyup", keyUpListener);
-      document?.addEventListener("keydown", keyDownListener);
-      return () => {
-        document?.removeEventListener("keyup", keyUpListener);
-        document?.removeEventListener("keydown", keyDownListener);
-      };
+    if (!isActive) {
+      return;
     }
+
+    const keyDownListener = (e: KeyboardEvent) => {
+      console.log("KEYDOWN", e);
+      const complementaryKey =
+        (getOperatingSystem() === OperatingSystem.MACOS && e.metaKey) ||
+        (getOperatingSystem() !== OperatingSystem.MACOS && e.ctrlKey);
+
+      if (
+        complementaryKey &&
+        (e.key.toLowerCase() === "c" ||
+          e.key.toLowerCase() === "v" ||
+          e.key.toLowerCase() === "x" ||
+          e.key.toLowerCase() === "a")
+      ) {
+        return;
+      }
+
+      if (complementaryKey || e.altKey || e.key.toLowerCase() === "shift" || e.key.toLowerCase() === "capslock") {
+        return;
+      }
+
+      if (e.key.toLowerCase() === "tab") {
+        return;
+      }
+
+      cellRef.current?.getElementsByTagName("input")?.[0]?.select();
+    };
+
+    document?.addEventListener("keydown", keyDownListener);
+    return () => {
+      document?.removeEventListener("keydown", keyDownListener);
+    };
   }, [isActive]);
 
-  const onKeyUp = useCallback(
-    (e: React.KeyboardEvent<HTMLDivElement>) => {
-      if (isEditing) {
-        e.stopPropagation();
+  useEffect(() => {
+    if (!isActive) {
+      return;
+    }
+
+    const keyUpListener = (e: KeyboardEvent) => {
+      console.log("KEYUP", e);
+      if (e.key.toLowerCase() === "enter") {
+        cellRef.current?.getElementsByTagName("input")?.[0]?.focus();
       }
-    },
-    [isEditing]
-  );
+    };
+
+    document?.addEventListener("keyup", keyUpListener);
+    return () => {
+      document?.removeEventListener("keyup", keyUpListener);
+    };
+  }, [isActive]);
 
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
-      if (isEditing && e.key.toLowerCase() === "tab") {
-        return;
-      }
-
-      if (isEditing && e.key.toLowerCase() === "enter") {
-        navigateVertically({ isShiftPressed: e.shiftKey });
+      console.log("DIV KEYDOWN", e);
+      if (e.key.toLowerCase() === "tab") {
         return;
       }
 
       if (e.key.toLowerCase() === "escape") {
-        // onChange(`${cellValue}`)
+        // setValue(`${previousValue.current ?? ""}`);
       }
 
-      if (isEditing) {
-        e.stopPropagation();
+      if (e.key.toLowerCase() === "enter") {
+        navigateVertically({ isShiftPressed: e.shiftKey });
       }
+
+      e.stopPropagation();
     },
-    [isEditing, navigateVertically]
+    [navigateVertically]
   );
 
+  // useEffect(() => {
+  //   if (!isActive) {
+  //     previousValue.current = value;
+  //   }
+  // }, [isActive, value])
+
   return (
-    <div ref={cellRef} onKeyDown={onKeyDown} onKeyUp={onKeyUp}>
+    <div ref={cellRef} onKeyDown={onKeyDown}>
       <AutoField
         key={joinedName + autoFieldKey}
         name={joinedName}
