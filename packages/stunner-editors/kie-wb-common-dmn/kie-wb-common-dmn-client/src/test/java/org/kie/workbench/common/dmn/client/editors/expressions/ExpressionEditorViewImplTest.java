@@ -829,7 +829,7 @@ public class ExpressionEditorViewImplTest {
 
         ExpressionProps expressionProps = view.getDefaultExpressionDefinition(LITERAL_EXPRESSION.getText(), BuiltInType.UNDEFINED.getName());
 
-        verify(literalExpressionEditorDefinition).enrich(any(), any(), any());
+        verify(literalExpressionEditorDefinition).enrichRootExpression(any(), any(), any(), eq(BuiltInType.UNDEFINED.getName()));
 
         assertThat(expressionProps)
                 .isInstanceOf(LiteralProps.class)
