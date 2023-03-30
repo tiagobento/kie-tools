@@ -27,7 +27,6 @@ import nextId from "react-id-generator";
 import { UnitablesBeeTable } from "./bee";
 import { UnitablesI18n } from "./i18n";
 import { FORMS_ID, UnitablesJsonSchemaBridge } from "./uniforms";
-import { useUnitablesColumns } from "./UnitablesColumns";
 import "./Unitables.css";
 import { UnitablesRow } from "./UnitablesRow";
 import setObjectValueByPath from "lodash/set";
@@ -47,7 +46,6 @@ export interface UnitablesProps {
   openRow: (rowIndex: number) => void;
   i18n: UnitablesI18n;
   jsonSchemaBridge: UnitablesJsonSchemaBridge;
-  propertiesEntryPath: string;
   containerRef: React.RefObject<HTMLDivElement>;
   scrollableParentRef: React.RefObject<HTMLElement>;
   onRowAdded: (args: { beforeIndex: number }) => void;
@@ -98,7 +96,6 @@ export const Unitables = ({
   openRow,
   i18n,
   jsonSchemaBridge,
-  propertiesEntryPath,
   containerRef,
   scrollableParentRef,
   onRowAdded,
@@ -118,7 +115,7 @@ export const Unitables = ({
 
   // CUSTOM HOOKs
   const { internalChange } = useUnitablesContext();
-  const { columns: unitablesColumns } = useUnitablesColumns(jsonSchemaBridge, setRows, propertiesEntryPath);
+  const unitablesColumns = useMemo(() => jsonSchemaBridge.getUnitablesColumns(), [jsonSchemaBridge]);
 
   const inputUid = useMemo(() => nextId(), []);
 

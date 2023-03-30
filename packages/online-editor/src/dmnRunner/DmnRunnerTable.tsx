@@ -162,7 +162,6 @@ export function DmnRunnerTable() {
                         dmnRunnerDispatcher({ type: DmnRunnerProviderActionType.DEFAULT, newState: { error } })
                       }
                       jsonSchemaBridge={jsonSchemaBridge}
-                      propertiesEntryPath={"definitions.InputSet.properties"}
                       containerRef={inputsContainerRef}
                       onRowAdded={onRowAdded}
                       onRowDuplicated={onRowDuplicated}

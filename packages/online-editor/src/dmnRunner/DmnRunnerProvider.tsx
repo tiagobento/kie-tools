@@ -38,6 +38,8 @@ import { useCancelableEffect } from "@kie-tools-core/react-hooks/dist/useCancela
 import { useOnlineI18n } from "../i18n";
 import { EditorPageDockDrawerRef } from "../editor/EditorPageDockDrawer";
 import { Notification } from "@kie-tools-core/notifications/dist/api";
+import { diff } from "deep-object-diff";
+import getObjectValueByPath from "lodash/get";
 
 interface Props {
   isEditorReady?: boolean;
@@ -149,6 +151,8 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
   );
   const status = useMemo(() => (isExpanded ? DmnRunnerStatus.AVAILABLE : DmnRunnerStatus.UNAVAILABLE), [isExpanded]);
 
+  const previousSchema = usePrevious(jsonSchema);
+
   useEffect(() => {
     if (props.isEditorReady) {
       setCanBeVisualized(true);
@@ -182,35 +186,6 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
       } as KieSandboxExtendedServicesModelPayload;
     },
     [props.workspaceFile, workspaces, props.dmnLanguageService]
-  );
-
-  useCancelableEffect(
-    useCallback(
-      ({ canceled }) => {
-        if (
-          props.workspaceFile.extension !== "dmn" ||
-          extendedServices.status !== KieSandboxExtendedServicesStatus.RUNNING
-        ) {
-          dmnRunnerDispatcher({ type: DmnRunnerProviderActionType.DEFAULT, newState: { isExpanded: false } });
-          return;
-        }
-
-        preparePayload()
-          .then((payload) => {
-            if (canceled.get() || payload === undefined) {
-              return;
-            }
-            extendedServices.client.formSchema(payload).then((jsonSchema) => {
-              setJsonSchema(jsonSchema);
-            });
-          })
-          .catch((err) => {
-            console.error(err);
-            dmnRunnerDispatcher({ type: DmnRunnerProviderActionType.DEFAULT, newState: { error: true } });
-          });
-      },
-      [extendedServices.status, extendedServices.client, props.workspaceFile.extension, preparePayload]
-    )
   );
 
   useEffect(() => {
@@ -305,7 +280,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
 
   const setDmnRunnerPersistenceJson = useCallback(
     (args: {
-      newInputsRow?: (previousInputs: Array<InputRow>) => Array<InputRow> | Array<InputRow>;
+      newInputsRow?: ((previousInputs: Array<InputRow>) => Array<InputRow>) | Array<InputRow>;
       newMode?: DmnRunnerMode;
       newConfigInputs?: (
         previousConfigInputs: UnitablesInputsConfigs
@@ -348,7 +323,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
   );
 
   const setDmnRunnerInputs = useCallback(
-    (newInputsRow: (previousInputs: Array<InputRow>) => Array<InputRow> | Array<InputRow>) => {
+    (newInputsRow: ((previousInputs: Array<InputRow>) => Array<InputRow>) | Array<InputRow>) => {
       dmnRunnerPersistenceJsonDispatcher({
         updatePersistenceJsonDebouce,
         workspaceFileRelativePath: props.workspaceFile.relativePath,
@@ -447,6 +422,112 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
       { id: generateUuid() } as Record<string, any>
     );
   }, []);
+
+  const getRefField = useCallback((jsonSchema: DmnSchema, field: Record<string, any>): Record<string, any> => {
+    const refPath = field.$ref.split("/").splice(1).join(".");
+    const refField: Record<string, any> = getObjectValueByPath(jsonSchema, refPath);
+    if (refField.$ref) {
+      return getRefField(jsonSchema, refField);
+    }
+    return refField;
+  }, []);
+
+  const getDefaultValue = useCallback(
+    (jsonSchema: DmnSchema, field: Record<string, any>) => {
+      const fieldToCheck = field.$ref ? getRefField(jsonSchema, field) : field;
+      if (fieldToCheck.type === "object") {
+        return {};
+      }
+      if (fieldToCheck.type === "array") {
+        return [];
+      }
+      if (fieldToCheck.type === "boolean") {
+        return false;
+      }
+    },
+    [getRefField]
+  );
+
+  useCancelableEffect(
+    useCallback(
+      ({ canceled }) => {
+        if (
+          props.workspaceFile.extension !== "dmn" ||
+          extendedServices.status !== KieSandboxExtendedServicesStatus.RUNNING
+        ) {
+          dmnRunnerDispatcher({ type: DmnRunnerProviderActionType.DEFAULT, newState: { isExpanded: false } });
+          return;
+        }
+
+        preparePayload()
+          .then((payload) => {
+            if (canceled.get() || payload === undefined) {
+              return;
+            }
+            extendedServices.client.formSchema(payload).then((jsonSchema) => {
+              setJsonSchema((previousJsonSchema) => {
+                if (previousJsonSchema === undefined) {
+                  return jsonSchema;
+                }
+
+                const propertiesDifference = diff(
+                  getObjectValueByPath(previousJsonSchema, "definitions.InputSet.properties") ?? {},
+                  getObjectValueByPath(jsonSchema, "definitions.InputSet.properties") ?? {}
+                );
+
+                const defaultInputValues = Object.entries(
+                  getObjectValueByPath(jsonSchema, "definitions.InputSet.properties")
+                )?.reduce((acc, [key, field]: [string, Record<string, string>]) => {
+                  const defaultValue = getDefaultValue(jsonSchema, field);
+                  if (defaultValue) {
+                    acc[key] = defaultValue;
+                  }
+                  return acc;
+                }, {} as Record<string, any>);
+
+                setDmnRunnerPersistenceJson({
+                  newInputsRow: (previousInputs) => {
+                    const newInputs = cloneDeep(previousInputs);
+                    const updateInputs = newInputs.map((inputs) => {
+                      return Object.entries(propertiesDifference).reduce(
+                        (inputs, [property, value]) => {
+                          if (Object.keys(inputs).length === 0) {
+                            return inputs;
+                          }
+
+                          if (!value || value.type || value.$ref) {
+                            delete inputs[property];
+                          }
+                          if (value?.format) {
+                            inputs[property] = undefined;
+                          }
+                          return inputs;
+                        },
+                        { ...defaultInputValues, ...inputs }
+                      );
+                    });
+                    return updateInputs;
+                  },
+                });
+
+                return jsonSchema;
+              });
+            });
+          })
+          .catch((err) => {
+            console.error(err);
+            dmnRunnerDispatcher({ type: DmnRunnerProviderActionType.DEFAULT, newState: { error: true } });
+          });
+      },
+      [
+        extendedServices.status,
+        extendedServices.client,
+        props.workspaceFile.extension,
+        preparePayload,
+        setDmnRunnerPersistenceJson,
+      ]
+    )
+  );
 
   const onRowAdded = useCallback(
     (args: { beforeIndex: number }) => {
