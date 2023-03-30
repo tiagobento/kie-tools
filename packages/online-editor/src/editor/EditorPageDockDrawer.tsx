@@ -126,8 +126,10 @@ export const EditorPageDockDrawer = React.forwardRef<
   useLayoutEffect(() => {
     if (mode === DmnRunnerMode.FORM && panel === PanelId.DMN_RUNNER_TABLE) {
       setPanel(PanelId.NONE);
+    } else if (mode === DmnRunnerMode.TABLE && isExpanded) {
+      setPanel(PanelId.DMN_RUNNER_TABLE);
     }
-  }, [mode, panel]);
+  }, [mode, panel, isExpanded]);
 
   useImperativeHandle(
     forwardRef,

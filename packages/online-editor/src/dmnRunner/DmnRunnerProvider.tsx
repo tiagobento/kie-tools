@@ -15,7 +15,7 @@
  */
 
 import * as React from "react";
-import { PropsWithChildren, useCallback, useEffect, useMemo, useState, useReducer } from "react";
+import { PropsWithChildren, useCallback, useEffect, useMemo, useState, useReducer, useLayoutEffect } from "react";
 import { useWorkspaces, WorkspaceFile } from "@kie-tools-core/workspaces-git-fs/dist/context/WorkspacesContext";
 import { DmnRunnerMode, DmnRunnerStatus } from "./DmnRunnerStatus";
 import { DmnRunnerDispatchContext, DmnRunnerStateContext } from "./DmnRunnerContext";
@@ -107,8 +107,14 @@ interface DmnRunnerResults {
   resultsDifference: Array<Array<object>>;
 }
 
+enum DmnRunnerResultsActionType {
+  CLONE_LAST,
+  DEFAULT,
+}
+
 interface DmnRunnerResultsAction {
-  newResults: Array<DecisionResult[] | undefined>;
+  type: DmnRunnerResultsActionType;
+  newResults?: Array<DecisionResult[] | undefined>;
 }
 
 const initialDmnRunnerResults: DmnRunnerResults = {
@@ -116,11 +122,20 @@ const initialDmnRunnerResults: DmnRunnerResults = {
   resultsDifference: [[{}]],
 };
 function dmnRunnerResultsReducer(dmnRunnerResults: DmnRunnerResults, action: DmnRunnerResultsAction) {
-  const differences = extractDifferences(action.newResults, dmnRunnerResults.results);
-  return {
-    results: [...action.newResults],
-    resultsDifference: [...differences],
-  };
+  if (action.type === DmnRunnerResultsActionType.CLONE_LAST) {
+    return {
+      results: [...dmnRunnerResults.results, dmnRunnerResults.results[dmnRunnerResults.results.length - 1]],
+      resultsDifference: dmnRunnerResults.resultsDifference,
+    };
+  } else if (action.type === DmnRunnerResultsActionType.DEFAULT) {
+    const differences = extractDifferences(action.newResults ?? [], dmnRunnerResults.results);
+    return {
+      results: action.newResults ? [...action.newResults] : [],
+      resultsDifference: [...differences],
+    };
+  } else {
+    throw new Error("Invalid use of dmnRunnerResultDispatcher");
+  }
 }
 
 export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
@@ -155,8 +170,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
     [dmnRunnerPersistenceJson?.configs?.inputs]
   );
   const status = useMemo(() => (isExpanded ? DmnRunnerStatus.AVAILABLE : DmnRunnerStatus.UNAVAILABLE), [isExpanded]);
-
-  const previousSchema = usePrevious(jsonSchema);
+  const previousJsonSchema = usePrevious(jsonSchema);
 
   useEffect(() => {
     if (props.isEditorReady) {
@@ -236,10 +250,10 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
                 runnerResults.push(result.decisionResults);
               }
             }
-            dmnRunnerResultsDispatcher({ newResults: runnerResults });
+            dmnRunnerResultsDispatcher({ type: DmnRunnerResultsActionType.DEFAULT, newResults: runnerResults });
           })
           .catch((err) => {
-            dmnRunnerResultsDispatcher({ newResults: [] });
+            dmnRunnerResultsDispatcher({ type: DmnRunnerResultsActionType.DEFAULT });
           });
       },
       [preparePayload, dmnRunnerDispatcher, dmnRunnerInputs, extendedServices.client]
@@ -440,6 +454,11 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
     return refField;
   }, []);
 
+  // reset json schema when file is changed;
+  useLayoutEffect(() => {
+    setJsonSchema(undefined);
+  }, [props.workspaceFile.name]);
+
   const getDefaultValue = useCallback(
     (jsonSchema: ExtendedServicesDmnJsonSchema, field: Record<string, any>) => {
       const fieldToCheck = field.$ref ? getRefField(jsonSchema, field) : field;
@@ -456,6 +475,37 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
     [getRefField]
   );
 
+  const getDefaultValues = useCallback(
+    (jsonSchema: ExtendedServicesDmnJsonSchema) => {
+      return Object.entries(getObjectValueByPath(jsonSchema, "definitions.InputSet.properties") ?? {})?.reduce(
+        (acc, [key, field]: [string, Record<string, string>]) => {
+          const defaultValue = getDefaultValue(jsonSchema, field);
+          if (defaultValue) {
+            acc[key] = defaultValue;
+          }
+          return acc;
+        },
+        {} as Record<string, any>
+      );
+    },
+    [getDefaultValue]
+  );
+
+  // FIXME: Luiz - removing this causes a first render problem where the FS overrides the default inputs;
+  // Add default values in the first row;
+  useEffect(() => {
+    if (jsonSchema) {
+      setDmnRunnerInputs((previousDmnRunnerInputs) => {
+        const newDmnRunnerInputs = cloneDeep(previousDmnRunnerInputs);
+        // if the file is new, the [0] should be populated with default values;
+        newDmnRunnerInputs[0] = { ...getDefaultValues(jsonSchema), ...newDmnRunnerInputs[0] };
+        return newDmnRunnerInputs;
+      });
+    }
+  }, [setDmnRunnerInputs, jsonSchema, getDefaultValues]);
+
+  // After a change in the DMN Model, or in the workspaces the effect is triggered
+  // to update the JSON Schema;
   useCancelableEffect(
     useCallback(
       ({ canceled }) => {
@@ -487,16 +537,6 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
                   return jsonSchema;
                 }
 
-                const defaultInputValues = Object.entries(
-                  getObjectValueByPath(jsonSchema, "definitions.InputSet.properties") ?? {}
-                )?.reduce((acc, [key, field]: [string, Record<string, string>]) => {
-                  const defaultValue = getDefaultValue(jsonSchema, field);
-                  if (defaultValue) {
-                    acc[key] = defaultValue;
-                  }
-                  return acc;
-                }, {} as Record<string, any>);
-
                 setDmnRunnerPersistenceJson({
                   newConfigInputs: (previousConfigInputs) => {
                     const newConfigs = cloneDeep(previousConfigInputs);
@@ -518,7 +558,6 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
                           if (Object.keys(inputs).length === 0) {
                             return inputs;
                           }
-
                           if (!value || value.type || value.$ref) {
                             delete inputs[property];
                           }
@@ -527,7 +566,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
                           }
                           return inputs;
                         },
-                        { ...defaultInputValues, ...inputs }
+                        { ...getDefaultValues(jsonSchema), ...inputs }
                       );
                     });
                     return updateInputs;
@@ -548,6 +587,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
         extendedServices.client,
         props.workspaceFile.extension,
         preparePayload,
+        getDefaultValues,
         setDmnRunnerPersistenceJson,
       ]
     )
@@ -574,6 +614,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
         type: DmnRunnerProviderActionType.DEFAULT,
         newState: { currentInputIndex: args.beforeIndex },
       });
+      dmnRunnerResultsDispatcher({ type: DmnRunnerResultsActionType.CLONE_LAST });
     },
     [
       getDefaultValuesForInputs,
@@ -601,6 +642,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
           return newPersistenceJson;
         },
       });
+      dmnRunnerResultsDispatcher({ type: DmnRunnerResultsActionType.CLONE_LAST });
     },
     [
       updatePersistenceJsonDebouce,
