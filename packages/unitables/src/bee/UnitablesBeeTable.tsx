@@ -96,6 +96,12 @@ export function UnitablesBeeTable({
     return generateUuid();
   }, []);
 
+  // starts with 1 due to "index" column
+  const columnsCount = useMemo(
+    () => columns.reduce((acc, column) => acc + (column.insideProperties ? column.insideProperties.length : 1), 1),
+    [columns]
+  );
+
   const cellComponentByColumnAccessor: BeeTableProps<ROWTYPE>["cellComponentByColumnAccessor"] = React.useMemo(() => {
     return columns.reduce((acc, column) => {
       if (column.insideProperties) {
@@ -105,7 +111,7 @@ export function UnitablesBeeTable({
               {...props}
               joinedName={insideProperty.joinedName}
               rowCount={rows.length}
-              columnCount={columns.length + 1}
+              columnCount={columnsCount}
             />
           );
         }
@@ -115,13 +121,13 @@ export function UnitablesBeeTable({
             {...props}
             joinedName={column.joinedName}
             rowCount={rows.length}
-            columnCount={columns.length + 1}
+            columnCount={columnsCount}
           />
         );
       }
       return acc;
     }, {} as NonNullable<BeeTableProps<ROWTYPE>["cellComponentByColumnAccessor"]>);
-  }, [columns, rows.length]);
+  }, [columns, rows.length, columnsCount]);
 
   const setColumnWidth = useCallback(
     (fieldName: string) => (newWidthAction: React.SetStateAction<number | undefined>) => {
@@ -142,7 +148,7 @@ export function UnitablesBeeTable({
           dataType: column.dataType,
           isRowIndexColumn: false,
           width: undefined,
-          minWidth: UNITABLES_COLUMN_MIN_WIDTH, // TODO: Luiz - set the correct width for different dataTypes;
+          minWidth: UNITABLES_COLUMN_MIN_WIDTH,
           columns: column.insideProperties.map((insideProperty) => {
             return {
               originalId: uuid + `field-${insideProperty.joinedName}`,
@@ -326,12 +332,31 @@ function UnitablesBeeTableCell({
       console.log("KEYUP", e);
       if (e.key.toLowerCase() === "enter") {
         // setEditing(true);
-        cellRef.current?.getElementsByTagName("input")?.[0]?.focus();
+        const inputField = cellRef.current?.getElementsByTagName("input");
+        if (inputField && inputField.length > 0) {
+          inputField?.[0]?.focus();
+          return;
+        }
+        // const buttonField = cellRef.current?.getElementsByTagName("button");
+        // if (buttonField && buttonField.length > 0) {
+        //   buttonField?.[0]?.click();
+        //   (document.querySelectorAll(".pf-c-select__menu-item")?.[0] as any)?.focus();
+        //   return;
+        // }
       }
     };
 
     document?.addEventListener("keyup", keyUpListener);
     return () => {
+      // const selectOptions = (document.querySelectorAll(".pf-c-select__menu-item")?.[0] as any);
+      // if (selectOptions) {
+      //   const buttonField = saveCellRef?.getElementsByTagName("button");
+      //   if (buttonField && buttonField.length > 0) {
+      //     buttonField?.[0]?.click();
+      //     return;
+      //   }
+      // }
+
       document?.removeEventListener("keyup", keyUpListener);
     };
   }, [isActive, setEditing]);
@@ -339,31 +364,30 @@ function UnitablesBeeTableCell({
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
       // console.log("DIV KEYDOWN", e);
-      // if (e.key.toLowerCase() === "tab") {
-      //   setEditing(false);
-      //   return;
-      // }
+      if (e.key.toLowerCase() === "tab") {
+        // setEditing(false);
+        return;
+      }
 
-      // if (e.key.toLowerCase() === "escape") {
-      //   setEditing(false);
-      //   return;
-      //   // setValue(`${previousValue.current ?? ""}`);
-      // }
+      if (e.key.toLowerCase() === "escape") {
+        // setEditing(false);
+        return;
+        // setValue(`${previousValue.current ?? ""}`);
+      }
 
-      // if (e.key.toLowerCase() === "enter") {
-      //   setEditing(false);
-      //   navigateVertically({ isShiftPressed: e.shiftKey });
-      //   return;
-      // }
+      if (e.key.toLowerCase() === "enter") {
+        // setEditing(false);
+        navigateVertically({ isShiftPressed: e.shiftKey });
+        return;
+      }
 
       // if (isEditModeTriggeringKey(e)) {
       //   setEditing(true);
       //   return;
       // }
-
       e.stopPropagation();
     },
-    [navigateVertically, setEditing]
+    [navigateVertically]
   );
 
   useEffect(() => {

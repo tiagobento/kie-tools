@@ -28,6 +28,7 @@ export const AUTO_ROW_ID = "unitables-row";
 
 const DEFAULT_DATE_TIME_CELL_WDITH = 340;
 const DEFAULT_DATE_CELL_WIDTH = 193;
+const DEFAULT_TIME_CELL_WIDTH = 152;
 
 export class UnitablesJsonSchemaBridge extends JSONSchemaBridge {
   constructor(
@@ -97,7 +98,7 @@ export class UnitablesJsonSchemaBridge extends JSONSchemaBridge {
       case "string":
         return { dataType: DmnBuiltInDataType.String, width: UNITABLES_COLUMN_MIN_WIDTH };
       case "time":
-        return { dataType: DmnBuiltInDataType.Time, width: UNITABLES_COLUMN_MIN_WIDTH };
+        return { dataType: DmnBuiltInDataType.Time, width: DEFAULT_TIME_CELL_WIDTH };
       case "years and months duration":
         return { dataType: DmnBuiltInDataType.YearsMonthsDuration, width: UNITABLES_COLUMN_MIN_WIDTH };
       default:

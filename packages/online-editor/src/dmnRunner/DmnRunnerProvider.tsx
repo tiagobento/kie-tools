@@ -475,8 +475,12 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
                   getObjectValueByPath(jsonSchema, "definitions.InputSet.properties") ?? {}
                 );
 
+                if (!propertiesDifference) {
+                  return jsonSchema;
+                }
+
                 const defaultInputValues = Object.entries(
-                  getObjectValueByPath(jsonSchema, "definitions.InputSet.properties")
+                  getObjectValueByPath(jsonSchema, "definitions.InputSet.properties") ?? {}
                 )?.reduce((acc, [key, field]: [string, Record<string, string>]) => {
                   const defaultValue = getDefaultValue(jsonSchema, field);
                   if (defaultValue) {
