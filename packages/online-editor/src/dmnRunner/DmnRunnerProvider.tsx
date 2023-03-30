@@ -19,11 +19,16 @@ import { PropsWithChildren, useCallback, useEffect, useMemo, useState, useReduce
 import { useWorkspaces, WorkspaceFile } from "@kie-tools-core/workspaces-git-fs/dist/context/WorkspacesContext";
 import { DmnRunnerMode, DmnRunnerStatus } from "./DmnRunnerStatus";
 import { DmnRunnerDispatchContext, DmnRunnerStateContext } from "./DmnRunnerContext";
-import { KieSandboxExtendedServicesModelPayload } from "../kieSandboxExtendedServices/KieSandboxExtendedServicesClient";
 import { KieSandboxExtendedServicesStatus } from "../kieSandboxExtendedServices/KieSandboxExtendedServicesStatus";
 import { usePrevious } from "@kie-tools-core/react-hooks/dist/usePrevious";
 import { useExtendedServices } from "../kieSandboxExtendedServices/KieSandboxExtendedServicesContext";
-import { DecisionResult, DmnSchema, InputRow, extractDifferences, DecisionResultMessage } from "@kie-tools/form-dmn";
+import { InputRow, extractDifferences } from "@kie-tools/form-dmn";
+import {
+  DecisionResult,
+  ExtendedServicesDmnJsonSchema,
+  DmnEvaluationMessages,
+  ExtendedServicesModelPayload,
+} from "@kie-tools/extended-services-api";
 import { useDmnRunnerPersistence } from "../dmnRunnerPersistence/DmnRunnerPersistenceHook";
 import { DmnLanguageService } from "@kie-tools/dmn-language-service";
 import { decoder } from "@kie-tools-core/workspaces-git-fs/dist/encoderdecoder/EncoderDecoder";
@@ -129,7 +134,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
 
   // States that are in controll of the DmnRunnerProvider;
   const [canBeVisualized, setCanBeVisualized] = useState<boolean>(false);
-  const [jsonSchema, setJsonSchema] = useState<DmnSchema | undefined>(undefined);
+  const [jsonSchema, setJsonSchema] = useState<ExtendedServicesDmnJsonSchema | undefined>(undefined);
   const [{ results, resultsDifference }, dmnRunnerResultsDispatcher] = useReducer(
     dmnRunnerResultsReducer,
     initialDmnRunnerResults
@@ -183,7 +188,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
         mainURI: props.workspaceFile.relativePath,
         resources: dmnResources,
         context: formData,
-      } as KieSandboxExtendedServicesModelPayload;
+      } as ExtendedServicesModelPayload;
     },
     [props.workspaceFile, workspaces, props.dmnLanguageService]
   );
@@ -263,7 +268,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
           }
         });
         return acc;
-      }, new Map<string, DecisionResultMessage[]>()) ?? new Map<string, DecisionResultMessage[]>();
+      }, new Map<string, DmnEvaluationMessages[]>()) ?? new Map<string, DmnEvaluationMessages[]>();
 
     const notifications: Notification[] = [...messagesBySourceId.entries()].flatMap(([sourceId, messages]) => {
       const path = decisionNameByDecisionId?.get(sourceId) ?? "";
@@ -423,7 +428,10 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
     );
   }, []);
 
-  const getRefField = useCallback((jsonSchema: DmnSchema, field: Record<string, any>): Record<string, any> => {
+  const getRefField = useCallback((jsonSchema: ExtendedServicesDmnJsonSchema, field: Record<string, any>): Record<
+    string,
+    any
+  > => {
     const refPath = field.$ref.split("/").splice(1).join(".");
     const refField: Record<string, any> = getObjectValueByPath(jsonSchema, refPath);
     if (refField.$ref) {
@@ -433,7 +441,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
   }, []);
 
   const getDefaultValue = useCallback(
-    (jsonSchema: DmnSchema, field: Record<string, any>) => {
+    (jsonSchema: ExtendedServicesDmnJsonSchema, field: Record<string, any>) => {
       const fieldToCheck = field.$ref ? getRefField(jsonSchema, field) : field;
       if (fieldToCheck.type === "object") {
         return {};
