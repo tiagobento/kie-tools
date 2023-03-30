@@ -306,7 +306,7 @@ function UnitablesBeeTableCell({
     const keyDownListener = (e: KeyboardEvent) => {
       console.log("KEYDOWN", e);
       if (isEditModeTriggeringKey(e as any)) {
-        setEditing(true);
+        // setEditing(true);
         cellRef.current?.getElementsByTagName("input")?.[0]?.select();
       }
     };
@@ -325,7 +325,7 @@ function UnitablesBeeTableCell({
     const keyUpListener = (e: KeyboardEvent) => {
       console.log("KEYUP", e);
       if (e.key.toLowerCase() === "enter") {
-        setEditing(true);
+        // setEditing(true);
         cellRef.current?.getElementsByTagName("input")?.[0]?.focus();
       }
     };
@@ -338,28 +338,28 @@ function UnitablesBeeTableCell({
 
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
-      console.log("DIV KEYDOWN", e);
-      if (e.key.toLowerCase() === "tab") {
-        setEditing(false);
-        return;
-      }
+      // console.log("DIV KEYDOWN", e);
+      // if (e.key.toLowerCase() === "tab") {
+      //   setEditing(false);
+      //   return;
+      // }
 
-      if (e.key.toLowerCase() === "escape") {
-        setEditing(false);
-        return;
-        // setValue(`${previousValue.current ?? ""}`);
-      }
+      // if (e.key.toLowerCase() === "escape") {
+      //   setEditing(false);
+      //   return;
+      //   // setValue(`${previousValue.current ?? ""}`);
+      // }
 
-      if (e.key.toLowerCase() === "enter") {
-        setEditing(false);
-        navigateVertically({ isShiftPressed: e.shiftKey });
-        return;
-      }
+      // if (e.key.toLowerCase() === "enter") {
+      //   setEditing(false);
+      //   navigateVertically({ isShiftPressed: e.shiftKey });
+      //   return;
+      // }
 
-      if (isEditModeTriggeringKey(e)) {
-        setEditing(true);
-        return;
-      }
+      // if (isEditModeTriggeringKey(e)) {
+      //   setEditing(true);
+      //   return;
+      // }
 
       e.stopPropagation();
     },
@@ -376,9 +376,6 @@ function UnitablesBeeTableCell({
       ", IS EDITING=",
       isEditing
     );
-    if (isActive) {
-      // previousValue.current = value;
-    }
   }, [containerCellCoordinates, isActive, isEditing]);
 
   return (

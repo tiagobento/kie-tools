@@ -486,6 +486,18 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
                 }, {} as Record<string, any>);
 
                 setDmnRunnerPersistenceJson({
+                  newConfigInputs: (previousConfigInputs) => {
+                    const newConfigs = cloneDeep(previousConfigInputs);
+                    return Object.entries(propertiesDifference).reduce(
+                      (configs, [property, value]) => {
+                        if (value.format) {
+                          delete configs[property];
+                        }
+                        return configs;
+                      },
+                      { ...newConfigs }
+                    );
+                  },
                   newInputsRow: (previousInputs) => {
                     const newInputs = cloneDeep(previousInputs);
                     const updateInputs = newInputs.map((inputs) => {
