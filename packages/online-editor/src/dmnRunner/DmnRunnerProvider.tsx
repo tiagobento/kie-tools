@@ -490,7 +490,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
                     const newConfigs = cloneDeep(previousConfigInputs);
                     return Object.entries(propertiesDifference).reduce(
                       (configs, [property, value]) => {
-                        if (value.format) {
+                        if (value?.format) {
                           delete configs[property];
                         }
                         return configs;

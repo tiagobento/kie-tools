@@ -421,7 +421,6 @@ export function BeeTableSelectionContextProvider({ children }: React.PropsWithCh
                 },
               };
             case SelectionPart.ActiveCell:
-              console.log("SelectionPart.ActiveCell", newColumnIndex);
               if (!isExpanded || !keepInsideSelection) {
                 return {
                   active: {
@@ -652,7 +651,6 @@ export function BeeTableSelectionContextProvider({ children }: React.PropsWithCh
         }
       },
       resetSelectionAt: (newSelectionAction) => {
-        console.log(" something here?e");
         resetParentSelectionAt?.({
           columnIndex: containerCellCoordinates?.columnIndex ?? 1,
           rowIndex: containerCellCoordinates?.rowIndex ?? 0,

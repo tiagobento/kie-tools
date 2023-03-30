@@ -115,8 +115,8 @@ export const Unitables = ({
 
   // CUSTOM HOOKs
   const { internalChange } = useUnitablesContext();
-  const unitablesColumns = useMemo(() => jsonSchemaBridge.getUnitablesColumns(), [jsonSchemaBridge]);
 
+  const unitablesColumns = useMemo(() => jsonSchemaBridge.getUnitablesColumns(), [jsonSchemaBridge]);
   const inputUid = useMemo(() => nextId(), []);
 
   // Resets the ErrorBoundary everytime the FormSchema is updated
