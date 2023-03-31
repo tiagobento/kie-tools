@@ -181,7 +181,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
   }, [props.isEditorReady]);
 
   const preparePayload = useCallback(
-    async (formData?: InputRow) => {
+    async (formInputs?: InputRow) => {
       const fileContent = await workspaces.getFileContent({
         workspaceId: props.workspaceFile.workspaceId,
         relativePath: props.workspaceFile.relativePath,
@@ -201,7 +201,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
       return {
         mainURI: props.workspaceFile.relativePath,
         resources: dmnResources,
-        context: formData,
+        context: formInputs,
       } as ExtendedServicesModelPayload;
     },
     [props.workspaceFile, workspaces, props.dmnLanguageService]
@@ -454,10 +454,10 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
     return refField;
   }, []);
 
-  // reset json schema when file is changed;
+  // Changing the relative path should reset the jsonSchema;
   useLayoutEffect(() => {
     setJsonSchema(undefined);
-  }, [props.workspaceFile.name]);
+  }, [props.workspaceFile.relativePath]);
 
   const getDefaultValue = useCallback(
     (jsonSchema: ExtendedServicesDmnJsonSchema, field: Record<string, any>) => {
@@ -493,19 +493,20 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
 
   // FIXME: Luiz - removing this causes a first render problem where the FS overrides the default inputs;
   // Add default values in the first row;
-  useEffect(() => {
-    if (jsonSchema) {
-      setDmnRunnerInputs((previousDmnRunnerInputs) => {
-        const newDmnRunnerInputs = cloneDeep(previousDmnRunnerInputs);
-        // if the file is new, the [0] should be populated with default values;
-        newDmnRunnerInputs[0] = { ...getDefaultValues(jsonSchema), ...newDmnRunnerInputs[0] };
-        return newDmnRunnerInputs;
-      });
-    }
-  }, [setDmnRunnerInputs, jsonSchema, getDefaultValues]);
+  // useEffect(() => {
+  //   if (jsonSchema) {
+  //     console.log("HERE")
+  //     setDmnRunnerInputs((previousDmnRunnerInputs) => {
+  //       const newDmnRunnerInputs = cloneDeep(previousDmnRunnerInputs);
+  //       // if the file is new, the [0] should be populated with default values;
+  //       newDmnRunnerInputs[0] = { ...getDefaultValues(jsonSchema), ...newDmnRunnerInputs[0] };
+  //       return newDmnRunnerInputs;
+  //     });
+  //   }
+  // }, [setDmnRunnerInputs, jsonSchema, previousJsonSchema, getDefaultValues]);
 
-  // After a change in the DMN Model, or in the workspaces the effect is triggered
-  // to update the JSON Schema;
+  // After a change in the DMN Model, or in the workspaces this effect is triggered
+  // It updates the schema state and check for differences on it, remove deleted inputs and add default values;
   useCancelableEffect(
     useCallback(
       ({ canceled }) => {
@@ -525,6 +526,12 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
             extendedServices.client.formSchema(payload).then((jsonSchema) => {
               setJsonSchema((previousJsonSchema) => {
                 if (previousJsonSchema === undefined) {
+                  setDmnRunnerInputs((previousDmnRunnerInputs) => {
+                    const newDmnRunnerInputs = cloneDeep(previousDmnRunnerInputs);
+                    // if the file is new, the [0] should be populated with default values;
+                    newDmnRunnerInputs[0] = { ...getDefaultValues(jsonSchema), ...newDmnRunnerInputs[0] };
+                    return newDmnRunnerInputs;
+                  });
                   return jsonSchema;
                 }
 
@@ -552,7 +559,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
                   },
                   newInputsRow: (previousInputs) => {
                     const newInputs = cloneDeep(previousInputs);
-                    const updateInputs = newInputs.map((inputs) => {
+                    return newInputs.map((inputs) => {
                       return Object.entries(propertiesDifference).reduce(
                         (inputs, [property, value]) => {
                           if (Object.keys(inputs).length === 0) {
@@ -569,7 +576,6 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
                         { ...getDefaultValues(jsonSchema), ...inputs }
                       );
                     });
-                    return updateInputs;
                   },
                 });
 
@@ -588,6 +594,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
         props.workspaceFile.extension,
         preparePayload,
         getDefaultValues,
+        setDmnRunnerInputs,
         setDmnRunnerPersistenceJson,
       ]
     )

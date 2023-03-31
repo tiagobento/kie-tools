@@ -56,7 +56,7 @@ export function useDmnRunnerPersistence(workspaceId?: string, workspaceFileRelat
             // Ignore, as content remains the same.
           } else if (
             companionEvent.type === "CFSF_UPDATE" ||
-            companionEvent.type === "CFSF_ADD" ||
+            // companionEvent.type === "CFSF_ADD" ||
             companionEvent.type === "CFSF_DELETE"
           ) {
             const dmnRunnerPersistenceJson: DmnRunnerPersistenceJson =

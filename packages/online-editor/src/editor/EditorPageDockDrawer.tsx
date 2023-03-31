@@ -42,6 +42,7 @@ import { Notification } from "@kie-tools-core/notifications/dist/api";
 import { useExtendedServices } from "../kieSandboxExtendedServices/KieSandboxExtendedServicesContext";
 import { KieSandboxExtendedServicesStatus } from "../kieSandboxExtendedServices/KieSandboxExtendedServicesStatus";
 import { DmnRunnerProviderActionType } from "../dmnRunner/DmnRunnerProvider";
+import { Panel } from "@patternfly/react-core";
 
 export enum PanelId {
   DMN_RUNNER_TABLE = "dmn-runner-table",
@@ -126,10 +127,10 @@ export const EditorPageDockDrawer = React.forwardRef<
   useLayoutEffect(() => {
     if (mode === DmnRunnerMode.FORM && panel === PanelId.DMN_RUNNER_TABLE) {
       setPanel(PanelId.NONE);
-    } else if (mode === DmnRunnerMode.TABLE && isExpanded) {
-      setPanel(PanelId.DMN_RUNNER_TABLE);
+    } else if (props.workspaceFile.extension.toLowerCase() !== "dmn" && panel === PanelId.DMN_RUNNER_TABLE) {
+      setPanel(PanelId.NONE);
     }
-  }, [mode, panel, isExpanded]);
+  }, [mode, panel, props.workspaceFile.extension]);
 
   useImperativeHandle(
     forwardRef,
