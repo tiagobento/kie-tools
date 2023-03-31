@@ -15,7 +15,7 @@
  */
 
 import * as React from "react";
-import { PropsWithChildren, useCallback, useEffect, useMemo, useState, useReducer, useLayoutEffect } from "react";
+import { PropsWithChildren, useCallback, useEffect, useMemo, useState, useReducer } from "react";
 import { useWorkspaces, WorkspaceFile } from "@kie-tools-core/workspaces-git-fs/dist/context/WorkspacesContext";
 import { DmnRunnerMode, DmnRunnerStatus } from "./DmnRunnerStatus";
 import { DmnRunnerDispatchContext, DmnRunnerStateContext } from "./DmnRunnerContext";
@@ -46,6 +46,14 @@ import { useCompanionFsFileSyncedWithWorkspaceFile } from "../companionFs/Compan
 import { Holder } from "@kie-tools-core/react-hooks/dist/Holder";
 import { DmnRunnerPersistenceReducerActionType } from "../dmnRunnerPersistence/DmnRunnerPersistenceTypes";
 import { CompanionFsServiceBroadcastEvents } from "../companionFs/CompanionFsService";
+import {
+  DmnRunnerProviderAction,
+  DmnRunnerProviderActionType,
+  DmnRunnerProviderState,
+  DmnRunnerResults,
+  DmnRunnerResultsAction,
+  DmnRunnerResultsActionType,
+} from "./DmnRunnerTypes";
 
 interface Props {
   isEditorReady?: boolean;
@@ -54,44 +62,13 @@ interface Props {
   editorPageDock: EditorPageDockDrawerRef | undefined;
 }
 
-export interface DmnRunnerProviderState {
-  error: boolean;
-  isExpanded: boolean;
-  currentInputIndex: number;
-}
-
-const initialState: DmnRunnerProviderState = {
+const initialDmnRunnerProviderStates: DmnRunnerProviderState = {
   error: false,
   isExpanded: false,
   currentInputIndex: 0,
 };
 
-export enum DmnRunnerProviderActionType {
-  DEFAULT,
-  ADD_ROW,
-  TOGGLE_EXPANDED,
-}
-
-interface DmnRunnerProviderActionToggleExpanded {
-  type: DmnRunnerProviderActionType.TOGGLE_EXPANDED;
-}
-
-interface DmnRunnerProviderActionAddRow {
-  type: DmnRunnerProviderActionType.ADD_ROW;
-  newState: (previous: DmnRunnerProviderState) => void;
-}
-
-interface DmnRunnerProviderActionDefault {
-  type: DmnRunnerProviderActionType.DEFAULT;
-  newState: Partial<DmnRunnerProviderState>;
-}
-
-export type DmnRunnerProviderAction =
-  | DmnRunnerProviderActionDefault
-  | DmnRunnerProviderActionAddRow
-  | DmnRunnerProviderActionToggleExpanded;
-
-function dmnRunnerProviderReducer(dmnRunnerProvider: DmnRunnerProviderState, action: DmnRunnerProviderAction) {
+function dmnRunnerContextProviderReducer(dmnRunnerProvider: DmnRunnerProviderState, action: DmnRunnerProviderAction) {
   switch (action.type) {
     case DmnRunnerProviderActionType.ADD_ROW:
       action.newState(dmnRunnerProvider);
@@ -103,25 +80,11 @@ function dmnRunnerProviderReducer(dmnRunnerProvider: DmnRunnerProviderState, act
   }
 }
 
-interface DmnRunnerResults {
-  results: Array<DecisionResult[] | undefined>;
-  resultsDifference: Array<Array<object>>;
-}
-
-enum DmnRunnerResultsActionType {
-  CLONE_LAST,
-  DEFAULT,
-}
-
-interface DmnRunnerResultsAction {
-  type: DmnRunnerResultsActionType;
-  newResults?: Array<DecisionResult[] | undefined>;
-}
-
 const initialDmnRunnerResults: DmnRunnerResults = {
   results: [],
   resultsDifference: [[{}]],
 };
+
 function dmnRunnerResultsReducer(dmnRunnerResults: DmnRunnerResults, action: DmnRunnerResultsAction) {
   if (action.type === DmnRunnerResultsActionType.CLONE_LAST) {
     return {
@@ -139,22 +102,19 @@ function dmnRunnerResultsReducer(dmnRunnerResults: DmnRunnerResults, action: Dmn
   }
 }
 
-// TODO: Luiz - DmnRunnerContextProvider!
-export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
+export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
   const { i18n } = useOnlineI18n();
 
   // States that can be changed down in the tree with dmnRunnerDispatcher;
-  const [{ currentInputIndex, error, isExpanded }, dmnRunnerDispatcher] = useReducer(
-    // TODO: Luiz - change name;
-    dmnRunnerProviderReducer,
-    initialState // TODO: Luiz - change name;
+  const [{ currentInputIndex, error, isExpanded }, setDmnRunnerContextProviderState] = useReducer(
+    dmnRunnerContextProviderReducer,
+    initialDmnRunnerProviderStates
   );
 
   // States that are in controll of the DmnRunnerProvider;
   const [canBeVisualized, setCanBeVisualized] = useState<boolean>(false);
   const [jsonSchema, setJsonSchema] = useState<ExtendedServicesDmnJsonSchema | undefined>(undefined);
-  const [{ results, resultsDifference }, dmnRunnerResultsDispatcher] = useReducer(
-    // TODO: Luiz - change name;
+  const [{ results, resultsDifference }, setDmnRunnerResults] = useReducer(
     dmnRunnerResultsReducer,
     initialDmnRunnerResults
   );
@@ -224,7 +184,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
       extendedServices.status === KieSandboxExtendedServicesStatus.STOPPED ||
       extendedServices.status === KieSandboxExtendedServicesStatus.NOT_RUNNING
     ) {
-      dmnRunnerDispatcher({ type: DmnRunnerProviderActionType.DEFAULT, newState: { isExpanded: false } });
+      setDmnRunnerContextProviderState({ type: DmnRunnerProviderActionType.DEFAULT, newState: { isExpanded: false } });
     }
   }, [prevKieSandboxExtendedServicesStatus, extendedServices.status, props.workspaceFile.extension]);
 
@@ -251,20 +211,23 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
             const runnerResults: Array<DecisionResult[] | undefined> = [];
             for (const result of results) {
               if (Object.hasOwnProperty.call(result, "details") && Object.hasOwnProperty.call(result, "stack")) {
-                dmnRunnerDispatcher({ type: DmnRunnerProviderActionType.DEFAULT, newState: { error: true } });
+                setDmnRunnerContextProviderState({
+                  type: DmnRunnerProviderActionType.DEFAULT,
+                  newState: { error: true },
+                });
                 break;
               }
               if (result) {
                 runnerResults.push(result.decisionResults);
               }
             }
-            dmnRunnerResultsDispatcher({ type: DmnRunnerResultsActionType.DEFAULT, newResults: runnerResults });
+            setDmnRunnerResults({ type: DmnRunnerResultsActionType.DEFAULT, newResults: runnerResults });
           })
           .catch((err) => {
-            dmnRunnerResultsDispatcher({ type: DmnRunnerResultsActionType.DEFAULT });
+            setDmnRunnerResults({ type: DmnRunnerResultsActionType.DEFAULT });
           });
       },
-      [extendedServicesModelPayload, dmnRunnerDispatcher, dmnRunnerInputs, extendedServices.client]
+      [extendedServicesModelPayload, setDmnRunnerContextProviderState, dmnRunnerInputs, extendedServices.client]
     )
   );
 
@@ -352,83 +315,25 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
 
   const setDmnRunnerInputs = useCallback(
     (newInputsRow: ((previousInputs: Array<InputRow>) => Array<InputRow>) | Array<InputRow>) => {
-      dmnRunnerPersistenceJsonDispatcher({
-        updatePersistenceJsonDebouce,
-        workspaceFileRelativePath: props.workspaceFile.relativePath,
-        workspaceId: props.workspaceFile.workspaceId,
-        type: DmnRunnerPersistenceReducerActionType.PREVIOUS,
-        newPersistenceJson: (previousDmnRunnerPersistenceJson) => {
-          const newDmnRunnerPersistenceJson = cloneDeep(previousDmnRunnerPersistenceJson);
-          if (typeof newInputsRow === "function") {
-            newDmnRunnerPersistenceJson.inputs = newInputsRow(previousDmnRunnerPersistenceJson.inputs);
-          } else {
-            newDmnRunnerPersistenceJson.inputs = newInputsRow;
-          }
-          return newDmnRunnerPersistenceJson;
-        },
-        shouldUpdateFS: true,
-      });
+      setDmnRunnerPersistenceJson({ newInputsRow });
     },
-    [
-      updatePersistenceJsonDebouce,
-      dmnRunnerPersistenceJsonDispatcher,
-      props.workspaceFile.relativePath,
-      props.workspaceFile.workspaceId,
-    ]
+    [setDmnRunnerPersistenceJson]
   );
 
   const setDmnRunnerMode = useCallback(
     (newMode: DmnRunnerMode) => {
-      dmnRunnerPersistenceJsonDispatcher({
-        updatePersistenceJsonDebouce,
-        workspaceFileRelativePath: props.workspaceFile.relativePath,
-        workspaceId: props.workspaceFile.workspaceId,
-        type: DmnRunnerPersistenceReducerActionType.PREVIOUS,
-        newPersistenceJson: (previousDmnRunnerPersistenceJson) => {
-          const newDmnRunnerPersistenceJson = cloneDeep(previousDmnRunnerPersistenceJson);
-          newDmnRunnerPersistenceJson.configs.mode = newMode;
-          return newDmnRunnerPersistenceJson;
-        },
-        shouldUpdateFS: true,
-      });
+      setDmnRunnerPersistenceJson({ newMode });
     },
-    [
-      updatePersistenceJsonDebouce,
-      dmnRunnerPersistenceJsonDispatcher,
-      props.workspaceFile.relativePath,
-      props.workspaceFile.workspaceId,
-    ]
+    [setDmnRunnerPersistenceJson]
   );
 
   const setDmnRunnerConfigInputs = useCallback(
     (
       newConfigInputs: (previousConfigInputs: UnitablesInputsConfigs) => UnitablesInputsConfigs | UnitablesInputsConfigs
     ) => {
-      dmnRunnerPersistenceJsonDispatcher({
-        updatePersistenceJsonDebouce,
-        workspaceFileRelativePath: props.workspaceFile.relativePath,
-        workspaceId: props.workspaceFile.workspaceId,
-        type: DmnRunnerPersistenceReducerActionType.PREVIOUS,
-        newPersistenceJson: (previousDmnRunnerPersistenceJson) => {
-          const newDmnRunnerPersistenceJson = cloneDeep(previousDmnRunnerPersistenceJson);
-          if (typeof newConfigInputs === "function") {
-            newDmnRunnerPersistenceJson.configs.inputs = newConfigInputs(
-              previousDmnRunnerPersistenceJson.configs.inputs
-            );
-          } else {
-            newDmnRunnerPersistenceJson.configs.inputs = newConfigInputs;
-          }
-          return newDmnRunnerPersistenceJson;
-        },
-        shouldUpdateFS: true,
-      });
+      setDmnRunnerPersistenceJson({ newConfigInputs });
     },
-    [
-      updatePersistenceJsonDebouce,
-      dmnRunnerPersistenceJsonDispatcher,
-      props.workspaceFile.relativePath,
-      props.workspaceFile.workspaceId,
-    ]
+    [setDmnRunnerPersistenceJson]
   );
 
   const getDefaultValuesForInputs = useCallback((inputs: InputRow) => {
@@ -592,7 +497,10 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
           props.workspaceFile.extension !== "dmn" ||
           extendedServices.status !== KieSandboxExtendedServicesStatus.RUNNING
         ) {
-          dmnRunnerDispatcher({ type: DmnRunnerProviderActionType.DEFAULT, newState: { isExpanded: false } });
+          setDmnRunnerContextProviderState({
+            type: DmnRunnerProviderActionType.DEFAULT,
+            newState: { isExpanded: false },
+          });
           return;
         }
 
@@ -610,7 +518,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
           })
           .catch((err) => {
             console.error(err);
-            dmnRunnerDispatcher({ type: DmnRunnerProviderActionType.DEFAULT, newState: { error: true } });
+            setDmnRunnerContextProviderState({ type: DmnRunnerProviderActionType.DEFAULT, newState: { error: true } });
           });
       },
       [extendedServices.client, extendedServices.status, extendedServicesModelPayload, props.workspaceFile.extension]
@@ -619,124 +527,69 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
 
   const onRowAdded = useCallback(
     (args: { beforeIndex: number }) => {
-      dmnRunnerPersistenceJsonDispatcher({
-        updatePersistenceJsonDebouce,
-        workspaceFileRelativePath: props.workspaceFile.relativePath,
-        workspaceId: props.workspaceFile.workspaceId,
-        type: DmnRunnerPersistenceReducerActionType.PREVIOUS,
-        newPersistenceJson(previousPersistenceJson) {
-          const newPersistenceJson = cloneDeep(previousPersistenceJson);
-          const index = args.beforeIndex === 0 ? 0 : args.beforeIndex - 1;
+      setDmnRunnerInputs((previousInputs) => {
+        const newInputs = cloneDeep(previousInputs);
+        const index = args.beforeIndex === 0 ? 0 : args.beforeIndex - 1;
 
-          // add default value;
-          const newInputsRow = getDefaultValuesForInputs(newPersistenceJson.inputs[index]);
-          newPersistenceJson.inputs.splice(args.beforeIndex, 0, newInputsRow);
-          return newPersistenceJson;
-        },
-        shouldUpdateFS: true,
+        const newInputsRow = getDefaultValuesForInputs(newInputs[index]);
+        newInputs.splice(args.beforeIndex, 0, newInputsRow);
+        return newInputs;
       });
-      dmnRunnerDispatcher({
+      setDmnRunnerContextProviderState({
         type: DmnRunnerProviderActionType.DEFAULT,
         newState: { currentInputIndex: args.beforeIndex },
       });
-      dmnRunnerResultsDispatcher({ type: DmnRunnerResultsActionType.CLONE_LAST });
+      setDmnRunnerResults({ type: DmnRunnerResultsActionType.CLONE_LAST });
     },
-    [
-      getDefaultValuesForInputs,
-      updatePersistenceJsonDebouce,
-      dmnRunnerPersistenceJsonDispatcher,
-      props.workspaceFile.relativePath,
-      props.workspaceFile.workspaceId,
-    ]
+    [setDmnRunnerInputs, getDefaultValuesForInputs]
   );
 
   const onRowDuplicated = useCallback(
     (args: { rowIndex: number }) => {
-      dmnRunnerPersistenceJsonDispatcher({
-        updatePersistenceJsonDebouce,
-        workspaceFileRelativePath: props.workspaceFile.relativePath,
-        workspaceId: props.workspaceFile.workspaceId,
-        type: DmnRunnerPersistenceReducerActionType.PREVIOUS,
-        newPersistenceJson(previousPersistenceJson) {
-          const newPersistenceJson = cloneDeep(previousPersistenceJson);
-          // duplicate inputs
-          newPersistenceJson.inputs.splice(args.rowIndex, 0, {
-            ...JSON.parse(JSON.stringify(previousPersistenceJson.inputs[args.rowIndex])),
-            id: generateUuid(),
-          });
-          return newPersistenceJson;
-        },
-        shouldUpdateFS: true,
+      setDmnRunnerInputs((previousInputs) => {
+        const newInputs = cloneDeep(previousInputs);
+        newInputs.splice(args.rowIndex, 0, {
+          ...JSON.parse(JSON.stringify(previousInputs[args.rowIndex])),
+          id: generateUuid(),
+        });
+        return newInputs;
       });
-      dmnRunnerResultsDispatcher({ type: DmnRunnerResultsActionType.CLONE_LAST });
+      setDmnRunnerResults({ type: DmnRunnerResultsActionType.CLONE_LAST });
     },
-    [
-      updatePersistenceJsonDebouce,
-      dmnRunnerPersistenceJsonDispatcher,
-      props.workspaceFile.relativePath,
-      props.workspaceFile.workspaceId,
-    ]
+    [setDmnRunnerInputs]
   );
 
   const onRowReset = useCallback(
     (args: { rowIndex: number }) => {
-      dmnRunnerPersistenceJsonDispatcher({
-        updatePersistenceJsonDebouce,
-        workspaceFileRelativePath: props.workspaceFile.relativePath,
-        workspaceId: props.workspaceFile.workspaceId,
-        type: DmnRunnerPersistenceReducerActionType.PREVIOUS,
-        newPersistenceJson(previousPersistenceJson) {
-          const newPersistenceJson = cloneDeep(previousPersistenceJson);
-          // reset to defaul values;
-          const resetedInputRows = getDefaultValuesForInputs(newPersistenceJson.inputs[args.rowIndex]);
-          newPersistenceJson.inputs[args.rowIndex] = resetedInputRows;
-          return newPersistenceJson;
-        },
-        shouldUpdateFS: true,
+      setDmnRunnerInputs((previousInputs) => {
+        const newInputs = cloneDeep(previousInputs);
+        const resetedInputRows = getDefaultValuesForInputs(newInputs[args.rowIndex]);
+        newInputs[args.rowIndex] = resetedInputRows;
+        return newInputs;
       });
     },
-    [
-      getDefaultValuesForInputs,
-      updatePersistenceJsonDebouce,
-      dmnRunnerPersistenceJsonDispatcher,
-      props.workspaceFile.relativePath,
-      props.workspaceFile.workspaceId,
-    ]
+    [setDmnRunnerInputs, getDefaultValuesForInputs]
   );
 
   const onRowDeleted = useCallback(
     (args: { rowIndex: number }) => {
-      dmnRunnerPersistenceJsonDispatcher({
-        updatePersistenceJsonDebouce,
-        workspaceFileRelativePath: props.workspaceFile.relativePath,
-        workspaceId: props.workspaceFile.workspaceId,
-        type: DmnRunnerPersistenceReducerActionType.PREVIOUS,
-        newPersistenceJson(previousPersistenceJson) {
-          const newPersistenceJson = cloneDeep(previousPersistenceJson);
-          // delete input row;
-          newPersistenceJson.inputs.splice(args.rowIndex, 1);
-          // re-generate ids for rows above the deleted one
-          newPersistenceJson.inputs.forEach((e, i, newInputRows) => {
-            if (i >= args.rowIndex) {
-              newInputRows[i] = { ...e, id: generateUuid() };
-            }
-          });
-          return newPersistenceJson;
-        },
-        shouldUpdateFS: true,
+      setDmnRunnerInputs((previousInputs) => {
+        const newInputs = cloneDeep(previousInputs);
+        newInputs.splice(args.rowIndex, 1);
+        newInputs.forEach((e, i, newInputRows) => {
+          if (i >= args.rowIndex) {
+            newInputRows[i] = { ...e, id: generateUuid() };
+          }
+        });
+        return newInputs;
       });
     },
-    [
-      updatePersistenceJsonDebouce,
-      dmnRunnerPersistenceJsonDispatcher,
-      props.workspaceFile.relativePath,
-      props.workspaceFile.workspaceId,
-    ]
+    [setDmnRunnerInputs]
   );
 
   const dmnRunnerDispatch = useMemo(
     () => ({
-      dmnRunnerDispatcher,
+      setDmnRunnerContextProviderState,
       onRowAdded,
       onRowDeleted,
       onRowDuplicated,

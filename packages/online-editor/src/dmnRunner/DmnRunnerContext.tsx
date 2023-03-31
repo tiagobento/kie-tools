@@ -19,9 +19,9 @@ import { useContext } from "react";
 import { DmnRunnerPersistenceJson } from "../dmnRunnerPersistence/DmnRunnerPersistenceTypes";
 import { DmnRunnerMode, DmnRunnerStatus } from "./DmnRunnerStatus";
 import { UnitablesInputsConfigs } from "@kie-tools/unitables";
-import { DmnRunnerProviderAction } from "./DmnRunnerProvider";
 import { InputRow } from "@kie-tools/form-dmn";
 import { DecisionResult, ExtendedServicesDmnJsonSchema } from "@kie-tools/extended-services-api";
+import { DmnRunnerProviderAction } from "./DmnRunnerTypes";
 
 export interface DmnRunnerContextType {
   configs: UnitablesInputsConfigs;
@@ -39,7 +39,7 @@ export interface DmnRunnerContextType {
 }
 
 export interface DmnRunnerCallbacksContextType {
-  dmnRunnerDispatcher: React.Dispatch<DmnRunnerProviderAction>;
+  setDmnRunnerContextProviderState: React.Dispatch<DmnRunnerProviderAction>;
   onRowAdded: (args: { beforeIndex: number }) => void;
   onRowDuplicated: (args: { rowIndex: number }) => void;
   onRowReset: (args: { rowIndex: number }) => void;

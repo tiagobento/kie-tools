@@ -41,7 +41,7 @@ import { useController } from "@kie-tools-core/react-hooks/dist/useController";
 import { Notification } from "@kie-tools-core/notifications/dist/api";
 import { useExtendedServices } from "../kieSandboxExtendedServices/KieSandboxExtendedServicesContext";
 import { KieSandboxExtendedServicesStatus } from "../kieSandboxExtendedServices/KieSandboxExtendedServicesStatus";
-import { DmnRunnerProviderActionType } from "../dmnRunner/DmnRunnerProvider";
+import { DmnRunnerProviderActionType } from "../dmnRunner/DmnRunnerTypes";
 
 export enum PanelId {
   DMN_RUNNER_TABLE = "dmn-runner-table",
@@ -67,7 +67,7 @@ export const EditorPageDockDrawer = React.forwardRef<
 >((props, forwardRef) => {
   const { i18n } = useOnlineI18n();
   const { isExpanded, mode } = useDmnRunnerState();
-  const { dmnRunnerDispatcher } = useDmnRunnerDispatch();
+  const { setDmnRunnerContextProviderState } = useDmnRunnerDispatch();
   const [panel, setPanel] = useState<PanelId>(PanelId.NONE);
   const [notificationsToggle, notificationsToggleRef] = useController<NotificationsPanelDockToggleRef>();
   const [notificationsPanel, notificationsPanelRef] = useController<NotificationsPanelRef>();
@@ -113,14 +113,17 @@ export const EditorPageDockDrawer = React.forwardRef<
       setPanel((previousPanel) => {
         if (previousPanel !== panelId) {
           if (panelId === PanelId.DMN_RUNNER_TABLE && !isExpanded) {
-            dmnRunnerDispatcher({ type: DmnRunnerProviderActionType.DEFAULT, newState: { isExpanded: true } });
+            setDmnRunnerContextProviderState({
+              type: DmnRunnerProviderActionType.DEFAULT,
+              newState: { isExpanded: true },
+            });
           }
           return panelId;
         }
         return PanelId.NONE;
       });
     },
-    [isExpanded, dmnRunnerDispatcher]
+    [isExpanded, setDmnRunnerContextProviderState]
   );
 
   useLayoutEffect(() => {
