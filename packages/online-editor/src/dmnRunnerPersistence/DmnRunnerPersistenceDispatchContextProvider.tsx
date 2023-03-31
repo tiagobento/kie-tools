@@ -29,6 +29,7 @@ import {
   DmnRunnerUpdatePersistenceJsonDeboucerArgs,
 } from "./DmnRunnerPersistenceTypes";
 
+// This variable ensures that a new update from the FS will NOT override the new value.
 let LOCK = false;
 
 function checkIfHasChangesAndUpdateFs(
