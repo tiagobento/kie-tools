@@ -42,7 +42,6 @@ import { Notification } from "@kie-tools-core/notifications/dist/api";
 import { useExtendedServices } from "../kieSandboxExtendedServices/KieSandboxExtendedServicesContext";
 import { KieSandboxExtendedServicesStatus } from "../kieSandboxExtendedServices/KieSandboxExtendedServicesStatus";
 import { DmnRunnerProviderActionType } from "../dmnRunner/DmnRunnerProvider";
-import { Panel } from "@patternfly/react-core";
 
 export enum PanelId {
   DMN_RUNNER_TABLE = "dmn-runner-table",
