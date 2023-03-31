@@ -498,15 +498,13 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
     [getDefaultValue]
   );
 
-  // After a change in the DMN Model, or in the workspaces this effect is triggered
-  // It updates the schema state and check for differences on it, remove deleted inputs and add default values;
-  const { promise: jsonSchemaDifferences } = useCompanionFsFileSyncedWithWorkspaceFile(
+  // The refreshCallback is called in every CompanionFS event;
+  const { promise: companionFsRefreshCallbackResult } = useCompanionFsFileSyncedWithWorkspaceFile(
     dmnRunnerPersistenceService.companionFsService,
     props.workspaceFile.workspaceId,
     props.workspaceFile.relativePath,
     useCallback(
       async (cancellationToken: Holder<boolean>, workspaceFileEvent: CompanionFsServiceBroadcastEvents) => {
-        console.log("REFRESH CALLBACK = ", workspaceFileEvent.type);
         if (workspaceFileEvent.type === "CFSF_ADD") {
           return {
             propertiesDifference: undefined,
@@ -528,16 +526,14 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
   );
 
   useEffect(() => {
-    if (!jsonSchemaDifferences.data) {
+    if (!companionFsRefreshCallbackResult.data) {
       return;
     }
 
-    const { jsonSchema, propertiesDifference, dmnRunnerPersistenceJson } = jsonSchemaDifferences.data;
-    console.log(propertiesDifference, jsonSchema, dmnRunnerPersistenceJson);
+    const { jsonSchema, propertiesDifference, dmnRunnerPersistenceJson } = companionFsRefreshCallbackResult.data;
 
     if (!propertiesDifference && jsonSchema && dmnRunnerPersistenceJson) {
       setDmnRunnerInputs((previousDmnRunnerInputs) => {
-        console.log("ADD DEFAULT ON NEW INPUT");
         // if the file is new, the [0] should be populated with default values;
         const newDmnRunnerInputs = cloneDeep(dmnRunnerPersistenceJson.inputs);
         newDmnRunnerInputs[0] = { ...getDefaultValues(jsonSchema), ...newDmnRunnerInputs[0] };
@@ -552,8 +548,6 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
     if (Object.keys(propertiesDifference).length === 0) {
       return;
     }
-
-    console.log("ADD DEFAULT AND REMOVE CHANGED PROPERTIES");
 
     setDmnRunnerPersistenceJson({
       newConfigInputs: (previousConfigInputs) => {
@@ -589,7 +583,7 @@ export function DmnRunnerProvider(props: PropsWithChildren<Props>) {
         });
       },
     });
-  }, [getDefaultValues, jsonSchemaDifferences, setDmnRunnerInputs, setDmnRunnerPersistenceJson]);
+  }, [companionFsRefreshCallbackResult.data, getDefaultValues, setDmnRunnerInputs, setDmnRunnerPersistenceJson]);
 
   useCancelableEffect(
     useCallback(

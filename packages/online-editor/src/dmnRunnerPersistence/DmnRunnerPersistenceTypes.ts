@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { InputRow } from "@kie-tools/form-dmn";
-import { UnitablesInputsConfigs, UnitablesCellConfigs } from "@kie-tools/unitables";
+import { UnitablesInputsConfigs } from "@kie-tools/unitables";
 
 export enum DmnRunnerMode {
   FORM = "form",

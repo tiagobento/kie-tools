@@ -48,7 +48,7 @@ export function useDmnRunnerPersistence(workspaceId?: string, workspaceFileRelat
           if (canceled.get()) {
             return;
           }
-          console.log(`EVENT::WORKSPACE_FILE: ${JSON.stringify(companionEvent)}`);
+
           if (companionEvent.type === "CFSF_MOVE" || companionEvent.type == "CFSF_RENAME") {
             // Ignore, as content remains the same.
           } else if (

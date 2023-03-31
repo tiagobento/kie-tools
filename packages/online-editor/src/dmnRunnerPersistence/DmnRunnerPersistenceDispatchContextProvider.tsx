@@ -39,7 +39,6 @@ function checkIfHasChangesAndUpdateFs(
   workspaceFileRelativePath: string,
   shouldUpdateFs: boolean
 ): DmnRunnerPersistenceJson {
-  console.log("shouldUpdateFs=", shouldUpdateFs, " persistenceJson=", persistenceJson);
   // Check for changes before update;
   if (isEqual(persistenceJson, newPersistenceJson)) {
     LOCK = false;
