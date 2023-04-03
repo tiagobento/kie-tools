@@ -187,30 +187,52 @@ export function UnitablesBeeTable({
     return row.original.id;
   }, []);
 
+  const onKeyDown = useCallback((e) => {
+    // console.log("KEYBOARD EVENT!", e)
+    // let inputField = e.target
+    // if (e.target.tagName !== "INPUT") {
+    //   inputField = e.target?.getElementsByTagName("input")?.[0]
+    //   // setEditing(true);
+    //   if (e.key.toLowerCase() === "enter") {
+    //     inputField.focus();
+    //     // const buttonField = cellRef.current?.getElementsByTagName("button");
+    //     // if (buttonField && buttonField.length > 0) {
+    //     //   buttonField?.[0]?.click();
+    //     //   (document.querySelectorAll(".pf-c-select__menu-item")?.[0] as any)?.focus();
+    //     //   return;
+    //     // }
+    //   } else if (isEditModeTriggeringKey(e)) {
+    //     inputField.select();
+    //   }
+    // }
+  }, []);
+
   return (
-    <StandaloneBeeTable
-      cellComponentByColumnAccessor={cellComponentByColumnAccessor}
-      scrollableParentRef={scrollableParentRef}
-      getColumnKey={getColumnKey}
-      getRowKey={getRowKey}
-      tableId={id}
-      isEditableHeader={false}
-      headerLevelCountForAppendingRowIndexColumn={1}
-      headerVisibility={BeeTableHeaderVisibility.AllLevels}
-      operationConfig={beeTableOperationConfig}
-      columns={beeTableColumns}
-      rows={rows}
-      enableKeyboardNavigation={true}
-      shouldRenderRowIndexColumn={true}
-      shouldShowRowsInlineControls={true}
-      shouldShowColumnsInlineControls={false}
-      onRowAdded={onRowAdded}
-      onRowDuplicated={onRowDuplicated}
-      onRowReset={onRowReset}
-      onRowDeleted={onRowDeleted}
-      rowWrapper={rowWrapper}
-      resizerStopBehavior={ResizerStopBehavior.SET_WIDTH_ALWAYS}
-    />
+    <div onKeyDown={onKeyDown}>
+      <StandaloneBeeTable
+        cellComponentByColumnAccessor={cellComponentByColumnAccessor}
+        scrollableParentRef={scrollableParentRef}
+        getColumnKey={getColumnKey}
+        getRowKey={getRowKey}
+        tableId={id}
+        isEditableHeader={false}
+        headerLevelCountForAppendingRowIndexColumn={1}
+        headerVisibility={BeeTableHeaderVisibility.AllLevels}
+        operationConfig={beeTableOperationConfig}
+        columns={beeTableColumns}
+        rows={rows}
+        enableKeyboardNavigation={true}
+        shouldRenderRowIndexColumn={true}
+        shouldShowRowsInlineControls={true}
+        shouldShowColumnsInlineControls={false}
+        onRowAdded={onRowAdded}
+        onRowDuplicated={onRowDuplicated}
+        onRowReset={onRowReset}
+        onRowDeleted={onRowDeleted}
+        rowWrapper={rowWrapper}
+        resizerStopBehavior={ResizerStopBehavior.SET_WIDTH_ALWAYS}
+      />
+    </div>
   );
 }
 
@@ -377,7 +399,7 @@ function UnitablesBeeTableCell({
       }
 
       if (e.key.toLowerCase() === "enter") {
-        // setEditing(false);
+        setEditing(false);
         navigateVertically({ isShiftPressed: e.shiftKey });
         return;
       }
@@ -388,23 +410,11 @@ function UnitablesBeeTableCell({
       // }
       e.stopPropagation();
     },
-    [navigateVertically]
+    [navigateVertically, setEditing]
   );
 
-  useEffect(() => {
-    console.log(
-      "coordinates x,y=",
-      containerCellCoordinates?.rowIndex,
-      containerCellCoordinates?.columnIndex,
-      " IS ACTIVE=",
-      isActive,
-      ", IS EDITING=",
-      isEditing
-    );
-  }, [containerCellCoordinates, isActive, isEditing]);
-
   return (
-    <div ref={cellRef} onKeyDown={onKeyDown}>
+    <div id="my-test-123" ref={cellRef} onKeyDown={onKeyDown}>
       <AutoField
         key={joinedName + autoFieldKey}
         name={joinedName}
