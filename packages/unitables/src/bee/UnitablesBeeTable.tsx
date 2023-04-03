@@ -42,6 +42,7 @@ import { AUTO_ROW_ID } from "../uniforms/UnitablesJsonSchemaBridge";
 import getObjectValueByPath from "lodash/get";
 import { useUnitablesContext } from "../UnitablesContext";
 import { getOperatingSystem, OperatingSystem } from "@kie-tools-core/operating-system";
+import { UnitablesRowApi } from "../UnitablesRow";
 
 export const UNITABLES_COLUMN_MIN_WIDTH = 150;
 
@@ -60,6 +61,7 @@ export interface UnitablesBeeTable {
   onRowDeleted: (args: { rowIndex: number }) => void;
   configs: UnitablesInputsConfigs;
   setWidth: (newWidth: number, fieldName: string) => void;
+  rowsRefs: Map<number, UnitablesRowApi>;
 }
 
 export function UnitablesBeeTable({
@@ -75,6 +77,7 @@ export function UnitablesBeeTable({
   onRowDeleted,
   configs,
   setWidth,
+  rowsRefs,
 }: UnitablesBeeTable) {
   const beeTableOperationConfig = useMemo<BeeTableOperationConfig>(
     () => [
@@ -112,6 +115,7 @@ export function UnitablesBeeTable({
               joinedName={insideProperty.joinedName}
               rowCount={rows.length}
               columnCount={columnsCount}
+              // setEditingRow={rowsRefs.get()}
             />
           );
         }
@@ -252,7 +256,7 @@ function UnitablesBeeTableCell({
   const [autoFieldKey, forceUpdate] = useReducer((x) => x + 1, 0);
 
   const { containerCellCoordinates } = useBeeTableCoordinates();
-  const { internalChange } = useUnitablesContext();
+  const { internalChange, setIsEditingRow } = useUnitablesContext();
 
   // FIXME: Luiz - shouldn't have any reference to DMN!
   // TODO: Luiz - Fix: x-dmn-type from field property: Any, Undefined, string, number, ...;
@@ -310,7 +314,7 @@ function UnitablesBeeTableCell({
     [mutateSelection, rowCount, columnCountCallback]
   );
 
-  const setEditing = useCallback(
+  const setEditingCell = useCallback(
     (isEditing: boolean) => {
       console.log("setEditing", isEditing);
       mutateSelection({
@@ -327,94 +331,102 @@ function UnitablesBeeTableCell({
   );
 
   // This useEffect forces the focus into the selected cell;
-  useEffect(() => {
-    if (!isActive) {
-      return;
-    }
+  // useEffect(() => {
+  //   if (!isActive) {
+  //     return;
+  //   }
 
-    const keyDownListener = (e: KeyboardEvent) => {
-      console.log("KEYDOWN", e);
-      if (isEditModeTriggeringKey(e as any)) {
-        // setEditing(true);
-        cellRef.current?.getElementsByTagName("input")?.[0]?.select();
-      }
-    };
+  //   const keyDownListener = (e: KeyboardEvent) => {
+  //     console.log("KEYDOWN", e);
+  //     if (isEditModeTriggeringKey(e as any)) {
+  //       // setEditing(true);
+  //       cellRef.current?.getElementsByTagName("input")?.[0]?.select();
+  //     }
+  //   };
 
-    document?.addEventListener("keydown", keyDownListener);
-    return () => {
-      document?.removeEventListener("keydown", keyDownListener);
-    };
-  }, [isActive, setEditing]);
+  //   document?.addEventListener("keydown", keyDownListener);
+  //   return () => {
+  //     document?.removeEventListener("keydown", keyDownListener);
+  //   };
+  // }, [isActive, setEditing]);
 
-  useEffect(() => {
-    if (!isActive) {
-      return;
-    }
+  // useEffect(() => {
+  //   if (!isActive) {
+  //     return;
+  //   }
 
-    const keyUpListener = (e: KeyboardEvent) => {
-      console.log("KEYUP", e);
-      if (e.key.toLowerCase() === "enter") {
-        // setEditing(true);
-        const inputField = cellRef.current?.getElementsByTagName("input");
-        if (inputField && inputField.length > 0) {
-          inputField?.[0]?.focus();
-          return;
-        }
-        // const buttonField = cellRef.current?.getElementsByTagName("button");
-        // if (buttonField && buttonField.length > 0) {
-        //   buttonField?.[0]?.click();
-        //   (document.querySelectorAll(".pf-c-select__menu-item")?.[0] as any)?.focus();
-        //   return;
-        // }
-      }
-    };
+  //   const keyUpListener = (e: KeyboardEvent) => {
+  //     console.log("KEYUP", e);
+  //     if (e.key.toLowerCase() === "enter") {
+  //       // setEditing(true);
+  //       const inputField = cellRef.current?.getElementsByTagName("input");
+  //       if (inputField && inputField.length > 0) {
+  //         inputField?.[0]?.focus();
+  //         return;
+  //       }
+  //       // const buttonField = cellRef.current?.getElementsByTagName("button");
+  //       // if (buttonField && buttonField.length > 0) {
+  //       //   buttonField?.[0]?.click();
+  //       //   (document.querySelectorAll(".pf-c-select__menu-item")?.[0] as any)?.focus();
+  //       //   return;
+  //       // }
+  //     }
+  //   };
 
-    document?.addEventListener("keyup", keyUpListener);
-    return () => {
-      // const selectOptions = (document.querySelectorAll(".pf-c-select__menu-item")?.[0] as any);
-      // if (selectOptions) {
-      //   const buttonField = saveCellRef?.getElementsByTagName("button");
-      //   if (buttonField && buttonField.length > 0) {
-      //     buttonField?.[0]?.click();
-      //     return;
-      //   }
-      // }
+  //   document?.addEventListener("keyup", keyUpListener);
+  //   return () => {
+  //     // const selectOptions = (document.querySelectorAll(".pf-c-select__menu-item")?.[0] as any);
+  //     // if (selectOptions) {
+  //     //   const buttonField = saveCellRef?.getElementsByTagName("button");
+  //     //   if (buttonField && buttonField.length > 0) {
+  //     //     buttonField?.[0]?.click();
+  //     //     return;
+  //     //   }
+  //     // }
 
-      document?.removeEventListener("keyup", keyUpListener);
-    };
-  }, [isActive, setEditing]);
+  //     document?.removeEventListener("keyup", keyUpListener);
+  //   };
+  // }, [isActive, setEditing]);
 
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
-      // console.log("DIV KEYDOWN", e);
+      console.log("DIV KEYDOWN", e);
       if (e.key.toLowerCase() === "tab") {
-        // setEditing(false);
+        setIsEditingRow?.(containerCellCoordinates?.rowIndex ?? 0, false);
+        setEditingCell(false);
         return;
       }
 
       if (e.key.toLowerCase() === "escape") {
-        // setEditing(false);
+        setIsEditingRow?.(containerCellCoordinates?.rowIndex ?? 0, false);
+        setEditingCell(false);
         return;
         // setValue(`${previousValue.current ?? ""}`);
       }
 
       if (e.key.toLowerCase() === "enter") {
-        setEditing(false);
+        setIsEditingRow?.(containerCellCoordinates?.rowIndex ?? 0, false);
+        setEditingCell(false);
         navigateVertically({ isShiftPressed: e.shiftKey });
         return;
       }
 
-      // if (isEditModeTriggeringKey(e)) {
-      //   setEditing(true);
-      //   return;
-      // }
+      if (isEditModeTriggeringKey(e)) {
+        setIsEditingRow?.(containerCellCoordinates?.rowIndex ?? 0, true);
+        setEditingCell(true);
+      }
+
       e.stopPropagation();
     },
-    [navigateVertically, setEditing]
+    [navigateVertically, setIsEditingRow, containerCellCoordinates?.rowIndex, setEditingCell]
   );
 
+  useEffect(() => {
+    console.log(isActive, isEditing);
+  }, [isActive, isEditing]);
+
   return (
-    <div id="my-test-123" ref={cellRef} onKeyDown={onKeyDown}>
+    <div ref={cellRef} onKeyDown={onKeyDown}>
       <AutoField
         key={joinedName + autoFieldKey}
         name={joinedName}

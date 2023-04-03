@@ -15,16 +15,27 @@
  */
 
 import * as React from "react";
-import { useRef } from "react";
-import { UnitablesContext } from "./UnitablesContext";
+import { useRef, useMemo, useCallback } from "react";
+import { UnitablesContext, useUnitablesContext } from "./UnitablesContext";
+import { UnitablesRowApi } from "./UnitablesRow";
 
 export function UnitablesContextProvider(props: React.PropsWithChildren<any>) {
   const internalChange: React.MutableRefObject<boolean> = useRef<boolean>(false);
+  const rowsRefs = useMemo(() => new Map<number, UnitablesRowApi>(), []);
+
+  const setIsEditingRow = useCallback(
+    (rowIndex: number, isEditing: boolean) => {
+      rowsRefs.get(rowIndex)?.setIsEditingRow(isEditing);
+    },
+    [rowsRefs]
+  );
 
   return (
     <UnitablesContext.Provider
       value={{
         internalChange,
+        rowsRefs,
+        setIsEditingRow,
       }}
     >
       {props.children}

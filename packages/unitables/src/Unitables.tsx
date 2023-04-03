@@ -28,7 +28,7 @@ import { UnitablesBeeTable } from "./bee";
 import { UnitablesI18n } from "./i18n";
 import { FORMS_ID, UnitablesJsonSchemaBridge } from "./uniforms";
 import "./Unitables.css";
-import { UnitablesRow } from "./UnitablesRow";
+import { UnitablesRow, UnitablesRowApi } from "./UnitablesRow";
 import setObjectValueByPath from "lodash/set";
 import getObjectValueByPath from "lodash/get";
 import { diff } from "deep-object-diff";
@@ -113,7 +113,7 @@ export const Unitables = ({
   const timeout = useRef<number | undefined>(undefined);
 
   // CUSTOM HOOKs
-  const { internalChange } = useUnitablesContext();
+  const { internalChange, rowsRefs } = useUnitablesContext();
 
   const unitablesColumns = useMemo(() => jsonSchemaBridge.getUnitablesColumns(), [jsonSchemaBridge]);
   const inputUid = useMemo(() => nextId(), []);
@@ -188,6 +188,15 @@ export const Unitables = ({
     [internalChange, setRows]
   );
 
+  const saveRef = useCallback(
+    (ref: UnitablesRowApi | null, rowIndex: number) => {
+      if (ref) {
+        rowsRefs.set(rowIndex, ref);
+      }
+    },
+    [rowsRefs]
+  );
+
   const rowWrapper = useCallback(
     ({
       children,
@@ -199,6 +208,7 @@ export const Unitables = ({
     }>) => {
       return (
         <UnitablesRow
+          ref={(ref) => saveRef(ref, rowIndex)}
           key={rowIndex}
           formsId={FORMS_ID}
           rowIndex={rowIndex}
@@ -210,7 +220,7 @@ export const Unitables = ({
         </UnitablesRow>
       );
     },
-    [jsonSchemaBridge, onSubmitRow]
+    [jsonSchemaBridge, onSubmitRow, rowsRefs]
   );
 
   return (
@@ -239,6 +249,7 @@ export const Unitables = ({
               ))}
             </div>
             <UnitablesBeeTable
+              rowsRefs={rowsRefs}
               rowWrapper={rowWrapper}
               scrollableParentRef={scrollableParentRef}
               i18n={i18n}

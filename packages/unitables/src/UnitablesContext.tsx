@@ -16,9 +16,12 @@
 
 import * as React from "react";
 import { useContext } from "react";
+import { UnitablesRowApi } from "./UnitablesRow";
 
 export interface UnitablesContextType {
   internalChange: React.MutableRefObject<boolean>;
+  rowsRefs: Map<number, UnitablesRowApi>;
+  setIsEditingRow: (rowIndex: number, isEditing: boolean) => void;
 }
 
 export const UnitablesContext = React.createContext<UnitablesContextType>({} as any);
