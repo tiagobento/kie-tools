@@ -15,27 +15,20 @@
  */
 
 import * as React from "react";
-import { useRef, useMemo, useCallback } from "react";
-import { UnitablesContext, useUnitablesContext } from "./UnitablesContext";
+import { useRef, useMemo } from "react";
+import { UnitablesContext } from "./UnitablesContext";
 import { UnitablesRowApi } from "./UnitablesRow";
 
-export function UnitablesContextProvider(props: React.PropsWithChildren<any>) {
-  const internalChange: React.MutableRefObject<boolean> = useRef<boolean>(false);
+export function UnitablesContextProvider(props: React.PropsWithChildren<{ rowsInputs: Array<Record<string, any>> }>) {
+  const isBeeTableChange: React.MutableRefObject<boolean> = useRef<boolean>(false);
   const rowsRefs = useMemo(() => new Map<number, UnitablesRowApi>(), []);
-
-  const setIsEditingRow = useCallback(
-    (rowIndex: number, isEditing: boolean) => {
-      rowsRefs.get(rowIndex)?.setIsEditingRow(isEditing);
-    },
-    [rowsRefs]
-  );
 
   return (
     <UnitablesContext.Provider
       value={{
-        internalChange,
+        isBeeTableChange,
         rowsRefs,
-        setIsEditingRow,
+        rowsInputs: props.rowsInputs,
       }}
     >
       {props.children}

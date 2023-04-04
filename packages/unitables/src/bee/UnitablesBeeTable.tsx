@@ -31,7 +31,7 @@ import {
   useBeeTableSelectionDispatch,
 } from "@kie-tools/boxed-expression-component/dist/selection/BeeTableSelectionContext";
 import * as React from "react";
-import { useCallback, useMemo, useReducer, useEffect, useRef, useState } from "react";
+import { useCallback, useMemo, useReducer, useEffect, useRef } from "react";
 import * as ReactTable from "react-table";
 import { UnitablesColumnType, UnitablesInputsConfigs, UnitablesCellConfigs } from "../UnitablesTypes";
 import "@kie-tools/boxed-expression-component/dist/@types/react-table";
@@ -40,7 +40,7 @@ import { AutoField } from "@kie-tools/uniforms-patternfly/dist/esm";
 import { useField } from "uniforms";
 import { AUTO_ROW_ID } from "../uniforms/UnitablesJsonSchemaBridge";
 import getObjectValueByPath from "lodash/get";
-import { useUnitablesContext } from "../UnitablesContext";
+import { useUnitablesContext, useUnitablesRow } from "../UnitablesContext";
 import { getOperatingSystem, OperatingSystem } from "@kie-tools-core/operating-system";
 import { UnitablesRowApi } from "../UnitablesRow";
 
@@ -191,28 +191,8 @@ export function UnitablesBeeTable({
     return row.original.id;
   }, []);
 
-  const onKeyDown = useCallback((e) => {
-    // console.log("KEYBOARD EVENT!", e)
-    // let inputField = e.target
-    // if (e.target.tagName !== "INPUT") {
-    //   inputField = e.target?.getElementsByTagName("input")?.[0]
-    //   // setEditing(true);
-    //   if (e.key.toLowerCase() === "enter") {
-    //     inputField.focus();
-    //     // const buttonField = cellRef.current?.getElementsByTagName("button");
-    //     // if (buttonField && buttonField.length > 0) {
-    //     //   buttonField?.[0]?.click();
-    //     //   (document.querySelectorAll(".pf-c-select__menu-item")?.[0] as any)?.focus();
-    //     //   return;
-    //     // }
-    //   } else if (isEditModeTriggeringKey(e)) {
-    //     inputField.select();
-    //   }
-    // }
-  }, []);
-
   return (
-    <div onKeyDown={onKeyDown}>
+    <>
       <StandaloneBeeTable
         cellComponentByColumnAccessor={cellComponentByColumnAccessor}
         scrollableParentRef={scrollableParentRef}
@@ -236,7 +216,7 @@ export function UnitablesBeeTable({
         rowWrapper={rowWrapper}
         resizerStopBehavior={ResizerStopBehavior.SET_WIDTH_ALWAYS}
       />
-    </div>
+    </>
   );
 }
 
@@ -249,51 +229,53 @@ function UnitablesBeeTableCell({
   rowCount,
   columnCount,
 }: BeeTableCellProps<ROWTYPE> & { joinedName: string; rowCount: number; columnCount: number }) {
-  const [{ field, value, onChange }] = useField(joinedName, {});
+  const [{ field, onChange: onFieldChange, name: fieldName }] = useField(joinedName, {});
 
   const cellRef = useRef<HTMLDivElement | null>(null);
 
   const [autoFieldKey, forceUpdate] = useReducer((x) => x + 1, 0);
 
   const { containerCellCoordinates } = useBeeTableCoordinates();
-  const { internalChange, setIsEditingRow } = useUnitablesContext();
+  const { isBeeTableChange } = useUnitablesContext();
+  const { submitRow, submitPreviousRow, rowInputs } = useUnitablesRow(containerCellCoordinates?.rowIndex ?? 0);
+  const fieldInput = useMemo(() => getObjectValueByPath(rowInputs, fieldName), [rowInputs, fieldName]);
 
   // FIXME: Luiz - shouldn't have any reference to DMN!
   // TODO: Luiz - Fix: x-dmn-type from field property: Any, Undefined, string, number, ...;
   // this is useful in case we have a "time", "date", "date and time" fields;
   const setValue = useCallback(
     (newValue: string) => {
-      internalChange.current = true;
+      isBeeTableChange.current = true;
       const newValueWithoutSymbols = newValue.replace(/\r/g, "");
 
       if (field.enum) {
-        onChange(field.placeholder);
+        onFieldChange(field.placeholder);
         // Changing the values using onChange will not re-render <select> nodes;
         // This ensure a re-render of the SelectField;
         forceUpdate();
       } else if (field.type === "string") {
-        onChange(newValueWithoutSymbols);
+        onFieldChange(newValueWithoutSymbols);
       } else if (field.type === "number") {
         const numberValue = parseFloat(newValueWithoutSymbols);
-        onChange(isNaN(numberValue) ? undefined : numberValue);
+        onFieldChange(isNaN(numberValue) ? undefined : numberValue);
       } else if (field.type === "boolean") {
-        onChange(newValueWithoutSymbols === "true");
+        onFieldChange(newValueWithoutSymbols === "true");
       } else if (field.type === "array") {
         // FIXME: Luiz - array fields are still not supported by DMN Runner Table;
       } else if (field.type === "object" && typeof newValue !== "object") {
         // objects are flattened in a single row - this case shouldn't happen;
       } else {
-        onChange(newValue);
+        onFieldChange(newValue);
       }
     },
-    [internalChange, field, onChange]
+    [isBeeTableChange, field, onFieldChange]
   );
 
   const { isActive, isEditing } = useBeeTableSelectableCellRef(
     containerCellCoordinates?.rowIndex ?? 0,
     containerCellCoordinates?.columnIndex ?? 0,
     setValue,
-    useCallback(() => `${value ?? ""}`, [value])
+    useCallback(() => `${fieldInput ?? ""}`, [fieldInput])
   );
   const { mutateSelection } = useBeeTableSelectionDispatch();
 
@@ -330,103 +312,74 @@ function UnitablesBeeTableCell({
     [mutateSelection, rowCount, columnCountCallback]
   );
 
-  // This useEffect forces the focus into the selected cell;
-  // useEffect(() => {
-  //   if (!isActive) {
-  //     return;
-  //   }
-
-  //   const keyDownListener = (e: KeyboardEvent) => {
-  //     console.log("KEYDOWN", e);
-  //     if (isEditModeTriggeringKey(e as any)) {
-  //       // setEditing(true);
-  //       cellRef.current?.getElementsByTagName("input")?.[0]?.select();
-  //     }
-  //   };
-
-  //   document?.addEventListener("keydown", keyDownListener);
-  //   return () => {
-  //     document?.removeEventListener("keydown", keyDownListener);
-  //   };
-  // }, [isActive, setEditing]);
-
-  // useEffect(() => {
-  //   if (!isActive) {
-  //     return;
-  //   }
-
-  //   const keyUpListener = (e: KeyboardEvent) => {
-  //     console.log("KEYUP", e);
-  //     if (e.key.toLowerCase() === "enter") {
-  //       // setEditing(true);
-  //       const inputField = cellRef.current?.getElementsByTagName("input");
-  //       if (inputField && inputField.length > 0) {
-  //         inputField?.[0]?.focus();
-  //         return;
-  //       }
-  //       // const buttonField = cellRef.current?.getElementsByTagName("button");
-  //       // if (buttonField && buttonField.length > 0) {
-  //       //   buttonField?.[0]?.click();
-  //       //   (document.querySelectorAll(".pf-c-select__menu-item")?.[0] as any)?.focus();
-  //       //   return;
-  //       // }
-  //     }
-  //   };
-
-  //   document?.addEventListener("keyup", keyUpListener);
-  //   return () => {
-  //     // const selectOptions = (document.querySelectorAll(".pf-c-select__menu-item")?.[0] as any);
-  //     // if (selectOptions) {
-  //     //   const buttonField = saveCellRef?.getElementsByTagName("button");
-  //     //   if (buttonField && buttonField.length > 0) {
-  //     //     buttonField?.[0]?.click();
-  //     //     return;
-  //     //   }
-  //     // }
-
-  //     document?.removeEventListener("keyup", keyUpListener);
-  //   };
-  // }, [isActive, setEditing]);
-
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
       console.log("DIV KEYDOWN", e);
+      // TAB
       if (e.key.toLowerCase() === "tab") {
-        setIsEditingRow?.(containerCellCoordinates?.rowIndex ?? 0, false);
+        submitRow?.(containerCellCoordinates?.rowIndex ?? 0, true);
         setEditingCell(false);
         return;
       }
 
+      // ESC
       if (e.key.toLowerCase() === "escape") {
-        setIsEditingRow?.(containerCellCoordinates?.rowIndex ?? 0, false);
+        // setValue(`${previousValue.current ?? ""}`);
+        submitPreviousRow?.(containerCellCoordinates?.rowIndex ?? 0);
         setEditingCell(false);
         return;
-        // setValue(`${previousValue.current ?? ""}`);
       }
 
+      // ENTER
       if (e.key.toLowerCase() === "enter") {
-        setIsEditingRow?.(containerCellCoordinates?.rowIndex ?? 0, false);
+        e.stopPropagation();
+        if (!isEditing) {
+          const inputField = cellRef.current?.getElementsByTagName("input");
+          if (inputField && inputField.length > 0) {
+            inputField?.[0]?.focus();
+          }
+          submitRow?.(containerCellCoordinates?.rowIndex ?? 0, true);
+          setEditingCell(true);
+          return;
+        }
+        submitRow?.(containerCellCoordinates?.rowIndex ?? 0, true);
         setEditingCell(false);
         navigateVertically({ isShiftPressed: e.shiftKey });
         return;
       }
 
+      // Normal editing;
       if (isEditModeTriggeringKey(e)) {
-        setIsEditingRow?.(containerCellCoordinates?.rowIndex ?? 0, true);
+        if (!isEditing) {
+          cellRef.current?.getElementsByTagName("input")?.[0]?.select();
+        }
         setEditingCell(true);
+        e.stopPropagation();
       }
-
-      e.stopPropagation();
     },
-    [navigateVertically, setIsEditingRow, containerCellCoordinates?.rowIndex, setEditingCell]
+    [containerCellCoordinates?.rowIndex, isEditing, navigateVertically, setEditingCell, submitPreviousRow, submitRow]
   );
 
+  // if it's active focus on cell;
   useEffect(() => {
-    console.log(isActive, isEditing);
+    if (isActive && !isEditing) {
+      cellRef.current?.focus();
+    }
   }, [isActive, isEditing]);
 
+  useEffect(() => {
+    console.log(
+      "column=",
+      containerCellCoordinates?.columnIndex,
+      ", row=",
+      containerCellCoordinates?.rowIndex,
+      isActive,
+      isEditing
+    );
+  }, [containerCellCoordinates?.columnIndex, containerCellCoordinates?.rowIndex, isActive, isEditing]);
+
   return (
-    <div ref={cellRef} onKeyDown={onKeyDown}>
+    <div tabIndex={-1} ref={cellRef} onKeyDown={onKeyDown}>
       <AutoField
         key={joinedName + autoFieldKey}
         name={joinedName}

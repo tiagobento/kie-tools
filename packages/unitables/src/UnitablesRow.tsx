@@ -27,16 +27,16 @@ interface Props {
   jsonSchemaBridge: UnitablesJsonSchemaBridge;
   rowInput: Record<string, any>;
   onSubmitRow: (rowInput: Record<string, any>, index: number, error: Record<string, any>) => void;
+  onSubmitPreviousRow: () => void;
 }
 
 export interface UnitablesRowApi {
-  setIsEditingRow: React.Dispatch<React.SetStateAction<boolean>>;
+  submit: () => void;
+  submitPrevious: () => void;
 }
 
 export const UnitablesRow = React.forwardRef<UnitablesRowApi, PropsWithChildren<Props>>(
-  ({ children, formsId, rowIndex, jsonSchemaBridge, rowInput, onSubmitRow }, forwardRef) => {
-    const [isEditingRow, setIsEditingRow] = useState<boolean>(false);
-
+  ({ children, formsId, rowIndex, jsonSchemaBridge, rowInput, onSubmitRow, onSubmitPreviousRow }, forwardRef) => {
     const autoRowRef = useRef<HTMLFormElement>(null);
 
     const onSubmit = useCallback(
@@ -47,6 +47,10 @@ export const UnitablesRow = React.forwardRef<UnitablesRowApi, PropsWithChildren<
       [onSubmitRow, rowIndex]
     );
 
+    const onSubmitPrevious = useCallback(() => {
+      onSubmitPreviousRow();
+    }, [onSubmitPreviousRow]);
+
     const onValidate = useCallback((inputs, error) => {
       // returns the validation errors;
       return null;
@@ -56,18 +60,17 @@ export const UnitablesRow = React.forwardRef<UnitablesRowApi, PropsWithChildren<
       forwardRef,
       () => {
         return {
-          setIsEditingRow,
+          submit: () => autoRowRef.current?.submit(),
+          submitPrevious: () => onSubmitPrevious(),
         };
       },
-      []
+      [onSubmitPrevious]
     );
 
     // Submits the table in the first render triggering the onValidate function
     useEffect(() => {
-      if (!isEditingRow) {
-        autoRowRef.current?.submit();
-      }
-    }, [autoRowRef, isEditingRow]);
+      autoRowRef.current?.submit();
+    }, [autoRowRef]);
 
     return (
       <>
