@@ -51,6 +51,7 @@ export const UnitablesRow = React.forwardRef<UnitablesRowApi, PropsWithChildren<
       onSubmitPreviousRow();
     }, [onSubmitPreviousRow]);
 
+    // Without it the errors will be returned in "onChange" validation;
     const onValidate = useCallback((inputs, error) => {
       // returns the validation errors;
       return null;

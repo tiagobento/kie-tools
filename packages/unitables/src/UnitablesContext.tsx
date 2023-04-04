@@ -34,7 +34,7 @@ export function useUnitablesRow(rowIndex: number) {
   const { rowsRefs, rowsInputs } = useUnitablesContext();
 
   const submitRow = useCallback(
-    (rowIndex: number, isEditing: boolean) => {
+    (rowIndex: number) => {
       rowsRefs.get(rowIndex)?.submit();
     },
     [rowsRefs]

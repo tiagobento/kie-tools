@@ -190,6 +190,7 @@ export const Unitables = ({
 
   const onSubmitPreviousRow = useCallback(() => {
     setRows((previousInputRows) => {
+      console.log("SUBMITTING PREVIOUS ROW: " + JSON.stringify(previousInputRows));
       return cloneDeep(previousInputRows);
     });
   }, [setRows]);

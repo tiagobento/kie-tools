@@ -31,7 +31,7 @@ import {
   useBeeTableSelectionDispatch,
 } from "@kie-tools/boxed-expression-component/dist/selection/BeeTableSelectionContext";
 import * as React from "react";
-import { useCallback, useMemo, useReducer, useEffect, useRef } from "react";
+import { useCallback, useMemo, useReducer, useEffect, useRef, useState } from "react";
 import * as ReactTable from "react-table";
 import { UnitablesColumnType, UnitablesInputsConfigs, UnitablesCellConfigs } from "../UnitablesTypes";
 import "@kie-tools/boxed-expression-component/dist/@types/react-table";
@@ -277,7 +277,7 @@ function UnitablesBeeTableCell({
     setValue,
     useCallback(() => `${fieldInput ?? ""}`, [fieldInput])
   );
-  const { mutateSelection } = useBeeTableSelectionDispatch();
+  const { mutateSelection, resetSelectionAt } = useBeeTableSelectionDispatch();
 
   const columnCountCallback = useCallback(() => columnCount, [columnCount]);
 
@@ -298,7 +298,6 @@ function UnitablesBeeTableCell({
 
   const setEditingCell = useCallback(
     (isEditing: boolean) => {
-      console.log("setEditing", isEditing);
       mutateSelection({
         part: SelectionPart.ActiveCell,
         columnCount: columnCountCallback,
@@ -312,20 +311,27 @@ function UnitablesBeeTableCell({
     [mutateSelection, rowCount, columnCountCallback]
   );
 
+  const [previousValue, setPreviousValue] = useState(fieldInput);
+  useEffect(() => {
+    setPreviousValue(fieldInput);
+  }, [fieldInput]);
+
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
       console.log("DIV KEYDOWN", e);
       // TAB
       if (e.key.toLowerCase() === "tab") {
-        submitRow?.(containerCellCoordinates?.rowIndex ?? 0, true);
+        submitRow?.(containerCellCoordinates?.rowIndex ?? 0);
         setEditingCell(false);
         return;
       }
 
       // ESC
       if (e.key.toLowerCase() === "escape") {
-        // setValue(`${previousValue.current ?? ""}`);
         submitPreviousRow?.(containerCellCoordinates?.rowIndex ?? 0);
+        onFieldChange(previousValue);
+        cellRef.current?.getElementsByTagName("input")?.[0]?.blur();
+        // resetSelectionAt(undefined);
         setEditingCell(false);
         return;
       }
@@ -334,15 +340,16 @@ function UnitablesBeeTableCell({
       if (e.key.toLowerCase() === "enter") {
         e.stopPropagation();
         if (!isEditing) {
+          // TODO: Luiz - Add option to edit Select Field; Change to FormSelect component;
           const inputField = cellRef.current?.getElementsByTagName("input");
           if (inputField && inputField.length > 0) {
             inputField?.[0]?.focus();
           }
-          submitRow?.(containerCellCoordinates?.rowIndex ?? 0, true);
+          submitRow?.(containerCellCoordinates?.rowIndex ?? 0);
           setEditingCell(true);
           return;
         }
-        submitRow?.(containerCellCoordinates?.rowIndex ?? 0, true);
+        submitRow?.(containerCellCoordinates?.rowIndex ?? 0);
         setEditingCell(false);
         navigateVertically({ isShiftPressed: e.shiftKey });
         return;
@@ -357,15 +364,26 @@ function UnitablesBeeTableCell({
         e.stopPropagation();
       }
     },
-    [containerCellCoordinates?.rowIndex, isEditing, navigateVertically, setEditingCell, submitPreviousRow, submitRow]
+    [
+      containerCellCoordinates?.rowIndex,
+      isEditing,
+      navigateVertically,
+      setEditingCell,
+      submitPreviousRow,
+      submitRow,
+      onFieldChange,
+      previousValue,
+    ]
   );
 
   // if it's active focus on cell;
   useEffect(() => {
     if (isActive && !isEditing) {
       cellRef.current?.focus();
+    } else if (!isActive && !isEditing) {
+      submitRow(containerCellCoordinates?.rowIndex ?? 0);
     }
-  }, [isActive, isEditing]);
+  }, [isActive, isEditing, submitRow, containerCellCoordinates?.rowIndex]);
 
   useEffect(() => {
     console.log(
