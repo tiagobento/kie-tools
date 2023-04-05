@@ -237,7 +237,7 @@ function UnitablesBeeTableCell({
 
   const { containerCellCoordinates } = useBeeTableCoordinates();
   const { isBeeTableChange } = useUnitablesContext();
-  const { submitRow, submitPreviousRow, rowInputs } = useUnitablesRow(containerCellCoordinates?.rowIndex ?? 0);
+  const { submitRow, rowInputs } = useUnitablesRow(containerCellCoordinates?.rowIndex ?? 0);
   const fieldInput = useMemo(() => getObjectValueByPath(rowInputs, fieldName), [rowInputs, fieldName]);
 
   // FIXME: Luiz - shouldn't have any reference to DMN!
@@ -309,9 +309,9 @@ function UnitablesBeeTableCell({
     [mutateSelection, rowCount, columnCount]
   );
 
-  const [previousValue, setPreviousValue] = useState(fieldInput);
+  const [previousFieldInput, setPreviousInput] = useState(fieldInput);
   useEffect(() => {
-    setPreviousValue(fieldInput);
+    setPreviousInput(fieldInput);
   }, [fieldInput]);
 
   const onKeyDown = useCallback(
@@ -327,8 +327,7 @@ function UnitablesBeeTableCell({
       // ESC
       if (e.key.toLowerCase() === "escape") {
         e.stopPropagation();
-        submitPreviousRow?.(containerCellCoordinates?.rowIndex ?? 0);
-        onFieldChange(previousValue);
+        onFieldChange(previousFieldInput);
         cellRef.current?.focus();
         setEditingCell(false);
         return;
@@ -355,11 +354,11 @@ function UnitablesBeeTableCell({
 
       // Normal editing;
       if (isEditModeTriggeringKey(e)) {
+        e.stopPropagation();
         if (!isEditing) {
           cellRef.current?.getElementsByTagName("input")?.[0]?.select();
         }
         setEditingCell(true);
-        e.stopPropagation();
       }
     },
     [
@@ -367,10 +366,9 @@ function UnitablesBeeTableCell({
       isEditing,
       navigateVertically,
       setEditingCell,
-      submitPreviousRow,
       submitRow,
       onFieldChange,
-      previousValue,
+      previousFieldInput,
     ]
   );
 

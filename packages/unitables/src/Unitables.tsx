@@ -188,13 +188,6 @@ export const Unitables = ({
     [isBeeTableChange, setRows]
   );
 
-  const onSubmitPreviousRow = useCallback(() => {
-    setRows((previousInputRows) => {
-      console.log("SUBMITTING PREVIOUS ROW: " + JSON.stringify(previousInputRows));
-      return cloneDeep(previousInputRows);
-    });
-  }, [setRows]);
-
   const saveRowRef = useCallback(
     (ref: UnitablesRowApi | null, rowIndex: number) => {
       if (ref) {
@@ -222,13 +215,12 @@ export const Unitables = ({
           rowInput={row}
           jsonSchemaBridge={jsonSchemaBridge}
           onSubmitRow={onSubmitRow}
-          onSubmitPreviousRow={onSubmitPreviousRow}
         >
           {children}
         </UnitablesRow>
       );
     },
-    [jsonSchemaBridge, onSubmitPreviousRow, onSubmitRow, saveRowRef]
+    [jsonSchemaBridge, onSubmitRow, saveRowRef]
   );
 
   return (

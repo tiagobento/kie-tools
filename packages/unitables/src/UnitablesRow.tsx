@@ -27,16 +27,14 @@ interface Props {
   jsonSchemaBridge: UnitablesJsonSchemaBridge;
   rowInput: Record<string, any>;
   onSubmitRow: (rowInput: Record<string, any>, index: number, error: Record<string, any>) => void;
-  onSubmitPreviousRow: () => void;
 }
 
 export interface UnitablesRowApi {
   submit: () => void;
-  submitPrevious: () => void;
 }
 
 export const UnitablesRow = React.forwardRef<UnitablesRowApi, PropsWithChildren<Props>>(
-  ({ children, formsId, rowIndex, jsonSchemaBridge, rowInput, onSubmitRow, onSubmitPreviousRow }, forwardRef) => {
+  ({ children, formsId, rowIndex, jsonSchemaBridge, rowInput, onSubmitRow }, forwardRef) => {
     const autoRowRef = useRef<HTMLFormElement>(null);
 
     const onSubmit = useCallback(
@@ -46,10 +44,6 @@ export const UnitablesRow = React.forwardRef<UnitablesRowApi, PropsWithChildren<
       },
       [onSubmitRow, rowIndex]
     );
-
-    const onSubmitPrevious = useCallback(() => {
-      onSubmitPreviousRow();
-    }, [onSubmitPreviousRow]);
 
     // Without it the errors will be returned in "onChange" validation;
     const onValidate = useCallback((inputs, error) => {
@@ -62,10 +56,9 @@ export const UnitablesRow = React.forwardRef<UnitablesRowApi, PropsWithChildren<
       () => {
         return {
           submit: () => autoRowRef.current?.submit(),
-          submitPrevious: () => onSubmitPrevious(),
         };
       },
-      [onSubmitPrevious]
+      []
     );
 
     // Submits the table in the first render triggering the onValidate function

@@ -40,12 +40,5 @@ export function useUnitablesRow(rowIndex: number) {
     [rowsRefs]
   );
 
-  const submitPreviousRow = useCallback(
-    (rowIndex: number) => {
-      rowsRefs.get(rowIndex)?.submitPrevious();
-    },
-    [rowsRefs]
-  );
-
-  return { submitRow, submitPreviousRow, rowInputs: rowsInputs[rowIndex] };
+  return { submitRow, rowInputs: rowsInputs[rowIndex] };
 }
