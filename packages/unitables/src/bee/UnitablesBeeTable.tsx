@@ -193,43 +193,34 @@ export function UnitablesBeeTable({
   }, []);
 
   return (
-    <>
-      <StandaloneBeeTable
-        cellComponentByColumnAccessor={cellComponentByColumnAccessor}
-        scrollableParentRef={scrollableParentRef}
-        getColumnKey={getColumnKey}
-        getRowKey={getRowKey}
-        tableId={id}
-        isEditableHeader={false}
-        headerLevelCountForAppendingRowIndexColumn={1}
-        headerVisibility={BeeTableHeaderVisibility.AllLevels}
-        operationConfig={beeTableOperationConfig}
-        columns={beeTableColumns}
-        rows={rows}
-        enableKeyboardNavigation={true}
-        shouldRenderRowIndexColumn={true}
-        shouldShowRowsInlineControls={true}
-        shouldShowColumnsInlineControls={false}
-        onRowAdded={onRowAdded}
-        onRowDuplicated={onRowDuplicated}
-        onRowReset={onRowReset}
-        onRowDeleted={onRowDeleted}
-        rowWrapper={rowWrapper}
-        resizerStopBehavior={ResizerStopBehavior.SET_WIDTH_ALWAYS}
-      />
-    </>
+    <StandaloneBeeTable
+      cellComponentByColumnAccessor={cellComponentByColumnAccessor}
+      scrollableParentRef={scrollableParentRef}
+      getColumnKey={getColumnKey}
+      getRowKey={getRowKey}
+      tableId={id}
+      isEditableHeader={false}
+      headerLevelCountForAppendingRowIndexColumn={1}
+      headerVisibility={BeeTableHeaderVisibility.AllLevels}
+      operationConfig={beeTableOperationConfig}
+      columns={beeTableColumns}
+      rows={rows}
+      enableKeyboardNavigation={true}
+      shouldRenderRowIndexColumn={true}
+      shouldShowRowsInlineControls={true}
+      shouldShowColumnsInlineControls={false}
+      onRowAdded={onRowAdded}
+      onRowDuplicated={onRowDuplicated}
+      onRowReset={onRowReset}
+      onRowDeleted={onRowDeleted}
+      rowWrapper={rowWrapper}
+      resizerStopBehavior={ResizerStopBehavior.SET_WIDTH_ALWAYS}
+    />
   );
 }
 
 function getColumnAccessor(c: UnitablesColumnType) {
   return `field-${c.joinedName}`;
-}
-
-enum FieldType {
-  STRING_FIELD,
-  NUMBER_FIELD,
-  SELECT_FIELD,
-  BOOLEAN_FIELD,
 }
 
 function UnitablesBeeTableCell({
