@@ -118,7 +118,7 @@ export function ContextExpression(contextExpression: ContextExpressionDefinition
   const beeTableColumns = useMemo<ReactTable.Column<ROWTYPE>[]>(() => {
     return [
       {
-        accessor: "context-expression" as any, // FIXME: Tiago -> ?
+        accessor: contextExpression.id as any, // FIXME: Tiago -> ?
         label: contextExpression.name ?? DEFAULT_EXPRESSION_NAME,
         isRowIndexColumn: false,
         dataType: contextExpression.dataType ?? CONTEXT_ENTRY_DEFAULT_DATA_TYPE,

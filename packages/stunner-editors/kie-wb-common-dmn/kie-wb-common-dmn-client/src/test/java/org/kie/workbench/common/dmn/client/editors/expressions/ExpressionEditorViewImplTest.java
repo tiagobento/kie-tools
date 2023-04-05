@@ -43,6 +43,7 @@ import org.kie.workbench.common.dmn.api.definition.model.BusinessKnowledgeModel;
 import org.kie.workbench.common.dmn.api.definition.model.Expression;
 import org.kie.workbench.common.dmn.api.definition.model.ItemDefinition;
 import org.kie.workbench.common.dmn.api.definition.model.LiteralExpression;
+import org.kie.workbench.common.dmn.api.property.dmn.Id;
 import org.kie.workbench.common.dmn.api.property.dmn.Name;
 import org.kie.workbench.common.dmn.api.property.dmn.types.BuiltInType;
 import org.kie.workbench.common.dmn.client.commands.factory.DefaultCanvasCommandFactory;
@@ -281,31 +282,31 @@ public class ExpressionEditorViewImplTest {
         doReturn(viewportMediators).when(viewport).getMediators();
         doReturn(gridPanelElement).when(gridPanel).getElement();
         doReturn(Optional.of(editor)).when(editorDefinition).getEditor(any(GridCellTuple.class),
-                                                                       any(Optional.class),
-                                                                       any(HasExpression.class),
-                                                                       any(Optional.class),
-                                                                       anyBoolean(),
-                                                                       anyInt());
+                any(Optional.class),
+                any(HasExpression.class),
+                any(Optional.class),
+                anyBoolean(),
+                anyInt());
         doReturn(new BaseGridData()).when(editor).getModel();
 
         this.view = spy(new ExpressionEditorViewImpl(returnToLink,
-                                                     returnToDRGLabel,
-                                                     expressionName,
-                                                     expressionType,
-                                                     gridPanelContainer,
-                                                     translationService,
-                                                     listSelector,
-                                                     sessionManager,
-                                                     sessionCommandManager,
-                                                     canvasCommandFactory,
-                                                     expressionEditorDefinitionsSupplier,
-                                                     refreshFormPropertiesEvent,
-                                                     domainObjectSelectionEvent,
-                                                     editorSelectedEvent,
-                                                     dataTypePageActiveEvent,
-                                                     pmmlDocumentMetadataProvider,
-                                                     definitionUtils,
-                                                     itemDefinitionUtils));
+                returnToDRGLabel,
+                expressionName,
+                expressionType,
+                gridPanelContainer,
+                translationService,
+                listSelector,
+                sessionManager,
+                sessionCommandManager,
+                canvasCommandFactory,
+                expressionEditorDefinitionsSupplier,
+                refreshFormPropertiesEvent,
+                domainObjectSelectionEvent,
+                editorSelectedEvent,
+                dataTypePageActiveEvent,
+                pmmlDocumentMetadataProvider,
+                definitionUtils,
+                itemDefinitionUtils));
         view.init(presenter);
         view.bind(session);
 
@@ -323,22 +324,22 @@ public class ExpressionEditorViewImplTest {
         when(undefinedExpressionEditorDefinition.getType()).thenReturn(UNDEFINED);
         when(undefinedExpressionEditor.getModel()).thenReturn(new BaseGridData());
         when(undefinedExpressionEditorDefinition.getEditor(any(GridCellTuple.class),
-                                                           any(Optional.class),
-                                                           any(HasExpression.class),
-                                                           any(Optional.class),
-                                                           anyBoolean(),
-                                                           anyInt())).thenReturn(Optional.of(undefinedExpressionEditor));
+                any(Optional.class),
+                any(HasExpression.class),
+                any(Optional.class),
+                anyBoolean(),
+                anyInt())).thenReturn(Optional.of(undefinedExpressionEditor));
 
         when(literalExpressionEditorDefinition.getModelClass()).thenReturn(Optional.of(new LiteralExpression()));
         when(literalExpressionEditorDefinition.getName()).thenReturn(LITERAL_EXPRESSION.getText());
         when(literalExpressionEditorDefinition.getType()).thenReturn(LITERAL_EXPRESSION);
         when(literalExpressionEditor.getModel()).thenReturn(new BaseGridData());
         when(literalExpressionEditorDefinition.getEditor(any(GridCellTuple.class),
-                                                         any(Optional.class),
-                                                         any(HasExpression.class),
-                                                         any(Optional.class),
-                                                         anyBoolean(),
-                                                         anyInt())).thenReturn(Optional.of(literalExpressionEditor));
+                any(Optional.class),
+                any(HasExpression.class),
+                any(Optional.class),
+                anyBoolean(),
+                anyInt())).thenReturn(Optional.of(literalExpressionEditor));
 
         doAnswer((i) -> i.getArguments()[1]).when(translationService).format(Mockito.<String>any(), anyObject());
         doAnswer((i) -> i.getArguments()[0]).when(translationService).getTranslation(Mockito.<String>any());
@@ -360,18 +361,18 @@ public class ExpressionEditorViewImplTest {
         final Transform transform = transformArgumentCaptor.getValue();
 
         assertEquals(ExpressionEditorViewImpl.VP_SCALE,
-                     transform.getScaleX(),
-                     0.0);
+                transform.getScaleX(),
+                0.0);
         assertEquals(ExpressionEditorViewImpl.VP_SCALE,
-                     transform.getScaleY(),
-                     0.0);
+                transform.getScaleY(),
+                0.0);
 
         verify(gridPanel).addKeyDownHandler(any(BaseGridWidgetKeyboardHandler.class));
         verify(gridPanelContainer).clear();
         verify(gridPanelContainer).setWidget(gridPanel);
 
         verify(view, times(7)).addKeyboardOperation(any(BaseGridWidgetKeyboardHandler.class),
-                                                    keyboardOperationArgumentCaptor.capture());
+                keyboardOperationArgumentCaptor.capture());
         final List<KeyboardOperation> operations = keyboardOperationArgumentCaptor.getAllValues();
         assertThat(operations.get(0)).isInstanceOf(KeyboardOperationEditCell.class);
         assertThat(operations.get(1)).isInstanceOf(KeyboardOperationEscapeGridCell.class);
@@ -426,9 +427,9 @@ public class ExpressionEditorViewImplTest {
         final Optional<HasName> hasName = Optional.empty();
 
         view.setExpression(NODE_UUID,
-                           hasExpression,
-                           hasName,
-                           false);
+                hasExpression,
+                hasName,
+                false);
 
         verify(gridLayer).add(expressionContainerArgumentCaptor.capture());
         final ExpressionContainerGrid expressionContainer = (ExpressionContainerGrid) expressionContainerArgumentCaptor.getValue();
@@ -440,9 +441,9 @@ public class ExpressionEditorViewImplTest {
         final Optional<HasName> hasName = Optional.empty();
 
         view.setExpression(NODE_UUID,
-                           hasExpression,
-                           hasName,
-                           true);
+                hasExpression,
+                hasName,
+                true);
 
         verify(gridLayer).add(expressionContainerArgumentCaptor.capture());
         final ExpressionContainerGrid expressionContainer = (ExpressionContainerGrid) expressionContainerArgumentCaptor.getValue();
@@ -458,9 +459,9 @@ public class ExpressionEditorViewImplTest {
         final Optional<HasName> hasName = Optional.of(hasNameMock);
 
         view.setExpression(NODE_UUID,
-                           hasExpression,
-                           hasName,
-                           false);
+                hasExpression,
+                hasName,
+                false);
 
         verify(expressionName).setTextContent(NAME);
     }
@@ -470,9 +471,9 @@ public class ExpressionEditorViewImplTest {
         final Optional<HasName> hasName = Optional.empty();
 
         view.setExpression(NODE_UUID,
-                           hasExpression,
-                           hasName,
-                           false);
+                hasExpression,
+                hasName,
+                false);
 
         verify(expressionName, never()).setTextContent(any(String.class));
     }
@@ -484,9 +485,9 @@ public class ExpressionEditorViewImplTest {
         when(hasExpression.getExpression()).thenReturn(expression);
 
         view.setExpression(NODE_UUID,
-                           hasExpression,
-                           hasName,
-                           false);
+                hasExpression,
+                hasName,
+                false);
 
         verify(expressionType).setTextContent(LITERAL_EXPRESSION.getText());
     }
@@ -496,9 +497,9 @@ public class ExpressionEditorViewImplTest {
         final Optional<HasName> hasName = Optional.empty();
 
         view.setExpression(NODE_UUID,
-                           hasExpression,
-                           hasName,
-                           false);
+                hasExpression,
+                hasName,
+                false);
 
         verify(expressionType).setTextContent("<" + UNDEFINED_EXPRESSION_DEFINITION_NAME + ">");
     }
@@ -530,9 +531,9 @@ public class ExpressionEditorViewImplTest {
     public void testEditingExpression() {
         final Optional<HasName> hasName = Optional.of(HasName.NOP);
         view.setExpression(NODE_UUID,
-                           hasExpression,
-                           hasName,
-                           false);
+                hasExpression,
+                hasName,
+                false);
 
         verify(view).setExpressionNameText(hasName);
     }
@@ -719,9 +720,9 @@ public class ExpressionEditorViewImplTest {
 
         verify(gridCache).removeExpressionGrid(NODE_UUID);
         verify(expressionContainerGrid).setExpression(NODE_UUID,
-                                                      hasExpression,
-                                                      hasName,
-                                                      false);
+                hasExpression,
+                hasName,
+                false);
     }
 
     @Test
@@ -800,7 +801,7 @@ public class ExpressionEditorViewImplTest {
         final String uuid = "someUuid";
         final DomainObject domainObject = mock(DomainObject.class);
 
-        doReturn(false).when(view).innerExpressionMatches(uuid);
+        doReturn(false).when(view).currentDomainObjectMatches(uuid);
         doReturn(false).when(view).businessKnowledgeModelMatches(uuid);
         doReturn(domainObject).when(view).findDomainObject(uuid);
 
@@ -815,7 +816,8 @@ public class ExpressionEditorViewImplTest {
         final String uuid = "someUuid";
         final BusinessKnowledgeModel bkm = mock(BusinessKnowledgeModel.class);
 
-        doReturn(false).when(view).innerExpressionMatches(uuid);
+        doReturn(false).when(view).currentDomainObjectMatches(uuid);
+        doReturn(false).when(view).innerExpressionMatches(eq(uuid));
         doReturn(true).when(view).businessKnowledgeModelMatches(uuid);
         doReturn(bkm).when(view).getBusinessKnowledgeModel();
 
@@ -829,7 +831,7 @@ public class ExpressionEditorViewImplTest {
 
         final String uuid = "someUuid";
 
-        doReturn(true).when(view).innerExpressionMatches(uuid);
+        doReturn(true).when(view).currentDomainObjectMatches(uuid);
 
         final DomainObject foundDomainObject = view.findDomainObject(uuid);
 
@@ -854,6 +856,7 @@ public class ExpressionEditorViewImplTest {
 
         when(expression.findDomainObject(uuid)).thenReturn(Optional.empty());
         when(hasExpression.getExpression()).thenReturn(expression);
+        doReturn(false).when(view).innerExpressionMatches(uuid);
 
         final DomainObject domainObject = view.findDomainObjectInCurrentExpression(uuid);
 
@@ -876,5 +879,42 @@ public class ExpressionEditorViewImplTest {
         verify(expression).findDomainObject(uuid);
         assertFalse(result instanceof NOPDomainObject);
         assertEquals(domainObject, result);
+    }
+
+    @Test
+    public void testInnerExpressionMatches() {
+
+        final String uuid = "uuid";
+        final Id id = new Id(uuid);
+        final Expression expression = mock(Expression.class);
+
+        when(expression.getId()).thenReturn(id);
+        when(hasExpression.getExpression()).thenReturn(expression);
+
+        assertTrue(view.innerExpressionMatches(uuid));
+    }
+
+    @Test
+    public void testInnerExpressionMatches_WhenDoesNot() {
+
+        final String uuid = "uuid";
+        final Id id = new Id(uuid);
+        final Expression expression = mock(Expression.class);
+
+        when(expression.getId()).thenReturn(id);
+        when(hasExpression.getExpression()).thenReturn(expression);
+
+        assertFalse(view.innerExpressionMatches("anotherUuid"));
+    }
+
+    @Test
+    public void testInnerExpressionMatches_WhenExpressionIsNull() {
+
+        final String uuid = "uuid";
+        final Id id = new Id(uuid);
+
+        when(hasExpression.getExpression()).thenReturn(null);
+
+        assertFalse(view.innerExpressionMatches(uuid));
     }
 }
