@@ -21,7 +21,6 @@ import {
   KogitoEditorChannelApi,
   KogitoEditorEnvelopeApi,
 } from "../../api";
-import { getChannelKeyboardEvent } from "@kie-tools-core/keyboard-shortcuts/dist/channel";
 import { useGuidedTourPositionProvider } from "@kie-tools-core/guided-tour/dist/channel";
 import type * as CSS from "csstype";
 import * as React from "react";
@@ -32,7 +31,6 @@ import { EmbeddedEditorChannelApiImpl } from "./EmbeddedEditorChannelApiImpl";
 import { EnvelopeServer } from "@kie-tools-core/envelope-bus/dist/channel";
 import { useConnectedEnvelopeServer } from "@kie-tools-core/envelope-bus/dist/hooks";
 import { getEditorIframeProps } from "../../channel/editorIframeProps";
-import { ChannelKeyboardEvent } from "@kie-tools-core/keyboard-shortcuts/dist/api";
 
 type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 
@@ -153,7 +151,15 @@ const RefForwardingEmbeddedEditor: React.ForwardRefRenderFunction<EmbeddedEditor
   // Forward keyboard events to the EditorEnvelope
   const onKeyDown = useCallback(
     (envelopeServer: EnvelopeServer<KogitoEditorChannelApi, KogitoEditorEnvelopeApi>, ke: React.KeyboardEvent) => {
-      const channelKeyboardEvent = getChannelKeyboardEvent(ke);
+      const channelKeyboardEvent = {
+        altKey: ke.altKey,
+        ctrlKey: ke.ctrlKey,
+        shiftKey: ke.shiftKey,
+        metaKey: ke.metaKey,
+        code: ke.code,
+        type: ke.type,
+        channelOriginalTargetTagName: (ke.target as HTMLElement)?.tagName,
+      };
       console.debug(`New keyboard event (${JSON.stringify(channelKeyboardEvent)})!`);
       envelopeServer.envelopeApi.notifications.kogitoKeyboardShortcuts_channelKeyboardEvent.send(channelKeyboardEvent);
     },
