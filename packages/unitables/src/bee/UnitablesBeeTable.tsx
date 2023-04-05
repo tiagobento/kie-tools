@@ -337,6 +337,14 @@ function UnitablesBeeTableCell({
       if (e.key.toLowerCase() === "tab") {
         submitRow?.(containerCellCoordinates?.rowIndex ?? 0);
         setEditingCell(false);
+        if (isEnumField) {
+          setIsSelectFieldOpen((prev) => {
+            if (prev) {
+              cellRef.current?.getElementsByTagName("button")?.[0]?.click();
+            }
+            return false;
+          });
+        }
         return;
       }
 
@@ -346,6 +354,14 @@ function UnitablesBeeTableCell({
         onFieldChange(previousFieldInput);
         cellRef.current?.focus();
         setEditingCell(false);
+        if (isEnumField) {
+          setIsSelectFieldOpen((prev) => {
+            if (prev) {
+              cellRef.current?.getElementsByTagName("button")?.[0]?.click();
+            }
+            return false;
+          });
+        }
         return;
       }
 
@@ -353,8 +369,7 @@ function UnitablesBeeTableCell({
       if (e.key.toLowerCase() === "enter") {
         e.stopPropagation();
         if (isEnumField) {
-          const buttonField = cellRef.current?.getElementsByTagName("button");
-          buttonField?.[0]?.click();
+          cellRef.current?.getElementsByTagName("button")?.[0]?.click();
           setIsSelectFieldOpen((prev) => {
             if (prev === true) {
               submitRow?.(containerCellCoordinates?.rowIndex ?? 0);
@@ -415,19 +430,24 @@ function UnitablesBeeTableCell({
 
   // if it's active focus on cell;
   useEffect(() => {
-    if (isActive && isSelectFieldOpen === true) {
-      setTimeout(() => {
-        const selectOptions = document.getElementsByName(fieldName)?.[0]?.getElementsByTagName("button");
-        selectOptions?.[0]?.focus();
-      }, 0);
-    }
-
-    if (isActive && !isEditing) {
-      cellRef.current?.focus();
+    if (isActive) {
+      if (isEnumField) {
+        if (isSelectFieldOpen) {
+          setTimeout(() => {
+            const selectOptions = document.getElementsByName(fieldName)?.[0]?.getElementsByTagName("button");
+            selectOptions?.[0]?.focus();
+          }, 0);
+        } else {
+          cellRef.current?.focus();
+        }
+      }
+      if (!isEditing) {
+        cellRef.current?.focus();
+      }
     } else if (!isActive && !isEditing) {
       submitRow(containerCellCoordinates?.rowIndex ?? 0);
     }
-  }, [containerCellCoordinates?.rowIndex, fieldName, isActive, isEditing, isSelectFieldOpen, submitRow]);
+  }, [containerCellCoordinates?.rowIndex, fieldName, isActive, isEditing, isEnumField, isSelectFieldOpen, submitRow]);
 
   useEffect(() => {
     console.log(
