@@ -16,13 +16,26 @@
 
 type DmnSchemaDefinitions = "InputSet" | "OutputSet";
 
+export enum X_DMN_TYPE {
+  X_DMN_TYPE_ANY = "FEEL:Any",
+  X_DMN_TYPE_BOOLEAN = "FEEL:boolean",
+  X_DMN_TYPE_CONTEXT = "FEEL:context",
+  X_DMN_TYPE_DATE = "FEEL:date",
+  X_DMN_TYPE_DATE_AND_TIME = "FEEL:date and time",
+  X_DMN_TYPE_DATE_AND_TIME_DURATION = "FEEL:date and time duration",
+  X_DMN_TYPE_NUMBER = "FEEL:number",
+  X_DMN_TYPE_STRING = "FEEL:string",
+  X_DMN_TYPE_TIME = "FEEL:time",
+  X_DMN_TYPE_YEARS_AND_MONTHS_DURATION = "FEEL:years and months duration",
+}
+
 export interface DmnInputFieldProperties {
   $ref?: string;
   type?: string;
   placeholder?: string;
   title?: string;
   format?: string;
-  "x-dmn-type"?: string;
+  "x-dmn-type"?: X_DMN_TYPE | string;
   items?: object[] & { properties: object };
   properties?: DmnInputFieldProperties[];
 }
@@ -32,7 +45,7 @@ export interface DmnSchemaDefitionProperties {
   properties: Record<string, DmnInputFieldProperties>;
   required?: string[];
   "x-dmn-descriptions": object;
-  "x-dmn-type"?: string;
+  "x-dmn-type"?: X_DMN_TYPE | string;
 }
 
 // JSON schema returned from extended-services /schema/form;
