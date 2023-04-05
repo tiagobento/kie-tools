@@ -277,15 +277,13 @@ function UnitablesBeeTableCell({
     setValue,
     useCallback(() => `${fieldInput ?? ""}`, [fieldInput])
   );
-  const { mutateSelection, resetSelectionAt } = useBeeTableSelectionDispatch();
-
-  const columnCountCallback = useCallback(() => columnCount, [columnCount]);
+  const { mutateSelection } = useBeeTableSelectionDispatch();
 
   const navigateVertically = useCallback(
     (args: { isShiftPressed: boolean }) => {
       mutateSelection({
         part: SelectionPart.ActiveCell,
-        columnCount: columnCountCallback,
+        columnCount: () => columnCount,
         rowCount,
         deltaColumns: 0,
         deltaRows: args.isShiftPressed ? -1 : 1,
@@ -293,14 +291,14 @@ function UnitablesBeeTableCell({
         keepInsideSelection: true,
       });
     },
-    [mutateSelection, rowCount, columnCountCallback]
+    [mutateSelection, rowCount, columnCount]
   );
 
   const setEditingCell = useCallback(
     (isEditing: boolean) => {
       mutateSelection({
         part: SelectionPart.ActiveCell,
-        columnCount: columnCountCallback,
+        columnCount: () => columnCount,
         rowCount,
         deltaColumns: 0,
         deltaRows: 0,
@@ -308,7 +306,7 @@ function UnitablesBeeTableCell({
         keepInsideSelection: true,
       });
     },
-    [mutateSelection, rowCount, columnCountCallback]
+    [mutateSelection, rowCount, columnCount]
   );
 
   const [previousValue, setPreviousValue] = useState(fieldInput);
@@ -328,10 +326,10 @@ function UnitablesBeeTableCell({
 
       // ESC
       if (e.key.toLowerCase() === "escape") {
+        e.stopPropagation();
         submitPreviousRow?.(containerCellCoordinates?.rowIndex ?? 0);
         onFieldChange(previousValue);
-        cellRef.current?.getElementsByTagName("input")?.[0]?.blur();
-        // resetSelectionAt(undefined);
+        cellRef.current?.focus();
         setEditingCell(false);
         return;
       }
@@ -397,7 +395,7 @@ function UnitablesBeeTableCell({
   }, [containerCellCoordinates?.columnIndex, containerCellCoordinates?.rowIndex, isActive, isEditing]);
 
   return (
-    <div tabIndex={-1} ref={cellRef} onKeyDown={onKeyDown}>
+    <div style={{ outline: "none" }} tabIndex={-1} ref={cellRef} onKeyDown={onKeyDown}>
       <AutoField
         key={joinedName + autoFieldKey}
         name={joinedName}
