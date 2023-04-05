@@ -21,7 +21,7 @@ import {
   KogitoEditorChannelApi,
   KogitoEditorEnvelopeApi,
 } from "../../api";
-import { useSyncedKeyboardEvents } from "@kie-tools-core/keyboard-shortcuts/dist/channel";
+import { getChannelKeyboardEvent } from "@kie-tools-core/keyboard-shortcuts/dist/channel";
 import { useGuidedTourPositionProvider } from "@kie-tools-core/guided-tour/dist/channel";
 import type * as CSS from "csstype";
 import * as React from "react";
@@ -32,6 +32,7 @@ import { EmbeddedEditorChannelApiImpl } from "./EmbeddedEditorChannelApiImpl";
 import { EnvelopeServer } from "@kie-tools-core/envelope-bus/dist/channel";
 import { useConnectedEnvelopeServer } from "@kie-tools-core/envelope-bus/dist/hooks";
 import { getEditorIframeProps } from "../../channel/editorIframeProps";
+import { ChannelKeyboardEvent } from "@kie-tools-core/keyboard-shortcuts/dist/api";
 
 type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 
@@ -62,6 +63,7 @@ export type EmbeddedEditorRef = EditorApi & {
   iframeRef: React.RefObject<HTMLIFrameElement>;
   getStateControl(): StateControl;
   getEnvelopeServer(): EnvelopeServer<KogitoEditorChannelApi, KogitoEditorEnvelopeApi>;
+  onKeyDown: (ke: React.KeyboardEvent) => void;
 };
 
 const containerStyles: CSS.Properties = {
@@ -149,7 +151,14 @@ const RefForwardingEmbeddedEditor: React.ForwardRefRenderFunction<EmbeddedEditor
   useGuidedTourPositionProvider(envelopeServer.envelopeApi, iframeRef);
 
   // Forward keyboard events to the EditorEnvelope
-  useSyncedKeyboardEvents(envelopeServer.envelopeApi);
+  const onKeyDown = useCallback(
+    (envelopeServer: EnvelopeServer<KogitoEditorChannelApi, KogitoEditorEnvelopeApi>, ke: React.KeyboardEvent) => {
+      const channelKeyboardEvent = getChannelKeyboardEvent(ke);
+      console.debug(`New keyboard event (${JSON.stringify(channelKeyboardEvent)})!`);
+      envelopeServer.envelopeApi.notifications.kogitoKeyboardShortcuts_channelKeyboardEvent.send(channelKeyboardEvent);
+    },
+    []
+  );
 
   //Forward reference methods
   useImperativeHandle(
@@ -177,9 +186,10 @@ const RefForwardingEmbeddedEditor: React.ForwardRefRenderFunction<EmbeddedEditor
           ),
         validate: () => envelopeServer.envelopeApi.requests.kogitoEditor_validate(),
         setTheme: (theme) => Promise.resolve(envelopeServer.shared.kogitoEditor_theme.set(theme)),
+        onKeyDown: (ke: React.KeyboardEvent) => onKeyDown(envelopeServer, ke),
       };
     },
-    [props.isReady, isReady, stateControl, envelopeServer]
+    [props.isReady, isReady, stateControl, envelopeServer, onKeyDown]
   );
 
   return (
