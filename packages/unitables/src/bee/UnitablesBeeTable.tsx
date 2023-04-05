@@ -43,6 +43,7 @@ import getObjectValueByPath from "lodash/get";
 import { useUnitablesContext, useUnitablesRow } from "../UnitablesContext";
 import { getOperatingSystem, OperatingSystem } from "@kie-tools-core/operating-system";
 import { UnitablesRowApi } from "../UnitablesRow";
+import { X_DMN_TYPE } from "@kie-tools/extended-services-api";
 
 export const UNITABLES_COLUMN_MIN_WIDTH = 150;
 
@@ -224,6 +225,13 @@ function getColumnAccessor(c: UnitablesColumnType) {
   return `field-${c.joinedName}`;
 }
 
+enum FieldType {
+  STRING_FIELD,
+  NUMBER_FIELD,
+  SELECT_FIELD,
+  BOOLEAN_FIELD,
+}
+
 function UnitablesBeeTableCell({
   joinedName,
   rowCount,
@@ -239,6 +247,15 @@ function UnitablesBeeTableCell({
   const { isBeeTableChange } = useUnitablesContext();
   const { submitRow, rowInputs } = useUnitablesRow(containerCellCoordinates?.rowIndex ?? 0);
   const fieldInput = useMemo(() => getObjectValueByPath(rowInputs, fieldName), [rowInputs, fieldName]);
+  const [isSelectFieldOpen, setIsSelectFieldOpen] = useState(false);
+  const [previousFieldInput, setPreviousInput] = useState(fieldInput);
+  const xDmnFieldType = useMemo(() => field?.["x-dmn-type"] ?? X_DMN_TYPE.X_DMN_TYPE_ANY, [field]);
+  const isEnumField = useMemo(() => !!field?.enum, [field]);
+
+  // keep previous updated;
+  useEffect(() => {
+    setPreviousInput(fieldInput);
+  }, [fieldInput]);
 
   // FIXME: Luiz - shouldn't have any reference to DMN!
   // TODO: Luiz - Fix: x-dmn-type from field property: Any, Undefined, string, number, ...;
@@ -309,14 +326,13 @@ function UnitablesBeeTableCell({
     [mutateSelection, rowCount, columnCount]
   );
 
-  const [previousFieldInput, setPreviousInput] = useState(fieldInput);
-  useEffect(() => {
-    setPreviousInput(fieldInput);
-  }, [fieldInput]);
-
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
       console.log("DIV KEYDOWN", e);
+      if (isEnumField && isEditing) {
+        e.stopPropagation();
+      }
+
       // TAB
       if (e.key.toLowerCase() === "tab") {
         submitRow?.(containerCellCoordinates?.rowIndex ?? 0);
@@ -336,15 +352,29 @@ function UnitablesBeeTableCell({
       // ENTER
       if (e.key.toLowerCase() === "enter") {
         e.stopPropagation();
+        if (isEnumField) {
+          const buttonField = cellRef.current?.getElementsByTagName("button");
+          buttonField?.[0]?.click();
+          setIsSelectFieldOpen((prev) => {
+            if (prev === true) {
+              submitRow?.(containerCellCoordinates?.rowIndex ?? 0);
+              setEditingCell(false);
+            } else {
+              setEditingCell(true);
+            }
+            return !prev;
+          });
+          return;
+        }
+
         if (!isEditing) {
           // TODO: Luiz - Add option to edit Select Field; Change to FormSelect component;
           const inputField = cellRef.current?.getElementsByTagName("input");
           if (inputField && inputField.length > 0) {
             inputField?.[0]?.focus();
+            setEditingCell(true);
+            return;
           }
-          submitRow?.(containerCellCoordinates?.rowIndex ?? 0);
-          setEditingCell(true);
-          return;
         }
         submitRow?.(containerCellCoordinates?.rowIndex ?? 0);
         setEditingCell(false);
@@ -355,31 +385,49 @@ function UnitablesBeeTableCell({
       // Normal editing;
       if (isEditModeTriggeringKey(e)) {
         e.stopPropagation();
+
         if (!isEditing) {
-          cellRef.current?.getElementsByTagName("input")?.[0]?.select();
+          // handle checkbox field;
+          if (e.code.toLowerCase() === "space" && xDmnFieldType === X_DMN_TYPE.X_DMN_TYPE_BOOLEAN) {
+            cellRef.current?.getElementsByTagName("input")?.[0]?.click();
+            submitRow?.(containerCellCoordinates?.rowIndex ?? 0);
+            return;
+          } else {
+            cellRef.current?.getElementsByTagName("input")?.[0]?.select();
+          }
         }
+
         setEditingCell(true);
       }
     },
     [
+      xDmnFieldType,
       containerCellCoordinates?.rowIndex,
       isEditing,
+      isEnumField,
       navigateVertically,
-      setEditingCell,
-      submitRow,
       onFieldChange,
       previousFieldInput,
+      setEditingCell,
+      submitRow,
     ]
   );
 
   // if it's active focus on cell;
   useEffect(() => {
+    if (isActive && isSelectFieldOpen === true) {
+      setTimeout(() => {
+        const selectOptions = document.getElementsByName(fieldName)?.[0]?.getElementsByTagName("button");
+        selectOptions?.[0]?.focus();
+      }, 0);
+    }
+
     if (isActive && !isEditing) {
       cellRef.current?.focus();
     } else if (!isActive && !isEditing) {
       submitRow(containerCellCoordinates?.rowIndex ?? 0);
     }
-  }, [isActive, isEditing, submitRow, containerCellCoordinates?.rowIndex]);
+  }, [containerCellCoordinates?.rowIndex, fieldName, isActive, isEditing, isSelectFieldOpen, submitRow]);
 
   useEffect(() => {
     console.log(
