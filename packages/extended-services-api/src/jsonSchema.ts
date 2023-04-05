@@ -17,16 +17,16 @@
 type DmnSchemaDefinitions = "InputSet" | "OutputSet";
 
 export enum X_DMN_TYPE {
-  X_DMN_TYPE_ANY = "FEEL:Any",
-  X_DMN_TYPE_BOOLEAN = "FEEL:boolean",
-  X_DMN_TYPE_CONTEXT = "FEEL:context",
-  X_DMN_TYPE_DATE = "FEEL:date",
-  X_DMN_TYPE_DATE_AND_TIME = "FEEL:date and time",
-  X_DMN_TYPE_DATE_AND_TIME_DURATION = "FEEL:date and time duration",
-  X_DMN_TYPE_NUMBER = "FEEL:number",
-  X_DMN_TYPE_STRING = "FEEL:string",
-  X_DMN_TYPE_TIME = "FEEL:time",
-  X_DMN_TYPE_YEARS_AND_MONTHS_DURATION = "FEEL:years and months duration",
+  ANY = "FEEL:Any",
+  BOOLEAN = "FEEL:boolean",
+  CONTEXT = "FEEL:context",
+  DATE = "FEEL:date",
+  DATE_AND_TIME = "FEEL:date and time",
+  DATE_AND_TIME_DURATION = "FEEL:date and time duration",
+  NUMBER = "FEEL:number",
+  STRING = "FEEL:string",
+  TIME = "FEEL:time",
+  YEARS_AND_MONTHS_DURATION = "FEEL:years and months duration",
 }
 
 export interface DmnInputFieldProperties {

@@ -23,7 +23,7 @@ export function DmnAutoFieldProvider() {
   return (
     <AutoField.componentDetectorContext.Provider
       value={(props, uniforms) => {
-        if (props.field?.["x-dmn-type"] === X_DMN_TYPE.X_DMN_TYPE_CONTEXT) {
+        if (props.field?.["x-dmn-type"] === X_DMN_TYPE.CONTEXT) {
           return DmnFeelContextField;
         }
         return AutoField.defaultComponentDetector(props, uniforms);

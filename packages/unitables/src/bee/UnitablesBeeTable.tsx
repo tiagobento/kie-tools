@@ -249,7 +249,7 @@ function UnitablesBeeTableCell({
   const fieldInput = useMemo(() => getObjectValueByPath(rowInputs, fieldName), [rowInputs, fieldName]);
   const [isSelectFieldOpen, setIsSelectFieldOpen] = useState(false);
   const [previousFieldInput, setPreviousInput] = useState(fieldInput);
-  const xDmnFieldType = useMemo(() => field?.["x-dmn-type"] ?? X_DMN_TYPE.X_DMN_TYPE_ANY, [field]);
+  const xDmnFieldType = useMemo(() => field?.["x-dmn-type"] ?? X_DMN_TYPE.ANY, [field]);
   const isEnumField = useMemo(() => !!field?.enum, [field]);
 
   // keep previous updated;
@@ -403,7 +403,7 @@ function UnitablesBeeTableCell({
 
         if (!isEditing) {
           // handle checkbox field;
-          if (e.code.toLowerCase() === "space" && xDmnFieldType === X_DMN_TYPE.X_DMN_TYPE_BOOLEAN) {
+          if (e.code.toLowerCase() === "space" && xDmnFieldType === X_DMN_TYPE.BOOLEAN) {
             cellRef.current?.getElementsByTagName("input")?.[0]?.click();
             submitRow?.(containerCellCoordinates?.rowIndex ?? 0);
             return;

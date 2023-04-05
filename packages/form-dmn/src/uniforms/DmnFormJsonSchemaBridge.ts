@@ -43,8 +43,8 @@ export class DmnFormJsonSchemaBridge extends FormJsonSchemaBridge {
     if (fieldFormat === YEARS_AND_MONTHS_DURATION_FORMAT) {
       return String;
     }
-    if (type === X_DMN_TYPE.X_DMN_TYPE_CONTEXT) {
-      return X_DMN_TYPE.X_DMN_TYPE_CONTEXT;
+    if (type === X_DMN_TYPE.CONTEXT) {
+      return X_DMN_TYPE.CONTEXT;
     }
     return super.getType(name);
   }
@@ -61,7 +61,7 @@ export class DmnFormJsonSchemaBridge extends FormJsonSchemaBridge {
     if (field?.format === "time") {
       field.placeholder = "hh:mm:ss";
     }
-    if (field?.["x-dmn-type"] === X_DMN_TYPE.X_DMN_TYPE_CONTEXT) {
+    if (field?.["x-dmn-type"] === X_DMN_TYPE.CONTEXT) {
       field.placeholder = `{ "x": <value> }`;
     }
 
