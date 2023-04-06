@@ -44,7 +44,7 @@ export interface DmnSchemaDefitionProperties {
   type: string;
   properties: Record<string, DmnInputFieldProperties>;
   required?: string[];
-  "x-dmn-descriptions": object;
+  "x-dmn-descriptions"?: object;
   "x-dmn-type"?: X_DMN_TYPE | string;
 }
 
