@@ -165,7 +165,7 @@ export function UnitablesBeeTable({
                 (getObjectValueByPath(configs, insideProperty.joinedName) as UnitablesCellConfigs)?.width ??
                 insideProperty.width,
               setWidth: setColumnWidth(insideProperty.joinedName),
-              minWidth: UNITABLES_COLUMN_MIN_WIDTH,
+              minWidth: insideProperty.width,
             };
           }),
         };
@@ -178,7 +178,7 @@ export function UnitablesBeeTable({
           isRowIndexColumn: false,
           width: (getObjectValueByPath(configs, column.name) as UnitablesCellConfigs)?.width ?? column.width,
           setWidth: setColumnWidth(column.name),
-          minWidth: UNITABLES_COLUMN_MIN_WIDTH,
+          minWidth: column.width,
         };
       }
     });
