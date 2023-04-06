@@ -320,7 +320,7 @@ function UnitablesBeeTableCell({
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
       console.log("DIV KEYDOWN", e);
-      if (isEnumField && isEditing) {
+      if (isEditing) {
         e.stopPropagation();
       }
 
@@ -419,7 +419,7 @@ function UnitablesBeeTableCell({
     ]
   );
 
-  // if it's active focus on cell;
+  // if it's active should focus on cell;
   useEffect(() => {
     if (isActive) {
       if (isEnumField) {
