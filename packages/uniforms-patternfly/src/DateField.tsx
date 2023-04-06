@@ -15,6 +15,7 @@
  */
 
 import * as React from "react";
+import { useMemo } from "react";
 import { connectField, FieldProps } from "uniforms";
 import { TextInput, TextInputProps } from "@patternfly/react-core/dist/js/components/TextInput";
 import wrapField from "./wrapField";
@@ -42,32 +43,84 @@ const dateFormat = (value?: Date | string, type: DateFieldType = "datetime-local
   return value?.toISOString().slice(0, type === "datetime-local" ? -8 : -14);
 };
 
-const dateParse = (timestamp: number, onChange: DateFieldProps["onChange"]) => {
-  const date = new DateConstructor(timestamp);
-  if (date.getFullYear() < 10000) {
-    onChange(date);
-  } else if (isNaN(timestamp)) {
+const dateParse = (value: string, onChange: DateFieldProps["onChange"]) => {
+  const valueAsNumber = DateConstructor.parse(value);
+  if (isNaN(valueAsNumber)) {
+    // check if year is too big
+    const splitedValue = value.split("-");
+    if (splitedValue.length > 0) {
+      const year = parseInt(splitedValue[0]);
+      if (year > 10000) {
+        splitedValue[0] = `${Math.floor(year / 10)}`;
+        onChange(new DateConstructor(`${splitedValue.join("-")}Z`));
+        return;
+      }
+    }
     onChange(undefined);
+  } else {
+    const date = new DateConstructor(`${value}Z`);
+    if (date.getFullYear() < 10000) {
+      onChange(date);
+    } else {
+      onChange(date);
+    }
   }
 };
 
 function DateField({ onChange, ...props }: DateFieldProps) {
+  const isInvalid = useMemo(() => {
+    const date = props.value;
+    if (date) {
+      if (props.min) {
+        const minDate = new Date(props.min);
+        if (minDate.toString() === "Invalid Date") {
+          return false;
+        } else if (date < minDate) {
+          return `Should be after ${minDate.toISOString()}`;
+        }
+      }
+      if (props.max) {
+        const maxDate = new Date(props.max);
+        if (maxDate.toString() === "Invalid Date") {
+          return false;
+        } else if (date > maxDate) {
+          return `Should be before ${maxDate.toISOString()}`;
+        }
+      }
+    }
+    return false;
+  }, [props.value, props.min, props.max]);
+
   return wrapField(
     props as any,
-    <TextInput
-      data-testid={"date-field"}
-      id={props.id}
-      isDisabled={props.disabled}
-      name={props.name}
-      placeholder={props.placeholder}
-      ref={props.inputRef}
-      type="datetime-local"
-      onChange={(value) => {
-        const valueAsNumber = DateConstructor.parse(value);
-        props.disabled || dateParse(valueAsNumber, onChange);
-      }}
-      value={dateFormat(props.value, props.type) ?? ""}
-    />
+    <>
+      <TextInput
+        id={props.id}
+        aria-label={"uniforms date field"}
+        data-testid={"date-field"}
+        isDisabled={props.disabled}
+        name={props.name}
+        placeholder={props.placeholder}
+        ref={props.inputRef}
+        type="datetime-local"
+        onChange={(value) => {
+          props.disabled || dateParse(value, onChange);
+        }}
+        value={dateFormat(props.value, props.type) ?? ""}
+      />
+      {isInvalid && (
+        <div
+          id={`${props.id}-invalid-date-time`}
+          style={{
+            fontSize: "0.875rem",
+            color: "#c9190b",
+            marginTop: "0.25rem",
+          }}
+        >
+          {isInvalid}
+        </div>
+      )}
+    </>
   );
 }
 
