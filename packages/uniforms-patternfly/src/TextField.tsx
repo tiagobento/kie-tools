@@ -16,9 +16,7 @@
 
 import * as React from "react";
 import { Ref, useCallback, useMemo } from "react";
-import { DatePicker } from "@patternfly/react-core/dist/js/components/DatePicker";
 import { TextInput, TextInputProps } from "@patternfly/react-core/dist/js/components/TextInput";
-import { TimePicker } from "@patternfly/react-core/dist/js/components/TimePicker";
 import { connectField, filterDOMProps } from "uniforms";
 import wrapField from "./wrapField";
 
@@ -99,88 +97,68 @@ function TextField({ onChange, ...props }: TextFieldProps) {
     }
     return false;
   }, [props.type, props.field, props.value, props.max, props.min, parseTime]);
-
-  const onDateChange = useCallback(
-    (event: React.FormEvent<HTMLInputElement>, value: string) => {
-      onChange(value);
-    },
-    [onChange]
-  );
-
-  const onTimeChange = useCallback(
-    (event: React.FormEvent<HTMLInputElement>, time: string) => {
-      const parsedTime = time.split(":");
-      if (parsedTime.length === 2) {
-        onChange([...parsedTime, "00"].join(":"));
-      } else {
-        onChange(time);
-      }
-    },
-    [onChange]
-  );
-
   const { helperText, ...withoutHelperTextProps } = props;
+
+  const fieldType = useMemo(() => {
+    if (props.field?.format === "date" || props.type === "date") {
+      return "date";
+    }
+    if (props.field?.format === "time" || props.type === "time") {
+      return "time";
+    }
+    return "text";
+  }, [props.field?.format, props.type]);
+
+  const onTextInputChange = useCallback(
+    (value, event) => {
+      if (fieldType === "time" && value !== "") {
+        onChange(`${value}:00`);
+        return;
+      }
+      onChange((event.target as any)?.value);
+    },
+    [fieldType, onChange]
+  );
 
   return wrapField(
     props,
-    props.type === "date" || props.field?.format === "date" ? (
-      <>
-        <DatePicker
-          data-testid={"text-field-date-picker"}
-          name={props.name}
-          isDisabled={props.disabled}
-          onChange={onDateChange}
-          value={props.value ?? ""}
-          {...filterDOMProps(props)}
-        />
-        {isDateInvalid && (
-          <div
-            style={{
-              fontSize: "0.875rem",
-              color: "#c9190b",
-              marginTop: "0.25rem",
-            }}
-          >
-            {isDateInvalid}
-          </div>
-        )}
-      </>
-    ) : props.type === "time" || props.field?.format === "time" ? (
-      <>
-        <TimePicker
-          data-testid={"text-field-time-picker"}
-          name={props.name}
-          isDisabled={props.disabled}
-          onChange={onTimeChange}
-          is24Hour
-          value={props.value ?? ""}
-        />
-        {isTimeInvalid && (
-          <div
-            style={{
-              fontSize: "0.875rem",
-              color: "#c9190b",
-              marginTop: "0.25rem",
-            }}
-          >
-            {isTimeInvalid}
-          </div>
-        )}
-      </>
-    ) : (
+    <>
       <TextInput
+        aria-label={"uniforms text field"}
         data-testid={"text-field"}
         name={props.name}
         isDisabled={props.disabled}
         validated={props.error ? "error" : "default"}
-        onChange={(value, event) => onChange((event.target as any)?.value)}
+        onChange={onTextInputChange}
         placeholder={props.placeholder}
         ref={props.inputRef}
-        type={props.type ?? "text"}
+        type={fieldType}
         value={props.value ?? ""}
         {...filterDOMProps(withoutHelperTextProps)}
       />
-    )
+      {fieldType === "time" && isTimeInvalid && (
+        <div
+          style={{
+            fontSize: "0.875rem",
+            color: "#c9190b",
+            marginTop: "0.25rem",
+          }}
+        >
+          {isTimeInvalid}
+        </div>
+      )}
+      {fieldType === "date" && isDateInvalid && (
+        <div
+          style={{
+            fontSize: "0.875rem",
+            color: "#c9190b",
+            marginTop: "0.25rem",
+          }}
+        >
+          {isDateInvalid}
+        </div>
+      )}
+    </>
   );
 }
 
