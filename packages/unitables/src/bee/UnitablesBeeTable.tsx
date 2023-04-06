@@ -41,7 +41,6 @@ import { useField } from "uniforms";
 import { AUTO_ROW_ID } from "../uniforms/UnitablesJsonSchemaBridge";
 import getObjectValueByPath from "lodash/get";
 import { useUnitablesContext, useUnitablesRow } from "../UnitablesContext";
-import { getOperatingSystem, OperatingSystem } from "@kie-tools-core/operating-system";
 import { UnitablesRowApi } from "../UnitablesRow";
 import { X_DMN_TYPE } from "@kie-tools/extended-services-api";
 
