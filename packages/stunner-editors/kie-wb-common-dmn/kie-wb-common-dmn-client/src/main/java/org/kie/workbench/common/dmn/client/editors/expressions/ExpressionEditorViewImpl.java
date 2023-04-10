@@ -428,11 +428,6 @@ public class ExpressionEditorViewImpl implements ExpressionEditorView {
                 .orElse(Optional.empty());
     }
 
-        final DomainObjectSelectionEvent event = new DomainObjectSelectionEvent(sessionManager.getCurrentSession().getCanvasHandler(),
-                                                                                domainObject);
-        this.domainObjectSelectionEvent.fire(event);
-    }
-
     private Optional<CanvasHandler> getCanvasHandler() {
         final Optional<ClientSession> session = Optional.ofNullable(sessionManager.getCurrentSession());
         return session.map(ClientSession::getCanvasHandler);
