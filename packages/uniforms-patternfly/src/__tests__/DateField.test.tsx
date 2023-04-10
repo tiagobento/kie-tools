@@ -78,11 +78,12 @@ test("<DateField> - renders a input with correct value (model)", () => {
   const now = new Date();
   render(usingUniformsContext(<DateField name="x" />, { x: { type: Date } }, { model: { x: now } }));
 
+  const stringfyDate = now.toISOString().split(":").slice(0, 2).join(":");
   expect(screen.getByTestId("date-field")).toBeInTheDocument();
-  expect((screen.getByTestId("date-field") as HTMLInputElement).value).toEqual(`${now.toISOString()}`);
+  expect((screen.getByTestId("date-field") as HTMLInputElement).value).toEqual(`${stringfyDate}`);
 });
 
-test("<DateField> - renders a input which correctly reacts on change (DatePicker)", () => {
+test("<DateField> - renders a input which correctly reacts on change", () => {
   const onChange = jest.fn();
 
   const now = "2000-04-04";
@@ -91,10 +92,10 @@ test("<DateField> - renders a input which correctly reacts on change (DatePicker
   const input = screen.getByTestId("date-field") as HTMLInputElement;
   fireEvent.change(input, { target: { value: "2000-04-04T10:20" } });
 
-  expect(onChange).toHaveBeenLastCalledWith("x", "2000-04-04T10:20");
+  expect(onChange).toHaveBeenLastCalledWith("x", new Date("2000-04-04T10:20:00.000Z"));
 });
 
-test("<DateField> - renders a input which correctly reacts on change (empty value) (DatePicker)", () => {
+test("<DateField> - renders a input which correctly reacts on change (empty value)", () => {
   const onChange = jest.fn();
   const dateValue = new Date("2000-04-04");
 
@@ -106,7 +107,7 @@ test("<DateField> - renders a input which correctly reacts on change (empty valu
   expect(onChange).toHaveBeenLastCalledWith("x", undefined);
 });
 
-test("<DateField> - renders a input which correctly reacts on change (DatePicker - empty)", () => {
+test("<DateField> - renders a input which correctly reacts on change (empty)", () => {
   const onChange = jest.fn();
 
   render(usingUniformsContext(<DateField name="x" onChange={onChange} />, { x: { type: Date } }));
@@ -117,7 +118,7 @@ test("<DateField> - renders a input which correctly reacts on change (DatePicker
   expect(onChange).not.toHaveBeenCalled();
 });
 
-test("<DateField> - renders a input which correctly reacts on change (TimePicker - invalid)", () => {
+test("<DateField> - renders a input which correctly reacts on change (invalid)", () => {
   const onChange = jest.fn();
 
   const now = "10:00";
@@ -129,7 +130,7 @@ test("<DateField> - renders a input which correctly reacts on change (TimePicker
   expect(onChange).not.toHaveBeenCalled();
 });
 
-test("<DateField> - renders a input which correctly reacts on change (TimePicker - valid)", () => {
+test("<DateField> - renders a input which correctly reacts on change (valid)", () => {
   const onChange = jest.fn();
 
   const date = "2000-04-04";
@@ -141,7 +142,7 @@ test("<DateField> - renders a input which correctly reacts on change (TimePicker
   const input = screen.getByTestId("date-field") as HTMLInputElement;
   fireEvent.change(input, { target: { value: `${date}T${time}` } });
 
-  expect(onChange).toHaveBeenLastCalledWith("x", `${date}T${time}:00.000Z`);
+  expect(onChange).toHaveBeenLastCalledWith("x", new Date(`${date}T${time}:00.000Z`));
 });
 
 test("<DateField> - test max property - valid", () => {
