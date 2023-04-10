@@ -35,31 +35,38 @@ export type TextFieldProps = {
 
 const timeRgx = /^([0-1]?[0-9]|2[0-3]):([0-5][0-9])(:[0-5][0-9])?/;
 
-function TextField({ onChange, ...props }: TextFieldProps) {
+function TextField({ onChange, helperText, ...props }: TextFieldProps) {
   const isDateInvalid = useMemo(() => {
-    if (typeof props.value === "string" && (props.type === "date" || props.field?.format === "date")) {
-      const date = new Date(props.value);
-      if (typeof props.min === "string") {
-        const minDate = new Date(props.min);
-        if (minDate.toString() === "Invalid Date") {
-          return false;
-        } else if (date.toISOString() < minDate.toISOString()) {
-          return props.errorMessage && props.errorMessage.trim().length > 0
-            ? props.errorMessage
-            : `Should be after ${props.min}`;
-        }
-      }
-      if (typeof props.max === "string") {
-        const maxDate = new Date(props.max);
-        if (maxDate.toString() === "Invalid Date") {
-          return false;
-        } else if (date.toISOString() > maxDate.toISOString()) {
-          return props.errorMessage && props.errorMessage.trim().length > 0
-            ? props.errorMessage
-            : `Should be before ${props.max}`;
-        }
+    if (typeof props.value !== "string") {
+      return false;
+    }
+
+    if (props.type !== "date" && props.field?.format !== "date") {
+      return false;
+    }
+
+    const date = new Date(props.value);
+    if (typeof props.min === "string") {
+      const minDate = new Date(props.min);
+      if (minDate.toString() === "Invalid Date") {
+        return false;
+      } else if (date.toISOString() < minDate.toISOString()) {
+        return props.errorMessage && props.errorMessage.trim().length > 0
+          ? props.errorMessage
+          : `Should be after ${props.min}`;
       }
     }
+    if (typeof props.max === "string") {
+      const maxDate = new Date(props.max);
+      if (maxDate.toString() === "Invalid Date") {
+        return false;
+      } else if (date.toISOString() > maxDate.toISOString()) {
+        return props.errorMessage && props.errorMessage.trim().length > 0
+          ? props.errorMessage
+          : `Should be before ${props.max}`;
+      }
+    }
+
     return false;
   }, [props.value, props.max, props.min, props.errorMessage, props.type, props.field]);
 
@@ -74,30 +81,34 @@ function TextField({ onChange, ...props }: TextFieldProps) {
   }, []);
 
   const isTimeInvalid = useMemo(() => {
-    if (typeof props.value === "string" && (props.type === "time" || props.field?.format === "time")) {
-      const parsedTime = parseTime(props.value);
-      if (parsedTime && typeof props.min === "string" && timeRgx.exec(props.min)) {
-        const parsedMin = parseTime(props.min)!;
-        if (parsedTime < parsedMin) {
-          if (parsedMin.getUTCMinutes() < 10) {
-            return `Should be after ${parsedMin.getUTCHours()}:0${parsedMin.getUTCMinutes()}`;
-          }
-          return `Should be after ${parsedMin.getUTCHours()}:${parsedMin.getUTCMinutes()}`;
+    if (typeof props.value !== "string") {
+      return false;
+    }
+
+    if (props.type !== "time" && props.field?.format !== "time") {
+      return false;
+    }
+
+    const parsedTime = parseTime(props.value ?? "");
+    if (parsedTime && typeof props.min === "string" && timeRgx.exec(props.min)) {
+      const parsedMin = parseTime(props.min)!;
+      if (parsedTime < parsedMin) {
+        if (parsedMin.getUTCMinutes() < 10) {
+          return `Should be after ${parsedMin.getUTCHours()}:0${parsedMin.getUTCMinutes()}`;
         }
-      }
-      if (parsedTime && typeof props.max === "string" && timeRgx.exec(props.max)) {
-        const parsedMax = parseTime(props.max)!;
-        if (parsedTime > parsedMax) {
-          if (parsedMax.getUTCMinutes() < 10) {
-            return `Should be before ${parsedMax.getUTCHours()}:0${parsedMax.getUTCMinutes()}`;
-          }
-          return `Should be before ${parsedMax.getUTCHours()}:${parsedMax.getUTCMinutes()}`;
-        }
+        return `Should be after ${parsedMin.getUTCHours()}:${parsedMin.getUTCMinutes()}`;
       }
     }
-    return false;
+    if (parsedTime && typeof props.max === "string" && timeRgx.exec(props.max)) {
+      const parsedMax = parseTime(props.max)!;
+      if (parsedTime > parsedMax) {
+        if (parsedMax.getUTCMinutes() < 10) {
+          return `Should be before ${parsedMax.getUTCHours()}:0${parsedMax.getUTCMinutes()}`;
+        }
+        return `Should be before ${parsedMax.getUTCHours()}:${parsedMax.getUTCMinutes()}`;
+      }
+    }
   }, [props.type, props.field, props.value, props.max, props.min, parseTime]);
-  const { helperText, ...withoutHelperTextProps } = props;
 
   const fieldType = useMemo(() => {
     if (props.field?.format === "date" || props.type === "date") {
@@ -134,7 +145,7 @@ function TextField({ onChange, ...props }: TextFieldProps) {
         ref={props.inputRef}
         type={fieldType}
         value={props.value ?? ""}
-        {...filterDOMProps(withoutHelperTextProps)}
+        {...filterDOMProps(props)}
       />
       {fieldType === "time" && isTimeInvalid && (
         <div

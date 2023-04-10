@@ -46,7 +46,7 @@ const dateFormat = (value?: Date | string, type: DateFieldType = "datetime-local
 const dateParse = (value: string, onChange: DateFieldProps["onChange"]) => {
   const valueAsNumber = DateConstructor.parse(value);
   if (isNaN(valueAsNumber)) {
-    // check if year is too big
+    // Checking if year is too big
     const splitedValue = value.split("-");
     if (splitedValue.length > 0) {
       const year = parseInt(splitedValue[0]);
@@ -69,25 +69,27 @@ const dateParse = (value: string, onChange: DateFieldProps["onChange"]) => {
 
 function DateField({ onChange, ...props }: DateFieldProps) {
   const isInvalid = useMemo(() => {
-    const date = props.value;
-    if (date) {
-      if (props.min) {
-        const minDate = new Date(props.min);
-        if (minDate.toString() === "Invalid Date") {
-          return false;
-        } else if (date < minDate) {
-          return `Should be after ${minDate.toISOString()}`;
-        }
-      }
-      if (props.max) {
-        const maxDate = new Date(props.max);
-        if (maxDate.toString() === "Invalid Date") {
-          return false;
-        } else if (date > maxDate) {
-          return `Should be before ${maxDate.toISOString()}`;
-        }
+    if (!props.value) {
+      return false;
+    }
+
+    if (props.min) {
+      const minDate = new Date(props.min);
+      if (minDate.toString() === "Invalid Date") {
+        return false;
+      } else if (props.value < minDate) {
+        return `Should be after ${minDate.toISOString()}`;
       }
     }
+    if (props.max) {
+      const maxDate = new Date(props.max);
+      if (maxDate.toString() === "Invalid Date") {
+        return false;
+      } else if (props.value > maxDate) {
+        return `Should be before ${maxDate.toISOString()}`;
+      }
+    }
+
     return false;
   }, [props.value, props.min, props.max]);
 
