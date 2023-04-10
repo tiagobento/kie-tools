@@ -35,7 +35,7 @@ export type TextFieldProps = {
 
 const timeRgx = /^([0-1]?[0-9]|2[0-3]):([0-5][0-9])(:[0-5][0-9])?/;
 
-function TextField({ onChange, helperText, ...props }: TextFieldProps) {
+function TextField({ onChange, ...props }: TextFieldProps) {
   const isDateInvalid = useMemo(() => {
     if (typeof props.value !== "string") {
       return false;
@@ -122,14 +122,26 @@ function TextField({ onChange, helperText, ...props }: TextFieldProps) {
 
   const onTextInputChange = useCallback(
     (value, event) => {
-      if (fieldType === "time" && value !== "") {
-        onChange(`${value}:00`);
+      if (fieldType !== "time" || value === "") {
+        onChange((event.target as any)?.value);
         return;
       }
-      onChange((event.target as any)?.value);
+
+      // Time handler: Add seconds to be a valid time
+      onChange(`${value}:00`);
     },
     [fieldType, onChange]
   );
+
+  const value = useMemo(() => {
+    if (fieldType === "time" && props.value !== "") {
+      const splitedTime = props.value?.split(":");
+      if ((splitedTime?.length ?? 0) > 2) {
+        return splitedTime?.slice(0, 2)?.join(":");
+      }
+    }
+    return props.value ?? "";
+  }, [fieldType, props.value]);
 
   return wrapField(
     props,
@@ -144,7 +156,7 @@ function TextField({ onChange, helperText, ...props }: TextFieldProps) {
         placeholder={props.placeholder}
         ref={props.inputRef}
         type={fieldType}
-        value={props.value ?? ""}
+        value={value}
         {...filterDOMProps(props)}
       />
       {fieldType === "time" && isTimeInvalid && (
