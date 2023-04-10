@@ -152,7 +152,6 @@ export function UnitablesBeeTable({
           dataType: column.dataType,
           isRowIndexColumn: false,
           width: undefined,
-          minWidth: UNITABLES_COLUMN_MIN_WIDTH,
           columns: column.insideProperties.map((insideProperty) => {
             return {
               originalId: uuid + `field-${insideProperty.joinedName}`,
@@ -228,11 +227,8 @@ function UnitablesBeeTableCell({
   columnCount,
 }: BeeTableCellProps<ROWTYPE> & { joinedName: string; rowCount: number; columnCount: number }) {
   const [{ field, onChange: onFieldChange, name: fieldName }] = useField(joinedName, {});
-
   const cellRef = useRef<HTMLDivElement | null>(null);
-
   const [autoFieldKey, forceUpdate] = useReducer((x) => x + 1, 0);
-
   const { containerCellCoordinates } = useBeeTableCoordinates();
   const { isBeeTableChange } = useUnitablesContext();
   const { submitRow, rowInputs } = useUnitablesRow(containerCellCoordinates?.rowIndex ?? 0);
@@ -318,11 +314,6 @@ function UnitablesBeeTableCell({
 
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
-      console.log("DIV KEYDOWN", e);
-      if (isEditing) {
-        e.stopPropagation();
-      }
-
       // TAB
       if (e.key.toLowerCase() === "tab") {
         submitRow?.(containerCellCoordinates?.rowIndex ?? 0);
@@ -403,6 +394,10 @@ function UnitablesBeeTableCell({
         }
 
         setEditingCell(true);
+      }
+
+      if (isEditing) {
+        e.stopPropagation();
       }
     },
     [
