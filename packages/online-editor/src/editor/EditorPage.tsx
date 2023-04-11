@@ -68,7 +68,6 @@ export function EditorPage(props: Props) {
   const { previewSvgService } = usePreviewSvgs();
   const { locale, i18n } = useOnlineI18n();
   const [editor, editorRef] = useController<EmbeddedEditorRef>();
-  // const [editorPageDock, editorPageDockRef] = useController<EditorPageDockDrawerRef>();
   const alertsDispatch = useGlobalAlertsDispatchContext();
   const [isTextEditorModalOpen, setTextEditorModalOpen] = useState(false);
   const [isFileBroken, setFileBroken] = useState(false);

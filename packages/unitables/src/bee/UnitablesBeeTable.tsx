@@ -372,7 +372,6 @@ function UnitablesBeeTableCell({
         }
 
         if (!isEditing) {
-          // TODO: Luiz - Add option to edit Select Field; Change to FormSelect component;
           const inputField = cellRef.current?.getElementsByTagName("input");
           if (inputField && inputField.length > 0) {
             inputField?.[0]?.focus();
@@ -441,17 +440,6 @@ function UnitablesBeeTableCell({
       submitRow(containerCellCoordinates?.rowIndex ?? 0);
     }
   }, [containerCellCoordinates?.rowIndex, fieldName, isActive, isEditing, isEnumField, isSelectFieldOpen, submitRow]);
-
-  useEffect(() => {
-    console.log(
-      "column=",
-      containerCellCoordinates?.columnIndex,
-      ", row=",
-      containerCellCoordinates?.rowIndex,
-      isActive,
-      isEditing
-    );
-  }, [containerCellCoordinates?.columnIndex, containerCellCoordinates?.rowIndex, isActive, isEditing]);
 
   return (
     <div style={{ outline: "none" }} tabIndex={-1} ref={cellRef} onKeyDown={onKeyDown}>
