@@ -61,6 +61,8 @@ interface Props {
   workspaceFile: WorkspaceFile;
   workspaces: WorkspacesContextType;
   dmnLanguageService?: DmnLanguageService;
+  isEditorReady: boolean;
+  editorValidate?: () => Promise<Notification[]>;
 }
 
 export function EditorPageDockContextProvider({
@@ -68,6 +70,8 @@ export function EditorPageDockContextProvider({
   dmnLanguageService,
   workspaces,
   workspaceFile,
+  isEditorReady,
+  editorValidate,
 }: React.PropsWithChildren<Props>) {
   const { i18n } = useOnlineI18n();
   const [notificationsToggle, notificationsToggleRef] = useController<NotificationsPanelDockToggleRef>();
@@ -182,6 +186,30 @@ export function EditorPageDockContextProvider({
       return newPreviousToggleItems;
     });
   }, []);
+
+  // Required by PMML editor. Changing between files will not update the problems notifications tab;
+  useEffect(() => {
+    if (
+      workspaceFile.extension === "dmn" ||
+      workspaceFile.extension === "bpmn" ||
+      workspaceFile.extension === "bpmn2" ||
+      !isEditorReady
+    ) {
+      return;
+    }
+
+    //FIXME: Removing this timeout makes the notifications not work some times. Need to investigate.
+    setTimeout(() => {
+      editorValidate?.().then((notifications) => {
+        setNotifications(
+          i18n.terms.validation,
+          "",
+          // Removing the notification path so that we don't group it by path, as we're only validating one file.
+          Array.isArray(notifications) ? notifications.map((n) => ({ ...n, path: "" })) : []
+        );
+      });
+    }, 200);
+  }, [workspaceFile, editorValidate, isEditorReady, i18n.terms.validation, setNotifications]);
 
   return (
     <EditorPageDockContext.Provider

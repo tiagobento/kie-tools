@@ -285,31 +285,6 @@ export function EditorPage(props: Props) {
     setTextEditorModalOpen(false);
   }, [alertsDispatch]);
 
-  // validate
-  // useEffect(() => {
-  //   if (
-  //     workspaceFilePromise.data?.workspaceFile.extension === "dmn" ||
-  //     workspaceFilePromise.data?.workspaceFile.extension === "bpmn" ||
-  //     workspaceFilePromise.data?.workspaceFile.extension === "bpmn2" ||
-  //     !workspaceFilePromise.data ||
-  //     !editor?.isReady
-  //   ) {
-  //     return;
-  //   }
-
-  //   //FIXME: Removing this timeout makes the notifications not work some times. Need to investigate.
-  //   setTimeout(() => {
-  //     editor?.validate().then((notifications) => {
-  //       editorPageDock?.setNotifications(
-  //         i18n.terms.validation,
-  //         "",
-  //         // Removing the notification path so that we don't group it by path, as we're only validating one file.
-  //         Array.isArray(notifications) ? notifications.map((n) => ({ ...n, path: "" })) : []
-  //       );
-  //     });
-  //   }, 200);
-  // }, [workspaceFilePromise, editor, i18n, editorPageDock]);
-
   const handleOpenFile = useCallback(
     async (relativePath: string) => {
       if (!workspaceFilePromise.data) {
@@ -396,6 +371,8 @@ export function EditorPage(props: Props) {
                 workspaceFile={file.workspaceFile}
                 workspaces={workspaces}
                 dmnLanguageService={dmnLanguageService}
+                isEditorReady={editor?.isReady ?? false}
+                editorValidate={editor?.validate}
               >
                 <DmnRunnerContextProvider
                   workspaceFile={file.workspaceFile}
