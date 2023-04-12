@@ -911,7 +911,6 @@ public class ExpressionEditorViewImplTest {
     public void testInnerExpressionMatches_WhenExpressionIsNull() {
 
         final String uuid = "uuid";
-        final Id id = new Id(uuid);
 
         when(hasExpression.getExpression()).thenReturn(null);
 

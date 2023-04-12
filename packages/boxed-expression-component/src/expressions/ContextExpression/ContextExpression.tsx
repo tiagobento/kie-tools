@@ -205,7 +205,12 @@ export function ContextExpression(contextExpression: ContextExpressionDefinition
   const beeTableAdditionalRow = useMemo(() => {
     return [
       <ContextResultInfoCell key={"context-result-info"} />,
-      <ContextResultExpressionCell key={"context-result-expression"} contextExpression={contextExpression} />,
+      <ContextResultExpressionCell
+        key={"context-result-expression"}
+        contextExpression={contextExpression}
+        rowIndex={0}
+        columnIndex={0}
+      />,
     ];
   }, [contextExpression]);
 

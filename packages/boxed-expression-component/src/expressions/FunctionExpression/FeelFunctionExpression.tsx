@@ -182,7 +182,7 @@ export function FeelFunctionExpression({
   );
 }
 
-export function FeelFunctionImplementationCell({ data, rowIndex }: BeeTableCellProps<FEEL_ROWTYPE>) {
+export function FeelFunctionImplementationCell({ data, rowIndex, columnIndex }: BeeTableCellProps<FEEL_ROWTYPE>) {
   const functionExpression = data[rowIndex].functionExpression as FeelFunctionExpressionDefinition;
 
   const { setExpression } = useBoxedExpressionEditorDispatch();
@@ -199,7 +199,13 @@ export function FeelFunctionImplementationCell({ data, rowIndex }: BeeTableCellP
 
   return (
     <NestedExpressionDispatchContextProvider onSetExpression={onSetExpression}>
-      <ExpressionContainer expression={functionExpression.expression} isResetSupported={true} isNested={true} />
+      <ExpressionContainer
+        expression={functionExpression.expression}
+        isResetSupported={true}
+        isNested={true}
+        rowIndex={rowIndex}
+        columnIndex={columnIndex}
+      />
     </NestedExpressionDispatchContextProvider>
   );
 }
