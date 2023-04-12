@@ -34,7 +34,6 @@ import { UnitablesInputsConfigs } from "./UnitablesTypes";
 import { EmptyState, EmptyStateBody, EmptyStateIcon } from "@patternfly/react-core/dist/js/components/EmptyState";
 import { Text, TextContent } from "@patternfly/react-core/dist/js/components/Text";
 import { CubeIcon } from "@patternfly/react-icons/dist/js/icons/cube-icon";
-import { ExtendedServicesDmnJsonSchema } from "@kie-tools/extended-services-api";
 
 export interface UnitablesProps {
   rows: Array<Record<string, any>>;
