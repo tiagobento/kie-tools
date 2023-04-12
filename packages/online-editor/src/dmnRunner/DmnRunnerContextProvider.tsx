@@ -269,7 +269,7 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
   const runEffect = useRef(true);
   useLayoutEffect(() => {
     runEffect.current = true;
-  }, [props.workspaceFile]);
+  }, [props.workspaceFile.relativePath]);
 
   useLayoutEffect(() => {
     if (runEffect.current) {

@@ -40,7 +40,7 @@ export function DmnRunnerTable() {
 
   // REFs
   const dmnRunnerTableErrorBoundaryRef = useRef<ErrorBoundary>(null);
-  const inputsContainerRef = useRef<HTMLDivElement>(null);
+  const [inputsContainerRef, setInputsContainerRef] = useState<HTMLDivElement | null>(null);
   const outputsContainerRef = useRef<HTMLDivElement>(null);
   const inputsScrollableElementRef = useRef<{ current: HTMLDivElement | null }>({ current: null });
   const outputsScrollableElementRef = useRef<{ current: HTMLDivElement | null }>({ current: null });
@@ -148,7 +148,7 @@ export function DmnRunnerTable() {
                   }
                 >
                   {/* DMN Runner Inputs */}
-                  <div ref={inputsContainerRef}>
+                  <div ref={(ref) => setInputsContainerRef(ref)}>
                     <UnitablesWrapper
                       scrollableParentRef={inputsScrollableElementRef.current}
                       i18n={i18n.dmnRunner.table}
@@ -222,7 +222,7 @@ function useIntervalUntil(callback: () => Promise<{ shouldStop: boolean; cleanup
 }
 
 function useAnchoredUnitablesDrawerPanel(args: {
-  inputsContainerRef: React.RefObject<HTMLDivElement>;
+  inputsContainerRef: HTMLDivElement | null;
   outputsContainerRef: React.RefObject<HTMLDivElement>;
 }) {
   const [scrollbarWidth, setScrollbarWidth] = useState(0); // Default size on Chrome.
@@ -230,11 +230,11 @@ function useAnchoredUnitablesDrawerPanel(args: {
   const [drawerPanelDefaultSize, setDrawerPanelDefaultSize] = useState<string>();
 
   const refreshDrawerPanelDefaultSize = useCallback(() => {
-    if (!args.inputsContainerRef.current) {
+    if (!args.inputsContainerRef) {
       return { didRefresh: false };
     }
 
-    const children = Object.values(args.inputsContainerRef.current.childNodes?.[0]?.childNodes);
+    const children = Object.values(args.inputsContainerRef.childNodes?.[0]?.childNodes);
     const newWidth = children?.reduce((acc, child: HTMLElement) => acc + child.offsetWidth, 1) ?? 0;
     const newDefaultSize = `calc(100vw - ${newWidth + scrollbarWidth}px)`;
 
