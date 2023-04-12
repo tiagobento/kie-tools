@@ -268,7 +268,10 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
   // This effect will run everytime the file name is changed;
   const runEffect = useRef(true);
   useLayoutEffect(() => {
-    runEffect.current = true;
+    if (panel !== PanelId.DMN_RUNNER_TABLE) {
+      runEffect.current = true;
+    }
+    // it should exec only when the relativePath changes;
   }, [props.workspaceFile.relativePath]);
 
   useLayoutEffect(() => {
