@@ -64,6 +64,9 @@ import {
 } from "./DmnRunnerTypes";
 import { DmnRunnerDockToggle } from "./DmnRunnerDockToggle";
 import { PanelId, useEditorDockContext } from "../editor/EditorPageDockContextProvider";
+import { EmptyState, EmptyStateBody, EmptyStateIcon } from "@patternfly/react-core/dist/js/components/EmptyState";
+import { Text, TextContent } from "@patternfly/react-core/dist/js/components/Text";
+import { ExclamationIcon } from "@patternfly/react-icons/dist/js/icons/exclamation-icon";
 
 interface Props {
   isEditorReady?: boolean;
@@ -72,7 +75,6 @@ interface Props {
 }
 
 const initialDmnRunnerProviderStates: DmnRunnerProviderState = {
-  jitExecutorError: false,
   isExpanded: false,
   currentInputIndex: 0,
 };
@@ -115,13 +117,14 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
   const { i18n } = useOnlineI18n();
 
   // States that can be changed down in the tree with dmnRunnerDispatcher;
-  const [{ currentInputIndex, jitExecutorError, isExpanded }, setDmnRunnerContextProviderState] = useReducer(
+  const [{ currentInputIndex, isExpanded }, setDmnRunnerContextProviderState] = useReducer(
     dmnRunnerContextProviderReducer,
     initialDmnRunnerProviderStates
   );
 
   // States that are in controll of the DmnRunnerProvider;
   const [canBeVisualized, setCanBeVisualized] = useState<boolean>(false);
+  const [extendedServicesError, setExtendedServicesError] = useState<boolean>(false);
   const [jsonSchema, setJsonSchema] = useState<ExtendedServicesDmnJsonSchema | undefined>(undefined);
   const [{ results, resultsDifference }, setDmnRunnerResults] = useReducer(
     dmnRunnerResultsReducer,
@@ -160,10 +163,7 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
   }, [props.isEditorReady]);
 
   useEffect(() => {
-    setDmnRunnerContextProviderState({
-      type: DmnRunnerProviderActionType.DEFAULT,
-      newState: { jitExecutorError: false },
-    });
+    setExtendedServicesError(false);
   }, [jsonSchema]);
 
   const extendedServicesModelPayload = useCallback(
@@ -229,10 +229,7 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
             const runnerResults: Array<DecisionResult[] | undefined> = [];
             for (const result of results) {
               if (Object.hasOwnProperty.call(result, "details") && Object.hasOwnProperty.call(result, "stack")) {
-                setDmnRunnerContextProviderState({
-                  type: DmnRunnerProviderActionType.DEFAULT,
-                  newState: { jitExecutorError: true },
-                });
+                setExtendedServicesError(true);
                 break;
               }
               if (result) {
@@ -245,7 +242,7 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
             setDmnRunnerResults({ type: DmnRunnerResultsActionType.DEFAULT });
           });
       },
-      [extendedServicesModelPayload, setDmnRunnerContextProviderState, dmnRunnerInputs, extendedServices.client]
+      [extendedServicesModelPayload, dmnRunnerInputs, extendedServices.client]
     )
   );
 
@@ -567,10 +564,7 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
           })
           .catch((err) => {
             console.error(err);
-            setDmnRunnerContextProviderState({
-              type: DmnRunnerProviderActionType.DEFAULT,
-              newState: { jitExecutorError: true },
-            });
+            setExtendedServicesError(true);
           });
       },
       [extendedServices.client, extendedServices.status, extendedServicesModelPayload, props.workspaceFile.extension]
@@ -669,7 +663,7 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
       configs: dmnRunnerConfigInputs,
       currentInputIndex,
       dmnRunnerPersistenceJson,
-      jitExecutorError,
+      extendedServicesError,
       inputs: dmnRunnerInputs,
       isExpanded,
       jsonSchema,
@@ -685,7 +679,7 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
       dmnRunnerInputs,
       dmnRunnerMode,
       dmnRunnerPersistenceJson,
-      jitExecutorError,
+      extendedServicesError,
       isExpanded,
       jsonSchema,
       results,
@@ -702,5 +696,21 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
         </DmnRunnerDispatchContext.Provider>
       </DmnRunnerStateContext.Provider>
     </>
+  );
+}
+
+export function DmnRunnerExtendedServicesError() {
+  return (
+    <div>
+      <EmptyState>
+        <EmptyStateIcon icon={ExclamationIcon} />
+        <TextContent>
+          <Text component={"h2"}>Error</Text>
+        </TextContent>
+        <EmptyStateBody>
+          <p>An error has happened while trying to show your inputs</p>
+        </EmptyStateBody>
+      </EmptyState>
+    </div>
   );
 }
