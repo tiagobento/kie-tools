@@ -72,7 +72,7 @@ interface Props {
 }
 
 const initialDmnRunnerProviderStates: DmnRunnerProviderState = {
-  error: false,
+  jitExecutorError: false,
   isExpanded: false,
   currentInputIndex: 0,
 };
@@ -115,7 +115,7 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
   const { i18n } = useOnlineI18n();
 
   // States that can be changed down in the tree with dmnRunnerDispatcher;
-  const [{ currentInputIndex, error, isExpanded }, setDmnRunnerContextProviderState] = useReducer(
+  const [{ currentInputIndex, jitExecutorError, isExpanded }, setDmnRunnerContextProviderState] = useReducer(
     dmnRunnerContextProviderReducer,
     initialDmnRunnerProviderStates
   );
@@ -158,6 +158,13 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
       setCanBeVisualized(false);
     }
   }, [props.isEditorReady]);
+
+  useEffect(() => {
+    setDmnRunnerContextProviderState({
+      type: DmnRunnerProviderActionType.DEFAULT,
+      newState: { jitExecutorError: false },
+    });
+  }, [jsonSchema]);
 
   const extendedServicesModelPayload = useCallback(
     async (formInputs?: InputRow) => {
@@ -224,7 +231,7 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
               if (Object.hasOwnProperty.call(result, "details") && Object.hasOwnProperty.call(result, "stack")) {
                 setDmnRunnerContextProviderState({
                   type: DmnRunnerProviderActionType.DEFAULT,
-                  newState: { error: true },
+                  newState: { jitExecutorError: true },
                 });
                 break;
               }
@@ -242,7 +249,7 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
     )
   );
 
-  // EditorDock drawer
+  // EditorDock drawer controller;
   useLayoutEffect(() => {
     if (dmnRunnerMode === DmnRunnerMode.TABLE) {
       addToggleItem(PanelId.DMN_RUNNER_TABLE, <DmnRunnerDockToggle key="dmn-runner-toggle-item" />);
@@ -560,7 +567,10 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
           })
           .catch((err) => {
             console.error(err);
-            setDmnRunnerContextProviderState({ type: DmnRunnerProviderActionType.DEFAULT, newState: { error: true } });
+            setDmnRunnerContextProviderState({
+              type: DmnRunnerProviderActionType.DEFAULT,
+              newState: { jitExecutorError: true },
+            });
           });
       },
       [extendedServices.client, extendedServices.status, extendedServicesModelPayload, props.workspaceFile.extension]
@@ -659,7 +669,7 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
       configs: dmnRunnerConfigInputs,
       currentInputIndex,
       dmnRunnerPersistenceJson,
-      error,
+      jitExecutorError,
       inputs: dmnRunnerInputs,
       isExpanded,
       jsonSchema,
@@ -675,7 +685,7 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
       dmnRunnerInputs,
       dmnRunnerMode,
       dmnRunnerPersistenceJson,
-      error,
+      jitExecutorError,
       isExpanded,
       jsonSchema,
       results,
