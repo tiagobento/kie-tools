@@ -43,22 +43,14 @@ const dateFormat = (value?: Date | string, type: DateFieldType = "datetime-local
   return value?.toISOString().slice(0, type === "datetime-local" ? -8 : -14);
 };
 
-// A valid year is a value between 0 and 9999;
-function transformToValidYear(year: number): number {
-  if (year > 10000) {
-    return transformToValidYear(Math.floor(year / 10));
-  }
-
-  return year;
-}
-
 const dateParse = (value: string, onChange: DateFieldProps["onChange"]) => {
   const valueAsNumber = DateConstructor.parse(value);
   if (isNaN(valueAsNumber)) {
     // Checking if year is too big
     const splitedValue = value.split("-");
     if (splitedValue.length > 1) {
-      splitedValue[0] = `${transformToValidYear(parseInt(splitedValue[0]))}`;
+      // A year can't be bigger than 9999;
+      splitedValue[0] = parseInt(splitedValue[0]) > 9999 ? "9999" : splitedValue[0];
       onChange(new DateConstructor(`${splitedValue.join("-")}Z`));
       return;
     }
