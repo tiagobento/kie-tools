@@ -211,7 +211,7 @@ export function ContextExpression(contextExpression: ContextExpressionDefinition
       <ContextResultExpressionCell
         key={"context-result-expression"}
         contextExpression={contextExpression}
-        rowIndex={1}
+        rowIndex={contextExpression.contextEntries.length}
         columnIndex={2}
       />,
     ];
