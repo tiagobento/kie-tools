@@ -435,9 +435,13 @@ function UnitablesBeeTableCell({
     if (isActive) {
       if (isEnumField) {
         if (isSelectFieldOpen) {
+          // if a SelectField is open, it takes a time to render the select options;
+          // After the select options are rendered we focus in the selected option;
           setTimeout(() => {
             const selectOptions = document.getElementsByName(fieldName)?.[0]?.getElementsByTagName("button");
-            selectOptions?.[0]?.focus();
+            Array.from(selectOptions ?? [])
+              ?.filter((selectOption) => selectOption.innerText === cellRef.current?.innerText)?.[0]
+              ?.focus();
           }, 0);
         } else {
           cellRef.current?.focus();
@@ -446,13 +450,42 @@ function UnitablesBeeTableCell({
       if (!isEditing) {
         cellRef.current?.focus();
       }
-    } else if (!isActive && !isEditing) {
-      submitRow(containerCellCoordinates?.rowIndex ?? 0);
     }
-  }, [containerCellCoordinates?.rowIndex, fieldName, isActive, isEditing, isEnumField, isSelectFieldOpen, submitRow]);
+  }, [fieldName, isActive, isEditing, isEnumField, isSelectFieldOpen]);
+
+  const onBlur = useCallback(
+    (e: React.FocusEvent<HTMLDivElement>) => {
+      if (e.target.tagName.toLowerCase() === "input") {
+        submitRow(containerCellCoordinates?.rowIndex ?? 0);
+      }
+      if (e.target.tagName.toLowerCase() === "button") {
+        // if the select field is open and it blurs to another cell, close it;
+        const selectOptions = document.getElementsByName(fieldName)?.[0]?.getElementsByTagName("button");
+        if ((selectOptions?.length ?? 0) > 0 && (e.relatedTarget as HTMLElement).tagName.toLowerCase() === "td") {
+          e.target.click();
+          setIsSelectFieldOpen(false);
+        }
+        submitRow(containerCellCoordinates?.rowIndex ?? 0);
+      }
+    },
+    [containerCellCoordinates?.rowIndex, fieldName, submitRow]
+  );
+
+  const onClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.isTrusted && (e.target as HTMLElement).tagName.toLowerCase() === "button") {
+      setIsSelectFieldOpen((prev) => !prev);
+    }
+  }, []);
 
   return (
-    <div style={{ outline: "none" }} tabIndex={-1} ref={cellRef} onKeyDown={onKeyDown}>
+    <div
+      style={{ outline: "none" }}
+      tabIndex={-1}
+      ref={cellRef}
+      onKeyDown={onKeyDown}
+      onBlur={onBlur}
+      onClick={onClick}
+    >
       <AutoField
         key={joinedName + autoFieldKey}
         name={joinedName}
