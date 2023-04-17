@@ -40,6 +40,7 @@ export interface DmnRunnerContextType {
 
 export interface DmnRunnerCallbacksContextType {
   setDmnRunnerContextProviderState: React.Dispatch<DmnRunnerProviderAction>;
+  onDeleteInputs: () => void;
   onRowAdded: (args: { beforeIndex: number }) => void;
   onRowDuplicated: (args: { rowIndex: number }) => void;
   onRowReset: (args: { rowIndex: number }) => void;

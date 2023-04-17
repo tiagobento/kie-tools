@@ -142,26 +142,6 @@ export function DmnRunnerPersistenceDispatchContextProvider(props: React.PropsWi
     [dmnRunnerPersistenceService]
   );
 
-  const deletePersistenceJson = useCallback(
-    (previousDmnRunnerPersisnteceJson: DmnRunnerPersistenceJson, workspaceFile: WorkspaceFile) => {
-      // overwrite the current persistenceJson with a new one;
-      const newPersistenceJson = getNewDefaultDmnRunnerPersistenceJson();
-      // keep current mode;
-      newPersistenceJson.configs.mode = previousDmnRunnerPersisnteceJson.configs.mode;
-
-      dmnRunnerPersistenceJsonDispatcher({
-        updatePersistenceJsonDebouce,
-        workspaceId: workspaceFile.workspaceId,
-        workspaceFileRelativePath: workspaceFile.relativePath,
-        type: DmnRunnerPersistenceReducerActionType.DEFAULT,
-        newPersistenceJson,
-        shouldUpdateFS: true,
-        cancellationToken: new Holder(false),
-      });
-    },
-    [updatePersistenceJsonDebouce]
-  );
-
   const getPersistenceJsonForDownload = useCallback(
     async (workspaceFile: WorkspaceFile) => {
       const persistenceJson = await dmnRunnerPersistenceService.companionFsService.get({
@@ -194,7 +174,6 @@ export function DmnRunnerPersistenceDispatchContextProvider(props: React.PropsWi
     <DmnRunnerPersistenceDispatchContext.Provider
       value={{
         dmnRunnerPersistenceService,
-        deletePersistenceJson,
         getPersistenceJsonForDownload,
         uploadPersistenceJson,
         updatePersistenceJsonDebouce,

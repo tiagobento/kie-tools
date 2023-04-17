@@ -25,10 +25,6 @@ import {
 
 interface DmnRunnerPersistenceDispatchContextType {
   dmnRunnerPersistenceService: DmnRunnerPersistenceService;
-  deletePersistenceJson: (
-    previousDmnRunnerPersisnteceJson: DmnRunnerPersistenceJson,
-    workspaceFile: WorkspaceFile
-  ) => void;
   getPersistenceJsonForDownload: (workspaceFile: WorkspaceFile) => Promise<Blob | undefined>;
   uploadPersistenceJson: (workspaceFile: WorkspaceFile, file: File) => void;
   dmnRunnerPersistenceJson: DmnRunnerPersistenceJson;

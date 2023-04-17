@@ -41,7 +41,10 @@ import {
 import { useDmnRunnerPersistence } from "../dmnRunnerPersistence/DmnRunnerPersistenceHook";
 import { DmnLanguageService } from "@kie-tools/dmn-language-service";
 import { decoder } from "@kie-tools-core/workspaces-git-fs/dist/encoderdecoder/EncoderDecoder";
-import { generateUuid } from "../dmnRunnerPersistence/DmnRunnerPersistenceService";
+import {
+  generateUuid,
+  getNewDefaultDmnRunnerPersistenceJson,
+} from "../dmnRunnerPersistence/DmnRunnerPersistenceService";
 import { useDmnRunnerPersistenceDispatch } from "../dmnRunnerPersistence/DmnRunnerPersistenceDispatchContext";
 import cloneDeep from "lodash/cloneDeep";
 import { UnitablesInputsConfigs } from "@kie-tools/unitables/dist/UnitablesTypes";
@@ -567,6 +570,17 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
     )
   );
 
+  const onDeleteInputs = useCallback(() => {
+    // overwrite the current persistenceJson with a new one;
+    const newPersistenceJson = getNewDefaultDmnRunnerPersistenceJson();
+    // keep current mode;
+
+    setDmnRunnerPersistenceJson({
+      newConfigInputs: newPersistenceJson.configs.inputs,
+      newInputsRow: newPersistenceJson.inputs.map((input) => ({ ...getDefaultValues(jsonSchema ?? {}), ...input })),
+    });
+  }, [getDefaultValues, jsonSchema, setDmnRunnerPersistenceJson]);
+
   const getDefaultValuesForInputs = useCallback((inputs: InputRow) => {
     return Object.entries(inputs).reduce(
       (acc, [key, value]) => {
@@ -655,6 +669,7 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
   const dmnRunnerDispatch = useMemo(
     () => ({
       setDmnRunnerContextProviderState,
+      onDeleteInputs,
       onRowAdded,
       onRowDeleted,
       onRowDuplicated,
@@ -665,6 +680,7 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
       setDmnRunnerPersistenceJson,
     }),
     [
+      onDeleteInputs,
       onRowAdded,
       onRowDeleted,
       onRowDuplicated,

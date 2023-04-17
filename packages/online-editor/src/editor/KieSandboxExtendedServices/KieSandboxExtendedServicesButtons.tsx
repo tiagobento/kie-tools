@@ -57,10 +57,9 @@ export function KieSandboxExtendedServicesButtons(props: Props) {
   const devDeployments = useDevDeployments();
   const { onTogglePanel, onOpenPanel } = useEditorDockContext();
   const { dmnRunnerPersistenceJson, isExpanded, mode } = useDmnRunnerState();
-  const { setDmnRunnerMode, setDmnRunnerContextProviderState } = useDmnRunnerDispatch();
+  const { setDmnRunnerMode, setDmnRunnerContextProviderState, onDeleteInputs } = useDmnRunnerDispatch();
   const devDeploymentsDropdownItems = useDevDeploymentsDeployDropdownItems(props.workspace);
-  const { getPersistenceJsonForDownload, uploadPersistenceJson, deletePersistenceJson } =
-    useDmnRunnerPersistenceDispatch();
+  const { getPersistenceJsonForDownload, uploadPersistenceJson } = useDmnRunnerPersistenceDispatch();
   const downloadDmnRunnerInputsRef = useRef<HTMLAnchorElement>(null);
   const uploadDmnRunnerInputsRef = useRef<HTMLInputElement>(null);
 
@@ -221,7 +220,7 @@ export function KieSandboxExtendedServicesButtons(props: Props) {
                       type: DmnRunnerProviderActionType.DEFAULT,
                       newState: { currentInputIndex: 0 },
                     });
-                    deletePersistenceJson(dmnRunnerPersistenceJson, props.workspaceFile);
+                    onDeleteInputs();
                   }}
                   item={`Delete DMN Runner inputs`}
                   label={" Delete inputs"}
