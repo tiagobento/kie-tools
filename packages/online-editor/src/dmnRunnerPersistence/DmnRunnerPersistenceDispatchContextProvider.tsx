@@ -65,14 +65,13 @@ function checkIfHasChangesAndUpdateFs(
   }
 
   // update FS;
+  LOCK = true;
   updatePersistenceJsonDebouce({
     workspaceId: workspaceId,
     workspaceFileRelativePath: workspaceFileRelativePath,
     content: JSON.stringify(newPersistenceJson),
     cancellationToken,
   });
-
-  LOCK = true;
   return newPersistenceJson;
 }
 
