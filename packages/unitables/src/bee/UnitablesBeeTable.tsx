@@ -262,12 +262,16 @@ function UnitablesBeeTableCell({
 
   // FIXME: Decouple from DMN --> https://github.com/kiegroup/kie-issues/issues/166
   const setValue = useCallback(
-    (newValue: string) => {
+    (newValue?: string) => {
       isBeeTableChange.current = true;
-      const newValueWithoutSymbols = newValue.replace(/\r/g, "");
+      const newValueWithoutSymbols = newValue?.replace(/\r/g, "") ?? "";
 
       if (field.enum) {
-        onFieldChange(field.placeholder);
+        if (field.enum.findIndex((value: unknown) => value === newValueWithoutSymbols) >= 0) {
+          onFieldChange(newValueWithoutSymbols);
+        } else {
+          onFieldChange(field.placeholder);
+        }
         // Changing the values using onChange will not re-render <select> nodes;
         // This ensure a re-render of the SelectField;
         forceUpdate();
@@ -458,7 +462,10 @@ function UnitablesBeeTableCell({
       if (e.target.tagName.toLowerCase() === "input") {
         submitRow(containerCellCoordinates?.rowIndex ?? 0);
       }
-      if (e.target.tagName.toLowerCase() === "button") {
+      if (
+        e.target.tagName.toLowerCase() === "button" ||
+        (e.relatedTarget as HTMLElement)?.tagName.toLowerCase() === "button"
+      ) {
         // if the select field is open and it blurs to another cell, close it;
         const selectOptions = document.getElementsByName(fieldName)?.[0]?.getElementsByTagName("button");
         if ((selectOptions?.length ?? 0) > 0 && (e.relatedTarget as HTMLElement).tagName.toLowerCase() === "td") {
