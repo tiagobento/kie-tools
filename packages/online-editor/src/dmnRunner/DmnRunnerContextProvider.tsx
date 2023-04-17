@@ -55,6 +55,7 @@ import { Holder } from "@kie-tools-core/react-hooks/dist/Holder";
 import { DmnRunnerPersistenceReducerActionType } from "../dmnRunnerPersistence/DmnRunnerPersistenceTypes";
 import { CompanionFsServiceBroadcastEvents } from "../companionFs/CompanionFsService";
 import {
+  DmnRunnerCompanionRefreshCallback,
   DmnRunnerProviderAction,
   DmnRunnerProviderActionType,
   DmnRunnerProviderState,
@@ -166,6 +167,20 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
     setExtendedServicesError(false);
   }, [jsonSchema]);
 
+  // Control the isExpaded state based on the extended services status;
+  useEffect(() => {
+    if (props.workspaceFile.extension !== "dmn") {
+      return;
+    }
+
+    if (
+      extendedServices.status === KieSandboxExtendedServicesStatus.STOPPED ||
+      extendedServices.status === KieSandboxExtendedServicesStatus.NOT_RUNNING
+    ) {
+      setDmnRunnerContextProviderState({ type: DmnRunnerProviderActionType.DEFAULT, newState: { isExpanded: false } });
+    }
+  }, [prevKieSandboxExtendedServicesStatus, extendedServices.status, props.workspaceFile.extension]);
+
   const extendedServicesModelPayload = useCallback(
     async (formInputs?: InputRow) => {
       const fileContent = await workspaces.getFileContent({
@@ -193,20 +208,7 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
     [props.workspaceFile, workspaces, props.dmnLanguageService]
   );
 
-  useEffect(() => {
-    if (props.workspaceFile.extension !== "dmn") {
-      return;
-    }
-
-    if (
-      extendedServices.status === KieSandboxExtendedServicesStatus.STOPPED ||
-      extendedServices.status === KieSandboxExtendedServicesStatus.NOT_RUNNING
-    ) {
-      setDmnRunnerContextProviderState({ type: DmnRunnerProviderActionType.DEFAULT, newState: { isExpanded: false } });
-    }
-  }, [prevKieSandboxExtendedServicesStatus, extendedServices.status, props.workspaceFile.extension]);
-
-  // RESULTS
+  // Responsible for get decision results;
   useCancelableEffect(
     useCallback(
       ({ canceled }) => {
@@ -385,29 +387,7 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
     [setDmnRunnerPersistenceJson]
   );
 
-  const getDefaultValuesForInputs = useCallback((inputs: InputRow) => {
-    return Object.entries(inputs).reduce(
-      (acc, [key, value]) => {
-        if (key === "id") {
-          return acc;
-        }
-        if (typeof value === "string") {
-          acc[key] = "";
-        } else if (typeof value === "number") {
-          acc[key] = null;
-        } else if (typeof value === "boolean") {
-          acc[key] = false;
-        } else if (Array.isArray(value)) {
-          acc[key] = [];
-        } else if (typeof value === "object") {
-          acc[key] = {};
-        }
-        return acc;
-      },
-      { id: generateUuid() } as Record<string, any>
-    );
-  }, []);
-
+  // Recusively get the input node that uses the $ref property
   const getRefField = useCallback((jsonSchema: ExtendedServicesDmnJsonSchema, field: Record<string, any>): Record<
     string,
     any
@@ -420,45 +400,39 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
     return refField;
   }, []);
 
-  const getDefaultValue = useCallback(
-    (jsonSchema: ExtendedServicesDmnJsonSchema, field: Record<string, any>) => {
-      const fieldToCheck = field.$ref ? getRefField(jsonSchema, field) : field;
-      if (fieldToCheck.type === "object") {
-        return {};
-      }
-      if (fieldToCheck.type === "array") {
-        return [];
-      }
-      if (fieldToCheck.type === "boolean") {
-        return false;
-      }
-    },
-    [getRefField]
-  );
-
   const getDefaultValues = useCallback(
     (jsonSchema: ExtendedServicesDmnJsonSchema) => {
       return Object.entries(getObjectValueByPath(jsonSchema, "definitions.InputSet.properties") ?? {})?.reduce(
         (acc, [key, field]: [string, Record<string, string>]) => {
-          const defaultValue = getDefaultValue(jsonSchema, field);
-          if (defaultValue) {
-            acc[key] = defaultValue;
+          const fieldToCheck = field.$ref ? getRefField(jsonSchema, field) : field;
+          if (fieldToCheck.type === "object") {
+            acc[key] = {};
+          }
+          if (fieldToCheck.type === "array") {
+            acc[key] = [];
+          }
+          if (fieldToCheck.type === "boolean") {
+            acc[key] = false;
           }
           return acc;
         },
         {} as Record<string, any>
       );
     },
-    [getDefaultValue]
+    [getRefField]
   );
 
   // The refreshCallback is called in every CompanionFS event;
+  // it calculates the difference on every event that isn't a CFSF_ADD;
   const { promise: companionFsRefreshCallbackResult } = useCompanionFsFileSyncedWithWorkspaceFile(
     dmnRunnerPersistenceService.companionFsService,
     props.workspaceFile.workspaceId,
     props.workspaceFile.relativePath,
     useCallback(
-      async (cancellationToken: Holder<boolean>, workspaceFileEvent: CompanionFsServiceBroadcastEvents) => {
+      async (
+        cancellationToken: Holder<boolean>,
+        workspaceFileEvent: CompanionFsServiceBroadcastEvents
+      ): Promise<DmnRunnerCompanionRefreshCallback> => {
         if (workspaceFileEvent.type === "CFSF_ADD") {
           return {
             propertiesDifference: undefined,
@@ -469,16 +443,21 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
           };
         }
 
-        const propertiesDifference = diff(
-          getObjectValueByPath(previousJsonSchema, "definitions.InputSet.properties") ?? {},
-          getObjectValueByPath(jsonSchema, "definitions.InputSet.properties") ?? {}
-        );
-        return { propertiesDifference, jsonSchema, dmnRunnerPersistenceJson: undefined };
+        return {
+          propertiesDifference: diff(
+            getObjectValueByPath(previousJsonSchema, "definitions.InputSet.properties") ?? {},
+            getObjectValueByPath(jsonSchema, "definitions.InputSet.properties") ?? {}
+          ),
+          jsonSchema,
+          dmnRunnerPersistenceJson: undefined,
+        };
       },
       [jsonSchema, previousJsonSchema, dmnRunnerPersistenceService]
     )
   );
 
+  // Runs after the refreshCallback
+  // Responsible to erase deleted inputs and add default values;
   useEffect(() => {
     if (!companionFsRefreshCallbackResult.data) {
       return;
@@ -486,20 +465,16 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
 
     const { jsonSchema, propertiesDifference, dmnRunnerPersistenceJson } = companionFsRefreshCallbackResult.data;
 
+    // if we don't have any changes;
     if (!propertiesDifference && jsonSchema && dmnRunnerPersistenceJson) {
-      setDmnRunnerInputs((previousDmnRunnerInputs) => {
-        // if the file is new, the [0] should be populated with default values;
-        const newDmnRunnerInputs = cloneDeep(dmnRunnerPersistenceJson.inputs);
-        newDmnRunnerInputs[0] = { ...getDefaultValues(jsonSchema), ...newDmnRunnerInputs[0] };
-        return newDmnRunnerInputs;
-      });
-    }
-
-    if (!propertiesDifference || !jsonSchema) {
+      const newDmnRunnerInputs = cloneDeep(dmnRunnerPersistenceJson.inputs);
+      // if the file is new, the [0] should be populated with default values;
+      newDmnRunnerInputs[0] = { ...getDefaultValues(jsonSchema), ...newDmnRunnerInputs[0] };
+      setDmnRunnerInputs(newDmnRunnerInputs);
       return;
     }
 
-    if (Object.keys(propertiesDifference).length === 0) {
+    if (!propertiesDifference || !jsonSchema || Object.keys(propertiesDifference).length === 0) {
       return;
     }
 
@@ -539,6 +514,7 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
     });
   }, [companionFsRefreshCallbackResult.data, getDefaultValues, setDmnRunnerInputs, setDmnRunnerPersistenceJson]);
 
+  // Responsible to set the JSON schema based on the DMN model;
   useCancelableEffect(
     useCallback(
       ({ canceled }) => {
@@ -573,6 +549,29 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
       [extendedServices.client, extendedServices.status, extendedServicesModelPayload, props.workspaceFile.extension]
     )
   );
+
+  const getDefaultValuesForInputs = useCallback((inputs: InputRow) => {
+    return Object.entries(inputs).reduce(
+      (acc, [key, value]) => {
+        if (key === "id") {
+          return acc;
+        }
+        if (typeof value === "string") {
+          acc[key] = "";
+        } else if (typeof value === "number") {
+          acc[key] = null;
+        } else if (typeof value === "boolean") {
+          acc[key] = false;
+        } else if (Array.isArray(value)) {
+          acc[key] = [];
+        } else if (typeof value === "object") {
+          acc[key] = {};
+        }
+        return acc;
+      },
+      { id: generateUuid() } as Record<string, any>
+    );
+  }, []);
 
   const onRowAdded = useCallback(
     (args: { beforeIndex: number }) => {
