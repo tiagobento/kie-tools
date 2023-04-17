@@ -55,7 +55,6 @@ import { Holder } from "@kie-tools-core/react-hooks/dist/Holder";
 import { DmnRunnerPersistenceReducerActionType } from "../dmnRunnerPersistence/DmnRunnerPersistenceTypes";
 import { CompanionFsServiceBroadcastEvents } from "../companionFs/CompanionFsService";
 import {
-  DmnRunnerCompanionRefreshCallback,
   DmnRunnerProviderAction,
   DmnRunnerProviderActionType,
   DmnRunnerProviderState,
@@ -153,9 +152,8 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
     [dmnRunnerPersistenceJson?.configs?.inputs]
   );
   const status = useMemo(() => (isExpanded ? DmnRunnerStatus.AVAILABLE : DmnRunnerStatus.UNAVAILABLE), [isExpanded]);
-  const previousJsonSchema = usePrevious(jsonSchema);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (props.isEditorReady) {
       setCanBeVisualized(true);
     } else {
@@ -163,12 +161,12 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
     }
   }, [props.isEditorReady]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setExtendedServicesError(false);
   }, [jsonSchema]);
 
   // Control the isExpaded state based on the extended services status;
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (props.workspaceFile.extension !== "dmn") {
       return;
     }
@@ -273,6 +271,7 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
     if (panel !== PanelId.DMN_RUNNER_TABLE) {
       runEffect.current = true;
     }
+
     // it should exec only when the relativePath changes;
   }, [props.workspaceFile.relativePath]);
 
@@ -323,9 +322,11 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
     (args: {
       newInputsRow?: ((previousInputs: Array<InputRow>) => Array<InputRow>) | Array<InputRow>;
       newMode?: DmnRunnerMode;
-      newConfigInputs?: (
-        previousConfigInputs: UnitablesInputsConfigs
-      ) => UnitablesInputsConfigs | UnitablesInputsConfigs;
+      newConfigInputs?:
+        | ((previousConfigInputs: UnitablesInputsConfigs) => UnitablesInputsConfigs)
+        | UnitablesInputsConfigs;
+      shouldUpdateFs?: boolean;
+      cancellationToken?: Holder<boolean>;
     }) => {
       dmnRunnerPersistenceJsonDispatcher({
         updatePersistenceJsonDebouce,
@@ -353,7 +354,8 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
           }
           return newDmnRunnerPersistenceJson;
         },
-        shouldUpdateFS: true,
+        shouldUpdateFS: args.shouldUpdateFs !== undefined ? args.shouldUpdateFs : true,
+        cancellationToken: args.cancellationToken ?? new Holder(false),
       });
     },
     [
@@ -422,97 +424,56 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
     [getRefField]
   );
 
-  // The refreshCallback is called in every CompanionFS event;
-  // it calculates the difference on every event that isn't a CFSF_ADD;
-  const { promise: companionFsRefreshCallbackResult } = useCompanionFsFileSyncedWithWorkspaceFile(
+  // The refreshCallback is called after a CompanionFS event;
+  // When another TAB updates the FS, it should sync up
+  useCompanionFsFileSyncedWithWorkspaceFile(
     dmnRunnerPersistenceService.companionFsService,
     props.workspaceFile.workspaceId,
     props.workspaceFile.relativePath,
     useCallback(
-      async (
-        cancellationToken: Holder<boolean>,
-        workspaceFileEvent: CompanionFsServiceBroadcastEvents
-      ): Promise<DmnRunnerCompanionRefreshCallback> => {
-        if (workspaceFileEvent.type === "CFSF_ADD") {
-          return {
-            propertiesDifference: undefined,
-            jsonSchema,
-            dmnRunnerPersistenceJson: dmnRunnerPersistenceService.parseDmnRunnerPersistenceJson(
-              workspaceFileEvent.content
-            ),
-          };
+      async (cancellationToken: Holder<boolean>, workspaceFileEvent: CompanionFsServiceBroadcastEvents | undefined) => {
+        if (!jsonSchema) {
+          return;
         }
 
-        return {
-          propertiesDifference: diff(
-            getObjectValueByPath(previousJsonSchema, "definitions.InputSet.properties") ?? {},
-            getObjectValueByPath(jsonSchema, "definitions.InputSet.properties") ?? {}
-          ),
-          jsonSchema,
-          dmnRunnerPersistenceJson: undefined,
-        };
+        // This event type is used when a filename is changed or when a new file is created;
+        if (workspaceFileEvent?.type === "CFSF_ADD") {
+          const dmnRunnerPersistenceJson = dmnRunnerPersistenceService.parseDmnRunnerPersistenceJson(
+            workspaceFileEvent.content
+          );
+
+          // Add default values;
+          setDmnRunnerPersistenceJson({
+            newInputsRow: cloneDeep(dmnRunnerPersistenceJson.inputs).map((dmnRunnerInput) => ({
+              ...getDefaultValues(jsonSchema),
+              ...dmnRunnerInput,
+            })),
+            shouldUpdateFs: false,
+            cancellationToken,
+          });
+          return;
+        }
+
+        if (workspaceFileEvent?.type === "CFSF_UPDATE" || workspaceFileEvent?.type === "CFSF_DELETE") {
+          const dmnRunnerPersistenceJson = dmnRunnerPersistenceService.parseDmnRunnerPersistenceJson(
+            workspaceFileEvent.content
+          );
+
+          if (!dmnRunnerPersistenceJson) {
+            return;
+          }
+
+          setDmnRunnerPersistenceJson({
+            newConfigInputs: dmnRunnerPersistenceJson.configs.inputs,
+            newInputsRow: dmnRunnerPersistenceJson.inputs,
+            shouldUpdateFs: false,
+            cancellationToken,
+          });
+        }
       },
-      [jsonSchema, previousJsonSchema, dmnRunnerPersistenceService]
+      [dmnRunnerPersistenceService, getDefaultValues, jsonSchema, setDmnRunnerPersistenceJson]
     )
   );
-
-  // Runs after the refreshCallback
-  // Responsible to erase deleted inputs and add default values;
-  useEffect(() => {
-    if (!companionFsRefreshCallbackResult.data) {
-      return;
-    }
-
-    const { jsonSchema, propertiesDifference, dmnRunnerPersistenceJson } = companionFsRefreshCallbackResult.data;
-
-    // if we don't have any changes;
-    if (!propertiesDifference && jsonSchema && dmnRunnerPersistenceJson) {
-      const newDmnRunnerInputs = cloneDeep(dmnRunnerPersistenceJson.inputs);
-      // if the file is new, the [0] should be populated with default values;
-      newDmnRunnerInputs[0] = { ...getDefaultValues(jsonSchema), ...newDmnRunnerInputs[0] };
-      setDmnRunnerInputs(newDmnRunnerInputs);
-      return;
-    }
-
-    if (!propertiesDifference || !jsonSchema || Object.keys(propertiesDifference).length === 0) {
-      return;
-    }
-
-    setDmnRunnerPersistenceJson({
-      newConfigInputs: (previousConfigInputs) => {
-        const newConfigs = cloneDeep(previousConfigInputs);
-        return Object.entries(propertiesDifference).reduce(
-          (configs, [property, value]) => {
-            if (value?.format) {
-              delete configs[property];
-            }
-            return configs;
-          },
-          { ...newConfigs }
-        );
-      },
-      newInputsRow: (previousInputs) => {
-        const newInputs = cloneDeep(previousInputs);
-        return newInputs.map((inputs) => {
-          return Object.entries(propertiesDifference).reduce(
-            (inputs, [property, value]) => {
-              if (Object.keys(inputs).length === 0) {
-                return inputs;
-              }
-              if (!value || value.type || value.$ref) {
-                delete inputs[property];
-              }
-              if (value?.format) {
-                inputs[property] = undefined;
-              }
-              return inputs;
-            },
-            { ...getDefaultValues(jsonSchema), ...inputs }
-          );
-        });
-      },
-    });
-  }, [companionFsRefreshCallbackResult.data, getDefaultValues, setDmnRunnerInputs, setDmnRunnerPersistenceJson]);
 
   // Responsible to set the JSON schema based on the DMN model;
   useCancelableEffect(
@@ -538,7 +499,56 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
               if (canceled.get()) {
                 return;
               }
-              setJsonSchema(jsonSchema);
+
+              setJsonSchema((previousJsonSchema) => {
+                // On the first render the previous will be undefined;
+                if (!previousJsonSchema) {
+                  return jsonSchema;
+                }
+
+                const propertiesDifference = diff(
+                  getObjectValueByPath(previousJsonSchema, "definitions.InputSet.properties") ?? {},
+                  getObjectValueByPath(jsonSchema, "definitions.InputSet.properties") ?? {}
+                );
+
+                // Add default values and delete changed data types;
+                setDmnRunnerPersistenceJson({
+                  newConfigInputs: (previousConfigInputs) => {
+                    const newConfigs = cloneDeep(previousConfigInputs);
+                    return Object.entries(propertiesDifference).reduce(
+                      (configs, [property, value]) => {
+                        if (value?.format) {
+                          delete configs[property];
+                        }
+                        return configs;
+                      },
+                      { ...newConfigs }
+                    );
+                  },
+                  newInputsRow: (previousInputs) => {
+                    const newInputs = cloneDeep(previousInputs);
+                    return newInputs.map((inputs) => {
+                      return Object.entries(propertiesDifference).reduce(
+                        (inputs, [property, value]) => {
+                          if (Object.keys(inputs).length === 0) {
+                            return inputs;
+                          }
+                          if (!value || value.type || value.$ref) {
+                            delete inputs[property];
+                          }
+                          if (value?.format) {
+                            inputs[property] = undefined;
+                          }
+                          return inputs;
+                        },
+                        { ...getDefaultValues(jsonSchema), ...inputs }
+                      );
+                    });
+                  },
+                  cancellationToken: canceled,
+                });
+                return jsonSchema;
+              });
             });
           })
           .catch((err) => {
@@ -546,7 +556,14 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
             setExtendedServicesError(true);
           });
       },
-      [extendedServices.client, extendedServices.status, extendedServicesModelPayload, props.workspaceFile.extension]
+      [
+        extendedServices.client,
+        extendedServices.status,
+        extendedServicesModelPayload,
+        getDefaultValues,
+        props.workspaceFile.extension,
+        setDmnRunnerPersistenceJson,
+      ]
     )
   );
 

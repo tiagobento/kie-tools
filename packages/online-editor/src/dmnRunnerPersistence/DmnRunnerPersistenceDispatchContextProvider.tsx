@@ -28,6 +28,7 @@ import {
   DmnRunnerPersistenceReducerActionType,
   DmnRunnerUpdatePersistenceJsonDeboucerArgs,
 } from "./DmnRunnerPersistenceTypes";
+import { Holder } from "@kie-tools-core/react-hooks/dist/Holder";
 
 // This variable ensures that a new update from the FS will NOT override the new value.
 let LOCK = false;
@@ -38,8 +39,12 @@ function checkIfHasChangesAndUpdateFs(
   updatePersistenceJsonDebouce: (args: DmnRunnerUpdatePersistenceJsonDeboucerArgs) => void,
   workspaceId: string,
   workspaceFileRelativePath: string,
-  shouldUpdateFs: boolean
+  shouldUpdateFs: boolean,
+  cancellationToken: Holder<boolean>
 ): DmnRunnerPersistenceJson {
+  if (cancellationToken?.get()) {
+    return persistenceJson;
+  }
   // Check for changes before update;
   if (isEqual(persistenceJson, newPersistenceJson)) {
     LOCK = false;
@@ -64,6 +69,7 @@ function checkIfHasChangesAndUpdateFs(
     workspaceId: workspaceId,
     workspaceFileRelativePath: workspaceFileRelativePath,
     content: JSON.stringify(newPersistenceJson),
+    cancellationToken,
   });
 
   LOCK = true;
@@ -82,7 +88,8 @@ function dmnRunnerPersistenceJsonReducer(
       action.updatePersistenceJsonDebouce,
       action.workspaceId,
       action.workspaceFileRelativePath,
-      action.shouldUpdateFS
+      action.shouldUpdateFS,
+      action.cancellationToken
     );
   } else if (action.type === DmnRunnerPersistenceReducerActionType.DEFAULT) {
     return checkIfHasChangesAndUpdateFs(
@@ -91,7 +98,8 @@ function dmnRunnerPersistenceJsonReducer(
       action.updatePersistenceJsonDebouce,
       action.workspaceId,
       action.workspaceFileRelativePath,
-      action.shouldUpdateFS
+      action.shouldUpdateFS,
+      action.cancellationToken
     );
   } else {
     throw new Error("Invalid action for DmnRunnerPersistence reducer");
@@ -119,6 +127,9 @@ export function DmnRunnerPersistenceDispatchContextProvider(props: React.PropsWi
       }
 
       timeout.current = window.setTimeout(() => {
+        if (args.cancellationToken.get()) {
+          return;
+        }
         dmnRunnerPersistenceService.companionFsService.update(
           {
             workspaceId: args.workspaceId,
@@ -145,6 +156,7 @@ export function DmnRunnerPersistenceDispatchContextProvider(props: React.PropsWi
         type: DmnRunnerPersistenceReducerActionType.DEFAULT,
         newPersistenceJson,
         shouldUpdateFS: true,
+        cancellationToken: new Holder(false),
       });
     },
     [updatePersistenceJsonDebouce]

@@ -63,7 +63,6 @@ export type DmnRunnerProviderAction =
   | DmnRunnerProviderActionToggleExpanded;
 
 export interface DmnRunnerCompanionRefreshCallback {
-  propertiesDifference?: Record<string, any>;
   jsonSchema?: ExtendedServicesDmnJsonSchema;
   dmnRunnerPersistenceJson?: DmnRunnerPersistenceJson;
 }
