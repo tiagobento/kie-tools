@@ -42,10 +42,7 @@ import {
 import { useDmnRunnerPersistence } from "../dmnRunnerPersistence/DmnRunnerPersistenceHook";
 import { DmnLanguageService } from "@kie-tools/dmn-language-service";
 import { decoder } from "@kie-tools-core/workspaces-git-fs/dist/encoderdecoder/EncoderDecoder";
-import {
-  generateUuid,
-  getNewDefaultDmnRunnerPersistenceJson,
-} from "../dmnRunnerPersistence/DmnRunnerPersistenceService";
+import { generateUuid } from "../dmnRunnerPersistence/DmnRunnerPersistenceService";
 import { useDmnRunnerPersistenceDispatch } from "../dmnRunnerPersistence/DmnRunnerPersistenceDispatchContext";
 import cloneDeep from "lodash/cloneDeep";
 import { UnitablesInputsConfigs } from "@kie-tools/unitables/dist/UnitablesTypes";
@@ -171,8 +168,18 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
     setExtendedServicesError(false);
   }, [jsonSchema]);
 
-  useEffect(() => {
+  // Reset JSON Schema and PersistenceJson;
+  useLayoutEffect(() => {
     setJsonSchema(undefined);
+    // dmnRunnerPersistenceJsonDispatcher({
+    //   updatePersistenceJsonDebouce,
+    //   workspaceFileRelativePath: props.workspaceFile.relativePath,
+    //   workspaceId: props.workspaceFile.workspaceId,
+    //   type: DmnRunnerPersistenceReducerActionType.PREVIOUS,
+    //   newPersistenceJson: {},
+    //   shouldUpdateFs: false,
+    //   cancellationToken: new Holder(false),
+    // });
   }, [props.workspaceFile.relativePath]);
 
   // Control the isExpaded state based on the extended services status;
@@ -457,29 +464,32 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
     props.workspaceFile.relativePath,
     useCallback(
       async (cancellationToken: Holder<boolean>, workspaceFileEvent: CompanionFsServiceBroadcastEvents | undefined) => {
-        if (!jsonSchema) {
+        if (!jsonSchema || !workspaceFileEvent) {
           return;
         }
 
         // CFSF_ADD is triggered on file creation, file rename, persistence deletion or upload.
-        if (workspaceFileEvent?.type === "CFSF_ADD") {
+        if (workspaceFileEvent.type === "CFSF_ADD") {
           const dmnRunnerPersistenceJson = dmnRunnerPersistenceService.parseDmnRunnerPersistenceJson(
             workspaceFileEvent.content
           );
 
           // Remove incompatible values and add default values;
           const jsonSchemaProperties = getObjectValueByPath(jsonSchema, JSON_SCHEMA_PROPERTIES_PATH);
+          if (jsonSchemaProperties) {
+            Object.entries(jsonSchemaProperties).forEach(
+              ([propertyName, dmnField]: [string, DmnInputFieldProperties]) => {
+                dmnRunnerPersistenceJson.inputs.forEach((input) => {
+                  // if the input has the property name, its value should match the property attribute type/format;
+                  const fieldType = dmnField.type ? dmnField.type : getRefField(jsonSchema, dmnField)?.type;
 
-          Object.entries(jsonSchemaProperties).map(([propertyName, dmnField]: [string, DmnInputFieldProperties]) => {
-            dmnRunnerPersistenceJson.inputs.map((input) => {
-              // if the input has the property name, its value should match the property attribute type/format;
-              const fieldType = dmnField.type ? dmnField.type : getRefField(jsonSchema, dmnField)?.type;
-
-              if (input[propertyName] && typeof input[propertyName] !== (fieldType ?? "string")) {
-                input[propertyName] = getDefaultValueForField(dmnField);
+                  if (input[propertyName] && typeof input[propertyName] !== (fieldType ?? "string")) {
+                    input[propertyName] = getDefaultValueForField(dmnField);
+                  }
+                });
               }
-            });
-          });
+            );
+          }
 
           setDmnRunnerPersistenceJson({
             newInputsRow: cloneDeep(dmnRunnerPersistenceJson.inputs).map((dmnRunnerInput) => ({
@@ -494,7 +504,7 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
 
         // CFSF_UPDATE will be called on every runner update;
         // CFSF_DELETE will be called when FS is deleted;
-        if (workspaceFileEvent?.type === "CFSF_UPDATE" || workspaceFileEvent?.type === "CFSF_DELETE") {
+        if (workspaceFileEvent.type === "CFSF_UPDATE" || workspaceFileEvent.type === "CFSF_DELETE") {
           const dmnRunnerPersistenceJson = dmnRunnerPersistenceService.parseDmnRunnerPersistenceJson(
             workspaceFileEvent.content
           );
@@ -512,7 +522,7 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
           return;
         }
 
-        if (workspaceFileEvent?.type === "CFSF_MOVE" || workspaceFileEvent?.type === "CFSF_RENAME") {
+        if (workspaceFileEvent.type === "CFSF_MOVE" || workspaceFileEvent.type === "CFSF_RENAME") {
           // ignore;
         }
         return;
