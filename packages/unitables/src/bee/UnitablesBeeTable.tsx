@@ -42,6 +42,7 @@ import { AUTO_ROW_ID } from "../uniforms/UnitablesJsonSchemaBridge";
 import getObjectValueByPath from "lodash/get";
 import { useUnitablesContext, useUnitablesRow } from "../UnitablesContext";
 import { UnitablesRowApi } from "../UnitablesRow";
+import moment from "moment";
 import { X_DMN_TYPE } from "@kie-tools/extended-services-api";
 
 export const UNITABLES_COLUMN_MIN_WIDTH = 150;
@@ -115,7 +116,6 @@ export function UnitablesBeeTable({
               joinedName={insideProperty.joinedName}
               rowCount={rows.length}
               columnCount={columnsCount}
-              rowsRefs={rowsRefs}
             />
           );
         }
@@ -126,7 +126,6 @@ export function UnitablesBeeTable({
             joinedName={column.joinedName}
             rowCount={rows.length}
             columnCount={columnsCount}
-            rowsRefs={rowsRefs}
           />
         );
       }
@@ -236,12 +235,10 @@ function UnitablesBeeTableCell({
   joinedName,
   rowCount,
   columnCount,
-  rowsRefs,
 }: BeeTableCellProps<ROWTYPE> & {
   joinedName: string;
   rowCount: number;
   columnCount: number;
-  rowsRefs: Map<number, UnitablesRowApi>;
 }) {
   const [{ field, onChange: onFieldChange, name: fieldName }] = useField(joinedName, {});
   const cellRef = useRef<HTMLDivElement | null>(null);
@@ -276,7 +273,33 @@ function UnitablesBeeTableCell({
         // This ensure a re-render of the SelectField;
         forceUpdate();
       } else if (field.type === "string") {
-        onFieldChange(newValueWithoutSymbols);
+        if (field.format === "time") {
+          if (moment(newValueWithoutSymbols, [moment.HTML5_FMT.TIME, moment.HTML5_FMT.TIME_SECONDS], true).isValid()) {
+            onFieldChange(newValueWithoutSymbols);
+          } else {
+            onFieldChange("");
+          }
+        } else if (field.format === "date") {
+          if (moment(newValueWithoutSymbols, [moment.HTML5_FMT.DATE]).isValid()) {
+            onFieldChange(newValueWithoutSymbols);
+          } else {
+            onFieldChange("");
+          }
+        } else if (field.format === "date-time") {
+          if (
+            moment(newValueWithoutSymbols, [
+              moment.HTML5_FMT.DATETIME_LOCAL,
+              moment.HTML5_FMT.DATETIME_LOCAL_SECONDS,
+              moment.HTML5_FMT.DATETIME_LOCAL_MS,
+            ]).isValid()
+          ) {
+            onFieldChange(newValueWithoutSymbols);
+          } else {
+            onFieldChange("");
+          }
+        } else {
+          onFieldChange(newValueWithoutSymbols);
+        }
       } else if (field.type === "number") {
         const numberValue = parseFloat(newValueWithoutSymbols);
         onFieldChange(isNaN(numberValue) ? undefined : numberValue);
@@ -290,10 +313,10 @@ function UnitablesBeeTableCell({
         onFieldChange(newValue);
       }
 
-      // submit row;
-      rowsRefs.get(containerCellCoordinates?.rowIndex ?? 0)?.submit();
+      // // submit row;
+      // rowsRefs.get(containerCellCoordinates?.rowIndex ?? 0)?.submit();
     },
-    [isBeeTableChange, field, onFieldChange, rowsRefs, containerCellCoordinates?.rowIndex]
+    [isBeeTableChange, field, onFieldChange]
   );
 
   const { isActive, isEditing } = useBeeTableSelectableCellRef(

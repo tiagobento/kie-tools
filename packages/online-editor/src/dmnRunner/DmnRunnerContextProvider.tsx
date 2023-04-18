@@ -438,7 +438,7 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
       return "";
     }
     if (dmnField.type === "number") {
-      return;
+      return undefined;
     }
     if (dmnField.type === "array") {
       return [];
@@ -446,7 +446,7 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
     if (dmnField.type === "object") {
       return {};
     }
-    return;
+    return undefined;
   }, []);
 
   // The refreshCallback is called after a CompanionFS event;
