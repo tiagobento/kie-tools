@@ -360,7 +360,7 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
           }
           return newDmnRunnerPersistenceJson;
         },
-        shouldUpdateFS: args.shouldUpdateFs !== undefined ? args.shouldUpdateFs : true,
+        shouldUpdateFs: args.shouldUpdateFs !== undefined ? args.shouldUpdateFs : true,
         cancellationToken: args.cancellationToken ?? new Holder(false),
       });
     },

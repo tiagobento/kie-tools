@@ -64,7 +64,7 @@ export function useDmnRunnerPersistence(workspaceId?: string, workspaceFileRelat
                 workspaceFileRelativePath: workspaceFileRelativePath,
                 type: DmnRunnerPersistenceReducerActionType.DEFAULT,
                 newPersistenceJson: dmnRunnerPersistenceJson,
-                shouldUpdateFS: false,
+                shouldUpdateFs: false,
                 cancellationToken: canceled,
               });
             });

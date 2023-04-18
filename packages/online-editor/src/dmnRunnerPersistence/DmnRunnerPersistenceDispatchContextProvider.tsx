@@ -57,7 +57,7 @@ function dmnRunnerPersistenceJsonReducer(
   }
 
   // The new value should update the FS;
-  if (action.shouldUpdateFS) {
+  if (action.shouldUpdateFs) {
     LOCK = true;
     action.updatePersistenceJsonDebouce({
       workspaceId: action.workspaceId,
