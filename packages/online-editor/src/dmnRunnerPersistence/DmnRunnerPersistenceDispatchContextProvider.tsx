@@ -141,7 +141,21 @@ export function DmnRunnerPersistenceDispatchContextProvider(props: React.PropsWi
     [dmnRunnerPersistenceService]
   );
 
-  const getPersistenceJsonForDownload = useCallback(
+  const onDeleteDmnRunnerPersistenceJson = useCallback(
+    async (workspaceFile: WorkspaceFile) => {
+      const newPersistenceJson = getNewDefaultDmnRunnerPersistenceJson();
+
+      newPersistenceJson.configs.mode = dmnRunnerPersistenceJson.configs.mode;
+
+      await dmnRunnerPersistenceService.companionFsService.createOrOverwrite(
+        { workspaceId: workspaceFile.workspaceId, workspaceFileRelativePath: workspaceFile.relativePath },
+        JSON.stringify(newPersistenceJson)
+      );
+    },
+    [dmnRunnerPersistenceJson.configs.mode, dmnRunnerPersistenceService.companionFsService]
+  );
+
+  const onDownloadDmnRunnerPersistenceJson = useCallback(
     async (workspaceFile: WorkspaceFile) => {
       const persistenceJson = await dmnRunnerPersistenceService.companionFsService.get({
         workspaceId: workspaceFile.workspaceId,
@@ -151,16 +165,17 @@ export function DmnRunnerPersistenceDispatchContextProvider(props: React.PropsWi
         ?.getFileContents()
         .then((content) => new Blob([content], { type: "application/json" }));
     },
-    [dmnRunnerPersistenceService]
+    [dmnRunnerPersistenceService.companionFsService]
   );
 
-  const uploadPersistenceJson = useCallback(
+  const onUploadDmnRunnerPersistenceJson = useCallback(
     async (workspaceFile: WorkspaceFile, file: File) => {
       const content = await new Promise<string>((res) => {
         const reader = new FileReader();
         reader.onload = (event: ProgressEvent<FileReader>) => res(decoder.decode(event.target?.result as ArrayBuffer));
         reader.readAsArrayBuffer(file);
       });
+
       await dmnRunnerPersistenceService.companionFsService.createOrOverwrite(
         { workspaceId: workspaceFile.workspaceId, workspaceFileRelativePath: workspaceFile.relativePath },
         content
@@ -173,11 +188,12 @@ export function DmnRunnerPersistenceDispatchContextProvider(props: React.PropsWi
     <DmnRunnerPersistenceDispatchContext.Provider
       value={{
         dmnRunnerPersistenceService,
-        getPersistenceJsonForDownload,
-        uploadPersistenceJson,
         updatePersistenceJsonDebouce,
         dmnRunnerPersistenceJson,
         dmnRunnerPersistenceJsonDispatcher,
+        onDeleteDmnRunnerPersistenceJson,
+        onDownloadDmnRunnerPersistenceJson,
+        onUploadDmnRunnerPersistenceJson,
       }}
     >
       {props.children}

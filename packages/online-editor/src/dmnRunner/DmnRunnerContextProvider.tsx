@@ -37,6 +37,7 @@ import {
   ExtendedServicesDmnJsonSchema,
   DmnEvaluationMessages,
   ExtendedServicesModelPayload,
+  DmnInputFieldProperties,
 } from "@kie-tools/extended-services-api";
 import { useDmnRunnerPersistence } from "../dmnRunnerPersistence/DmnRunnerPersistenceHook";
 import { DmnLanguageService } from "@kie-tools/dmn-language-service";
@@ -70,6 +71,8 @@ import { PanelId, useEditorDockContext } from "../editor/EditorPageDockContextPr
 import { EmptyState, EmptyStateBody, EmptyStateIcon } from "@patternfly/react-core/dist/js/components/EmptyState";
 import { Text, TextContent } from "@patternfly/react-core/dist/js/components/Text";
 import { ExclamationIcon } from "@patternfly/react-icons/dist/js/icons/exclamation-icon";
+
+const JSON_SCHEMA_PROPERTIES_PATH = "definitions.InputSet.properties";
 
 interface Props {
   isEditorReady?: boolean;
@@ -125,7 +128,7 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
     initialDmnRunnerProviderStates
   );
 
-  // States that are in controll of the DmnRunnerProvider;
+  // States that are in control of the DmnRunnerProvider;
   const [canBeVisualized, setCanBeVisualized] = useState<boolean>(false);
   const [extendedServicesError, setExtendedServicesError] = useState<boolean>(false);
   const [jsonSchema, setJsonSchema] = useState<ExtendedServicesDmnJsonSchema | undefined>(undefined);
@@ -393,13 +396,12 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
   );
 
   // Recusively get the input node that uses the $ref property
-  const getRefField = useCallback((jsonSchema: ExtendedServicesDmnJsonSchema, field: Record<string, any>): Record<
-    string,
-    any
-  > => {
-    const refPath = field.$ref.split("/").splice(1).join(".");
-    const refField: Record<string, any> = getObjectValueByPath(jsonSchema, refPath);
-    if (refField.$ref) {
+  const getRefField = useCallback((jsonSchema: ExtendedServicesDmnJsonSchema, field: DmnInputFieldProperties):
+    | DmnInputFieldProperties
+    | undefined => {
+    const refPath = field?.$ref?.split("/").splice(1).join(".");
+    const refField: DmnInputFieldProperties | undefined = getObjectValueByPath(jsonSchema, refPath ?? "");
+    if (refField?.$ref) {
       return getRefField(jsonSchema, refField);
     }
     return refField;
@@ -407,16 +409,16 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
 
   const getDefaultValues = useCallback(
     (jsonSchema: ExtendedServicesDmnJsonSchema) => {
-      return Object.entries(getObjectValueByPath(jsonSchema, "definitions.InputSet.properties") ?? {})?.reduce(
+      return Object.entries(getObjectValueByPath(jsonSchema, JSON_SCHEMA_PROPERTIES_PATH) ?? {})?.reduce(
         (acc, [key, field]: [string, Record<string, string>]) => {
           const fieldToCheck = field.$ref ? getRefField(jsonSchema, field) : field;
-          if (fieldToCheck.type === "object") {
+          if (fieldToCheck?.type === "object") {
             acc[key] = {};
           }
-          if (fieldToCheck.type === "array") {
+          if (fieldToCheck?.type === "array") {
             acc[key] = [];
           }
-          if (fieldToCheck.type === "boolean") {
+          if (fieldToCheck?.type === "boolean") {
             acc[key] = false;
           }
           return acc;
@@ -427,8 +429,24 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
     [getRefField]
   );
 
+  const getDefaultValueForField = useCallback((dmnField: DmnInputFieldProperties) => {
+    if (dmnField.type === "string") {
+      return "";
+    }
+    if (dmnField.type === "number") {
+      return;
+    }
+    if (dmnField.type === "array") {
+      return [];
+    }
+    if (dmnField.type === "object") {
+      return {};
+    }
+    return;
+  }, []);
+
   // The refreshCallback is called after a CompanionFS event;
-  // When another TAB updates the FS, it should sync up
+  // When another TAB updates the FS, this callback will sync up;
   useCompanionFsFileSyncedWithWorkspaceFile(
     dmnRunnerPersistenceService.companionFsService,
     props.workspaceFile.workspaceId,
@@ -439,13 +457,26 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
           return;
         }
 
-        // This event type is used when a filename is changed or when a new file is created;
+        // CFSF_ADD is triggered on file creation, file rename, persistence deletion or upload.
         if (workspaceFileEvent?.type === "CFSF_ADD") {
           const dmnRunnerPersistenceJson = dmnRunnerPersistenceService.parseDmnRunnerPersistenceJson(
             workspaceFileEvent.content
           );
 
-          // Add default values;
+          // Remove incompatible values and add default values;
+          const jsonSchemaProperties = getObjectValueByPath(jsonSchema, JSON_SCHEMA_PROPERTIES_PATH);
+
+          Object.entries(jsonSchemaProperties).map(([propertyName, dmnField]: [string, DmnInputFieldProperties]) => {
+            dmnRunnerPersistenceJson.inputs.map((input) => {
+              // if the input has the property name, its value should match the property attribute type/format;
+              const fieldType = dmnField.type ? dmnField.type : getRefField(jsonSchema, dmnField)?.type;
+
+              if (input[propertyName] && typeof input[propertyName] !== (fieldType ?? "string")) {
+                input[propertyName] = getDefaultValueForField(dmnField);
+              }
+            });
+          });
+
           setDmnRunnerPersistenceJson({
             newInputsRow: cloneDeep(dmnRunnerPersistenceJson.inputs).map((dmnRunnerInput) => ({
               ...getDefaultValues(jsonSchema),
@@ -457,6 +488,8 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
           return;
         }
 
+        // CFSF_UPDATE will be called on every runner update;
+        // CFSF_DELETE will be called when FS is deleted;
         if (workspaceFileEvent?.type === "CFSF_UPDATE" || workspaceFileEvent?.type === "CFSF_DELETE") {
           const dmnRunnerPersistenceJson = dmnRunnerPersistenceService.parseDmnRunnerPersistenceJson(
             workspaceFileEvent.content
@@ -472,9 +505,22 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
             shouldUpdateFs: false,
             cancellationToken,
           });
+          return;
         }
+
+        if (workspaceFileEvent?.type === "CFSF_MOVE" || workspaceFileEvent?.type === "CFSF_RENAME") {
+          // ignore;
+        }
+        return;
       },
-      [dmnRunnerPersistenceService, getDefaultValues, jsonSchema, setDmnRunnerPersistenceJson]
+      [
+        dmnRunnerPersistenceService,
+        getDefaultValueForField,
+        getDefaultValues,
+        getRefField,
+        jsonSchema,
+        setDmnRunnerPersistenceJson,
+      ]
     )
   );
 
@@ -510,8 +556,8 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
                 }
 
                 const propertiesDifference = diff(
-                  getObjectValueByPath(previousJsonSchema, "definitions.InputSet.properties") ?? {},
-                  getObjectValueByPath(jsonSchema, "definitions.InputSet.properties") ?? {}
+                  getObjectValueByPath(previousJsonSchema, JSON_SCHEMA_PROPERTIES_PATH) ?? {},
+                  getObjectValueByPath(jsonSchema, JSON_SCHEMA_PROPERTIES_PATH) ?? {}
                 );
 
                 // Add default values and delete changed data types;
@@ -569,17 +615,6 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
       ]
     )
   );
-
-  const onDeleteInputs = useCallback(() => {
-    // overwrite the current persistenceJson with a new one;
-    const newPersistenceJson = getNewDefaultDmnRunnerPersistenceJson();
-    // keep current mode;
-
-    setDmnRunnerPersistenceJson({
-      newConfigInputs: newPersistenceJson.configs.inputs,
-      newInputsRow: newPersistenceJson.inputs.map((input) => ({ ...getDefaultValues(jsonSchema ?? {}), ...input })),
-    });
-  }, [getDefaultValues, jsonSchema, setDmnRunnerPersistenceJson]);
 
   const getDefaultValuesForInputs = useCallback((inputs: InputRow) => {
     return Object.entries(inputs).reduce(
@@ -669,7 +704,6 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
   const dmnRunnerDispatch = useMemo(
     () => ({
       setDmnRunnerContextProviderState,
-      onDeleteInputs,
       onRowAdded,
       onRowDeleted,
       onRowDuplicated,
@@ -680,7 +714,6 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
       setDmnRunnerPersistenceJson,
     }),
     [
-      onDeleteInputs,
       onRowAdded,
       onRowDeleted,
       onRowDuplicated,
