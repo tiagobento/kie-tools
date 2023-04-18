@@ -56,28 +56,28 @@ function dmnRunnerPersistenceJsonReducer(
     return persistenceJson;
   }
 
-  // The new value should update the FS;
-  if (action.shouldUpdateFs) {
-    LOCK = true;
-    action.updatePersistenceJsonDebouce({
-      workspaceId: action.workspaceId,
-      workspaceFileRelativePath: action.workspaceFileRelativePath,
-      content: JSON.stringify(newPersistenceJson),
-      cancellationToken: action.cancellationToken,
-    });
-    return newPersistenceJson;
+  // Updates from local FS and the current value is different from the change, hence, a change occured while the FS is being updated;
+  if (!action.shouldUpdateFs) {
+    if (LOCK) {
+      // the last change was made by this tab; invalidate fsUpdate;
+      LOCK = false;
+      return persistenceJson;
+    } else {
+      // the last change wasn't made by this tab; overwrite
+      LOCK = false;
+      return newPersistenceJson;
+    }
   }
 
-  // Updates from local FS and the current value is different from the change, hence, a change occured while the FS is being updated;
-  if (LOCK) {
-    // the last change was made by this tab; invalidate fsUpdate;
-    LOCK = false;
-    return persistenceJson;
-  } else {
-    // the last change wasn't made by this tab; overwrite
-    LOCK = false;
-    return newPersistenceJson;
-  }
+  // The new value should update the FS;
+  LOCK = true;
+  action.updatePersistenceJsonDebouce({
+    workspaceId: action.workspaceId,
+    workspaceFileRelativePath: action.workspaceFileRelativePath,
+    content: JSON.stringify(newPersistenceJson),
+    cancellationToken: action.cancellationToken,
+  });
+  return newPersistenceJson;
 }
 
 const initialDmnRunnerPersistenceJson = getNewDefaultDmnRunnerPersistenceJson();
