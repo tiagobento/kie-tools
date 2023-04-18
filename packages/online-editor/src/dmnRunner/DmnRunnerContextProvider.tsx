@@ -171,6 +171,10 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
     setExtendedServicesError(false);
   }, [jsonSchema]);
 
+  useEffect(() => {
+    setJsonSchema(undefined);
+  }, [props.workspaceFile.relativePath]);
+
   // Control the isExpaded state based on the extended services status;
   useLayoutEffect(() => {
     if (props.workspaceFile.extension !== "dmn") {
