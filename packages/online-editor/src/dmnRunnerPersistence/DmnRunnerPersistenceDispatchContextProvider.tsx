@@ -28,80 +28,55 @@ import {
   DmnRunnerPersistenceReducerActionType,
   DmnRunnerUpdatePersistenceJsonDeboucerArgs,
 } from "./DmnRunnerPersistenceTypes";
-import { Holder } from "@kie-tools-core/react-hooks/dist/Holder";
 
 // This variable ensures that a new update from the FS will NOT override the new value.
 let LOCK = false;
-
-function checkIfHasChangesAndUpdateFs(
-  persistenceJson: DmnRunnerPersistenceJson,
-  newPersistenceJson: DmnRunnerPersistenceJson,
-  updatePersistenceJsonDebouce: (args: DmnRunnerUpdatePersistenceJsonDeboucerArgs) => void,
-  workspaceId: string,
-  workspaceFileRelativePath: string,
-  shouldUpdateFs: boolean,
-  cancellationToken: Holder<boolean>
-): DmnRunnerPersistenceJson {
-  if (cancellationToken?.get()) {
-    return persistenceJson;
-  }
-  // Check for changes before update;
-  if (isEqual(persistenceJson, newPersistenceJson)) {
-    LOCK = false;
-    return persistenceJson;
-  }
-
-  // Updates from local FS and the current value is different from the change, hence, a change occured while the FS was updated;
-  if (!shouldUpdateFs) {
-    if (LOCK) {
-      // the last change was made by this tab; invalidate fsUpdate;
-      LOCK = false;
-      return persistenceJson;
-    } else {
-      // state wasn't changed by this tab; overwrite
-      LOCK = false;
-      return newPersistenceJson;
-    }
-  }
-
-  // update FS;
-  LOCK = true;
-  updatePersistenceJsonDebouce({
-    workspaceId: workspaceId,
-    workspaceFileRelativePath: workspaceFileRelativePath,
-    content: JSON.stringify(newPersistenceJson),
-    cancellationToken,
-  });
-  return newPersistenceJson;
-}
 
 // Update the state and update the FS;
 function dmnRunnerPersistenceJsonReducer(
   persistenceJson: DmnRunnerPersistenceJson,
   action: DmnRunnerPersistenceReducerAction
 ) {
+  if (action.cancellationToken?.get()) {
+    return persistenceJson;
+  }
+
+  let newPersistenceJson;
   if (action.type === DmnRunnerPersistenceReducerActionType.PREVIOUS) {
-    return checkIfHasChangesAndUpdateFs(
-      persistenceJson,
-      action.newPersistenceJson(persistenceJson),
-      action.updatePersistenceJsonDebouce,
-      action.workspaceId,
-      action.workspaceFileRelativePath,
-      action.shouldUpdateFS,
-      action.cancellationToken
-    );
+    newPersistenceJson = action.newPersistenceJson(persistenceJson);
   } else if (action.type === DmnRunnerPersistenceReducerActionType.DEFAULT) {
-    return checkIfHasChangesAndUpdateFs(
-      persistenceJson,
-      action.newPersistenceJson,
-      action.updatePersistenceJsonDebouce,
-      action.workspaceId,
-      action.workspaceFileRelativePath,
-      action.shouldUpdateFS,
-      action.cancellationToken
-    );
+    newPersistenceJson = action.newPersistenceJson;
   } else {
     throw new Error("Invalid action for DmnRunnerPersistence reducer");
+  }
+
+  // Check for changes before start;
+  if (isEqual(persistenceJson, newPersistenceJson)) {
+    LOCK = false;
+    return persistenceJson;
+  }
+
+  // The new value should update the FS;
+  if (action.shouldUpdateFS) {
+    LOCK = true;
+    action.updatePersistenceJsonDebouce({
+      workspaceId: action.workspaceId,
+      workspaceFileRelativePath: action.workspaceFileRelativePath,
+      content: JSON.stringify(newPersistenceJson),
+      cancellationToken: action.cancellationToken,
+    });
+    return newPersistenceJson;
+  }
+
+  // Updates from local FS and the current value is different from the change, hence, a change occured while the FS is being updated;
+  if (LOCK) {
+    // the last change was made by this tab; invalidate fsUpdate;
+    LOCK = false;
+    return persistenceJson;
+  } else {
+    // the last change wasn't made by this tab; overwrite
+    LOCK = false;
+    return newPersistenceJson;
   }
 }
 
