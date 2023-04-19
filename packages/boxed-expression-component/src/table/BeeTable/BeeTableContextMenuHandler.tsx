@@ -59,6 +59,7 @@ export function BeeTableContextMenuHandler({
   onColumnAdded,
   onColumnDeleted,
 }: BeeTableContextMenuHandlerProps) {
+  const { i18n } = useBoxedExpressionEditorI18n();
   const { setCurrentlyOpenContextMenu } = useBoxedExpressionEditor();
 
   const { activeCell } = useBeeTableSelection();
@@ -69,12 +70,8 @@ export function BeeTableContextMenuHandler({
       return undefined;
     }
 
-    const rowIndex = activeCell.rowIndex;
-
-    return rowIndex < 0 // Header cells to be read from headerGroups
-      ? _.nth(reactTableInstance.headerGroups, rowIndex)?.headers
-      : reactTableInstance.allColumns;
-  }, [activeCell, reactTableInstance.allColumns, reactTableInstance.headerGroups]);
+    return reactTableInstance.allColumns;
+  }, [activeCell, reactTableInstance.allColumns]);
 
   const column = useMemo(() => {
     if (!activeCell) {
@@ -140,28 +137,40 @@ export function BeeTableContextMenuHandler({
     ];
   }, [activeCell, columnOperations, reactTableInstance.rows.length]);
 
-  const operationLabel = useCallback((operation: BeeTableOperation) => {
-    switch (operation) {
-      case BeeTableOperation.ColumnInsertLeft:
-        return `Insert left`;
-      case BeeTableOperation.ColumnInsertRight:
-        return `Insert right`;
-      case BeeTableOperation.ColumnDelete:
-        return `Delete`;
-      case BeeTableOperation.RowInsertAbove:
-        return `Insert above`;
-      case BeeTableOperation.RowInsertBelow:
-        return `Insert below`;
-      case BeeTableOperation.RowDelete:
-        return `Delete`;
-      case BeeTableOperation.RowReset:
-        return `Reset`;
-      case BeeTableOperation.RowDuplicate:
-        return `Duplicate`;
-      default:
-        assertUnreachable(operation);
-    }
-  }, []);
+  const operationLabel = useCallback(
+    (operation: BeeTableOperation) => {
+      switch (operation) {
+        case BeeTableOperation.ColumnInsertLeft:
+          return i18n.columnOperations.insertLeft;
+        case BeeTableOperation.ColumnInsertRight:
+          return i18n.columnOperations.insertRight;
+        case BeeTableOperation.ColumnDelete:
+          return i18n.columnOperations.delete;
+        case BeeTableOperation.RowInsertAbove:
+          return i18n.rowOperations.insertAbove;
+        case BeeTableOperation.RowInsertBelow:
+          return i18n.rowOperations.insertBelow;
+        case BeeTableOperation.RowDelete:
+          return i18n.rowOperations.delete;
+        case BeeTableOperation.RowReset:
+          return i18n.rowOperations.reset;
+        case BeeTableOperation.RowDuplicate:
+          return i18n.rowOperations.duplicate;
+        default:
+          assertUnreachable(operation);
+      }
+    },
+    [
+      i18n.columnOperations.insertRight,
+      i18n.columnOperations.insertLeft,
+      i18n.columnOperations.delete,
+      i18n.rowOperations.insertAbove,
+      i18n.rowOperations.insertBelow,
+      i18n.rowOperations.delete,
+      i18n.rowOperations.duplicate,
+      i18n.rowOperations.reset,
+    ]
+  );
 
   const operationIcon = useCallback((operation: BeeTableOperation) => {
     switch (operation) {
@@ -196,9 +205,8 @@ export function BeeTableContextMenuHandler({
         return [];
       }
 
-      const columnIndex = activeCell.columnIndex;
       const rowIndex = activeCell.rowIndex;
-
+      const columnIndex = activeCell.columnIndex;
       switch (operation) {
         case BeeTableOperation.ColumnInsertLeft:
           onColumnAdded?.({
@@ -268,8 +276,6 @@ export function BeeTableContextMenuHandler({
       left: xPos,
     };
   }, [xPos, yPos]);
-
-  const { i18n } = useBoxedExpressionEditorI18n();
 
   return (
     <>

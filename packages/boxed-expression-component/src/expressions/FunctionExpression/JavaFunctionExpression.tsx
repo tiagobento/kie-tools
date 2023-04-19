@@ -304,7 +304,7 @@ function JavaFunctionExpressionLabelCell(props: React.PropsWithChildren<BeeTable
   }, [beeGwtService, isActive]);
 
   const getParameterLabelHelp = useCallback((): React.ReactNode => {
-    if (props.rowIndex === 1) {
+    if (props.rowIndex === 0) {
       return <code>org.kie.kogito.MyClass</code>;
     } else {
       return <code>doSomething(java.lang.Integer, double)</code>;

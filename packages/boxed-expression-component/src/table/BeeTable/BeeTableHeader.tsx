@@ -162,12 +162,12 @@ export function BeeTableHeader<R extends object>({
       rowIndex: number,
       column: ReactTable.ColumnInstance<R>,
       columnIndex: number,
-      done: Set<ReactTable.ColumnInstance<R>>
+      done: Set<ReactTable.ColumnInstance<R>>,
+      rowSpan: number
     ) => JSX.Element
   >(
-    (rowIndex, _column, columnIndex, done) => {
+    (rowIndex, _column, columnIndex, done, rowSpan) => {
       const column = _column;
-      const rowSpan = 1;
 
       const thRef = React.createRef<HTMLTableCellElement>();
 
@@ -292,6 +292,19 @@ export function BeeTableHeader<R extends object>({
   const renderHeaderGroups = useCallback(() => {
     const done = new Set<ReactTable.ColumnInstance<R>>();
 
+    function deepestPlaceholder(column: ReactTable.ColumnInstance<R>): {
+      placeholder: ReactTable.ColumnInstance<R>;
+      depth: number;
+    } {
+      let currentDepth = 1;
+      while (column.placeholderOf) {
+        column = column.placeholderOf;
+        currentDepth++;
+      }
+
+      return { placeholder: column, depth: currentDepth };
+    }
+
     return reactTableInstance.headerGroups.map((headerGroup, index) => {
       // rowIndex === -1 --> Last headerGroup
       // rowIndex === -2 --> Second to last headerGroup
@@ -302,7 +315,12 @@ export function BeeTableHeader<R extends object>({
       if (shouldRenderHeaderGroup(rowIndex)) {
         return (
           <tr key={key} {...props}>
-            {headerGroup.headers.map((column, columnIndex) => renderColumn(rowIndex, column, columnIndex, done))}
+            {headerGroup.headers.map((column, columnIndex) => {
+              const { placeholder, depth } = deepestPlaceholder(column);
+              const result = renderColumn(rowIndex + depth - 1, placeholder, columnIndex, done, depth);
+              done.add(placeholder);
+              return result;
+            })}
           </tr>
         );
       } else {
