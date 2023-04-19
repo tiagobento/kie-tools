@@ -28,6 +28,7 @@
   "dependencies": {
     "@kie-tools-core/i18n": "workspace:*",
     "@kie-tools-core/notifications": "workspace:*",
+    "@kie-tools-core/react-hooks": "workspace:*",
     "@kie-tools/boxed-expression-component": "workspace:*",
     "@kie-tools/extended-services-api": "workspace:*",
     "@kie-tools/form": "workspace:*",

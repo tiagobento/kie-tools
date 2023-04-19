@@ -286,13 +286,8 @@ function UnitablesBeeTableCell({
             onFieldChange("");
           }
         } else if (field.format === "date-time") {
-          if (
-            moment(newValueWithoutSymbols, [
-              moment.HTML5_FMT.DATETIME_LOCAL,
-              moment.HTML5_FMT.DATETIME_LOCAL_SECONDS,
-              moment.HTML5_FMT.DATETIME_LOCAL_MS,
-            ]).isValid()
-          ) {
+          const valueAsNumber = Date.parse(newValueWithoutSymbols);
+          if (!isNaN(valueAsNumber)) {
             onFieldChange(newValueWithoutSymbols);
           } else {
             onFieldChange("");
@@ -312,11 +307,9 @@ function UnitablesBeeTableCell({
       } else {
         onFieldChange(newValue);
       }
-
-      // // submit row;
-      // rowsRefs.get(containerCellCoordinates?.rowIndex ?? 0)?.submit();
+      submitRow();
     },
-    [isBeeTableChange, field, onFieldChange]
+    [isBeeTableChange, field.enum, field.type, field.placeholder, field.format, submitRow, onFieldChange]
   );
 
   const { isActive, isEditing } = useBeeTableSelectableCellRef(
@@ -361,7 +354,7 @@ function UnitablesBeeTableCell({
     (e: React.KeyboardEvent<HTMLDivElement>) => {
       // TAB
       if (e.key.toLowerCase() === "tab") {
-        submitRow?.(containerCellCoordinates?.rowIndex ?? 0);
+        submitRow();
         setEditingCell(false);
         if (isEnumField) {
           setIsSelectFieldOpen((prev) => {
@@ -398,7 +391,7 @@ function UnitablesBeeTableCell({
           cellRef.current?.getElementsByTagName("button")?.[0]?.click();
           setIsSelectFieldOpen((prev) => {
             if (prev === true) {
-              submitRow?.(containerCellCoordinates?.rowIndex ?? 0);
+              submitRow();
               setEditingCell(false);
             } else {
               setEditingCell(true);
@@ -416,7 +409,7 @@ function UnitablesBeeTableCell({
             return;
           }
         }
-        submitRow?.(containerCellCoordinates?.rowIndex ?? 0);
+        submitRow();
         setEditingCell(false);
         navigateVertically({ isShiftPressed: e.shiftKey });
         return;
@@ -431,7 +424,7 @@ function UnitablesBeeTableCell({
           // handle checkbox field;
           if (e.code.toLowerCase() === "space" && xDmnFieldType === X_DMN_TYPE.BOOLEAN) {
             cellRef.current?.getElementsByTagName("input")?.[0]?.click();
-            submitRow?.(containerCellCoordinates?.rowIndex ?? 0);
+            submitRow();
             return;
           } else {
             cellRef.current?.getElementsByTagName("input")?.[0]?.select();
@@ -445,16 +438,7 @@ function UnitablesBeeTableCell({
         e.stopPropagation();
       }
     },
-    [
-      xDmnFieldType,
-      containerCellCoordinates?.rowIndex,
-      isEditing,
-      isEnumField,
-      navigateVertically,
-      onFieldChange,
-      setEditingCell,
-      submitRow,
-    ]
+    [xDmnFieldType, isEditing, isEnumField, navigateVertically, onFieldChange, setEditingCell, submitRow]
   );
 
   // if it's active should focus on cell;
@@ -483,7 +467,7 @@ function UnitablesBeeTableCell({
   const onBlur = useCallback(
     (e: React.FocusEvent<HTMLDivElement>) => {
       if (e.target.tagName.toLowerCase() === "input") {
-        submitRow(containerCellCoordinates?.rowIndex ?? 0);
+        submitRow();
       }
       if (
         e.target.tagName.toLowerCase() === "button" ||
@@ -495,10 +479,10 @@ function UnitablesBeeTableCell({
           e.target.click();
           setIsSelectFieldOpen(false);
         }
-        submitRow(containerCellCoordinates?.rowIndex ?? 0);
+        submitRow();
       }
     },
-    [containerCellCoordinates?.rowIndex, fieldName, submitRow]
+    [fieldName, submitRow]
   );
 
   const onClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {

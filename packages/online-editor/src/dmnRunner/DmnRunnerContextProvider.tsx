@@ -171,15 +171,6 @@ export function DmnRunnerContextProvider(props: PropsWithChildren<Props>) {
   // Reset JSON Schema and PersistenceJson;
   useLayoutEffect(() => {
     setJsonSchema(undefined);
-    // dmnRunnerPersistenceJsonDispatcher({
-    //   updatePersistenceJsonDebouce,
-    //   workspaceFileRelativePath: props.workspaceFile.relativePath,
-    //   workspaceId: props.workspaceFile.workspaceId,
-    //   type: DmnRunnerPersistenceReducerActionType.PREVIOUS,
-    //   newPersistenceJson: {},
-    //   shouldUpdateFs: false,
-    //   cancellationToken: new Holder(false),
-    // });
   }, [props.workspaceFile.relativePath]);
 
   // Control the isExpaded state based on the extended services status;

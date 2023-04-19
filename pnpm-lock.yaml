@@ -7377,6 +7377,9 @@ importers:
       "@kie-tools-core/notifications":
         specifier: workspace:*
         version: link:../notifications
+      "@kie-tools-core/react-hooks":
+        specifier: workspace:*
+        version: link:../react-hooks
       "@kie-tools/boxed-expression-component":
         specifier: workspace:*
         version: link:../boxed-expression-component
