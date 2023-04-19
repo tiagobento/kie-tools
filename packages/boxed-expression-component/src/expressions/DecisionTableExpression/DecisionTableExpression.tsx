@@ -203,8 +203,16 @@ export function DecisionTableExpression(
       })
     );
 
-    const outputColumns: ReactTable.Column<ROWTYPE>[] = (decisionTableExpression.output ?? []).map(
-      (outputClause, outputIndex) => ({
+    const outputSection = {
+      groupType: DecisionTableColumnType.OutputClause,
+      id: decisionTableExpression.id,
+      accessor: "decision-table-expression" as any, // FIXME: https://github.com/kiegroup/kie-issues/issues/169
+      label: decisionTableExpression.name ?? DEFAULT_EXPRESSION_NAME,
+      dataType: decisionTableExpression.dataType ?? DmnBuiltInDataType.Undefined,
+      cssClasses: "decision-table--output",
+      isRowIndexColumn: false,
+      width: undefined,
+      columns: (decisionTableExpression.output ?? []).map((outputClause, outputIndex) => ({
         accessor: outputClause.id ?? generateUuid(),
         id: outputClause.id,
         label: outputClause.name,
@@ -215,8 +223,8 @@ export function DecisionTableExpression(
         groupType: DecisionTableColumnType.OutputClause,
         cssClasses: "decision-table--output",
         isRowIndexColumn: false,
-      })
-    );
+      })),
+    };
 
     const annotationColumns: ReactTable.Column<ROWTYPE>[] = (decisionTableExpression.annotations ?? []).map(
       (annotation, annotationIndex) => {
@@ -237,17 +245,34 @@ export function DecisionTableExpression(
       }
     );
 
-    const outputSection = {
-      groupType: DecisionTableColumnType.OutputClause,
-      id: "Outputs",
-      accessor: "decision-table-expression" as any, // FIXME: Tiago -> ?
-      label: decisionTableExpression.name ?? DEFAULT_EXPRESSION_NAME,
-      dataType: decisionTableExpression.dataType ?? DmnBuiltInDataType.Undefined,
-      cssClasses: "decision-table--output",
-      isRowIndexColumn: false,
-      columns: outputColumns,
-      width: undefined,
-    };
+    // FIXME: Delete this.
+    //
+    // Testing multiple rowSpanned sections..
+    //
+    // const outputSection2 = {
+    //   groupType: DecisionTableColumnType.OutputClause,
+    //   id: "Outputs2",
+    //   accessor: "decision-table-expression-2" as any, // FIXME: Tiago -> ?
+    //   label: (decisionTableExpression.name ?? DEFAULT_EXPRESSION_NAME) + "2",
+    //   dataType: decisionTableExpression.dataType ?? DmnBuiltInDataType.Undefined,
+    //   cssClasses: "decision-table--output",
+    //   isRowIndexColumn: false,
+    //   width: undefined,
+    //   columns: (decisionTableExpression.output ?? []).map((outputClause, outputIndex) => ({
+    //     accessor: outputClause.id ?? generateUuid(),
+    //     id: outputClause.id+"2",
+    //     label: outputClause.name + "2",
+    //     dataType: outputClause.dataType,
+    //     width: outputClause.width ?? DECISION_TABLE_OUTPUT_MIN_WIDTH,
+    //     setWidth: setOutputColumnWidth(outputIndex) ,
+    //     minWidth: DECISION_TABLE_OUTPUT_MIN_WIDTH,
+    //     groupType: DecisionTableColumnType.OutputClause,
+    //     cssClasses: "decision-table--output",
+    //     isRowIndexColumn: false,
+    //   })),
+    // };
+    //
+    // return [...inputColumns, outputSection, ...annotationColumns, outputSection2];
 
     return [...inputColumns, outputSection, ...annotationColumns];
   }, [

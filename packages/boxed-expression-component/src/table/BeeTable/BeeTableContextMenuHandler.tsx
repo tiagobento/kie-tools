@@ -69,9 +69,12 @@ export function BeeTableContextMenuHandler({
     if (!activeCell) {
       return undefined;
     }
+    const rowIndex = activeCell.rowIndex;
 
-    return reactTableInstance.allColumns;
-  }, [activeCell, reactTableInstance.allColumns]);
+    return rowIndex < 0 // Header cells to be read from headerGroups
+      ? _.nth(reactTableInstance.headerGroups, rowIndex)?.headers
+      : reactTableInstance.allColumns;
+  }, [activeCell, reactTableInstance.allColumns, reactTableInstance.headerGroups]);
 
   const column = useMemo(() => {
     if (!activeCell) {
@@ -160,16 +163,7 @@ export function BeeTableContextMenuHandler({
           assertUnreachable(operation);
       }
     },
-    [
-      i18n.columnOperations.insertRight,
-      i18n.columnOperations.insertLeft,
-      i18n.columnOperations.delete,
-      i18n.rowOperations.insertAbove,
-      i18n.rowOperations.insertBelow,
-      i18n.rowOperations.delete,
-      i18n.rowOperations.duplicate,
-      i18n.rowOperations.reset,
-    ]
+    [i18n]
   );
 
   const operationIcon = useCallback((operation: BeeTableOperation) => {

@@ -123,6 +123,7 @@ export function JavaFunctionExpression({
   }, [
     functionExpression.classAndMethodNamesWidth,
     functionExpression.dataType,
+    functionExpression.id,
     functionExpression.name,
     parametersColumnHeader,
     setClassAndMethodNamesWidth,
