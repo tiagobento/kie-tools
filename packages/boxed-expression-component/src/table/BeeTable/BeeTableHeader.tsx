@@ -237,7 +237,6 @@ export function BeeTableHeader<R extends object>({
                   {column.dataType ? (
                     <p className="expression-info-data-type pf-u-text-truncate data-type">({column.dataType})</p>
                   ) : null}
-                  ({rowIndex},{columnIndex})
                 </div>
               }
             />

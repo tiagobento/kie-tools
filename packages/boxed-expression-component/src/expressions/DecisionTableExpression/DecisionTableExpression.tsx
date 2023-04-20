@@ -245,35 +245,6 @@ export function DecisionTableExpression(
       }
     );
 
-    // FIXME: Delete this.
-    //
-    // Testing multiple rowSpanned sections..
-    //
-    // const outputSection2 = {
-    //   groupType: DecisionTableColumnType.OutputClause,
-    //   id: "Outputs2",
-    //   accessor: "decision-table-expression-2" as any, // FIXME: Tiago -> ?
-    //   label: (decisionTableExpression.name ?? DEFAULT_EXPRESSION_NAME) + "2",
-    //   dataType: decisionTableExpression.dataType ?? DmnBuiltInDataType.Undefined,
-    //   cssClasses: "decision-table--output",
-    //   isRowIndexColumn: false,
-    //   width: undefined,
-    //   columns: (decisionTableExpression.output ?? []).map((outputClause, outputIndex) => ({
-    //     accessor: outputClause.id ?? generateUuid(),
-    //     id: outputClause.id+"2",
-    //     label: outputClause.name + "2",
-    //     dataType: outputClause.dataType,
-    //     width: outputClause.width ?? DECISION_TABLE_OUTPUT_MIN_WIDTH,
-    //     setWidth: setOutputColumnWidth(outputIndex) ,
-    //     minWidth: DECISION_TABLE_OUTPUT_MIN_WIDTH,
-    //     groupType: DecisionTableColumnType.OutputClause,
-    //     cssClasses: "decision-table--output",
-    //     isRowIndexColumn: false,
-    //   })),
-    // };
-    //
-    // return [...inputColumns, outputSection, ...annotationColumns, outputSection2];
-
     return [...inputColumns, outputSection, ...annotationColumns];
   }, [
     decisionTableExpression.annotations,
