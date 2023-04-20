@@ -302,8 +302,7 @@ export function BeeTableInternal<R extends object>({
         return reactTableInstance.allColumns.length;
       } else {
         return _.nth(reactTableInstance.headerGroups, rowIndex)!.headers.reduce(
-          (nonPlaceholderColumnCount, currentColumn) =>
-            nonPlaceholderColumnCount + (currentColumn.placeholderOf ? 0 : 1),
+          (acc, column) => acc + (column.placeholderOf ? 0 : 1),
           0
         );
       }
