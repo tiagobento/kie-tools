@@ -365,7 +365,7 @@ export function BeeTableSelectionContextProvider({ children }: React.PropsWithCh
                 }
               : {
                   rows: { min: 0, max: rowCount - 1 },
-                  columns: { min: 1, max: columnCount(prev.active.rowIndex) - 1 },
+                  columns: { min: 1, max: Math.max(1, columnCount(prev.active.rowIndex) - 1) },
                 };
 
           const prevCoords =

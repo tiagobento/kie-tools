@@ -287,7 +287,11 @@ export function BeeTableInternal<R extends object>({
       if (rowIndex >= 0) {
         return reactTableInstance.allColumns.length;
       } else {
-        return _.nth(reactTableInstance.headerGroups, rowIndex)!.headers.length;
+        return _.nth(reactTableInstance.headerGroups, rowIndex)!.headers.reduce(
+          (nonPlaceholderColumnCount, currentColumn) =>
+            nonPlaceholderColumnCount + (currentColumn.placeholderOf ? 0 : 1),
+          0
+        );
       }
     },
     [reactTableInstance.allColumns.length, reactTableInstance.headerGroups]
