@@ -148,7 +148,7 @@ function OutputsBeeTable({ id, i18n, outputs, outputTypeMap, rows, scrollablePar
   }, []);
 
   const deepFlattenObjectColumn = useCallback(
-    (myObject: Record<string, any>, parentKey?: string): any[] => {
+    (myObject: Record<string, any>, parentKey?: string): ReactTable.Column<ROWTYPE>[] => {
       return Object.entries(myObject).flatMap(([myObjectKey, value]) => {
         if (value !== null && typeof value === "object") {
           const myKey = parentKey ? `${parentKey}-${myObjectKey}` : myObjectKey;

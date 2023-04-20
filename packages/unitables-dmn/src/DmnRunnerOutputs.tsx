@@ -94,14 +94,13 @@ export function useDmnRunnerOutputs(
           decisionResult.forEach(({ decisionName }) => {
             const outputField = outputTypeMap.get(decisionName);
             if (outputField && isOutputWithInsideProperties(outputField)) {
-              // const insideProperties = deepFlatInsidePropertiesOutputs(outputFieldsMap, decisionName, outputField);
               outputFieldsMap.set(decisionName, {
                 name: decisionName,
                 joinedName: decisionName,
                 dataType: outputField.dataType ?? DmnBuiltInDataType.Undefined,
                 insideProperties: outputField.insideProperties,
                 width: outputField.insideProperties.reduce(
-                  (outputFieldsMap, column: any) => outputFieldsMap + column.width,
+                  (outputFieldsMap, column) => outputFieldsMap + (column?.width ?? DMN_RUNNER_OUTPUT_COLUMN_MIN_WIDTH),
                   0
                 ),
               });
