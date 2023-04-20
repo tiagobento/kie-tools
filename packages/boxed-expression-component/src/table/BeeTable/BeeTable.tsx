@@ -282,6 +282,20 @@ export function BeeTableInternal<R extends object>({
     [getRowKey]
   );
 
+  // For header area (rowIndex < 0), we need to 'getColumnCount' counts just real columns, not placeholders
+  // +-----------+----------+-----------+
+  // |     A     +          |     C     |
+  // +-----+-----+     B    +-----------+
+  // |  a  |  a  |          |  c  |  c  |
+  // +-----------+----------+-----+-----+
+  // | data cells
+  // | ....
+  //
+  // in this example just 'A' and 'C' have rowIndex set to -2
+  // So we need 'getColumnCount' returns number 2 for 'rowIndex' -2
+  //
+  // This is important for boundaries calucalted in 'BeeTableSelectionContext'
+  // We do not want to be able navigate horizontally between header cells with different 'rowIndex'
   const getColumnCount = useCallback(
     (rowIndex: number) => {
       if (rowIndex >= 0) {

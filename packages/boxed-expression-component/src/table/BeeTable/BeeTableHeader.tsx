@@ -295,9 +295,7 @@ export function BeeTableHeader<R extends object>({
       // rowIndex === -2 --> Second to last headerGroup
       // ... and so on
       const rowIndex = -(reactTableInstance.headerGroups.length - 1 - index + 1);
-      // set to -1 because of row index column
-      // row index column is not found by 'getColumnIndexOfHeader' in 'reactTableInstance.allColumns'
-      let lastParentalHeaderCellIndex = -1;
+      let lastParentalHeaderCellIndex = 0;
 
       const { key, ...props } = { ...headerGroup.getHeaderGroupProps(), style: {} };
       if (shouldRenderHeaderGroup(rowIndex)) {
@@ -308,7 +306,7 @@ export function BeeTableHeader<R extends object>({
               const columnIndex =
                 getColumnIndexOfHeader(reactTableInstance, placeholder) >= 0
                   ? getColumnIndexOfHeader(reactTableInstance, placeholder)
-                  : ++lastParentalHeaderCellIndex;
+                  : lastParentalHeaderCellIndex++;
               return renderColumn(rowIndex + depth - 1, placeholder, columnIndex, visitedColumns, depth);
             })}
           </tr>
@@ -321,7 +319,7 @@ export function BeeTableHeader<R extends object>({
               const columnIndex =
                 getColumnIndexOfHeader(reactTableInstance, placeholder) >= 0
                   ? getColumnIndexOfHeader(reactTableInstance, placeholder)
-                  : ++lastParentalHeaderCellIndex;
+                  : lastParentalHeaderCellIndex++;
 
               return (
                 <BeeTableThController
