@@ -259,7 +259,7 @@ jobs:
         uses: actions/upload-artifact@v1
         with:
           name: vscode-extension
-          path: kie-tools/packages/vscode-extension-pack-kogito-kie-editors/dist/vscode_extension_kogito_kie_editors_${{ steps.version.outputs.version }}.vsix
+          path: kie-tools/packages/kie-editors-dev-vscode-extension/dist/vscode_extension_kogito_kie_editors_${{ steps.version.outputs.version }}.vsix
 
       - name: "Upload Chrome Extension for KIE Editors (Ubuntu only)"
         if: runner.os == 'Linux'

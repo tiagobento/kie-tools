@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Red Hat, Inc. and/or its affiliates.
+ * Copyright 2022 Red Hat, Inc. and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,13 @@ import { assert } from "chai";
 import * as path from "path";
 import * as fs from "fs-extra";
 import { sanitize } from "sanitize-filename-ts";
-import { Key } from "selenium-webdriver";
 import {
   ActivityBar,
   By,
+  InputBox,
   ModalDialog,
   SideBarView,
+  TextEditor,
   until,
   ViewControl,
   ViewSection,
@@ -36,7 +37,7 @@ import {
 /**
  * Common test helper class for VS Code extension testing.
  * Provides common API to work with VS Code test instance.
- * Allows you to open folders, files, close open editor.
+ * Allows you  to open folders, files, close open editor.
  * Aquire notifications, input CLI commands etc.
  */
 export default class VSCodeTestHelper {
@@ -76,11 +77,11 @@ export default class VSCodeTestHelper {
   }
 
   /**
-   * Opens folder using commmand supplied by vscode-extension-tester
+   * Opens folder using commmand suplied by vscode-extension-tester
    * and open the dedicated SideBarView with the folder.
    *
-   * @param absolutePath absolute path to the folder that needs to be opened
-   * @returns a promise that resolves to a SideBarView of the opened folder
+   * @param absolutePath absolute path to the folder that needs to be openned
+   * @returns a promise that resolves to a SideBarView of the openned folder
    */
   public openFolder = async (absolutePath: string, folderName: string): Promise<SideBarView> => {
     await this.browser.openResources(absolutePath);
@@ -94,19 +95,25 @@ export default class VSCodeTestHelper {
   };
 
   /**
-   * Opens Dashbuilder file from a sidebarview. Expects that the sideBarView will be defined and open.
+   * Opens serverless logic file from a sidebarview. Expects that the sideBarView will be defined and open.
    * To define sideBarView a folder needs to be opened using openFolder function.
-   * Both webviews (text editor and dashbuilder preview) are loaded and returned
+   * Once the file is opened using a click, function assert existence of two
+   * editor groups and assigns each group to Webview. Both webviews are confirmed loaded and returned
    * in an array on predefined indexes - see returns definition.
+   *
+   * If the file is not located in root of resources folder, specify a relative path to its
+   * parent directory.
+   * To open file in ".../resources/org/kie" call the method as openFileFromSidebar(fileName, "org/kie").
+   * Always separate the directories in path by "/"
    *
    * @param fileName name of the file to open
    * @param fileParentPath optional, use when file is not in root of resources. This is the path of file's parent directory, relative to resources
    *                       if not used the file will be looked in root of resources.
-   * @returns promise that resolves to an array of WebViews of the opened dashbuilder file.
-   *          The lenght of the array is always 2 and TextEditor is guaranteed as webview on O index.
-   *          Custom dashbuilder editor as webview is always on index 1
+   * @returns promise that resolves to an array of WebViews of the openned serverless worklow file.
+   *          The length of the array is always 2 and there is guaranteed TextEditor as webview on O index.
+   *          Custom kogito swf editor as webview is always on index 1
    */
-  public openFileFromSidebar = async (fileName: string, fileParentPath?: string): Promise<WebView[]> => {
+  public openFileFromSidebar = async (fileName: string, fileParentPath?: string): Promise<[TextEditor, WebView]> => {
     if (fileParentPath == undefined || fileParentPath == "") {
       await this.workspaceSectionView.openItem(fileName);
     } else {
@@ -118,24 +125,23 @@ export default class VSCodeTestHelper {
       }
     }
 
+    await sleep(3000);
     const editorGroups = await this.workbench.getEditorView().getEditorGroups();
-    const webviewLeft = new WebView(editorGroups[0], By.linkText(fileName));
-    this.forceOpeningDashbuilderEditor(webviewLeft);
-    const webviewRight = new WebView(editorGroups[1], By.linkText(fileName));
+    // should be always two groups, one text editor and one swf editor
+    assert.equal(editorGroups.length, 2);
+
+    const textEditor = new TextEditor(editorGroups[0]);
+    const webView = new WebView(editorGroups[1], By.linkText(fileName));
 
     // right webview has the custom kogito editor, wait for it to load
-    await this.waitUntilKogitoEditorIsLoaded(webviewRight);
+    await this.waitUntilKogitoEditorIsLoaded(webView);
 
-    const webviews = [] as WebView[];
-    webviews.push(webviewLeft);
-    webviews.push(webviewRight);
-
-    return Promise.resolve(webviews);
+    return Promise.resolve([textEditor, webView]);
   };
 
   /**
    * Closes all editor views that are open.
-   * Resolves even if there are no open editor views.
+   * Resoxlves even if there are no open editor views.
    */
   public closeAllEditors = async (): Promise<void> => {
     try {
@@ -210,11 +216,26 @@ export default class VSCodeTestHelper {
     await driver.switchTo().frame(null);
   };
 
-  private async forceOpeningDashbuilderEditor(textEditorWebView: WebView): Promise<void> {
-    const webDriver = textEditorWebView.getDriver();
-    const consoleHelper = await webDriver.findElement(By.className("webview ready"));
-    await consoleHelper.sendKeys(Key.ENTER);
-  }
+  /**
+   * Opens commands prompt and select given command there
+   */
+  public executeCommandFromPrompt = async (command: string): Promise<void> => {
+    const inputBox = (await this.workbench.openCommandPrompt()) as InputBox;
+    await inputBox.setText(`>${command}`);
+
+    const quickPicks = await inputBox.getQuickPicks();
+
+    for (const quickPick of quickPicks) {
+      const label = await quickPick.getLabel();
+      if (label === command) {
+        await quickPick.select();
+        await sleep(1000);
+        return;
+      }
+    }
+
+    throw new Error(`'${command}' not found in prompt`);
+  };
 
   /**
    * Creates screenshot of current VS Code window and saves it to given path.
