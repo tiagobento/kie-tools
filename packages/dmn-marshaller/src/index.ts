@@ -1,9 +1,39 @@
 import { Meta, XmlParserTs, getInstanceNs, getParser } from "@kie-tools/xml-parser-ts";
-import { meta as dmn10meta, root as dmn10root, ns as dmn10ns } from "./schemas/dmn-1_0/ts-gen/meta";
-import { meta as dmn11meta, root as dmn11root, ns as dmn11ns } from "./schemas/dmn-1_1/ts-gen/meta";
-import { meta as dmn12meta, root as dmn12root, ns as dmn12ns } from "./schemas/dmn-1_2/ts-gen/meta";
-import { meta as dmn13meta, root as dmn13root, ns as dmn13ns } from "./schemas/dmn-1_3/ts-gen/meta";
-import { meta as dmn14meta, root as dmn14root, ns as dmn14ns } from "./schemas/dmn-1_4/ts-gen/meta";
+import {
+  subsParse as dmn10subsParse,
+  subsBuild as dmn10subsBuild,
+  meta as dmn10meta,
+  root as dmn10root,
+  ns as dmn10ns,
+} from "./schemas/dmn-1_0/ts-gen/meta";
+import {
+  subsParse as dmn11subsParse,
+  subsBuild as dmn11subsBuild,
+  meta as dmn11meta,
+  root as dmn11root,
+  ns as dmn11ns,
+} from "./schemas/dmn-1_1/ts-gen/meta";
+import {
+  subsParse as dmn12subsParse,
+  subsBuild as dmn12subsBuild,
+  meta as dmn12meta,
+  root as dmn12root,
+  ns as dmn12ns,
+} from "./schemas/dmn-1_2/ts-gen/meta";
+import {
+  subsParse as dmn13subsParse,
+  subsBuild as dmn13subsBuild,
+  meta as dmn13meta,
+  root as dmn13root,
+  ns as dmn13ns,
+} from "./schemas/dmn-1_3/ts-gen/meta";
+import {
+  subsParse as dmn14subsParse,
+  subsBuild as dmn14subsBuild,
+  meta as dmn14meta,
+  root as dmn14root,
+  ns as dmn14ns,
+} from "./schemas/dmn-1_4/ts-gen/meta";
 // import { dmn3__tDefinitions as DMN10__tDefinitions } from "./schemas/dmn-1_0/ts-gen/types";
 // import { dmn__tDefinitions as DMN11__tDefinitions } from "./schemas/dmn-1_1/ts-gen/types";
 import { DMN14__tDefinitions } from "./schemas/dmn-1_4/ts-gen/types";
@@ -37,7 +67,10 @@ export function getMarshaller(xml: string): DmnMarshaller {
   if (instanceNs.get(dmn10ns.get("")!) !== undefined) {
     const p = getParser<DmnDefinitions>({
       ns: dmn10ns,
+      instanceNs,
       meta: dmn10meta,
+      subsParse: dmn10subsParse,
+      subsBuild: dmn10subsBuild,
       root: dmn10root,
     });
 
@@ -47,13 +80,16 @@ export function getMarshaller(xml: string): DmnMarshaller {
       root: dmn10root,
       meta: dmn10meta,
       parser: { parse: () => p.parse({ xml, instanceNs }).json },
-      builder: { build: (json: DmnDefinitions) => p.build({ json, instanceNs }) },
+      builder: { build: (json: DmnDefinitions) => p.build({ json, instanceNs, subs: dmn10subsBuild }) },
     };
     // Do not remove this '!== undefined', as "" is a valid namespace on the instanceNs map, although it is a falsy value.
   } else if (instanceNs.get(dmn11ns.get("")!) !== undefined) {
     const p = getParser<DmnDefinitions>({
       ns: dmn11ns,
+      instanceNs,
       meta: dmn11meta,
+      subsParse: dmn11subsParse,
+      subsBuild: dmn11subsBuild,
       root: dmn11root,
     });
 
@@ -63,13 +99,16 @@ export function getMarshaller(xml: string): DmnMarshaller {
       root: dmn11root,
       meta: dmn11meta,
       parser: { parse: () => p.parse({ xml, instanceNs }).json },
-      builder: { build: (json: DmnDefinitions) => p.build({ json, instanceNs }) },
+      builder: { build: (json: DmnDefinitions) => p.build({ json, instanceNs, subs: dmn11subsBuild }) },
     };
     // Do not remove this '!== undefined', as "" is a valid namespace on the instanceNs map, although it is a falsy value.
   } else if (instanceNs.get(dmn12ns.get("")!) !== undefined) {
     const p = getParser<DmnDefinitions>({
       ns: dmn12ns,
+      instanceNs,
       meta: dmn12meta,
+      subsParse: dmn12subsParse,
+      subsBuild: dmn12subsBuild,
       root: dmn12root,
     });
 
@@ -79,13 +118,16 @@ export function getMarshaller(xml: string): DmnMarshaller {
       root: dmn12root,
       meta: dmn12meta,
       parser: { parse: () => p.parse({ xml, instanceNs }).json },
-      builder: { build: (json: DmnDefinitions) => p.build({ json, instanceNs }) },
+      builder: { build: (json: DmnDefinitions) => p.build({ json, instanceNs, subs: dmn12subsBuild }) },
     };
     // Do not remove this '!== undefined', as "" is a valid namespace on the instanceNs map, although it is a falsy value.
   } else if (instanceNs.get(dmn13ns.get("")!) !== undefined) {
     const p = getParser<DmnDefinitions>({
       ns: dmn13ns,
+      instanceNs,
       meta: dmn13meta,
+      subsParse: dmn13subsParse,
+      subsBuild: dmn13subsBuild,
       root: dmn13root,
     });
 
@@ -95,13 +137,16 @@ export function getMarshaller(xml: string): DmnMarshaller {
       root: dmn13root,
       meta: dmn13meta,
       parser: { parse: () => p.parse({ xml, instanceNs }).json },
-      builder: { build: (json: DmnDefinitions) => p.build({ json, instanceNs }) },
+      builder: { build: (json: DmnDefinitions) => p.build({ json, instanceNs, subs: dmn13subsBuild }) },
     };
     // Do not remove this '!== undefined', as "" is a valid namespace on the instanceNs map, although it is a falsy value.
   } else if (instanceNs.get(dmn14ns.get("")!) !== undefined) {
     const p = getParser<DmnDefinitions>({
       ns: dmn14ns,
+      instanceNs,
       meta: dmn14meta,
+      subsParse: dmn14subsParse,
+      subsBuild: dmn14subsBuild,
       root: dmn14root,
     });
 
@@ -111,7 +156,7 @@ export function getMarshaller(xml: string): DmnMarshaller {
       root: dmn14root,
       meta: dmn14meta,
       parser: { parse: () => p.parse({ xml, instanceNs }).json },
-      builder: { build: (json: DmnDefinitions) => p.build({ json, instanceNs }) },
+      builder: { build: (json: DmnDefinitions) => p.build({ json, instanceNs, subs: dmn14subsBuild }) },
     };
   } else {
     throw new Error(

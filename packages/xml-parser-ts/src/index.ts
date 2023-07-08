@@ -5,14 +5,20 @@ export type XmlParserTs<T extends object> = {
     json: T;
     instanceNs: Map<string, string>;
   };
-  build: (args: { json: T; instanceNs: Map<string, string> }) => string;
+  build: (args: { json: T; instanceNs: Map<string, string>; subs: SubsBuild }) => string;
 };
 
 export type XmlParserTsRootElementBaseType = Partial<{ [k: `@_xmlns:${string}`]: string }> & { "@_xmlns"?: string };
 
-export type MetaTypeDef = { type: string; isArray: boolean; isOptional: boolean };
+export type MetaTypeDef = { type: string; isArray: boolean };
 
 export type Meta = Record<string, Record<string, MetaTypeDef>>;
+
+export type Root = { element: string; type: string };
+
+export type SubsParse = Record<string, Record<string, string>>;
+
+export type SubsBuild = Record<string, Record<string, Record<string, string>>>;
 
 export type NamespacedProperty<P extends string, K> = K extends string
   ? K extends `@_${string}` | `${string}:${string}` // @_xxx are attributes, xxx:xxx are elements referencing other namespaces;
@@ -105,21 +111,81 @@ export function mergeMetas(base: Meta, extensionMetasByPrefix: [string, Meta][])
  * @returns The corresponding meta type information for the given jsonPath, or undefined is none is found.
  */
 export function traverse(
+  ns: Map<string, string>,
+  instanceNs: Map<string, string>,
   meta: Meta,
+  subsParse: SubsParse,
+  subsBuild: SubsBuild,
   jsonPath: string,
-  root: { element: string; type: string }
+  root: Root
+) {
+  console.info(jsonPath);
+  const jsonPathSplit = jsonPath.split(".");
+  jsonPathSplit.shift(); // Discard the first, as it's always empty.
+
+  let ret: MetaTypeDef | undefined = undefined;
+  let currentType: Record<string, MetaTypeDef | undefined> = meta[root.type];
+  for (const jsonPathPiece of jsonPathSplit) {
+    if (!currentType) {
+      return {}; // Unmapped property inside an `any`-typed element.
+    }
+
+    let pieceName = undefined;
+    let pieceNs = undefined;
+
+    // Resolve piece namespace
+    const s = jsonPathPiece.split(":");
+    if (s.length === 1) {
+      pieceNs = ns.get(instanceNs.get("")!) ?? "";
+      pieceName = s[0];
+    } else if (s.length === 2) {
+      pieceNs = ns.get(instanceNs.get(`${s[0]}:`)!) ?? `${s[0]}:`;
+      pieceName = s[1];
+    } else {
+      throw new Error(jsonPathPiece);
+    }
+
+    const pieceNsed = `${pieceNs}${pieceName}`;
+
+    // Resolve piece substituionGroups
+    let pieceSubsed = pieceNsed;
+    while (subsParse[pieceNs] && !currentType?.[pieceSubsed]) {
+      if (pieceSubsed === undefined) {
+        break; // Not mapped, ignore unknown element...
+      }
+      pieceSubsed = subsParse[pieceNs][pieceSubsed];
+    }
+
+    const propType = currentType[pieceSubsed] ?? currentType[pieceNsed];
+    if (!propType) {
+      return {}; // Unmapped property, let the default act.
+    }
+    ret = propType;
+    currentType = meta[subsBuild[pieceNs]?.[pieceSubsed]?.[pieceNsed]] ?? meta[propType.type];
+  }
+
+  return { propMeta: ret, type: currentType };
+}
+
+export function traverse2(
+  ns: Map<string, string>,
+  meta: Meta,
+  subs: SubsParse,
+  jsonPath: string,
+  root: Root
 ): MetaTypeDef | undefined {
-  const path = jsonPath.split(".");
-  path.shift(); // Discard the first, as it's always empty.
+  const jsonPathSplit = jsonPath.split(".");
+  jsonPathSplit.shift(); // Discard the first, as it's always empty.
 
   let ret: MetaTypeDef | undefined = undefined;
   let currentType: Record<string, MetaTypeDef | undefined> = meta[root.type];
 
-  for (const prop of path) {
+  for (const jsonPathPiece of jsonPathSplit) {
     if (!currentType) {
       return undefined; //Unmapped property inside an `any`-typed element.
     }
-    const propType = currentType[prop];
+
+    const propType = currentType[jsonPathPiece];
     if (!propType) {
       return undefined; // Unmapped property, let the default act.
     }
@@ -210,55 +276,107 @@ export function getInstanceNs(xml: string | Buffer): Map<string, string> {
 export function getParser<T extends object>(args: {
   /** Meta information about the structure of the XML. Used for deciding whether a property is array, boolean, float or integer. */
   meta: Meta;
+  /** Substituion group mapping going from concrete elements to their substitution group head. */
+  subsParse: SubsParse;
+  subsBuild: SubsBuild;
   /** Bi-directional namespace --> URI mapping. This is the one used to normalize the resulting JSON, independent of the namespaces declared on the XML instance. */
   ns: Map<string, string>;
+  instanceNs: Map<string, string>;
   /** Information about the root element used on the XML documents */
-  root: { element: string; type: string };
+  root: Root;
 }): XmlParserTs<T> {
+  const rootElementTagName = args.root.element.split("__")[1];
   const actualParser = (instanceNs: Map<string, string>) => {
     // console.info(instanceNs);
     return new fxp.XMLParser({
       ...__FXP_OPTS,
+      useOriginalTagNameOnJsonPath: true,
       isArray: (tagName, jsonPath, isLeafNode, isAttribute) => {
         if (isAttribute) {
           return false; // Attributes are unique per element. Thus, will never be an array.
         }
-        const t = traverse(args.meta, jsonPath, args.root);
-        return t?.isArray ?? false;
+        const { propMeta } = traverse(
+          args.ns,
+          args.instanceNs,
+          args.meta,
+          args.subsParse,
+          args.subsBuild,
+          jsonPath,
+          args.root
+        );
+        return propMeta?.isArray ?? false;
       },
       // <ns:tagName />
-      transformTagName: (tagName) => {
+      transformTagName: (_tagName, jsonPath) => {
+        const tagName = _tagName.endsWith("/") ? _tagName.substring(0, _tagName.length - 1) : _tagName;
         const s = tagName.split(":");
         if (s.length === 1) {
           const ns = args.ns.get(instanceNs.get("")!) ?? "";
-          // if (s[0] === "context" || s[0] === "literalExpression") {
-          //   return { newTagName: `${ns}expression`, newExtraAttrs: { __$$element: { ns: undefined, name: s[0] } } };
-          // }
-          return { newTagName: `${ns}${s[0]}`, newExtraAttrs: undefined };
+          if (`${ns}${s[0]}` !== rootElementTagName) {
+            return { newTagName: `${ns}${s[0]}`, newExtraAttrs: { __$$element: { ns, name: s[0] } } };
+          } else {
+            return { newTagName: `${ns}${s[0]}`, newExtraAttrs: undefined };
+          }
         } else if (s.length === 2) {
           const ns = args.ns.get(instanceNs.get(`${s[0]}:`)!) ?? `${s[0]}:`;
-          // if (s[1] === "context" || s[1] === "literalExpression") {
-          //   return { newTagName: `${ns}expression`, newExtraAttrs: { __$$element: { ns: s[0], name: s[1] } } };
-          // }
-          return { newTagName: `${ns}${s[1]}`, newExtraAttrs: undefined };
+          if (`${ns}${s[1]}` === rootElementTagName) {
+            return { newTagName: `${ns}${s[1]}`, newExtraAttrs: undefined };
+          } else {
+            let newTagName = `${ns}${s[1]}`;
+            const { type: parentType, propMeta: parentPropMeta } = traverse(
+              args.ns,
+              args.instanceNs,
+              args.meta,
+              args.subsParse,
+              args.subsBuild,
+              jsonPath,
+              args.root
+            ); // jsonPath doesn't include `tagName` at the end.
+
+            while (args.subsParse[ns] && !parentType?.[newTagName]) {
+              if (newTagName === undefined) {
+                break; // Ignore unknown tag/attribute...
+              }
+              newTagName = args.subsParse[ns][newTagName];
+            }
+            const { propMeta } = traverse(
+              args.ns,
+              args.instanceNs,
+              args.meta,
+              args.subsParse,
+              args.subsBuild,
+              `${jsonPath}.${newTagName}`,
+              args.root
+            );
+            console.info(`${jsonPath} --> ${tagName} (${propMeta?.type}) ${propMeta?.isArray ? "[]" : "."}`);
+            return { newTagName: `${newTagName}`, newExtraAttrs: { __$$element: { ns, name: s[1] } } };
+          }
         } else {
           throw new Error(`Invalid tag name '${tagName}'.`);
         }
       },
       // <tagName>tagValue</tagName>
       tagValueProcessor: (tagName, tagValue, jsonPath, hasAttributes, isLeaftNode) => {
-        const t = traverse(args.meta, jsonPath, args.root);
-        if (!t) {
+        const { propMeta } = traverse(
+          args.ns,
+          args.instanceNs,
+          args.meta,
+          args.subsParse,
+          args.subsBuild,
+          jsonPath,
+          args.root
+        );
+        if (!propMeta) {
           return tagValue;
-        } else if (t.type === "string") {
+        } else if (propMeta.type === "string") {
           return tagValue || "";
-        } else if (t.type === "integer") {
+        } else if (propMeta.type === "integer") {
           return parseInt(tagValue);
-        } else if (t.type === "float") {
+        } else if (propMeta.type === "float") {
           return parseFloat(tagValue);
-        } else if (t.type === "boolean") {
+        } else if (propMeta.type === "boolean") {
           return parseBoolean(tagValue);
-        } else if (t.type === "any") {
+        } else if (propMeta.type === "any") {
           return tagValue || {}; // That's the empty object. The tag is there, but it doesn't have any information.
         } else {
           return tagValue || {}; // That's the empty object. The tag is there, but it doesn't have any information.
@@ -267,14 +385,22 @@ export function getParser<T extends object>(args: {
       // <tagName attrName="attrValue" />
       attributeValueProcessor: (attrName, attrValue, jsonPath) => {
         const attrJsonPath = `${jsonPath}.@_${attrName}`;
-        const t = traverse(args.meta, attrJsonPath, args.root);
-        if (t?.type === "boolean") {
+        const { propMeta } = traverse(
+          args.ns,
+          args.instanceNs,
+          args.meta,
+          args.subsParse,
+          args.subsBuild,
+          attrJsonPath,
+          args.root
+        );
+        if (propMeta?.type === "boolean") {
           return parseBoolean(attrValue);
-        } else if (t?.type === "integer") {
+        } else if (propMeta?.type === "integer") {
           return parseInt(attrValue);
-        } else if (t?.type === "float") {
+        } else if (propMeta?.type === "float") {
           return parseFloat(attrValue);
-        } else if (t?.type === "allNNI") {
+        } else if (propMeta?.type === "allNNI") {
           return parseAllNNI(attrValue);
         } else {
           return attrValue;

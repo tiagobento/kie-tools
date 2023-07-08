@@ -4,7 +4,6 @@ import * as fs from "fs";
 import * as path from "path";
 import { XmlParserTs, getParser } from "@kie-tools/xml-parser-ts";
 import {
-  XptcTsImports,
   XptcTsPrimitiveType,
   XptcElement,
   XptcSimpleType,
@@ -26,7 +25,10 @@ import { mergeWith } from "lodash";
 
 export const __XSD_PARSER = getParser<XsdSchema>({
   ns: xsdNs,
+  instanceNs: xsdNs,
   meta: xsdMeta,
+  subsParse: {},
+  subsBuild: {},
   root: { element: "xs:schema", type: "schema" },
 });
 
@@ -257,9 +259,6 @@ ${enumValues.join(" |\n")}
   );
 
   for (const ct of __COMPLEX_TYPES) {
-    if (ct.isAbstract) {
-      continue;
-    }
     const typeName = getTsNameFromNamedType(ct.declaredAtRelativeLocation, ct.name);
     const { metaProperties, needsExtensionType, anonymousTypes } = getMetaProperties(
       __META_TYPE_MAPPING,
@@ -360,6 +359,55 @@ ${[...__XSDS.entries()]
 ]);
 
 
+export const subsParse = {
+${Array.from(__SUBSTITUTIONS.entries())
+  .map(
+    ([namespace, subs]) => `  "${getRealtiveLocationNs(__RELATIVE_LOCATION, namespace)}": {
+${Array.from(subs.entries())
+  .map(
+    ([head, elements]) =>
+      `${elements
+        .map(
+          (vvv) =>
+            `    "${getRealtiveLocationNs(__RELATIVE_LOCATION, vvv.split("__")[0]) + vvv.split("__")[1]}": "${
+              getRealtiveLocationNs(__RELATIVE_LOCATION, head.split("__")[0]) + head.split("__")[1]
+            }",`
+        )
+        .join("\n")}`
+  )
+  .join("\n")}
+  },`
+  )
+  .join("\n")}
+};
+
+    
+export const subsBuild = {
+${Array.from(__SUBSTITUTIONS.entries())
+  .map(
+    ([namespace, subs]) => `  "${getRealtiveLocationNs(__RELATIVE_LOCATION, namespace)}": {
+${Array.from(subs.entries())
+  .map(
+    ([head, elements]) => `    "${
+      getRealtiveLocationNs(__RELATIVE_LOCATION, head.split("__")[0]) + head.split("__")[1]
+    }": {
+${elements
+  .map(
+    (s) =>
+      `      "${
+        getRealtiveLocationNs(__RELATIVE_LOCATION, s.split("__")[0]) + s.split("__")[1]
+      }": "${getTsNameFromNamedType(namespace, __ELEMENTS.get(s)!.type)}",`
+  )
+  .join("\n")}
+    },`
+  )
+  .join("\n")}
+  },`
+  )
+  .join("\n")}
+};
+
+
 export const meta = {
 `;
 
@@ -368,7 +416,7 @@ export const meta = {
 `;
     type.properties.forEach((p) => {
       const ns = getMetaPropertyNs(__RELATIVE_LOCATION, p);
-      meta += `        "${ns}${p.name}": { type: "${p.metaType.name}", isArray: ${p.isArray}, isOptional: ${p.isOptional} },
+      meta += `        "${ns}${p.name}": { type: "${p.metaType.name}", isArray: ${p.isArray} },
 `;
     });
 
@@ -471,35 +519,32 @@ function getMetaProperties(
         throw new Error(`Can't find reference to element '${e.ref}'`);
       }
 
+      const tsType = getTsTypeFromLocalRef(
+        __XSDS,
+        __NAMED_TYPES_BY_TS_NAME,
+        ct.declaredAtRelativeLocation,
+        referencedElement.type
+      );
+
+      metaProperties.push({
+        declaredAt: referencedElement?.declaredAtRelativeLocation,
+        fromType: ct.isAnonymous ? "" : ct.name,
+        name: referencedElement.name,
+        elem: referencedElement,
+        metaType: {
+          name: getMetaTypeName(tsType.name, tsType.doc),
+          xptcType: __NAMED_TYPES_BY_TS_NAME.get(tsType.name),
+        },
+        isArray: e.isArray,
+        isOptional: e.isOptional,
+      });
+
       const resolutions = resolveElementRef(
         __ELEMENTS,
         __XSDS,
         __SUBSTITUTIONS.get(ct.declaredAtRelativeLocation)!,
         referencedElement
       );
-
-      for (const elem of resolutions) {
-        const tsType = getTsTypeFromLocalRef(
-          __XSDS,
-          __NAMED_TYPES_BY_TS_NAME,
-          ct.declaredAtRelativeLocation,
-          elem.type
-        );
-        const isOptionalForSure = e.isOptional || resolutions.length > 1;
-
-        metaProperties.push({
-          declaredAt: ct.declaredAtRelativeLocation,
-          fromType: metaTypeName,
-          name: elem.name,
-          elem: elem,
-          metaType: {
-            name: getMetaTypeName(tsType.name, tsType.doc),
-            xptcType: __NAMED_TYPES_BY_TS_NAME.get(tsType.name),
-          },
-          isArray: e.isArray,
-          isOptional: isOptionalForSure,
-        });
-      }
     } else if (e.kind === "ofNamedType") {
       const tsType = getTsTypeFromLocalRef(__XSDS, __NAMED_TYPES_BY_TS_NAME, ct.declaredAtRelativeLocation, e.typeName);
 
@@ -628,7 +673,7 @@ function getMetaProperties(
           const referencedElement = getXptcElementFromLocalElementRef(
             __XSDS,
             __ELEMENTS,
-            curParentCt.declaredAtRelativeLocation,
+            ct.declaredAtRelativeLocation,
             e.ref
           );
 
@@ -636,35 +681,25 @@ function getMetaProperties(
             throw new Error(`Can't find reference to element '${e.ref}'`);
           }
 
-          const resolutions = resolveElementRef(
-            __ELEMENTS,
+          const tsType = getTsTypeFromLocalRef(
             __XSDS,
-            __SUBSTITUTIONS.get(ct.declaredAtRelativeLocation)!,
-            referencedElement
+            __NAMED_TYPES_BY_TS_NAME,
+            ct.declaredAtRelativeLocation,
+            referencedElement.type
           );
 
-          for (const elem of resolutions ?? []) {
-            const tsType = getTsTypeFromLocalRef(
-              __XSDS,
-              __NAMED_TYPES_BY_TS_NAME,
-              ct.declaredAtRelativeLocation,
-              elem.type
-            );
-            const isOptionalForSure = e.isOptional || resolutions.length > 1;
-
-            metaProperties.push({
-              declaredAt: curParentCt.declaredAtRelativeLocation,
-              fromType: referencedElement.type,
-              name: elem.name,
-              elem: elem,
-              metaType: {
-                name: getMetaTypeName(tsType.name, tsType.doc),
-                xptcType: __NAMED_TYPES_BY_TS_NAME.get(tsType.name)!,
-              },
-              isArray: e.isArray,
-              isOptional: isOptionalForSure,
-            });
-          }
+          metaProperties.push({
+            declaredAt: referencedElement?.declaredAtRelativeLocation,
+            fromType: ct.isAnonymous ? "" : ct.name,
+            name: referencedElement.name,
+            elem: referencedElement,
+            metaType: {
+              name: getMetaTypeName(tsType.name, tsType.doc),
+              xptcType: __NAMED_TYPES_BY_TS_NAME.get(tsType.name),
+            },
+            isArray: e.isArray,
+            isOptional: e.isOptional,
+          });
         } else {
           throw new Error("Unknonwn type of element " + e);
         }
