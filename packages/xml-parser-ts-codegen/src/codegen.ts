@@ -25,7 +25,6 @@ import { mergeWith } from "lodash";
 
 export const __XSD_PARSER = getParser<XsdSchema>({
   ns: xsdNs,
-  instanceNs: xsdNs,
   meta: xsdMeta,
   subs: {},
   elements: {},

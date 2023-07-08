@@ -67,7 +67,6 @@ export function getMarshaller(xml: string): DmnMarshaller {
   if (instanceNs.get(dmn10ns.get("")!) !== undefined) {
     const p = getParser<DmnDefinitions>({
       ns: dmn10ns,
-      instanceNs,
       meta: dmn10meta,
       subs: dmn10subs,
       elements: dmn10elements,
@@ -86,7 +85,6 @@ export function getMarshaller(xml: string): DmnMarshaller {
   } else if (instanceNs.get(dmn11ns.get("")!) !== undefined) {
     const p = getParser<DmnDefinitions>({
       ns: dmn11ns,
-      instanceNs,
       meta: dmn11meta,
       subs: dmn11subs,
       elements: dmn11elements,
@@ -105,7 +103,6 @@ export function getMarshaller(xml: string): DmnMarshaller {
   } else if (instanceNs.get(dmn12ns.get("")!) !== undefined) {
     const p = getParser<DmnDefinitions>({
       ns: dmn12ns,
-      instanceNs,
       meta: dmn12meta,
       subs: dmn12subs,
       elements: dmn12elements,
@@ -124,7 +121,6 @@ export function getMarshaller(xml: string): DmnMarshaller {
   } else if (instanceNs.get(dmn13ns.get("")!) !== undefined) {
     const p = getParser<DmnDefinitions>({
       ns: dmn13ns,
-      instanceNs,
       meta: dmn13meta,
       subs: dmn13subs,
       elements: dmn13elements,
@@ -143,7 +139,6 @@ export function getMarshaller(xml: string): DmnMarshaller {
   } else if (instanceNs.get(dmn14ns.get("")!) !== undefined) {
     const p = getParser<DmnDefinitions>({
       ns: dmn14ns,
-      instanceNs,
       meta: dmn14meta,
       subs: dmn14subs,
       elements: dmn14elements,

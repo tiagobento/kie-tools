@@ -110,16 +110,23 @@ export function mergeMetas(base: Meta, extensionMetasByPrefix: [string, Meta][])
  *
  * @returns The corresponding meta type information for the given jsonPath, or undefined is none is found.
  */
-export function traverse(
-  ns: Map<string, string>,
-  instanceNs: Map<string, string>,
-  meta: Meta,
-  subs: Subs,
-  elements: Elements,
-  jsonPath: string,
-  root: Root
-) {
-  console.info(jsonPath);
+export function traverse({
+  ns,
+  instanceNs,
+  meta,
+  subs,
+  elements,
+  jsonPath,
+  root,
+}: {
+  ns: Map<string, string>;
+  instanceNs: Map<string, string>;
+  meta: Meta;
+  subs: Subs;
+  elements: Elements;
+  jsonPath: string;
+  root: Root;
+}) {
   const jsonPathSplit = jsonPath.split(".");
   jsonPathSplit.shift(); // Discard the first, as it's always empty.
 
@@ -249,16 +256,14 @@ export function getParser<T extends object>(args: {
   meta: Meta;
   /** Substituion group mapping going from concrete elements to their substitution group head. */
   subs: Subs;
+  /** Element types mapped by their namespaced names. */
   elements: Elements;
   /** Bi-directional namespace --> URI mapping. This is the one used to normalize the resulting JSON, independent of the namespaces declared on the XML instance. */
   ns: Map<string, string>;
-  instanceNs: Map<string, string>;
   /** Information about the root element used on the XML documents */
   root: Root;
 }): XmlParserTs<T> {
-  const rootElementTagName = args.root.element.split("__")[1];
   const actualParser = (instanceNs: Map<string, string>) => {
-    // console.info(instanceNs);
     return new fxp.XMLParser({
       ...__FXP_OPTS,
       useOriginalTagNameOnJsonPath: true,
@@ -266,87 +271,54 @@ export function getParser<T extends object>(args: {
         if (isAttribute) {
           return false; // Attributes are unique per element. Thus, will never be an array.
         }
-        const { propMeta } = traverse(
-          args.ns,
-          args.instanceNs,
-          args.meta,
-          args.subs,
-          args.elements,
-          jsonPath,
-          args.root
-        );
+        const { propMeta } = traverse({ ...args, instanceNs, jsonPath });
         return propMeta?.isArray ?? false;
       },
       // <ns:tagName />
       transformTagName: (_tagName, jsonPath) => {
-        const tagName = _tagName.endsWith("/") ? _tagName.substring(0, _tagName.length - 1) : _tagName;
-        const s = tagName.split(":");
-        if (s.length === 1) {
-          const ns = args.ns.get(instanceNs.get("")!) ?? "";
-          if (`${ns}${s[0]}` !== rootElementTagName) {
-            return { newTagName: `${ns}${s[0]}`, newExtraAttrs: { __$$element: { ns, name: s[0] } } };
-          } else {
-            return { newTagName: `${ns}${s[0]}`, newExtraAttrs: undefined };
-          }
-        } else if (s.length === 2) {
-          const ns = args.ns.get(instanceNs.get(`${s[0]}:`)!) ?? `${s[0]}:`;
-          if (`${ns}${s[1]}` === rootElementTagName) {
-            return { newTagName: `${ns}${s[1]}`, newExtraAttrs: undefined };
-          } else {
-            let newTagName = `${ns}${s[1]}`;
-            const { type: parentType, propMeta: parentPropMeta } = traverse(
-              args.ns,
-              args.instanceNs,
-              args.meta,
-              args.subs,
-              args.elements,
-              jsonPath,
-              args.root
-            ); // jsonPath doesn't include `tagName` at the end.
+        const tagName = _tagName.endsWith("/") ? _tagName.substring(0, _tagName.length - 1) : _tagName; // This is a bug on FXP where auto-closing tags will come with an extra '/' at the end of its tagName.
+        const splitTagName = tagName.split(":");
 
-            while (args.subs[ns] && !parentType?.[newTagName]) {
-              if (newTagName === undefined) {
-                break; // Ignore unknown tag/attribute...
-              }
-              newTagName = args.subs[ns][newTagName];
-            }
-            const { propMeta } = traverse(
-              args.ns,
-              args.instanceNs,
-              args.meta,
-              args.subs,
-              args.elements,
-              `${jsonPath}.${newTagName}`,
-              args.root
-            );
-
-            console.info(`${jsonPath} --> ${tagName} (${propMeta?.type}) ${propMeta?.isArray ? "[]" : "."}`);
-
-            return newTagName !== `${ns}${s[1]}`
-              ? {
-                  newTagName: `${newTagName ?? `${ns}${s[1]}`}`,
-                  newExtraAttrs: { __$$element: { ns, name: s[1] } },
-                }
-              : {
-                  newTagName: `${`${ns}${s[1]}`}`,
-                  newExtraAttrs: {},
-                };
-          }
+        // Treat namespaces
+        let ns: string, nsedTagName: string;
+        if (splitTagName.length === 1) {
+          const nsKey = "";
+          ns = args.ns.get(instanceNs.get(nsKey)!) ?? nsKey;
+          nsedTagName = `${ns}${splitTagName[0]}`;
+        } else if (splitTagName.length === 2) {
+          const nsKey = `${splitTagName[0]}:`;
+          ns = args.ns.get(instanceNs.get(nsKey)!) ?? nsKey;
+          nsedTagName = `${ns}${splitTagName[1]}`;
         } else {
           throw new Error(`Invalid tag name '${tagName}'.`);
         }
+
+        // Treat substitutionGroups
+        const { type: parentType } = traverse({ ...args, instanceNs, jsonPath }); // jsonPath doesn't include `tagName` at the end.
+        let subsedTagName = nsedTagName;
+        while (args.subs[ns] && !parentType?.[subsedTagName]) {
+          if (subsedTagName === undefined) {
+            break; // Ignore unknown tag/attribute...
+          }
+          subsedTagName = args.subs[ns][subsedTagName];
+        }
+
+        // Return the tag with the correct name, plus the element descriptor if a substitution occurred.
+        return subsedTagName === nsedTagName
+          ? // No substitutions occurred.
+            {
+              newTagName: nsedTagName,
+              newExtraAttrs: {},
+            }
+          : // Substitutions occurred. Need to save the original name of the element.
+            {
+              newTagName: `${subsedTagName ?? nsedTagName}`,
+              newExtraAttrs: { __$$element: `${ns}${splitTagName[1]}` },
+            };
       },
       // <tagName>tagValue</tagName>
       tagValueProcessor: (tagName, tagValue, jsonPath, hasAttributes, isLeaftNode) => {
-        const { propMeta } = traverse(
-          args.ns,
-          args.instanceNs,
-          args.meta,
-          args.subs,
-          args.elements,
-          jsonPath,
-          args.root
-        );
+        const { propMeta } = traverse({ ...args, instanceNs, jsonPath });
         if (!propMeta) {
           return tagValue;
         } else if (propMeta.type === "string") {
@@ -365,16 +337,7 @@ export function getParser<T extends object>(args: {
       },
       // <tagName attrName="attrValue" />
       attributeValueProcessor: (attrName, attrValue, jsonPath) => {
-        const attrJsonPath = `${jsonPath}.@_${attrName}`;
-        const { propMeta } = traverse(
-          args.ns,
-          args.instanceNs,
-          args.meta,
-          args.subs,
-          args.elements,
-          attrJsonPath,
-          args.root
-        );
+        const { propMeta } = traverse({ ...args, instanceNs, jsonPath: `${jsonPath}.@_${attrName}` });
         if (propMeta?.type === "boolean") {
           return parseBoolean(attrValue);
         } else if (propMeta?.type === "integer") {
