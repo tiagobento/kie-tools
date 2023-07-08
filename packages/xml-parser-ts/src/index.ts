@@ -5,7 +5,7 @@ export type XmlParserTs<T extends object> = {
     json: T;
     instanceNs: Map<string, string>;
   };
-  build: (args: { json: T; instanceNs: Map<string, string>; subs: SubsBuild }) => string;
+  build: (args: { json: T; instanceNs: Map<string, string>; elements: Elements }) => string;
 };
 
 export type XmlParserTsRootElementBaseType = Partial<{ [k: `@_xmlns:${string}`]: string }> & { "@_xmlns"?: string };
@@ -16,9 +16,9 @@ export type Meta = Record<string, Record<string, MetaTypeDef>>;
 
 export type Root = { element: string; type: string };
 
-export type SubsParse = Record<string, Record<string, string>>;
+export type Subs = Record<string, Record<string, string>>;
 
-export type SubsBuild = Record<string, Record<string, Record<string, string>>>;
+export type Elements = Record<string, string>;
 
 export type NamespacedProperty<P extends string, K> = K extends string
   ? K extends `@_${string}` | `${string}:${string}` // @_xxx are attributes, xxx:xxx are elements referencing other namespaces;
@@ -114,8 +114,8 @@ export function traverse(
   ns: Map<string, string>,
   instanceNs: Map<string, string>,
   meta: Meta,
-  subsParse: SubsParse,
-  subsBuild: SubsBuild,
+  subs: Subs,
+  elements: Elements,
   jsonPath: string,
   root: Root
 ) {
@@ -149,11 +149,11 @@ export function traverse(
 
     // Resolve piece substituionGroups
     let pieceSubsed = pieceNsed;
-    while (subsParse[pieceNs] && !currentType?.[pieceSubsed]) {
+    while (subs[pieceNs] && !currentType?.[pieceSubsed]) {
       if (pieceSubsed === undefined) {
         break; // Not mapped, ignore unknown element...
       }
-      pieceSubsed = subsParse[pieceNs][pieceSubsed];
+      pieceSubsed = subs[pieceNs][pieceSubsed];
     }
 
     const propType = currentType[pieceSubsed] ?? currentType[pieceNsed];
@@ -161,39 +161,10 @@ export function traverse(
       return {}; // Unmapped property, let the default act.
     }
     ret = propType;
-    currentType = meta[subsBuild[pieceNs]?.[pieceSubsed]?.[pieceNsed]] ?? meta[propType.type];
+    currentType = meta[elements[pieceNsed]] ?? meta[propType.type];
   }
 
   return { propMeta: ret, type: currentType };
-}
-
-export function traverse2(
-  ns: Map<string, string>,
-  meta: Meta,
-  subs: SubsParse,
-  jsonPath: string,
-  root: Root
-): MetaTypeDef | undefined {
-  const jsonPathSplit = jsonPath.split(".");
-  jsonPathSplit.shift(); // Discard the first, as it's always empty.
-
-  let ret: MetaTypeDef | undefined = undefined;
-  let currentType: Record<string, MetaTypeDef | undefined> = meta[root.type];
-
-  for (const jsonPathPiece of jsonPathSplit) {
-    if (!currentType) {
-      return undefined; //Unmapped property inside an `any`-typed element.
-    }
-
-    const propType = currentType[jsonPathPiece];
-    if (!propType) {
-      return undefined; // Unmapped property, let the default act.
-    }
-    ret = propType;
-    currentType = meta[propType.type];
-  }
-
-  return ret;
 }
 
 // Common options used by FXP Parsers and Builders.
@@ -277,8 +248,8 @@ export function getParser<T extends object>(args: {
   /** Meta information about the structure of the XML. Used for deciding whether a property is array, boolean, float or integer. */
   meta: Meta;
   /** Substituion group mapping going from concrete elements to their substitution group head. */
-  subsParse: SubsParse;
-  subsBuild: SubsBuild;
+  subs: Subs;
+  elements: Elements;
   /** Bi-directional namespace --> URI mapping. This is the one used to normalize the resulting JSON, independent of the namespaces declared on the XML instance. */
   ns: Map<string, string>;
   instanceNs: Map<string, string>;
@@ -299,8 +270,8 @@ export function getParser<T extends object>(args: {
           args.ns,
           args.instanceNs,
           args.meta,
-          args.subsParse,
-          args.subsBuild,
+          args.subs,
+          args.elements,
           jsonPath,
           args.root
         );
@@ -327,29 +298,32 @@ export function getParser<T extends object>(args: {
               args.ns,
               args.instanceNs,
               args.meta,
-              args.subsParse,
-              args.subsBuild,
+              args.subs,
+              args.elements,
               jsonPath,
               args.root
             ); // jsonPath doesn't include `tagName` at the end.
 
-            while (args.subsParse[ns] && !parentType?.[newTagName]) {
+            while (args.subs[ns] && !parentType?.[newTagName]) {
               if (newTagName === undefined) {
                 break; // Ignore unknown tag/attribute...
               }
-              newTagName = args.subsParse[ns][newTagName];
+              newTagName = args.subs[ns][newTagName];
             }
             const { propMeta } = traverse(
               args.ns,
               args.instanceNs,
               args.meta,
-              args.subsParse,
-              args.subsBuild,
+              args.subs,
+              args.elements,
               `${jsonPath}.${newTagName}`,
               args.root
             );
             console.info(`${jsonPath} --> ${tagName} (${propMeta?.type}) ${propMeta?.isArray ? "[]" : "."}`);
-            return { newTagName: `${newTagName}`, newExtraAttrs: { __$$element: { ns, name: s[1] } } };
+            return {
+              newTagName: `${newTagName ?? `${ns}${s[1]}`}`,
+              newExtraAttrs: { __$$element: { ns, name: s[1] } },
+            };
           }
         } else {
           throw new Error(`Invalid tag name '${tagName}'.`);
@@ -361,8 +335,8 @@ export function getParser<T extends object>(args: {
           args.ns,
           args.instanceNs,
           args.meta,
-          args.subsParse,
-          args.subsBuild,
+          args.subs,
+          args.elements,
           jsonPath,
           args.root
         );
@@ -389,8 +363,8 @@ export function getParser<T extends object>(args: {
           args.ns,
           args.instanceNs,
           args.meta,
-          args.subsParse,
-          args.subsBuild,
+          args.subs,
+          args.elements,
           attrJsonPath,
           args.root
         );

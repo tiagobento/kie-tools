@@ -27,8 +27,8 @@ export const __XSD_PARSER = getParser<XsdSchema>({
   ns: xsdNs,
   instanceNs: xsdNs,
   meta: xsdMeta,
-  subsParse: {},
-  subsBuild: {},
+  subs: {},
+  elements: {},
   root: { element: "xs:schema", type: "schema" },
 });
 
@@ -359,7 +359,7 @@ ${[...__XSDS.entries()]
 ]);
 
 
-export const subsParse = {
+export const subs = {
 ${Array.from(__SUBSTITUTIONS.entries())
   .map(
     ([namespace, subs]) => `  "${getRealtiveLocationNs(__RELATIVE_LOCATION, namespace)}": {
@@ -381,29 +381,15 @@ ${Array.from(subs.entries())
   .join("\n")}
 };
 
-    
-export const subsBuild = {
-${Array.from(__SUBSTITUTIONS.entries())
-  .map(
-    ([namespace, subs]) => `  "${getRealtiveLocationNs(__RELATIVE_LOCATION, namespace)}": {
-${Array.from(subs.entries())
-  .map(
-    ([head, elements]) => `    "${
-      getRealtiveLocationNs(__RELATIVE_LOCATION, head.split("__")[0]) + head.split("__")[1]
-    }": {
-${elements
-  .map(
-    (s) =>
-      `      "${
-        getRealtiveLocationNs(__RELATIVE_LOCATION, s.split("__")[0]) + s.split("__")[1]
-      }": "${getTsNameFromNamedType(namespace, __ELEMENTS.get(s)!.type)}",`
-  )
-  .join("\n")}
-    },`
-  )
-  .join("\n")}
-  },`
-  )
+export const elements = {
+${Array.from(__ELEMENTS.entries())
+  .map(([k, v]) => {
+    const s = v.type.split(":");
+    return `  "${getRealtiveLocationNs(__RELATIVE_LOCATION, k.split("__")[0])}${v.name}": "${getTsNameFromNamedType(
+      v.declaredAtRelativeLocation,
+      s.length === 1 ? s[0] : s[1]
+    )}",`;
+  })
   .join("\n")}
 };
 
