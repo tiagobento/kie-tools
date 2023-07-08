@@ -319,11 +319,18 @@ export function getParser<T extends object>(args: {
               `${jsonPath}.${newTagName}`,
               args.root
             );
+
             console.info(`${jsonPath} --> ${tagName} (${propMeta?.type}) ${propMeta?.isArray ? "[]" : "."}`);
-            return {
-              newTagName: `${newTagName ?? `${ns}${s[1]}`}`,
-              newExtraAttrs: { __$$element: { ns, name: s[1] } },
-            };
+
+            return newTagName !== `${ns}${s[1]}`
+              ? {
+                  newTagName: `${newTagName ?? `${ns}${s[1]}`}`,
+                  newExtraAttrs: { __$$element: { ns, name: s[1] } },
+                }
+              : {
+                  newTagName: `${`${ns}${s[1]}`}`,
+                  newExtraAttrs: {},
+                };
           }
         } else {
           throw new Error(`Invalid tag name '${tagName}'.`);
