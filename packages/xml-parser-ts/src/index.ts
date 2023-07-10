@@ -195,16 +195,6 @@ const __FXP_OPTS: fxp.X2jOptionsOptional = {
 // The depth option is not documented. It works because of the local patch we have.
 const __FXP_SHALLOW_PARSER = new fxp.XMLParser({ ...__FXP_OPTS, depth: 0 } as any);
 
-// This is used to write XML strings based on the JSONs we created.
-const __FXP_BUILDER = new fxp.XMLBuilder({
-  attributeNamePrefix: "@_",
-  textNodeName: "#text",
-  ignoreAttributes: false,
-  processEntities: true,
-  format: true,
-  suppressBooleanAttributes: false,
-});
-
 /**
  * Returns a bi-directional map with the namespace aliases declared at the root element of a XML document pointing to their URIs and vice-versa. In this map, namespace aliases are suffixed with `:`.
  * E.g. "dmn:" => "https://www.omg.org/spec/DMN/20211108/MODEL/"
@@ -371,6 +361,17 @@ export function getParser<T extends object>(args: {
     },
   };
 }
+
+// This is used to write XML strings based on the JSONs we created.
+const __FXP_BUILDER = new fxp.XMLBuilder({
+  attributeNamePrefix: "@_",
+  textNodeName: "#text",
+  ignoreAttributes: false,
+  processEntities: true,
+  format: true,
+  suppressBooleanAttributes: false,
+});
+
 /**
  * Converts the JSON to a XML, applying the original instanceNs map on top of the generated ns map.
  *

@@ -233,6 +233,23 @@ async function main() {
 
   const __IMPORTED_TYPES = new Map<string, string>();
 
+  const __DIRECT_CHILDREN = __COMPLEX_TYPES.reduce((acc, ct) => {
+    if (ct.childOf) {
+      const { name: parentName } = getTsTypeFromLocalRef(
+        __XSDS,
+        __NAMED_TYPES_BY_TS_NAME,
+        ct.declaredAtRelativeLocation,
+        ct.childOf
+      );
+      acc.set(parentName, [
+        ...(acc.get(parentName) ?? []),
+        getTsNameFromNamedType(ct.declaredAtRelativeLocation, ct.name),
+      ]);
+    }
+
+    return acc;
+  }, new Map<string, string[]>());
+
   const __META_TYPE_MAPPING = new Map<string, XptcMetaType>();
 
   let ts = "";
@@ -259,6 +276,22 @@ ${enumValues.join(" |\n")}
 
   for (const ct of __COMPLEX_TYPES) {
     const typeName = getTsNameFromNamedType(ct.declaredAtRelativeLocation, ct.name);
+    if (__DIRECT_CHILDREN.has(typeName)) {
+      ts += `export type ${typeName} = |
+${__DIRECT_CHILDREN
+  .get(typeName)
+  ?.map((child) => {
+    return `( { __$$element: "${
+      [...__ELEMENTS.entries()].find(([k, v]) => {
+        const t = getTsNameFromNamedType(v.declaredAtRelativeLocation, v.type);
+        return t === child;
+      })?.[1].name
+    }" } & ${child})`;
+  })
+  .join(" | \n")};\n\n`;
+      continue;
+    }
+
     const { metaProperties, needsExtensionType, anonymousTypes } = getMetaProperties(
       __META_TYPE_MAPPING,
       __ELEMENTS,
