@@ -5,7 +5,7 @@ export type XmlParserTs<T extends object> = {
     json: T;
     instanceNs: Map<string, string>;
   };
-  build: (args: { json: T; instanceNs: Map<string, string>; elements: Elements }) => string;
+  build: (args: { json: T; instanceNs: Map<string, string> }) => string;
 };
 
 export type XmlParserTsRootElementBaseType = Partial<{ [k: `@_xmlns:${string}`]: string }> & { "@_xmlns"?: string };
@@ -320,15 +320,15 @@ export function getParser<T extends object>(args: {
       tagValueProcessor: (tagName, tagValue, jsonPath, hasAttributes, isLeaftNode) => {
         const { propMeta } = traverse({ ...args, instanceNs, jsonPath });
         if (!propMeta) {
-          return tagValue;
+          return {};
         } else if (propMeta.type === "string") {
           return tagValue || "";
+        } else if (propMeta.type === "boolean") {
+          return parseBoolean(tagValue);
         } else if (propMeta.type === "integer") {
           return parseInt(tagValue);
         } else if (propMeta.type === "float") {
           return parseFloat(tagValue);
-        } else if (propMeta.type === "boolean") {
-          return parseBoolean(tagValue);
         } else if (propMeta.type === "any") {
           return tagValue || {}; // That's the empty object. The tag is there, but it doesn't have any information.
         } else {
@@ -364,13 +364,13 @@ export function getParser<T extends object>(args: {
     },
     build: ({ json, instanceNs }) => {
       // console.time("building took");
-      const xml = __FXP_BUILDER.build(applyInstanceNsMap(json, args.ns, instanceNs));
+      // const xml = __FXP_BUILDER.build(applyInstanceNsMap(json, args.ns, instanceNs));
+      const xml = build({ json, ns: args.ns, instanceNs, indent: "" });
       // console.timeEnd("building took");
       return xml;
     },
   };
 }
-
 /**
  * Converts the JSON to a XML, applying the original instanceNs map on top of the generated ns map.
  *
@@ -418,4 +418,142 @@ function applyInstanceNsMap<T extends object>(json: T, ns: Map<string, string>, 
   }
 
   return res;
+}
+
+const entities = [
+  { regex: new RegExp(`&`, "g"), replacement: "&amp;" },
+  { regex: new RegExp(`>`, "g"), replacement: "&gt;" },
+  { regex: new RegExp(`<`, "g"), replacement: "&lt;" },
+  { regex: new RegExp(`'`, "g"), replacement: "&apos;" },
+  { regex: new RegExp(`"`, "g"), replacement: "&quot;" },
+];
+
+function applyEntities(value: any) {
+  let ret = `${value}`;
+  for (const { regex, replacement } of entities) {
+    ret = ret.replace(regex, replacement);
+  }
+
+  return ret;
+}
+
+function buildAttrs(json: any) {
+  let isEmpty = true;
+  let attrs = " ";
+
+  for (const propName in json) {
+    if (propName[0] === "@") {
+      attrs += `${propName.substring(2)}="${applyEntities(json[propName])}" `;
+    } else if (propName !== "__$$element") {
+      isEmpty = false;
+    }
+  }
+
+  if (typeof json !== "object") {
+    isEmpty = false;
+  }
+
+  return { attrs: attrs.substring(0, attrs.length - 1), isEmpty };
+}
+
+export function build(args: {
+  json: any;
+  ns: Map<string, string>;
+  instanceNs: Map<string, string>;
+  indent: string;
+}): string {
+  const { json, ns, instanceNs, indent } = args;
+
+  if (typeof json !== "object" || json === null) {
+    throw new Error(`Can't build XML from a non-object value. '${json}'.`);
+  }
+
+  let xml = "";
+
+  for (const _propName in json) {
+    const propName = applyEntities(_propName);
+    const propValue = json[propName];
+
+    // attributes are not processed as elements.
+    if (propName[0] === "@") {
+      continue;
+    }
+    // ignore this. this is supposed to be on array elements only.
+    else if (propName === "__$$element") {
+      continue;
+    }
+    // pi tag
+    else if (propName[0] === "?") {
+      xml += `${indent}<${propName}${buildAttrs(propValue).attrs} ?>\n`;
+    }
+    // text attribute
+    else if (propName === "#text") {
+      xml += `${applyEntities(propValue)}`;
+    }
+    // empty tag
+    else if (propValue === undefined || propValue === null || propValue === "") {
+      const elementName = applyInstanceNs({ ns, instanceNs, propName });
+      xml += `${indent}<${elementName} />\n`;
+    }
+    // primitive element
+    else if (typeof propValue !== "object") {
+      const elementName = applyInstanceNs({ ns, instanceNs, propName });
+      xml += `${indent}<${elementName}>${applyEntities(propValue)}</${elementName}>\n`;
+    }
+    // array
+    else if (Array.isArray(propValue)) {
+      for (const arrayItem of propValue) {
+        const elementName = applyInstanceNs({ ns, instanceNs, propName: arrayItem["__$$element"] ?? propName });
+        const { attrs, isEmpty } = buildAttrs(arrayItem);
+        xml += `${indent}<${elementName}${attrs}`;
+        if (isEmpty) {
+          xml += " />\n";
+        } else if (typeof arrayItem === "object") {
+          xml += `>\n${build({ ...args, json: arrayItem, indent: `${indent}  ` })}`;
+          xml += `${indent}</${elementName}>\n`;
+        } else {
+          xml += `>${applyEntities(arrayItem)}</${elementName}>\n`;
+        }
+      }
+    }
+    // nested element
+    else {
+      const elementName = applyInstanceNs({ ns, instanceNs, propName: propValue["__$$element"] ?? propName });
+      const { attrs, isEmpty } = buildAttrs(propValue);
+      xml += `${indent}<${elementName}${attrs}`;
+      if (isEmpty) {
+        xml += " />\n";
+      } else if (typeof propValue === "object") {
+        xml += `>\n${build({ ...args, json: propValue, indent: `${indent}  ` })}`;
+        xml += `${indent}</${elementName}>\n`;
+      } else {
+        xml += `>${applyEntities(propValue)}</${elementName}>\n`;
+      }
+    }
+  }
+
+  return xml;
+}
+
+function applyInstanceNs({
+  propName,
+  ns,
+  instanceNs,
+}: {
+  ns: Map<string, string>;
+  instanceNs: Map<string, string>;
+  propName: string;
+}) {
+  const s = propName.split(":");
+
+  if (s.length === 1) {
+    const newPropertyNs = instanceNs.get(ns.get("")!) ?? "";
+    return `${newPropertyNs}${propName}`;
+  } else if (s.length === 2) {
+    const propertyNs = `${s[0]}:`;
+    const newPropertyNs = instanceNs.get(ns.get(propertyNs) ?? "obviously non-existent key") ?? propertyNs;
+    return `${newPropertyNs}${s[1]}`;
+  } else {
+    throw new Error(`Invalid tag name '${propName}'.`);
+  }
 }

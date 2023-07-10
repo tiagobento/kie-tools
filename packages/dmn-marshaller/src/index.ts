@@ -79,7 +79,7 @@ export function getMarshaller(xml: string): DmnMarshaller {
       root: dmn10root,
       meta: dmn10meta,
       parser: { parse: () => p.parse({ xml, instanceNs }).json },
-      builder: { build: (json: DmnDefinitions) => p.build({ json, instanceNs, elements: dmn10elements }) },
+      builder: { build: (json: DmnDefinitions) => p.build({ json, instanceNs }) },
     };
     // Do not remove this '!== undefined', as "" is a valid namespace on the instanceNs map, although it is a falsy value.
   } else if (instanceNs.get(dmn11ns.get("")!) !== undefined) {
@@ -97,7 +97,7 @@ export function getMarshaller(xml: string): DmnMarshaller {
       root: dmn11root,
       meta: dmn11meta,
       parser: { parse: () => p.parse({ xml, instanceNs }).json },
-      builder: { build: (json: DmnDefinitions) => p.build({ json, instanceNs, elements: dmn11elements }) },
+      builder: { build: (json: DmnDefinitions) => p.build({ json, instanceNs }) },
     };
     // Do not remove this '!== undefined', as "" is a valid namespace on the instanceNs map, although it is a falsy value.
   } else if (instanceNs.get(dmn12ns.get("")!) !== undefined) {
@@ -115,7 +115,7 @@ export function getMarshaller(xml: string): DmnMarshaller {
       root: dmn12root,
       meta: dmn12meta,
       parser: { parse: () => p.parse({ xml, instanceNs }).json },
-      builder: { build: (json: DmnDefinitions) => p.build({ json, instanceNs, elements: dmn12elements }) },
+      builder: { build: (json: DmnDefinitions) => p.build({ json, instanceNs }) },
     };
     // Do not remove this '!== undefined', as "" is a valid namespace on the instanceNs map, although it is a falsy value.
   } else if (instanceNs.get(dmn13ns.get("")!) !== undefined) {
@@ -133,7 +133,7 @@ export function getMarshaller(xml: string): DmnMarshaller {
       root: dmn13root,
       meta: dmn13meta,
       parser: { parse: () => p.parse({ xml, instanceNs }).json },
-      builder: { build: (json: DmnDefinitions) => p.build({ json, instanceNs, elements: dmn13elements }) },
+      builder: { build: (json: DmnDefinitions) => p.build({ json, instanceNs }) },
     };
     // Do not remove this '!== undefined', as "" is a valid namespace on the instanceNs map, although it is a falsy value.
   } else if (instanceNs.get(dmn14ns.get("")!) !== undefined) {
@@ -151,7 +151,7 @@ export function getMarshaller(xml: string): DmnMarshaller {
       root: dmn14root,
       meta: dmn14meta,
       parser: { parse: () => p.parse({ xml, instanceNs }).json },
-      builder: { build: (json: DmnDefinitions) => p.build({ json, instanceNs, elements: dmn14elements }) },
+      builder: { build: (json: DmnDefinitions) => p.build({ json, instanceNs }) },
     };
   } else {
     throw new Error(
