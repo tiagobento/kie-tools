@@ -313,7 +313,7 @@ export function getParser<T extends object>(args: {
           : // Substitutions occurred. Need to save the original name of the element.
             {
               newTagName: `${subsedTagName ?? nsedTagName}`,
-              newExtraAttrs: { __$$element: `${ns}${splitTagName[1]}` },
+              newExtraAttrs: { __$$element: nsedTagName },
             };
       },
       // <tagName>tagValue</tagName>

@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const { getMarshaller } = require("@kie-tools/dmn-marshaller");
 
-const xml = fs.readFileSync(path.join(__dirname, "../tests-data--manual/other/sample12.dmn"), "utf-8");
+const xml = fs.readFileSync(path.join(__dirname, "../tests-data--manual/other/external.dmn"), "utf-8");
 
 const { parser, builder } = getMarshaller(xml);
 const json = parser.parse();

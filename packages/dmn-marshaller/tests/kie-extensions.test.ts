@@ -8,9 +8,10 @@ describe("kie-extensions", () => {
     const { parser } = getMarshaller(xml);
     const json = parser.parse();
 
-    const attachments = (json.definitions["knowledgeSource"] ?? []).flatMap(
-      (k) => k.extensionElements?.["kie:attachment"]
-    );
+    // TODO: Remove the `any` types.
+    const attachments = ((json as any).definitions.drgElement ?? [])
+      .filter((drgElement: any) => drgElement["__$$element"] === "knowledgeSource" ?? [])
+      .flatMap((knowledgeSource: any) => knowledgeSource.extensionElements?.["kie:attachment"]);
 
     expect(attachments.length).toStrictEqual(1);
   });

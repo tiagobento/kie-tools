@@ -7,6 +7,9 @@ import { getMarshaller } from "@kie-tools/dmn-marshaller";
 const files = [
   "../tests-data--manual/other/attachment.dmn",
   "../tests-data--manual/other/empty13.dmn",
+  "../tests-data--manual/other/list.dmn",
+  "../tests-data--manual/other/list2.dmn",
+  "../tests-data--manual/other/external.dmn",
   "../tests-data--manual/other/sample12.dmn",
   "../tests-data--manual/other/weird.dmn",
   // FIXME: Tiago --> This is failing due to vendor-specific properties. If we remove them manually, everything works well. How to do it?
