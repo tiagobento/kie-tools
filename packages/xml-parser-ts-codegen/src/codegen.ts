@@ -291,6 +291,7 @@ ${enumValues.join(" |\n")}
     const typeName = getTsNameFromNamedType(ct.declaredAtRelativeLocation, ct.name);
 
     const { metaProperties, needsExtensionType, anonymousTypes } = getMetaProperties(
+      __RELATIVE_LOCATION,
       __META_TYPE_MAPPING,
       __GLOBAL_ELEMENTS,
       __SUBSTITUTIONS,
@@ -306,30 +307,11 @@ ${enumValues.join(" |\n")}
         const arrayMarker = p.isArray ? "[]" : "";
         const tsType = p.metaType.name === "integer" || p.metaType.name === "float" ? "number" : p.metaType.name;
         const ns = getMetaPropertyNs(__RELATIVE_LOCATION, p);
-        return `    "${ns}${p.name}"${optionalMarker}: ${tsType}${arrayMarker}; // from type ${p.fromType} @ ${p.declaredAt}`;
+        return `    "${ns}${p.name}"${optionalMarker}: ${p.typeBody ?? tsType}${arrayMarker}; // from type ${
+          p.fromType
+        } @ ${p.declaredAt}`;
       })
       .join("\n");
-
-    //     if (__DIRECT_CHILDREN.has(typeName)) {
-    //       ts += `export type ${typeName} = |
-    // ${getAllDescendents(typeName)
-    //   .flatMap((child) => {
-    //     const globalElement = [...__GLOBAL_ELEMENTS.values()].find(
-    //       (v) =>
-    //         child === getTsTypeFromLocalRef(__XSDS, __NAMED_TYPES_BY_TS_NAME, v.declaredAtRelativeLocation, v.type).name
-    //     );
-
-    //     if (!globalElement) {
-    //       return [`  ${child}`];
-    //     } else {
-    //       const elementNs = getRealtiveLocationNs(__RELATIVE_LOCATION, globalElement.declaredAtRelativeLocation);
-    //       const elementName = `${elementNs}${globalElement.name}`;
-    //       return [`  ({ __$$element: "${elementName}" } & ${child})`];
-    //     }
-    //   })
-    //   .join(" | \n")};\n\n`;
-    //       continue;
-    //     }
 
     const doc = ct.doc.trim() ? `/* ${ct.doc} */` : "";
 
@@ -400,7 +382,6 @@ ${[...__XSDS.entries()]
   .join("\n")}
 ]);
 
-
 export const subs = {
 ${Array.from(__SUBSTITUTIONS.entries())
   .map(
@@ -432,7 +413,6 @@ ${Array.from(__GLOBAL_ELEMENTS.entries())
   })
   .join("\n")}
 };
-
 
 export const meta = {
 `;
@@ -498,7 +478,45 @@ function getMetaTypeName(typeName: string, doc: string) {
   return typeName === "number" ? (doc === "xsd:double" || doc === "xsd:float" ? "float" : "integer") : typeName;
 }
 
+function getTypeBodyForElementRef(
+  __RELATIVE_LOCATION: string,
+  __META_TYPE_MAPPING: Map<string, XptcMetaType>,
+  __GLOBAL_ELEMENTS: Map<string, XptcElement>,
+  __SUBSTITUTIONS: Map<string, Map<string, string[]>>,
+  __XSDS: Map<string, XsdSchema>,
+  __NAMED_TYPES_BY_TS_NAME: Map<string, XptcComplexType | XptcSimpleType>,
+  ct: XptcComplexType,
+  referencedElement: XptcElement
+) {
+  const resolutions = resolveElementRef(
+    __GLOBAL_ELEMENTS,
+    __XSDS,
+    __SUBSTITUTIONS.get(ct.declaredAtRelativeLocation)!,
+    referencedElement
+  );
+
+  // No substitutions occured, proceed with normal type.
+  if (resolutions.length === 1 && resolutions[0] === referencedElement) {
+    return undefined;
+  }
+
+  return `( /* From subsitution groups */
+${resolutions
+  .flatMap((element) => {
+    const elementNs = getRealtiveLocationNs(__RELATIVE_LOCATION, element.declaredAtRelativeLocation);
+    const elementName = `${elementNs}${element.name}`;
+    return [
+      `        ({ __$$element: "${elementName}" } & ${
+        getTsTypeFromLocalRef(__XSDS, __NAMED_TYPES_BY_TS_NAME, ct.declaredAtRelativeLocation, element.type).name
+      })`,
+    ];
+  })
+  .join(" |\n")}
+    )`;
+}
+
 function getMetaProperties(
+  __RELATIVE_LOCATION: string,
   __META_TYPE_MAPPING: Map<string, XptcMetaType>,
   __GLOBAL_ELEMENTS: Map<string, XptcElement>,
   __SUBSTITUTIONS: Map<string, Map<string, string[]>>,
@@ -559,16 +577,19 @@ function getMetaProperties(
         metaType: {
           name: getMetaTypeName(tsType.name, tsType.doc),
         },
+        typeBody: getTypeBodyForElementRef(
+          __RELATIVE_LOCATION,
+          __META_TYPE_MAPPING,
+          __GLOBAL_ELEMENTS,
+          __SUBSTITUTIONS,
+          __XSDS,
+          __NAMED_TYPES_BY_TS_NAME,
+          ct,
+          referencedElement
+        ),
         isArray: e.isArray,
         isOptional: e.isOptional,
       });
-
-      const resolutions = resolveElementRef(
-        __GLOBAL_ELEMENTS,
-        __XSDS,
-        __SUBSTITUTIONS.get(ct.declaredAtRelativeLocation)!,
-        referencedElement
-      );
     } else if (e.kind === "ofNamedType") {
       const tsType = getTsTypeFromLocalRef(__XSDS, __NAMED_TYPES_BY_TS_NAME, ct.declaredAtRelativeLocation, e.typeName);
 
@@ -586,6 +607,7 @@ function getMetaProperties(
     } else if (e.kind === "ofAnonymousType") {
       const anonymousType = getAnonymousMetaTypeName(e.name, metaTypeName);
       const mp = getMetaProperties(
+        __RELATIVE_LOCATION,
         __META_TYPE_MAPPING,
         __GLOBAL_ELEMENTS,
         __SUBSTITUTIONS,
@@ -649,6 +671,7 @@ function getMetaProperties(
         if (e.kind === "ofAnonymousType") {
           const anonymousTypeName = getAnonymousMetaTypeName(e.name, metaTypeName);
           const mp = getMetaProperties(
+            __RELATIVE_LOCATION,
             __META_TYPE_MAPPING,
             __GLOBAL_ELEMENTS,
             __SUBSTITUTIONS,
@@ -718,6 +741,16 @@ function getMetaProperties(
             metaType: {
               name: getMetaTypeName(tsType.name, tsType.doc),
             },
+            typeBody: getTypeBodyForElementRef(
+              __RELATIVE_LOCATION,
+              __META_TYPE_MAPPING,
+              __GLOBAL_ELEMENTS,
+              __SUBSTITUTIONS,
+              __XSDS,
+              __NAMED_TYPES_BY_TS_NAME,
+              ct,
+              referencedElement
+            ),
             isArray: e.isArray,
             isOptional: e.isOptional,
           });

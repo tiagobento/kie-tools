@@ -94,6 +94,7 @@ export type XptcMetaTypeProperty = {
   metaType: {
     name: string;
   };
+  typeBody?: string;
   isArray: boolean;
   isOptional: boolean;
   fromType: string;
