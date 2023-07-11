@@ -1,4 +1,4 @@
-import { Meta, XmlParserTs, getInstanceNs, getParser } from "@kie-tools/xml-parser-ts";
+import { Meta, XmlParserTs, getDomDocument, getInstanceNs, getParser } from "@kie-tools/xml-parser-ts";
 import {
   subs as dmn10subs,
   elements as dmn10elements,
@@ -61,7 +61,8 @@ export type DmnDefinitions = {
 // | { Definitions: DMN10__tDefinitions };
 
 export function getMarshaller(xml: string): DmnMarshaller {
-  const instanceNs = getInstanceNs(xml);
+  const domdoc = getDomDocument(xml);
+  const instanceNs = getInstanceNs(domdoc);
 
   // Do not remove this '!== undefined', as "" is a valid namespace on the instanceNs map, although it is a falsy value.
   if (instanceNs.get(dmn10ns.get("")!) !== undefined) {
@@ -78,7 +79,7 @@ export function getMarshaller(xml: string): DmnMarshaller {
       version: "1.0",
       root: dmn10root,
       meta: dmn10meta,
-      parser: { parse: () => p.parse({ xml, instanceNs }).json },
+      parser: { parse: () => p.parse({ xml, domdoc, instanceNs }).json },
       builder: { build: (json: DmnDefinitions) => p.build({ json, instanceNs }) },
     };
     // Do not remove this '!== undefined', as "" is a valid namespace on the instanceNs map, although it is a falsy value.
@@ -96,7 +97,7 @@ export function getMarshaller(xml: string): DmnMarshaller {
       version: "1.1",
       root: dmn11root,
       meta: dmn11meta,
-      parser: { parse: () => p.parse({ xml, instanceNs }).json },
+      parser: { parse: () => p.parse({ xml, domdoc, instanceNs }).json },
       builder: { build: (json: DmnDefinitions) => p.build({ json, instanceNs }) },
     };
     // Do not remove this '!== undefined', as "" is a valid namespace on the instanceNs map, although it is a falsy value.
@@ -114,7 +115,7 @@ export function getMarshaller(xml: string): DmnMarshaller {
       version: "1.2",
       root: dmn12root,
       meta: dmn12meta,
-      parser: { parse: () => p.parse({ xml, instanceNs }).json },
+      parser: { parse: () => p.parse({ xml, domdoc, instanceNs }).json },
       builder: { build: (json: DmnDefinitions) => p.build({ json, instanceNs }) },
     };
     // Do not remove this '!== undefined', as "" is a valid namespace on the instanceNs map, although it is a falsy value.
@@ -132,7 +133,7 @@ export function getMarshaller(xml: string): DmnMarshaller {
       version: "1.3",
       root: dmn13root,
       meta: dmn13meta,
-      parser: { parse: () => p.parse({ xml, instanceNs }).json },
+      parser: { parse: () => p.parse({ xml, domdoc, instanceNs }).json },
       builder: { build: (json: DmnDefinitions) => p.build({ json, instanceNs }) },
     };
     // Do not remove this '!== undefined', as "" is a valid namespace on the instanceNs map, although it is a falsy value.
@@ -150,7 +151,7 @@ export function getMarshaller(xml: string): DmnMarshaller {
       version: "1.4",
       root: dmn14root,
       meta: dmn14meta,
-      parser: { parse: () => p.parse({ xml, instanceNs }).json },
+      parser: { parse: () => p.parse({ xml, domdoc, instanceNs }).json },
       builder: { build: (json: DmnDefinitions) => p.build({ json, instanceNs }) },
     };
   } else {

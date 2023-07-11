@@ -1,7 +1,10 @@
-import * as fxp from "fast-xml-parser";
+import { TextEncoder, TextDecoder } from "util";
+(global as any).TextEncoder = TextEncoder;
+(global as any).TextDecoder = TextDecoder;
+import * as jsdom from "jsdom";
 
 export type XmlParserTs<T extends object> = {
-  parse: (args: { xml: string | Buffer; instanceNs?: Map<string, string> }) => {
+  parse: (args: { xml: string | Buffer; domdoc?: Document; instanceNs?: Map<string, string> }) => {
     json: T;
     instanceNs: Map<string, string>;
   };
@@ -105,119 +108,32 @@ export function mergeMetas(base: Meta, extensionMetasByPrefix: [string, Meta][])
   return { ...base, ...prefixedMetas };
 }
 
-/**
- * Searches for a meta type information for the given jsonPath inside `meta`. `root` is used to start the traversal properly.
- *
- * @returns The corresponding meta type information for the given jsonPath, or undefined is none is found.
- */
-export function traverse({
-  ns,
-  instanceNs,
-  meta,
-  subs,
-  elements,
-  jsonPath,
-  root,
-}: {
-  ns: Map<string, string>;
-  instanceNs: Map<string, string>;
-  meta: Meta;
-  subs: Subs;
-  elements: Elements;
-  jsonPath: string;
-  root: Root;
-}) {
-  const jsonPathSplit = jsonPath.split(".");
-  jsonPathSplit.shift(); // Discard the first, as it's always empty.
-
-  let ret: MetaTypeDef | undefined = undefined;
-  let currentType: Record<string, MetaTypeDef | undefined> = meta[root.type];
-  for (const jsonPathPiece of jsonPathSplit) {
-    if (!currentType) {
-      return {}; // Unmapped property inside an `any`-typed element.
-    }
-
-    let pieceName = undefined;
-    let pieceNs = undefined;
-
-    // Resolve piece namespace
-    const s = jsonPathPiece.split(":");
-    if (s.length === 1) {
-      pieceNs = ns.get(instanceNs.get("")!) ?? "";
-      pieceName = s[0];
-    } else if (s.length === 2) {
-      pieceNs = ns.get(instanceNs.get(`${s[0]}:`)!) ?? `${s[0]}:`;
-      pieceName = s[1];
-    } else {
-      throw new Error(jsonPathPiece);
-    }
-
-    const pieceNsed = `${pieceNs}${pieceName}`;
-
-    // Resolve piece substituionGroups
-    let pieceSubsed = pieceNsed;
-    while (subs[pieceNs] && !currentType?.[pieceSubsed]) {
-      if (pieceSubsed === undefined) {
-        break; // Not mapped, ignore unknown element...
-      }
-      pieceSubsed = subs[pieceNs][pieceSubsed];
-    }
-
-    const propType = currentType[pieceSubsed] ?? currentType[pieceNsed];
-    if (!propType) {
-      return {}; // Unmapped property, let the default act.
-    }
-    ret = propType;
-    currentType = meta[elements[pieceNsed]] ?? meta[propType.type];
-  }
-
-  return { propMeta: ret, type: currentType };
+export function getDomDocument(xml: string | Buffer) {
+  console.time("parsing dom took");
+  const domdoc = global.DOMParser
+    ? new DOMParser().parseFromString(xml.toString(), "application/xml")
+    : new jsdom.JSDOM(xml, { contentType: "application/xml" }).window.document;
+  console.timeEnd("parsing dom took");
+  return domdoc;
 }
-
-// Common options used by FXP Parsers and Builders.
-const __FXP_OPTS: fxp.X2jOptionsOptional = {
-  ignoreAttributes: false, // Obviously, we want the attributes to be part of the JSON too.
-  alwaysCreateTextNode: false,
-  textNodeName: "#text",
-  trimValues: true, //
-  numberParseOptions: {
-    leadingZeros: true,
-    hex: true,
-    skipLike: /.*/, // We don't want FXP messing with values. We treat them with our meta map.
-    // eNotation: false
-  },
-  parseAttributeValue: false, // We don't want FXP messing with values. We treat them with our meta map.
-  parseTagValue: false, // We don't want FXP messing with values. We treat them with our meta map.
-  processEntities: true, // Escaping characters.
-  attributeNamePrefix: "@_", // Our standard. XML attributes always begin with @_ on JSON.
-};
-
-// The depth option is not documented. It works because of the local patch we have.
-const __FXP_SHALLOW_PARSER = new fxp.XMLParser({ ...__FXP_OPTS, depth: 0 } as any);
 
 /**
  * Returns a bi-directional map with the namespace aliases declared at the root element of a XML document pointing to their URIs and vice-versa. In this map, namespace aliases are suffixed with `:`.
  * E.g. "dmn:" => "https://www.omg.org/spec/DMN/20211108/MODEL/"
  *      "https://www.omg.org/spec/DMN/20211108/MODEL/" => "dmn:"
  */
-export function getInstanceNs(xml: string | Buffer): Map<string, string> {
-  // console.time("instanceNs took");
-
-  // We don't need to parse the entire document, just the first level, as namespaces are always declared at the root element.
-  const shallowXml = __FXP_SHALLOW_PARSER.parse(xml);
-
-  // Find the root element. As there can be only one root element, we're safe looking for the first element.
-  const rootElementKey: string = Object.keys(shallowXml).find((attribute) => {
-    return !attribute.startsWith("?") && !attribute.startsWith("!");
-  })!;
+export function getInstanceNs(domdoc: Document): Map<string, string> {
+  console.time("instanceNs took");
+  // Find the root element. As there can be only one root element, we're safe looking for the first node with type 1 (element).
+  const rootElement: Element = [...domdoc.children].find((child) => child.nodeType === 1 /* element */)!;
 
   const nsMap = new Map<string, string>(
-    Object.keys(shallowXml[rootElementKey] ?? {})
-      .filter((p) => p.startsWith("@_xmlns"))
-      .flatMap((p) => {
-        const s = p.split(":");
+    [...rootElement.attributes]
+      .filter((attr) => attr.name.startsWith("xmlns"))
+      .flatMap((attr) => {
+        const s = attr.name.split(":");
 
-        const nsUri = shallowXml[rootElementKey][p];
+        const nsUri = attr.value;
 
         if (s.length === 1) {
           // That's the default namespace.
@@ -232,12 +148,12 @@ export function getInstanceNs(xml: string | Buffer): Map<string, string> {
             [`${s[1]}:`, nsUri],
           ];
         } else {
-          throw new Error(`Invalid xmlns mapping attribute '${p}'`);
+          throw new Error(`Invalid xmlns mapping attribute '${attr.name}'`);
         }
       })
   );
 
-  // console.timeEnd("instanceNs took");
+  console.timeEnd("instanceNs took");
   return nsMap;
 }
 
@@ -253,172 +169,154 @@ export function getParser<T extends object>(args: {
   /** Information about the root element used on the XML documents */
   root: Root;
 }): XmlParserTs<T> {
-  const actualParser = (instanceNs: Map<string, string>) => {
-    return new fxp.XMLParser({
-      ...__FXP_OPTS,
-      useOriginalTagNameOnJsonPath: true,
-      isArray: (tagName, jsonPath, isLeafNode, isAttribute) => {
-        if (isAttribute) {
-          return false; // Attributes are unique per element. Thus, will never be an array.
-        }
-        const { propMeta } = traverse({ ...args, instanceNs, jsonPath });
-        return propMeta?.isArray ?? false;
-      },
-      // <ns:tagName />
-      transformTagName: (_tagName, jsonPath) => {
-        const tagName = _tagName.endsWith("/") ? _tagName.substring(0, _tagName.length - 1) : _tagName; // This is a bug on FXP where auto-closing tags will come with an extra '/' at the end of its tagName.
-        const splitTagName = tagName.split(":");
-
-        // Treat namespaces
-        let ns: string, nsedTagName: string;
-        if (splitTagName.length === 1) {
-          const nsKey = "";
-          ns = args.ns.get(instanceNs.get(nsKey)!) ?? nsKey;
-          nsedTagName = `${ns}${splitTagName[0]}`;
-        } else if (splitTagName.length === 2) {
-          const nsKey = `${splitTagName[0]}:`;
-          ns = args.ns.get(instanceNs.get(nsKey)!) ?? nsKey;
-          nsedTagName = `${ns}${splitTagName[1]}`;
-        } else {
-          throw new Error(`Invalid tag name '${tagName}'.`);
-        }
-
-        // Treat substitutionGroups
-        const { type: parentType } = traverse({ ...args, instanceNs, jsonPath }); // jsonPath doesn't include `tagName` at the end.
-        let subsedTagName = nsedTagName;
-        while (args.subs[ns] && !parentType?.[subsedTagName]) {
-          if (subsedTagName === undefined) {
-            break; // Ignore unknown tag/attribute...
-          }
-          subsedTagName = args.subs[ns][subsedTagName];
-        }
-
-        // Return the tag with the correct name, plus the element descriptor if a substitution occurred.
-        return subsedTagName === nsedTagName
-          ? // No substitutions occurred.
-            {
-              newTagName: nsedTagName,
-              newExtraAttrs: {},
-            }
-          : // Substitutions occurred. Need to save the original name of the element.
-            {
-              newTagName: `${subsedTagName ?? nsedTagName}`,
-              newExtraAttrs: { __$$element: nsedTagName },
-            };
-      },
-      // <tagName>tagValue</tagName>
-      tagValueProcessor: (tagName, tagValue, jsonPath, hasAttributes, isLeaftNode) => {
-        const { propMeta } = traverse({ ...args, instanceNs, jsonPath });
-        if (!propMeta) {
-          return {};
-        } else if (propMeta.type === "string") {
-          return tagValue || "";
-        } else if (propMeta.type === "boolean") {
-          return parseBoolean(tagValue);
-        } else if (propMeta.type === "integer") {
-          return parseInt(tagValue);
-        } else if (propMeta.type === "float") {
-          return parseFloat(tagValue);
-        } else if (propMeta.type === "any") {
-          return tagValue || {}; // That's the empty object. The tag is there, but it doesn't have any information.
-        } else {
-          return tagValue || {}; // That's the empty object. The tag is there, but it doesn't have any information.
-        }
-      },
-      // <tagName attrName="attrValue" />
-      attributeValueProcessor: (attrName, attrValue, jsonPath) => {
-        const { propMeta } = traverse({ ...args, instanceNs, jsonPath: `${jsonPath}.@_${attrName}` });
-        if (propMeta?.type === "boolean") {
-          return parseBoolean(attrValue);
-        } else if (propMeta?.type === "integer") {
-          return parseInt(attrValue);
-        } else if (propMeta?.type === "float") {
-          return parseFloat(attrValue);
-        } else if (propMeta?.type === "allNNI") {
-          return parseAllNNI(attrValue);
-        } else {
-          return attrValue;
-        }
-      },
-    });
-  };
-
   return {
-    parse: ({ xml, instanceNs }) => {
-      instanceNs = instanceNs ?? getInstanceNs(xml);
+    parse: ({ xml, domdoc, instanceNs }) => {
+      domdoc = domdoc ?? getDomDocument(xml);
+      instanceNs = instanceNs ?? getInstanceNs(domdoc);
 
-      // console.time("parsing took");
-      const json = actualParser(instanceNs).parse(xml);
-      // console.timeEnd("parsing took");
+      console.time("parsing overhead took");
+      const rootElementName = args.root.element.split("__")[1]; // FIXME: This should be replaced by `args.root.element` only.
+      const rootType = { [rootElementName]: { type: args.root.type, isArray: false } };
+      const json = parse({ ...args, instanceNs, node: domdoc, nodeType: rootType });
+      console.timeEnd("parsing overhead took");
+
       return { json, instanceNs };
     },
     build: ({ json, instanceNs }) => {
-      // console.time("building took");
-      // const xml = __FXP_BUILDER.build(applyInstanceNsMap(json, args.ns, instanceNs));
+      console.time("building took");
       const xml = build({ json, ns: args.ns, instanceNs, indent: "" });
-      // console.timeEnd("building took");
+      console.timeEnd("building took");
       return xml;
     },
   };
 }
 
-// This is used to write XML strings based on the JSONs we created.
-const __FXP_BUILDER = new fxp.XMLBuilder({
-  attributeNamePrefix: "@_",
-  textNodeName: "#text",
-  ignoreAttributes: false,
-  processEntities: true,
-  format: true,
-  suppressBooleanAttributes: false,
-});
+export function parse(args: {
+  node: Node;
+  nodeType: Record<string, MetaTypeDef | undefined> | undefined;
+  ns: Map<string, string>;
+  instanceNs: Map<string, string>;
+  meta: Meta;
+  elements: Elements;
+  subs: Subs;
+}) {
+  const json: any = {};
 
-/**
- * Converts the JSON to a XML, applying the original instanceNs map on top of the generated ns map.
- *
- * @param json The data to be transformed to XML.
- * @param ns The ns map representing the data on the JSON.
- * @param instanceNs The ns map representing the data on the final XML.
- *
- * @returns a JSON that will be used to write an XML string. The type of this JSON is purposefully `any`
- *          since there's no way to type-safely know what namespace mapping was used on `instanceNs`.
- */
-function applyInstanceNsMap<T extends object>(json: T, ns: Map<string, string>, instanceNs: Map<string, string>): any {
-  if (typeof json !== "object") {
-    return json;
-  }
+  for (const elemNode of args.node.childNodes) {
+    if (elemNode.nodeType === 1 /* element */) {
+      const { nsedName, subsedName } = normalizeName(elemNode.nodeName, args.nodeType, args);
+      const elemPropType = args.nodeType?.[subsedName ?? nsedName];
+      const elemType =
+        args.meta[args.elements[nsedName]] ?? // Regardless of subsitutions that might have occured, we need the type information for the concrete implementation of the element. (E.g., On DMN, tDecision is substituted by tDrgElement)
+        (elemPropType
+          ? args.meta[elemPropType.type] // If we can't find this type with the `elements` mapping, we try directly from `meta`.
+          : undefined); // If the current element is not known, we simply ignore its type and go with the defaults.
 
-  if (Array.isArray(json)) {
-    return json.map((element) => {
-      return applyInstanceNsMap(element, ns, instanceNs);
-    });
-  }
+      let elemValue: any;
+      if (elemPropType?.type === "string") {
+        elemValue = elemNode.textContent ?? "";
+      } else if (elemPropType?.type === "boolean") {
+        elemValue = parseBoolean(elemNode.textContent ?? "");
+      } else if (elemPropType?.type === "float") {
+        elemValue = parseFloat(elemNode.textContent ?? "");
+      } else if (elemPropType?.type === "integer") {
+        elemValue = parseFloat(elemNode.textContent ?? "");
+      } else {
+        elemValue = parse({ ...args, node: elemNode, nodeType: elemType });
+        if (subsedName !== nsedName) {
+          // substitution occurred, need to save the original, normalized element name
+          elemValue["__$$element"] = nsedName;
+        }
+      }
 
-  const res: any = {};
+      for (const attr of (elemNode as Element).attributes) {
+        const attrPropType = elemType?.[`@_${attr.name}`];
 
-  for (const propertyName in json) {
-    if (propertyName.startsWith("@_") || propertyName.startsWith("?") || propertyName === "#text") {
-      res[propertyName] = json[propertyName];
-      continue;
+        let attrValue: any;
+        if (attrPropType?.type === "string") {
+          attrValue = attr.value;
+        } else if (attrPropType?.type === "boolean") {
+          attrValue = parseBoolean(attr.value);
+        } else if (attrPropType?.type === "float") {
+          attrValue = parseFloat(attr.value);
+        } else if (attrPropType?.type === "integer") {
+          attrValue = parseFloat(attr.value);
+        } else if (attrPropType?.type === "allNNI") {
+          attrValue = parseAllNNI(attr.value);
+        } else {
+          attrValue = attr.value; // Unknown type, default to the text from the XML.
+        }
+
+        elemValue[`@_${attr.name}`] = attrValue;
+      }
+
+      const currentValue = json[subsedName ?? nsedName];
+
+      if (elemPropType?.isArray) {
+        json[subsedName ?? nsedName] ??= [];
+        json[subsedName ?? nsedName].push(elemValue);
+      } else if (currentValue) {
+        if (elemPropType && !elemPropType.isArray) {
+          console.warn(
+            `Accumulating values on known non-array property '${subsedName}' (${nsedName}) of type '${elemPropType.type}'.`
+          );
+        }
+        if (Array.isArray(currentValue)) {
+          currentValue.push(elemValue);
+        } else {
+          json[subsedName ?? nsedName] = [currentValue, elemValue]; // Default behavior of accumulating elements with the same name inside an array.
+        }
+      } else {
+        json[subsedName ?? nsedName] = elemValue;
+      }
     }
-
-    const s = propertyName.split(":");
-
-    let newPropertyName: string = propertyName;
-    if (s.length === 1) {
-      const newPropertyNs = instanceNs.get(ns.get("")!) ?? "";
-      newPropertyName = `${newPropertyNs}${propertyName}`;
-    } else if (s.length === 2) {
-      const propertyNs = `${s[0]}:`;
-      const newPropertyNs = instanceNs.get(ns.get(propertyNs) ?? "obviously non-existent key") ?? propertyNs;
-      newPropertyName = `${newPropertyNs}${s[1]}`;
-    } else {
-      throw new Error(`Invalid tag name '${propertyName}'.`);
-    }
-
-    res[newPropertyName] = applyInstanceNsMap(json[propertyName] as any, ns, instanceNs);
   }
 
-  return res;
+  return json;
+}
+
+function normalizeName(
+  name: string,
+  parentType: Record<string, MetaTypeDef | undefined> | undefined,
+  {
+    ns,
+    instanceNs,
+    subs,
+  }: {
+    ns: Map<string, string>;
+    instanceNs: Map<string, string>;
+    subs: Subs;
+  }
+) {
+  let nameNs = undefined;
+  let nameName = undefined;
+
+  const s = name.split(":");
+  if (s.length === 1) {
+    nameNs = ns.get(instanceNs.get("")!) ?? "";
+    nameName = s[0];
+  } else if (s.length === 2) {
+    nameNs = ns.get(instanceNs.get(`${s[0]}:`)!) ?? `${s[0]}:`;
+    nameName = s[1];
+  } else {
+    throw new Error(name);
+  }
+
+  // nsedName stands for "Namespaced name".
+  const nsedName = `${nameNs}${nameName}`;
+
+  // subsedName stands for "Substituted name";
+  let subsedName: string | undefined = nsedName;
+
+  // Resolve piece substituionGroups
+  while (subs[nameNs] && !parentType?.[subsedName]) {
+    if (subsedName === undefined) {
+      break; // Not mapped, ignore unknown element...
+    }
+    subsedName = subs[nameNs][subsedName];
+  }
+
+  return { nsedName, subsedName };
 }
 
 const entities = [
@@ -503,32 +401,33 @@ export function build(args: {
     }
     // array
     else if (Array.isArray(propValue)) {
-      for (const arrayItem of propValue) {
-        const elementName = applyInstanceNs({ ns, instanceNs, propName: arrayItem["__$$element"] ?? propName });
-        const { attrs, isEmpty } = buildAttrs(arrayItem);
+      for (const item of propValue) {
+        const elementName = applyInstanceNs({ ns, instanceNs, propName: item["__$$element"] ?? propName });
+        const { attrs, isEmpty } = buildAttrs(item);
         xml += `${indent}<${elementName}${attrs}`;
         if (isEmpty) {
           xml += " />\n";
-        } else if (typeof arrayItem === "object") {
-          xml += `>\n${build({ ...args, json: arrayItem, indent: `${indent}  ` })}`;
+        } else if (typeof item === "object") {
+          xml += `>\n${build({ ...args, json: item, indent: `${indent}  ` })}`;
           xml += `${indent}</${elementName}>\n`;
         } else {
-          xml += `>${applyEntities(arrayItem)}</${elementName}>\n`;
+          xml += `>${applyEntities(item)}</${elementName}>\n`;
         }
       }
     }
     // nested element
     else {
-      const elementName = applyInstanceNs({ ns, instanceNs, propName: propValue["__$$element"] ?? propName });
-      const { attrs, isEmpty } = buildAttrs(propValue);
+      const item = propValue;
+      const elementName = applyInstanceNs({ ns, instanceNs, propName: item["__$$element"] ?? propName });
+      const { attrs, isEmpty } = buildAttrs(item);
       xml += `${indent}<${elementName}${attrs}`;
       if (isEmpty) {
         xml += " />\n";
-      } else if (typeof propValue === "object") {
-        xml += `>\n${build({ ...args, json: propValue, indent: `${indent}  ` })}`;
+      } else if (typeof item === "object") {
+        xml += `>\n${build({ ...args, json: item, indent: `${indent}  ` })}`;
         xml += `${indent}</${elementName}>\n`;
       } else {
-        xml += `>${applyEntities(propValue)}</${elementName}>\n`;
+        xml += `>${applyEntities(item)}</${elementName}>\n`;
       }
     }
   }

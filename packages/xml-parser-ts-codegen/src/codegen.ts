@@ -28,7 +28,7 @@ export const __XSD_PARSER = getParser<XsdSchema>({
   meta: xsdMeta,
   subs: {},
   elements: {},
-  root: { element: "xs:schema", type: "schema" },
+  root: { element: "XSD.xsd__xsd:schema", type: "schema" },
 });
 
 export type Unpacked<T> = T extends (infer U)[] ? U : T;
