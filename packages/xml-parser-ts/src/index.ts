@@ -350,7 +350,7 @@ export function build(args: {
     const propName = applyEntities(_propName);
     const propValue = json[propName];
 
-    // attributes are not processed as elements.
+    // attributes are processed individually.
     if (propName[0] === "@") {
       continue;
     }
@@ -361,10 +361,6 @@ export function build(args: {
     // pi tag
     else if (propName[0] === "?") {
       xml += `${indent}<${propName}${buildAttrs(propValue).attrs} ?>\n`;
-    }
-    // text attribute
-    else if (propName === "#text") {
-      xml += `${applyEntities(propValue)}`;
     }
     // empty tag
     else if (propValue === undefined || propValue === null || propValue === "") {
