@@ -6,7 +6,6 @@ const xml = fs.readFileSync(path.join(__dirname, "../tests-data--manual/other/sa
 
 const { parser, builder } = getMarshaller(xml);
 const json = parser.parse();
-
 const xml2 = builder.build(json);
 
 console.info(xml2);

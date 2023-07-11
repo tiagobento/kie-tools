@@ -66,15 +66,15 @@
           </kie:ComponentWidths>
         </kie:ComponentsWidthsExtension>
       </di:extension>
-      <dmndi:DMNShape xmlns:dmndi="http://www.omg.org/spec/DMN/20180521/DMNDI/" id="dmnshape-drg-_67BE9B5A-48A4-4528-9AF9-99846FAA82A3" dmnElementRef="_67BE9B5A-48A4-4528-9AF9-99846FAA82A3" isCollapsed="false">
-        <dmndi:DMNStyle>
-          <dmndi:FillColor red="255" green="255" blue="255"/>
-          <dmndi:StrokeColor red="0" green="0" blue="0"/>
-          <dmndi:FontColor red="0" green="0" blue="0"/>
-        </dmndi:DMNStyle>
+      <dmndi13:DMNShape id="dmnshape-drg-_67BE9B5A-48A4-4528-9AF9-99846FAA82A3" dmnElementRef="_67BE9B5A-48A4-4528-9AF9-99846FAA82A3" isCollapsed="false">
+        <dmndi13:DMNStyle>
+          <dmndi13:FillColor red="255" green="255" blue="255"/>
+          <dmndi13:StrokeColor red="0" green="0" blue="0"/>
+          <dmndi13:FontColor red="0" green="0" blue="0"/>
+        </dmndi13:DMNStyle>
         <dc2:Bounds x="443" y="217" width="100" height="50"/>
-        <dmndi:DMNLabel/>
-      </dmndi:DMNShape>
+        <dmndi13:DMNLabel/>
+      </dmndi13:DMNShape>
     </dmndi13:DMNDiagram>
   </dmndi13:DMNDI>
 </dmn:definitions>

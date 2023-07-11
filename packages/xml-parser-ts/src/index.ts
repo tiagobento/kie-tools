@@ -23,91 +23,6 @@ export type Subs = Record<string, Record<string, string>>;
 
 export type Elements = Record<string, string>;
 
-export type NamespacedProperty<P extends string, K> = K extends string
-  ? K extends `@_${string}` | `${string}:${string}` // @_xxx are attributes, xxx:xxx are elements referencing other namespaces;
-    ? K
-    : `${P}:${K}`
-  : never;
-
-export type Namespaced<P extends string, T> = {
-  [K in keyof T as NamespacedProperty<P, K>]: NonNullable<T[K]> extends Array<infer R> ? Array<Namespaced<P, R>> : T[K];
-};
-
-function parseInt(attrValue: string) {
-  let i: number;
-  try {
-    i = Number.parseInt(attrValue);
-  } catch (e) {
-    throw new Error(`Cannot parse integer value '${attrValue}'`);
-  }
-
-  if (Number.isNaN(i)) {
-    throw new Error(`Stopping NaN from propagating. Tried to parse from (integer) '${attrValue}'`);
-  }
-
-  return i;
-}
-
-function parseFloat(attrValue: string) {
-  let f: number;
-  try {
-    f = Number.parseFloat(attrValue);
-  } catch (e) {
-    throw new Error(`Cannot parse float value '${attrValue}'`);
-  }
-
-  if (Number.isNaN(f)) {
-    throw new Error(`Stopping NaN from propagating. Tried to parse from (float) '${attrValue}'`);
-  }
-
-  return f;
-}
-
-//** AllNNI stands for All non-negative integers. This comes from the XSD specification. */
-function parseAllNNI(attrValue: string) {
-  try {
-    return attrValue === "unbounded" ? "unbounded" : parseInt(attrValue);
-  } catch (e) {
-    throw new Error(`Cannot parse allNNI value '${attrValue}'`);
-  }
-}
-
-function parseBoolean(attrValue: string) {
-  if (attrValue === "true") {
-    return true;
-  } else if (attrValue === "false") {
-    return false;
-  } else {
-    throw new Error(`Cannot parse boolean value '${attrValue}'`);
-  }
-}
-
-/**
- * Receives a base meta and an array of prefix-meta pair. Types described by the extension metas have their properties prefixed by their corresponding prefix.
- *
- * @returns a single meta, containing the information of `base` and all extensions metas with prefixed properties.
- */
-export function mergeMetas(base: Meta, extensionMetasByPrefix: [string, Meta][]) {
-  const prefixedMetas = extensionMetasByPrefix.reduce((acc, [k, m]) => {
-    return {
-      ...acc,
-      ...Object.keys(m).reduce((macc, t) => {
-        macc[t] = Object.keys(m[t]).reduce((tacc, p) => {
-          if (p.includes(":") || p.startsWith("@_")) {
-            tacc[p] = m[t][p];
-          } else {
-            tacc[`${k}${p}`] = m[t][p];
-          }
-          return tacc;
-        }, {} as any);
-        return macc;
-      }, {} as any),
-    };
-  }, {});
-
-  return { ...base, ...prefixedMetas };
-}
-
 export function getDomDocument(xml: string | Buffer) {
   console.time("parsing dom took");
   const domdoc = global.DOMParser
@@ -175,7 +90,7 @@ export function getParser<T extends object>(args: {
       instanceNs = instanceNs ?? getInstanceNs(domdoc);
 
       console.time("parsing overhead took");
-      const rootElementName = args.root.element.split("__")[1]; // FIXME: This should be replaced by `args.root.element` only.
+      const rootElementName = args.root.element;
       const rootType = { [rootElementName]: { type: args.root.type, isArray: false } };
       const json = parse({ ...args, instanceNs, node: domdoc, nodeType: rootType });
       console.timeEnd("parsing overhead took");
@@ -191,6 +106,10 @@ export function getParser<T extends object>(args: {
   };
 }
 
+/////////////
+/// PARSE ///
+/////////////
+
 export function parse(args: {
   node: Node;
   nodeType: Record<string, MetaTypeDef | undefined> | undefined;
@@ -204,8 +123,10 @@ export function parse(args: {
 
   for (const elemNode of args.node.childNodes) {
     if (elemNode.nodeType === 1 /* element */) {
-      const { nsedName, subsedName } = normalizeName(elemNode.nodeName, args.nodeType, args);
+      const { nsedName, subsedName } = normalizeNamespace(elemNode.nodeName, args.nodeType, args);
+
       const elemPropType = args.nodeType?.[subsedName ?? nsedName];
+
       const elemType =
         args.meta[args.elements[nsedName]] ?? // Regardless of subsitutions that might have occured, we need the type information for the concrete implementation of the element. (E.g., On DMN, tDecision is substituted by tDrgElement)
         (elemPropType
@@ -261,6 +182,7 @@ export function parse(args: {
             `Accumulating values on known non-array property '${subsedName}' (${nsedName}) of type '${elemPropType.type}'.`
           );
         }
+
         if (Array.isArray(currentValue)) {
           currentValue.push(elemValue);
         } else {
@@ -275,7 +197,7 @@ export function parse(args: {
   return json;
 }
 
-function normalizeName(
+function normalizeNamespace(
   name: string,
   parentType: Record<string, MetaTypeDef | undefined> | undefined,
   {
@@ -305,21 +227,76 @@ function normalizeName(
   // nsedName stands for "Namespaced name".
   const nsedName = `${nameNs}${nameName}`;
 
+  const nsedSubs = subs[nameNs];
+
   // subsedName stands for "Substituted name";
   let subsedName: string | undefined = nsedName;
 
-  // Resolve piece substituionGroups
-  while (subs[nameNs] && !parentType?.[subsedName]) {
+  // Resolve substituionGroups
+  while (nsedSubs && !parentType?.[subsedName]) {
     if (subsedName === undefined) {
       break; // Not mapped, ignore unknown element...
     }
-    subsedName = subs[nameNs][subsedName];
+    subsedName = nsedSubs[subsedName];
   }
 
   return { nsedName, subsedName };
 }
 
-const entities = [
+function parseInt(attrValue: string) {
+  let i: number;
+  try {
+    i = Number.parseInt(attrValue);
+  } catch (e) {
+    throw new Error(`Cannot parse integer value '${attrValue}'`);
+  }
+
+  if (Number.isNaN(i)) {
+    throw new Error(`Stopping NaN from propagating. Tried to parse from (integer) '${attrValue}'`);
+  }
+
+  return i;
+}
+
+function parseFloat(attrValue: string) {
+  let f: number;
+  try {
+    f = Number.parseFloat(attrValue);
+  } catch (e) {
+    throw new Error(`Cannot parse float value '${attrValue}'`);
+  }
+
+  if (Number.isNaN(f)) {
+    throw new Error(`Stopping NaN from propagating. Tried to parse from (float) '${attrValue}'`);
+  }
+
+  return f;
+}
+
+//** AllNNI stands for All non-negative integers. This comes from the XSD specification. */
+function parseAllNNI(attrValue: string) {
+  try {
+    return attrValue === "unbounded" ? "unbounded" : parseInt(attrValue);
+  } catch (e) {
+    throw new Error(`Cannot parse allNNI value '${attrValue}'`);
+  }
+}
+
+function parseBoolean(attrValue: string) {
+  if (attrValue === "true") {
+    return true;
+  } else if (attrValue === "false") {
+    return false;
+  } else {
+    throw new Error(`Cannot parse boolean value '${attrValue}'`);
+  }
+}
+
+/////////////
+/// BUILD ///
+/////////////
+
+const XML_ENTITIES = [
   { regex: new RegExp(`&`, "g"), replacement: "&amp;" },
   { regex: new RegExp(`>`, "g"), replacement: "&gt;" },
   { regex: new RegExp(`<`, "g"), replacement: "&lt;" },
@@ -329,7 +306,7 @@ const entities = [
 
 function applyEntities(value: any) {
   let ret = `${value}`;
-  for (const { regex, replacement } of entities) {
+  for (const { regex, replacement } of XML_ENTITIES) {
     ret = ret.replace(regex, replacement);
   }
 
@@ -456,4 +433,44 @@ function applyInstanceNs({
   } else {
     throw new Error(`Invalid tag name '${propName}'.`);
   }
+}
+
+//////////////////
+/// EXTENSIONS ///
+//////////////////
+
+export type NamespacedProperty<P extends string, K> = K extends string
+  ? K extends `@_${string}` | `${string}:${string}` // @_xxx are attributes, xxx:xxx are elements referencing other namespaces;
+    ? K
+    : `${P}:${K}`
+  : never;
+
+export type Namespaced<P extends string, T> = {
+  [K in keyof T as NamespacedProperty<P, K>]: NonNullable<T[K]> extends Array<infer R> ? Array<Namespaced<P, R>> : T[K];
+};
+
+/**
+ * Receives a base meta and an array of prefix-meta pair. Types described by the extension metas have their properties prefixed by their corresponding prefix.
+ *
+ * @returns a single meta, containing the information of `base` and all extensions metas with prefixed properties.
+ */
+export function mergeMetas(base: Meta, extensionMetasByPrefix: [string, Meta][]) {
+  const prefixedMetas = extensionMetasByPrefix.reduce((acc, [k, m]) => {
+    return {
+      ...acc,
+      ...Object.keys(m).reduce((macc, t) => {
+        macc[t] = Object.keys(m[t]).reduce((tacc, p) => {
+          if (p.includes(":") || p.startsWith("@_")) {
+            tacc[p] = m[t][p];
+          } else {
+            tacc[`${k}${p}`] = m[t][p];
+          }
+          return tacc;
+        }, {} as any);
+        return macc;
+      }, {} as any),
+    };
+  }, {});
+
+  return { ...base, ...prefixedMetas };
 }

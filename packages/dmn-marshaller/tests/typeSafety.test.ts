@@ -42,7 +42,7 @@ describe("type safety", () => {
 
       const minorVersion = version.split(".")[1];
       const tmpFile = `
-import { DMN1${minorVersion}__tDefinitions } from "${thisPath}/../src/schemas/dmn-1_${minorVersion}/ts-gen/types";
+import { DMN1${minorVersion}__tDefinitions } from "${thisPath}/../dist/schemas/dmn-1_${minorVersion}/ts-gen/types";
 import "${thisPath}/../dist/kie-extensions";
 
 const dmn: DMN1${minorVersion}__tDefinitions = ${JSON.stringify(json.definitions, undefined, 2)};`;
