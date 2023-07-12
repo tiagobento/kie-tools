@@ -51,7 +51,7 @@ type DmnMarshaller = {
 };
 
 export type DmnDefinitions = {
-  definitions: DMN12__tDefinitions | DMN13__tDefinitions | DMN14__tDefinitions;
+  definitions: DMN14__tDefinitions; // Keeping the latest version for now, as the other should be retro-compatible with it.
 };
 
 // FIXME: Tiago --> DMN 1.1 doesn't seem to have diagram types, which is too much of a deal breaker... What to do?
@@ -102,7 +102,7 @@ export function getMarshaller(xml: string): DmnMarshaller {
     };
     // Do not remove this '!== undefined', as "" is a valid namespace on the instanceNs map, although it is a falsy value.
   } else if (instanceNs.get(dmn12ns.get("")!) !== undefined) {
-    const p = getParser<DmnDefinitions>({
+    const p = getParser<{ definitions: DMN12__tDefinitions }>({
       ns: dmn12ns,
       meta: dmn12meta,
       subs: dmn12subs,
@@ -116,11 +116,11 @@ export function getMarshaller(xml: string): DmnMarshaller {
       root: dmn12root,
       meta: dmn12meta,
       parser: { parse: () => p.parse({ xml, domdoc, instanceNs }).json },
-      builder: { build: (json: DmnDefinitions) => p.build({ json, instanceNs }) },
+      builder: { build: (json: { definitions: DMN12__tDefinitions }) => p.build({ json, instanceNs }) },
     };
     // Do not remove this '!== undefined', as "" is a valid namespace on the instanceNs map, although it is a falsy value.
   } else if (instanceNs.get(dmn13ns.get("")!) !== undefined) {
-    const p = getParser<DmnDefinitions>({
+    const p = getParser<{ definitions: DMN13__tDefinitions }>({
       ns: dmn13ns,
       meta: dmn13meta,
       subs: dmn13subs,
@@ -134,11 +134,11 @@ export function getMarshaller(xml: string): DmnMarshaller {
       root: dmn13root,
       meta: dmn13meta,
       parser: { parse: () => p.parse({ xml, domdoc, instanceNs }).json },
-      builder: { build: (json: DmnDefinitions) => p.build({ json, instanceNs }) },
+      builder: { build: (json: { definitions: DMN13__tDefinitions }) => p.build({ json, instanceNs }) },
     };
     // Do not remove this '!== undefined', as "" is a valid namespace on the instanceNs map, although it is a falsy value.
   } else if (instanceNs.get(dmn14ns.get("")!) !== undefined) {
-    const p = getParser<DmnDefinitions>({
+    const p = getParser<{ definitions: DMN14__tDefinitions }>({
       ns: dmn14ns,
       meta: dmn14meta,
       subs: dmn14subs,
@@ -152,7 +152,7 @@ export function getMarshaller(xml: string): DmnMarshaller {
       root: dmn14root,
       meta: dmn14meta,
       parser: { parse: () => p.parse({ xml, domdoc, instanceNs }).json },
-      builder: { build: (json: DmnDefinitions) => p.build({ json, instanceNs }) },
+      builder: { build: (json: { definitions: DMN14__tDefinitions }) => p.build({ json, instanceNs }) },
     };
   } else {
     throw new Error(

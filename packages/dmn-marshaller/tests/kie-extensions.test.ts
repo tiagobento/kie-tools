@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { getMarshaller } from "@kie-tools/dmn-marshaller";
+import { DMN14__tKnowledgeSource } from "../dist/schemas/dmn-1_4/ts-gen/types";
 
 describe("kie-extensions", () => {
   test("kie:attachment", () => {
@@ -8,10 +9,9 @@ describe("kie-extensions", () => {
     const { parser } = getMarshaller(xml);
     const json = parser.parse();
 
-    // TODO: Remove the `any` types.
-    const attachments = ((json as any).definitions.drgElement ?? [])
-      .filter((drgElement: any) => drgElement["__$$element"] === "knowledgeSource" ?? [])
-      .flatMap((knowledgeSource: any) => knowledgeSource.extensionElements?.["kie:attachment"]);
+    const attachments = (json.definitions.drgElement ?? [])
+      .filter((drgElement) => drgElement["__$$element"] === "knowledgeSource" ?? [])
+      .flatMap((knowledgeSource: DMN14__tKnowledgeSource) => knowledgeSource.extensionElements?.["kie:attachment"]);
 
     expect(attachments.length).toStrictEqual(1);
   });
