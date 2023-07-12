@@ -1,4 +1,4 @@
-import { Meta, XmlParserTs, getDomDocument, getInstanceNs, getParser } from "@kie-tools/xml-parser-ts";
+import { Meta, domParser, getInstanceNs, getParser } from "@kie-tools/xml-parser-ts";
 import {
   subs as dmn10subs,
   elements as dmn10elements,
@@ -61,7 +61,7 @@ export type DmnDefinitions = {
 // | { Definitions: DMN10__tDefinitions };
 
 export function getMarshaller(xml: string): DmnMarshaller {
-  const domdoc = getDomDocument(xml);
+  const domdoc = domParser.getDomDocument(xml);
   const instanceNs = getInstanceNs(domdoc);
 
   // Do not remove this '!== undefined', as "" is a valid namespace on the instanceNs map, although it is a falsy value.

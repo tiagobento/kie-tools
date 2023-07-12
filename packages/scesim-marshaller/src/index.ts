@@ -1,4 +1,4 @@
-import { Meta, XmlParserTs, getDomDocument, getInstanceNs, getParser } from "@kie-tools/xml-parser-ts";
+import { Meta, domParser, getInstanceNs, getParser } from "@kie-tools/xml-parser-ts";
 import {
   meta as scesim18meta,
   root as scesim18root,
@@ -22,7 +22,7 @@ export type SceSimModel = {
 };
 
 export function getMarshaller(xml: string): SceSimMarshaller {
-  const domdoc = getDomDocument(xml);
+  const domdoc = domParser.getDomDocument(xml);
   const instanceNs = getInstanceNs(domdoc);
 
   const p = getParser<SceSimModel>({

@@ -1,8 +1,3 @@
-import { TextEncoder, TextDecoder } from "util";
-(global as any).TextEncoder = TextEncoder;
-(global as any).TextDecoder = TextDecoder;
-import * as jsdom from "jsdom";
-
 export type XmlParserTs<T extends object> = {
   parse: (args: { xml: string | Buffer; domdoc?: Document; instanceNs?: Map<string, string> }) => {
     json: T;
@@ -23,14 +18,14 @@ export type Subs = Record<string, Record<string, string>>;
 
 export type Elements = Record<string, string>;
 
-export function getDomDocument(xml: string | Buffer) {
-  console.time("parsing dom took");
-  const domdoc = global.DOMParser
-    ? new DOMParser().parseFromString(xml.toString(), "application/xml")
-    : new jsdom.JSDOM(xml, { contentType: "application/xml" }).window.document;
-  console.timeEnd("parsing dom took");
-  return domdoc;
-}
+export const domParser = {
+  getDomDocument: (xml: string | Buffer) => {
+    console.time("parsing dom took (DOMParser)");
+    const domdoc = new DOMParser().parseFromString(xml.toString(), "application/xml");
+    console.timeEnd("parsing dom took (DOMParser)");
+    return domdoc;
+  },
+};
 
 /**
  * Returns a bi-directional map with the namespace aliases declared at the root element of a XML document pointing to their URIs and vice-versa. In this map, namespace aliases are suffixed with `:`.
@@ -86,7 +81,7 @@ export function getParser<T extends object>(args: {
 }): XmlParserTs<T> {
   return {
     parse: ({ xml, domdoc, instanceNs }) => {
-      domdoc = domdoc ?? getDomDocument(xml);
+      domdoc = domdoc ?? domParser.getDomDocument(xml);
       instanceNs = instanceNs ?? getInstanceNs(domdoc);
 
       console.time("parsing overhead took");
@@ -121,7 +116,10 @@ export function parse(args: {
 }) {
   const json: any = {};
 
-  for (const elemNode of args.node.childNodes) {
+  const children = args.node.childNodes;
+  for (let ii = 0; ii < children.length; ii++) {
+    const elemNode = children[ii];
+
     if (elemNode.nodeType === 1 /* element */) {
       const { nsedName, subsedName } = normalizeNamespace(elemNode.nodeName, args.nodeType, args);
 
@@ -150,7 +148,9 @@ export function parse(args: {
         }
       }
 
-      for (const attr of (elemNode as Element).attributes) {
+      const attrs = (elemNode as Element).attributes;
+      for (let i = 0; i < attrs.length; i++) {
+        const attr = attrs[i];
         const attrPropType = elemType?.[`@_${attr.name}`];
 
         let attrValue: any;
@@ -296,21 +296,19 @@ function parseBoolean(attrValue: string) {
 /// BUILD ///
 /////////////
 
-const XML_ENTITIES = [
-  { regex: new RegExp(`&`, "g"), replacement: "&amp;" },
-  { regex: new RegExp(`>`, "g"), replacement: "&gt;" },
-  { regex: new RegExp(`<`, "g"), replacement: "&lt;" },
-  { regex: new RegExp(`'`, "g"), replacement: "&apos;" },
-  { regex: new RegExp(`"`, "g"), replacement: "&quot;" },
-];
+const ampEntity = { regex: new RegExp(`&`, "g"), replacement: "&amp;" };
+const gtEntity = { regex: new RegExp(`>`, "g"), replacement: "&gt;" };
+const ltEntity = { regex: new RegExp(`<`, "g"), replacement: "&lt;" };
+const aposEntity = { regex: new RegExp(`'`, "g"), replacement: "&apos;" };
+const quotEntity = { regex: new RegExp(`"`, "g"), replacement: "&quot;" };
 
 function applyEntities(value: any) {
-  let ret = `${value}`;
-  for (const { regex, replacement } of XML_ENTITIES) {
-    ret = ret.replace(regex, replacement);
-  }
-
-  return ret;
+  return `${value}`
+    .replace(ampEntity.regex, ampEntity.replacement)
+    .replace(gtEntity.regex, gtEntity.replacement)
+    .replace(ltEntity.regex, ltEntity.replacement)
+    .replace(aposEntity.regex, aposEntity.replacement)
+    .replace(quotEntity.regex, quotEntity.replacement);
 }
 
 function buildAttrs(json: any) {
