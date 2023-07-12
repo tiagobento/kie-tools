@@ -276,17 +276,6 @@ ${enumValues.join(" |\n")}
     }
   }
 
-  function getAllDescendents(typeName: string): string[] {
-    return (__DIRECT_CHILDREN.get(typeName) ?? []).flatMap((childTypeName) => {
-      const childsChildren = __DIRECT_CHILDREN.get(childTypeName);
-      if (childsChildren) {
-        return getAllDescendents(childTypeName);
-      } else {
-        return [childTypeName];
-      }
-    });
-  }
-
   for (const ct of __COMPLEX_TYPES) {
     const typeName = getTsNameFromNamedType(ct.declaredAtRelativeLocation, ct.name);
 
