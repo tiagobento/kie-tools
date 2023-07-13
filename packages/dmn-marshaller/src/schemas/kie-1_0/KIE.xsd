@@ -1,9 +1,11 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+<?xml version="1.0" encoding="UTF-8" ?>
+<xsd:schema
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
   xmlns:kie="http://www.drools.org/kie/dmn/1.2"
   targetNamespace="http://www.drools.org/kie/dmn/1.2"
   elementFormDefault="qualified"
-  attributeFormDefault="unqualified">
+  attributeFormDefault="unqualified"
+>
 
   <xsd:element name="ComponentsWidthsExtension" type="kie:tComponentsWidthsExtension" />
   <xsd:element name="ComponentWidths" type="kie:tComponentWidths" />
@@ -11,8 +13,7 @@
 
   <xsd:complexType name="tComponentsWidthsExtension">
     <xsd:sequence>
-      <xsd:element type="kie:tComponentWidths" name="ComponentWidths" maxOccurs="unbounded"
-        minOccurs="0" />
+      <xsd:element type="kie:tComponentWidths" name="ComponentWidths" maxOccurs="unbounded" minOccurs="0" />
     </xsd:sequence>
   </xsd:complexType>
   <xsd:complexType name="tComponentWidths">

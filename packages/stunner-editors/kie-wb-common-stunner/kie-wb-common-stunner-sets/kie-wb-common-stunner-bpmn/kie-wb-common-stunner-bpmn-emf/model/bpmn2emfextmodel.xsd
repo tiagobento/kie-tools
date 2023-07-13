@@ -1,7 +1,10 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<schema targetNamespace="http://www.jboss.org/drools"
-	elementFormDefault="qualified" xmlns="http://www.w3.org/2001/XMLSchema"
-	xmlns:drools="http://www.jboss.org/drools">
+<?xml version="1.0" encoding="UTF-8" ?>
+<schema
+  targetNamespace="http://www.jboss.org/drools"
+  elementFormDefault="qualified"
+  xmlns="http://www.w3.org/2001/XMLSchema"
+  xmlns:drools="http://www.jboss.org/drools"
+>
 
 	<attribute name="packageName">
 		<simpleType>

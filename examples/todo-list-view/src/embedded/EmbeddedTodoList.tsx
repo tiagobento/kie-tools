@@ -85,8 +85,7 @@ export const EmbeddedTodoList = React.forwardRef<EmbeddedTodoListRef, Props>((pr
   );
 });
 
-const EmbeddedTodoListEnvelope =
-  React.forwardRef<
-    EmbeddedTodoListRef,
-    EmbeddedEnvelopeProps<TodoListChannelApi, TodoListEnvelopeApi, EmbeddedTodoListRef>
-  >(RefForwardingEmbeddedEnvelope);
+const EmbeddedTodoListEnvelope = React.forwardRef<
+  EmbeddedTodoListRef,
+  EmbeddedEnvelopeProps<TodoListChannelApi, TodoListEnvelopeApi, EmbeddedTodoListRef>
+>(RefForwardingEmbeddedEnvelope);

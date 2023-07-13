@@ -1,8 +1,10 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<xsd:schema xmlns="http://www.omg.org/spec/DMN/20130901"
-			targetNamespace="http://www.omg.org/spec/DMN/20130901"
-			xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-			elementFormDefault="qualified">
+<?xml version="1.0" encoding="UTF-8" ?>
+<xsd:schema
+  xmlns="http://www.omg.org/spec/DMN/20130901"
+  targetNamespace="http://www.omg.org/spec/DMN/20130901"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  elementFormDefault="qualified"
+>
 
 	<xsd:include schemaLocation="dmn.xsd" />
 	
@@ -12,7 +14,7 @@
 		<xsd:complexContent>
 			<xsd:extension base="tExpression">
 				<xsd:sequence>
-					<xsd:element name="contextEntry" type="tContextEntry" maxOccurs="unbounded" minOccurs="0"/>
+					<xsd:element name="contextEntry" type="tContextEntry" maxOccurs="unbounded" minOccurs="0" />
 				</xsd:sequence>
 			</xsd:extension>
 		</xsd:complexContent>
@@ -20,8 +22,8 @@
 	
 	<xsd:complexType name="tContextEntry">
 		<xsd:sequence>
-			<xsd:element ref="InformationItem" minOccurs="0" maxOccurs="1"/> <!-- the variable -->
-			<xsd:element ref="Expression" minOccurs="1" maxOccurs="1"/> <!-- the value -->
+			<xsd:element ref="InformationItem" minOccurs="0" maxOccurs="1" /> <!-- the variable -->
+			<xsd:element ref="Expression" minOccurs="1" maxOccurs="1" /> <!-- the value -->
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -31,7 +33,7 @@
 		<xsd:complexContent>
 			<xsd:extension base="tExpression">
 				<xsd:sequence>
-					<xsd:element ref="InformationItem" minOccurs="0" maxOccurs="unbounded"/> <!-- the formal parameters -->
+					<xsd:element ref="InformationItem" minOccurs="0" maxOccurs="unbounded" /> <!-- the formal parameters -->
 					<xsd:element ref="Expression" minOccurs="0" maxOccurs="1" /> <!-- the body -->
 				</xsd:sequence>
 			</xsd:extension>
@@ -44,8 +46,8 @@
 		<xsd:complexContent>
 			<xsd:extension base="tExpression">
 				<xsd:sequence>
-					<xsd:element name="column" type="tContextEntry" minOccurs="0" maxOccurs="unbounded"/>
-					<xsd:element ref="List" minOccurs="0" maxOccurs="unbounded"/>
+					<xsd:element name="column" type="tContextEntry" minOccurs="0" maxOccurs="unbounded" />
+					<xsd:element ref="List" minOccurs="0" maxOccurs="unbounded" />
 				</xsd:sequence>
 			</xsd:extension>
 		</xsd:complexContent>
@@ -57,7 +59,7 @@
 		<xsd:complexContent>
 			<xsd:extension base="tExpression">
 				<xsd:sequence>
-					<xsd:element ref="Expression" maxOccurs="unbounded" minOccurs="0"/>
+					<xsd:element ref="Expression" maxOccurs="unbounded" minOccurs="0" />
 				</xsd:sequence>
 			</xsd:extension>
 		</xsd:complexContent>

@@ -20,11 +20,12 @@
     "@kie-tools-scripts/sparse-checkout": "workspace:*",
     "@kie-tools-scripts/update-version": "workspace:*",
     "@nice-move/prettier-plugin-package-json": "^0.6.1",
+    "@prettier/plugin-xml": "^2.2.0",
     "@types/node": "^18.13.0",
     "filemanager-webpack-plugin": "^7.0.0",
     "husky": "^6.0.0",
     "postinstall-postinstall": "^2.1.0",
-    "prettier": "^2.2.1",
+    "prettier": "^2.8.8",
     "pretty-quick": "^3.1.0"
   },
   "resolutions": {

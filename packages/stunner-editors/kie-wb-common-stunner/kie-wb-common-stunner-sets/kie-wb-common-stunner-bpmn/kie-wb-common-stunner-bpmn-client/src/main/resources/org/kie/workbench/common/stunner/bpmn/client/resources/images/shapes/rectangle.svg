@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 <!--
   ~ Copyright 2017 Red Hat, Inc. and/or its affiliates.
   ~
@@ -14,7 +14,15 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<svg id="rectangle" version="1.1" xmlns="http://www.w3.org/2000/svg"
-     x="0" y="0" width="448px" height="448px" viewBox="0 0 448 448">
-  <rect x="0" y="0" width="448px" height="448px" rx="15" ry="15" style="fill:none; stroke: black; stroke-width: 5;"/>
+<svg
+  id="rectangle"
+  version="1.1"
+  xmlns="http://www.w3.org/2000/svg"
+  x="0"
+  y="0"
+  width="448px"
+  height="448px"
+  viewBox="0 0 448 448"
+>
+  <rect x="0" y="0" width="448px" height="448px" rx="15" ry="15" style="fill:none; stroke: black; stroke-width: 5;" />
 </svg>

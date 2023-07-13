@@ -1,5 +1,13 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" targetNamespace="http://www.omg.org/spec/BPMN/20100524/DI"  elementFormDefault="qualified" attributeFormDefault="unqualified">
+<?xml version="1.0" encoding="UTF-8" ?>
+<xsd:schema
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  targetNamespace="http://www.omg.org/spec/BPMN/20100524/DI"
+  elementFormDefault="qualified"
+  attributeFormDefault="unqualified"
+>
 
 	<xsd:import namespace="http://www.omg.org/spec/DD/20100524/DC" schemaLocation="DC.xsd" />
 	<xsd:import namespace="http://www.omg.org/spec/DD/20100524/DI" schemaLocation="DI.xsd" />
@@ -56,7 +64,7 @@
 				<xsd:attribute name="isMarkerVisible" type="xsd:boolean" />
 				<xsd:attribute name="isMessageVisible" type="xsd:boolean" />
 				<xsd:attribute name="participantBandKind" type="bpmndi:ParticipantBandKind" />
-        		<xsd:attribute name="choreographyActivityShape" type="xsd:QName"/>
+        		<xsd:attribute name="choreographyActivityShape" type="xsd:QName" />
 			</xsd:extension>
 		</xsd:complexContent>
 	</xsd:complexType>

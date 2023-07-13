@@ -1,28 +1,30 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-            xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/"
-            targetNamespace="http://www.omg.org/spec/DMN/20180521/DC/"
-            elementFormDefault="qualified"
-            attributeFormDefault="unqualified">
+<?xml version="1.0" encoding="UTF-8" ?>
+<xsd:schema
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/"
+  targetNamespace="http://www.omg.org/spec/DMN/20180521/DC/"
+  elementFormDefault="qualified"
+  attributeFormDefault="unqualified"
+>
 
-	<xsd:element name="Color" type="dc:Color"/>
-	<xsd:element name="Point" type="dc:Point"/>
-	<xsd:element name="Bounds" type="dc:Bounds"/>
-	<xsd:element name="Dimension" type="dc:Dimension"/>
+	<xsd:element name="Color" type="dc:Color" />
+	<xsd:element name="Point" type="dc:Point" />
+	<xsd:element name="Bounds" type="dc:Bounds" />
+	<xsd:element name="Dimension" type="dc:Dimension" />
 
 	<xsd:complexType name="Color">
 		<xsd:annotation>
 			<xsd:documentation>Color is a data type that represents a color value in the RGB format.</xsd:documentation>
 		</xsd:annotation>
-		<xsd:attribute name="red" type="dc:rgb" use="required"/>
-		<xsd:attribute name="green" type="dc:rgb" use="required"/>
-		<xsd:attribute name="blue" type="dc:rgb" use="required"/>
+		<xsd:attribute name="red" type="dc:rgb" use="required" />
+		<xsd:attribute name="green" type="dc:rgb" use="required" />
+		<xsd:attribute name="blue" type="dc:rgb" use="required" />
 	</xsd:complexType>
 
 	<xsd:simpleType name="rgb">
 		<xsd:restriction base="xsd:int">
-			<xsd:minInclusive value="0"/>
-			<xsd:maxInclusive value="255"/>
+			<xsd:minInclusive value="0" />
+			<xsd:maxInclusive value="255" />
 		</xsd:restriction>
 	</xsd:simpleType>
 
@@ -30,26 +32,28 @@
 		<xsd:annotation>
 			<xsd:documentation>A Point specifies an location in some x-y coordinate system.</xsd:documentation>
 		</xsd:annotation>
-		<xsd:attribute name="x" type="xsd:double" use="required"/>
-		<xsd:attribute name="y" type="xsd:double" use="required"/>
+		<xsd:attribute name="x" type="xsd:double" use="required" />
+		<xsd:attribute name="y" type="xsd:double" use="required" />
 	</xsd:complexType>
 
 	<xsd:complexType name="Dimension">
 		<xsd:annotation>
-			<xsd:documentation>Dimension specifies two lengths (width and height) along the x and y axes in some x-y coordinate system.</xsd:documentation>
+			<xsd:documentation
+      >Dimension specifies two lengths (width and height) along the x and y axes in some x-y coordinate system.</xsd:documentation>
 		</xsd:annotation>
-		<xsd:attribute name="width" type="xsd:double" use="required"/>
-		<xsd:attribute name="height" type="xsd:double" use="required"/>
+		<xsd:attribute name="width" type="xsd:double" use="required" />
+		<xsd:attribute name="height" type="xsd:double" use="required" />
 	</xsd:complexType>
 
 	<xsd:complexType name="Bounds">
 	   <xsd:annotation>
-			<xsd:documentation>Bounds specifies a rectangular area in some x-y coordinate system that is defined by a location (x and y) and a size (width and height).</xsd:documentation>
+			<xsd:documentation
+      >Bounds specifies a rectangular area in some x-y coordinate system that is defined by a location (x and y) and a size (width and height).</xsd:documentation>
 		</xsd:annotation>
-		<xsd:attribute name="x" type="xsd:double" use="required"/>
-		<xsd:attribute name="y" type="xsd:double" use="required"/>
-		<xsd:attribute name="width" type="xsd:double" use="required"/>
-		<xsd:attribute name="height" type="xsd:double" use="required"/>
+		<xsd:attribute name="x" type="xsd:double" use="required" />
+		<xsd:attribute name="y" type="xsd:double" use="required" />
+		<xsd:attribute name="width" type="xsd:double" use="required" />
+		<xsd:attribute name="height" type="xsd:double" use="required" />
 	</xsd:complexType>
 
 	<xsd:simpleType name="AlignmentKind">
@@ -57,9 +61,9 @@
 			<xsd:documentation>AlignmentKind enumerates the possible options for alignment for layout purposes.</xsd:documentation>
 		</xsd:annotation>
 		<xsd:restriction base="xsd:string">
-			<xsd:enumeration value="start"/>
-			<xsd:enumeration value="end"/>
-			<xsd:enumeration value="center"/>
+			<xsd:enumeration value="start" />
+			<xsd:enumeration value="end" />
+			<xsd:enumeration value="center" />
 		</xsd:restriction>
 	</xsd:simpleType>
 
