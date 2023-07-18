@@ -47,7 +47,7 @@ describe("type safety", () => {
 
       const minorVersion = version.split(".")[1];
       const tmpFile = `
-import { BPMN2${minorVersion}__tDefinitions } from "../../dist/schemas/bpmn-2_${minorVersion}/ts-gen/types";
+import { BPMN2${minorVersion}__tDefinitions } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_${minorVersion}/ts-gen/types";
 
 const bpmn: BPMN2${minorVersion}__tDefinitions = ${JSON.stringify(json.definitions, undefined, 2)};`;
 

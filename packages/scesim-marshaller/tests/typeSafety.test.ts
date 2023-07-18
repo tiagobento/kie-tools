@@ -41,7 +41,7 @@ describe("type safety", () => {
 
       const minorVersion = version.split(".")[1];
       const tmpFile = `
-import { SceSim__ScenarioSimulationModelType } from "../../dist/schemas/scesim-1_${minorVersion}/ts-gen/types";
+import { SceSim__ScenarioSimulationModelType } from "@kie-tools/scesim-marshaller/dist/schemas/scesim-1_${minorVersion}/ts-gen/types";
 
 const scesim: SceSim__ScenarioSimulationModelType = ${JSON.stringify(json.ScenarioSimulationModel, undefined, 2)};`;
 
