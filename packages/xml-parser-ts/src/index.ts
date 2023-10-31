@@ -137,7 +137,7 @@ export function parse(args: {
   for (let ii = 0; ii < children.length; ii++) {
     const elemNode = children[ii];
 
-    if (elemNode.nodeType === 1 /* element */) {
+    if (elemNode.nodeType === 1 /* ELEMENT_NODE */) {
       const { nsedName, subsedName } = resolveElement(elemNode.nodeName, args.nodeType, args);
 
       const elemPropType = args.nodeType?.[subsedName ?? nsedName];
@@ -148,17 +148,26 @@ export function parse(args: {
           ? args.meta[elemPropType.type] // If we can't find this type with the `elements` mapping, we try directly from `meta`.
           : undefined); // If the current element is not known, we simply ignore its type and go with the defaults.
 
-      let elemValue: any;
+      let elemValue: any = {};
       if (elemPropType?.type === "string") {
-        elemValue = elemNode.textContent ?? "";
+        elemValue["__$$text"] = elemNode.textContent ?? "";
       } else if (elemPropType?.type === "boolean") {
-        elemValue = parseBoolean(elemNode.textContent ?? "");
+        elemValue["__$$text"] = parseBoolean(elemNode.textContent ?? "");
       } else if (elemPropType?.type === "float") {
-        elemValue = parseFloat(elemNode.textContent ?? "");
+        elemValue["__$$text"] = parseFloat(elemNode.textContent ?? "");
       } else if (elemPropType?.type === "integer") {
-        elemValue = parseFloat(elemNode.textContent ?? "");
+        elemValue["__$$text"] = parseFloat(elemNode.textContent ?? "");
       } else {
         elemValue = parse({ ...args, node: elemNode, nodeType: elemType });
+        /* If the element is not a simple type and it has a single child node of TEXT_NODE type
+         * and it has at least one attribute, that is a Complex type with Simple Content
+         * eg:  <tagName attrName="a-value">myValue<tagName>
+         */
+        const hasSingleTextNodeChildren = elemNode.childNodes.length === 1 && elemNode.childNodes[0].nodeType === 3;
+        const hasAttributes = (elemNode as Element).attributes.length > 0;
+        if (hasSingleTextNodeChildren && hasAttributes) {
+          elemValue["__$$text"] = elemNode.textContent;
+        }
         if (subsedName !== nsedName) {
           // substitution occurred, need to save the original, normalized element name
           elemValue["__$$element"] = nsedName;
@@ -372,6 +381,8 @@ export function build(args: {
     // ignore this. this is supposed to be on array elements only.
     else if (propName === "__$$element") {
       continue;
+    } else if (propName === "__$$text") {
+      xml += applyEntities(propValue);
     }
     // pi tag
     else if (propName[0] === "?") {
@@ -396,10 +407,12 @@ export function build(args: {
         if (isEmpty) {
           xml += " />\n";
         } else if (typeof item === "object") {
-          xml += `>\n${build({ ...args, json: item, indent: `${indent}  ` })}`;
-          xml += `${indent}</${elementName}>\n`;
-        } else {
-          xml += `>${applyEntities(item)}</${elementName}>\n`;
+          if (item["__$$text"]) {
+            xml += `>${applyEntities(item)}</${elementName}>\n`;
+          } else {
+            xml += `>\n${build({ ...args, json: item, indent: `${indent}  ` })}`;
+            xml += `${indent}</${elementName}>\n`;
+          }
         }
       }
     }
@@ -412,10 +425,12 @@ export function build(args: {
       if (isEmpty) {
         xml += " />\n";
       } else if (typeof item === "object") {
-        xml += `>\n${build({ ...args, json: item, indent: `${indent}  ` })}`;
-        xml += `${indent}</${elementName}>\n`;
-      } else {
-        xml += `>${applyEntities(item)}</${elementName}>\n`;
+        if ("__$$text" in item) {
+          xml += `>${build({ ...args, json: item })}</${elementName}>\n`;
+        } else {
+          xml += `>\n${build({ ...args, json: item, indent: `${indent}  ` })}`;
+          xml += `${indent}</${elementName}>\n`;
+        }
       }
     }
   }
