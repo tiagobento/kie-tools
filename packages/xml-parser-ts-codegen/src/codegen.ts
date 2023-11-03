@@ -27,7 +27,6 @@ import {
   XptcElement,
   XptcSimpleType,
   XptcComplexType,
-  XptcComplexTypeNamed,
   XptcComplexTypeAnonymous,
   XptcMetaType,
   XptcMetaTypeProperty,
@@ -172,15 +171,19 @@ async function main() {
   for (const [location, xsd] of __XSDS.entries()) {
     for (const xsdCt of xsd["xsd:schema"]["xsd:complexType"] || []) {
       const isAbstract = xsdCt["@_abstract"] ?? false;
+      const extensionElement =
+        xsdCt["xsd:complexContent"]?.["xsd:extension"] ?? xsdCt["xsd:simpleContent"]?.["xsd:extension"];
+
       __COMPLEX_TYPES.push({
         type: "complex",
         doc: isAbstract ? "abstract" : "",
         isAbstract,
         isAnonymous: false,
         name: xsdCt["@_name"]!,
+        isSimpleContent: !!xsdCt["xsd:simpleContent"],
         needsExtensionType: !!xsdCt["xsd:anyAttribute"] || !!xsdCt["xsd:sequence"]?.["xsd:any"],
         declaredAtRelativeLocation: location,
-        childOf: xsdCt["xsd:complexContent"]?.["xsd:extension"]?.["@_base"],
+        childOf: extensionElement?.["@_base"],
         elements: [
           ...(xsdCt["xsd:all"]?.["xsd:element"] ?? []).map((s) =>
             xsdElementToXptcElement(xsdCt["@_name"]!, s, location)
@@ -188,24 +191,22 @@ async function main() {
           ...(xsdCt["xsd:sequence"]?.["xsd:element"] ?? []).map((s) =>
             xsdElementToXptcElement(xsdCt["@_name"]!, s, location)
           ),
-          ...(xsdCt["xsd:complexContent"]?.["xsd:extension"]?.["xsd:sequence"]?.["xsd:element"] ?? []).map((s) =>
+          ...(extensionElement?.["xsd:sequence"]?.["xsd:element"] ?? []).map((s) =>
             xsdElementToXptcElement(xsdCt["@_name"]!, s, location)
           ),
-          ...(
-            xsdCt["xsd:complexContent"]?.["xsd:extension"]?.["xsd:sequence"]?.["xsd:choice"]?.["xsd:element"] ?? []
-          ).map((s) => xsdElementToXptcElement(xsdCt["@_name"]!, s, location, { forceOptional: true })),
-          ...(xsdCt["xsd:complexContent"]?.["xsd:extension"]?.["xsd:choice"]?.["xsd:element"] ?? []).map((s) =>
+          ...(extensionElement?.["xsd:sequence"]?.["xsd:choice"]?.["xsd:element"] ?? []).map((s) =>
             xsdElementToXptcElement(xsdCt["@_name"]!, s, location, { forceOptional: true })
           ),
-          ...(
-            xsdCt["xsd:complexContent"]?.["xsd:extension"]?.["xsd:choice"]?.["xsd:sequence"]?.["xsd:element"] ?? []
-          ).map((s) => xsdElementToXptcElement(xsdCt["@_name"]!, s, location, { forceOptional: true })),
+          ...(extensionElement?.["xsd:choice"]?.["xsd:element"] ?? []).map((s) =>
+            xsdElementToXptcElement(xsdCt["@_name"]!, s, location, { forceOptional: true })
+          ),
+          ...(extensionElement?.["xsd:choice"]?.["xsd:sequence"]?.["xsd:element"] ?? []).map((s) =>
+            xsdElementToXptcElement(xsdCt["@_name"]!, s, location, { forceOptional: true })
+          ),
         ],
         attributes: [
           ...(xsdCt["xsd:attribute"] ?? []).map((a) => xsdAttributeToXptcAttribute(a)),
-          ...(xsdCt["xsd:complexContent"]?.["xsd:extension"]?.["xsd:attribute"] ?? []).map((a) =>
-            xsdAttributeToXptcAttribute(a)
-          ),
+          ...(extensionElement?.["xsd:attribute"] ?? []).map((a) => xsdAttributeToXptcAttribute(a)),
         ],
       });
     }
@@ -345,7 +346,7 @@ ${sp.values.map((v) => `    '${v}'`).join(" |\n")}
             ? "number"
             : p.metaType.name;
         const ns = getMetaPropertyNs(__RELATIVE_LOCATION, p);
-        return `    "${ns}${p.name}"${optionalMarker}: ${p.typeBody ?? tsType}${arrayMarker}; // from type ${
+        return `    "${ns}${p.name}"${optionalMarker}: ${p.typeBody?.(tsType) ?? tsType}${arrayMarker}; // from type ${
           p.fromType
         } @ ${p.declaredAt}`;
       })
@@ -627,22 +628,22 @@ function getMetaProperties(
         metaType: {
           name: getMetaTypeName(tsType.name, tsType.doc),
         },
-        typeBody: getTypeBodyForElementRef(
-          __RELATIVE_LOCATION,
-          __META_TYPE_MAPPING,
-          __GLOBAL_ELEMENTS,
-          __SUBSTITUTIONS,
-          __XSDS,
-          __NAMED_TYPES_BY_TS_NAME,
-          ct,
-          referencedElement
-        ),
+        typeBody: () =>
+          getTypeBodyForElementRef(
+            __RELATIVE_LOCATION,
+            __META_TYPE_MAPPING,
+            __GLOBAL_ELEMENTS,
+            __SUBSTITUTIONS,
+            __XSDS,
+            __NAMED_TYPES_BY_TS_NAME,
+            ct,
+            referencedElement
+          ),
         isArray: e.isArray,
         isOptional: e.isOptional,
       });
     } else if (e.kind === "ofNamedType") {
       const tsType = getTsTypeFromLocalRef(__XSDS, __NAMED_TYPES_BY_TS_NAME, ct.declaredAtRelativeLocation, e.typeName);
-
       metaProperties.push({
         declaredAt: ct.declaredAtRelativeLocation,
         fromType: metaTypeName,
@@ -651,6 +652,7 @@ function getMetaProperties(
         metaType: {
           name: getMetaTypeName(tsType.name, tsType.doc),
         },
+        typeBody: tsType.doc.startsWith("xsd:") ? (type) => `{ __$$text: ${type} }` : undefined,
         isArray: e.isArray,
         isOptional: e.isOptional,
       });
@@ -684,6 +686,20 @@ function getMetaProperties(
     } else {
       throw new Error(`Unknown kind of XptcComplexType '${e}'`);
     }
+  }
+
+  if (ct.isSimpleContent && ct.childOf) {
+    metaProperties.push({
+      declaredAt: ct.declaredAtRelativeLocation,
+      fromType: metaTypeName,
+      name: `__$$text`,
+      elem: undefined,
+      metaType: {
+        name: getTsTypeFromLocalRef(__XSDS, __NAMED_TYPES_BY_TS_NAME, ct.declaredAtRelativeLocation, ct.childOf).name,
+      },
+      isArray: false,
+      isOptional: false,
+    });
   }
 
   const immediateParentType = ct.childOf
@@ -804,16 +820,17 @@ function getMetaProperties(
             metaType: {
               name: getMetaTypeName(tsType.name, tsType.doc),
             },
-            typeBody: getTypeBodyForElementRef(
-              __RELATIVE_LOCATION,
-              __META_TYPE_MAPPING,
-              __GLOBAL_ELEMENTS,
-              __SUBSTITUTIONS,
-              __XSDS,
-              __NAMED_TYPES_BY_TS_NAME,
-              ct,
-              referencedElement
-            ),
+            typeBody: () =>
+              getTypeBodyForElementRef(
+                __RELATIVE_LOCATION,
+                __META_TYPE_MAPPING,
+                __GLOBAL_ELEMENTS,
+                __SUBSTITUTIONS,
+                __XSDS,
+                __NAMED_TYPES_BY_TS_NAME,
+                ct,
+                referencedElement
+              ),
             isArray: e.isArray,
             isOptional: e.isOptional,
           });
@@ -1081,6 +1098,7 @@ function xsdComplexTypeToAnonymousXptcComplexType(
   return {
     type: "complex",
     doc: "",
+    isSimpleContent: false, // No reason why an anonymous type couldn't be simpleContent... Could be implemented.
     isAnonymous: true,
     parentIdentifierForExtensionType,
     forElementWithName: element,

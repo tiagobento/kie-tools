@@ -25,6 +25,7 @@ export type XptcComplexTypeBase = {
   childOf?: string;
   doc: string;
   type: "complex";
+  isSimpleContent: boolean;
   needsExtensionType: boolean; // That's for sequences decalring <xsd:anyAttribute> or <xsd:any>
   declaredAtRelativeLocation: string;
   elements: Array<
@@ -122,7 +123,7 @@ export type XptcMetaTypeProperty = {
   metaType: {
     name: string;
   };
-  typeBody?: string;
+  typeBody?: (type: string) => string | undefined;
   isArray: boolean;
   isOptional: boolean;
   fromType: string;

@@ -61,6 +61,14 @@ export interface XsdSequence {
   };
 }
 
+export interface XsdExtension {
+  "xsd:attribute"?: XsdAttribute[];
+  "xsd:sequence"?: XsdSequence;
+  "xsd:all"?: XsdAll;
+  "xsd:choice"?: XsdChoice;
+  "@_base": string;
+}
+
 export interface XsdComplexType {
   "@_name"?: string;
   "@_abstract"?: boolean;
@@ -72,13 +80,10 @@ export interface XsdComplexType {
     "@_processContents": "lax";
   };
   "xsd:complexContent"?: {
-    "xsd:extension"?: {
-      "xsd:attribute"?: XsdAttribute[];
-      "xsd:sequence"?: XsdSequence;
-      "xsd:all"?: XsdAll;
-      "xsd:choice"?: XsdChoice;
-      "@_base": string;
-    };
+    "xsd:extension"?: XsdExtension;
+  };
+  "xsd:simpleContent"?: {
+    "xsd:extension"?: XsdExtension;
   };
 }
 
