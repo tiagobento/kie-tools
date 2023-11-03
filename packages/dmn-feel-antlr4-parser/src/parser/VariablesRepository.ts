@@ -17,7 +17,6 @@
  * under the License.
  */
 
-import { DmnModel } from "@kie-tools/dmn-marshaller";
 import { DataType } from "./DataType";
 import { FeelSyntacticSymbolNature } from "./FeelSyntacticSymbolNature";
 import { VariableContext } from "./VariableContext";
@@ -43,6 +42,8 @@ import {
   DMN15__tQuantified,
   DMN15__tRelation,
 } from "@kie-tools/dmn-marshaller/dist/schemas/dmn-1_5/ts-gen/types";
+import { Expression } from "./VariableOccurrence";
+import { DmnLatestModel, getMarshaller } from "@kie-tools/dmn-marshaller";
 
 type DmnLiteralExpression = { __$$element: "literalExpression" } & DMN15__tLiteralExpression;
 type DmnInvocation = { __$$element: "invocation" } & DMN15__tInvocation;
@@ -76,7 +77,7 @@ export class VariablesRepository {
   private currentVariablePrefix: string;
   private currentUuidPrefix: string;
 
-  constructor(dmnDefinitions: DmnDefinitions, externalDefinitions: Map<string, DmnModel>) {
+  constructor(dmnDefinitions: DmnDefinitions, externalDefinitions: Map<string, DmnLatestModel>) {
     this.dataTypes = new Map<string, DataType>();
     this.variablesIndexedByUuid = new Map<string, VariableContext>();
     this.expressionsIndexedByUuid = new Map<string, Expression>();
@@ -549,7 +550,7 @@ export class VariablesRepository {
     this.createVariables(dmnDefinitions);
   }
 
-  private loadImportedVariables(dmnDefinitions: DmnDefinitions, externalDefinitions: Map<string, DmnModel>) {
+  private loadImportedVariables(dmnDefinitions: DmnDefinitions, externalDefinitions: Map<string, DmnLatestModel>) {
     if (dmnDefinitions.import) {
       for (const dmnImport of dmnDefinitions.import) {
         if (externalDefinitions.has(dmnImport["@_namespace"])) {

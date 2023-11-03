@@ -68,7 +68,7 @@ import {
 import { PMMLFieldData } from "@kie-tools/pmml-editor-marshaller/dist/api/PMMLFieldData";
 import { getDefaultColumnWidth } from "./getDefaultColumnWidth";
 import { FeelVariables } from "@kie-tools/dmn-feel-antlr4-parser";
-import { DmnModel } from "@kie-tools/dmn-marshaller";
+import { DmnLatestModel } from "@kie-tools/dmn-marshaller";
 
 export function BoxedExpression({ container }: { container: React.RefObject<HTMLElement> }) {
   const thisDmn = useDmnEditorStore((s) => s.dmn);
@@ -79,7 +79,7 @@ export function BoxedExpression({ container }: { container: React.RefObject<HTML
   const dmnEditorStoreApi = useDmnEditorStoreApi();
 
   const feelVariables = useMemo(() => {
-    const externalModels = new Map<string, DmnModel>();
+    const externalModels = new Map<string, DmnLatestModel>();
 
     for (const [key, externalDmn] of externalDmnsByNamespace) {
       externalModels.set(key, externalDmn.model);
