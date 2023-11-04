@@ -148,14 +148,18 @@ export function parse(args: {
           ? args.meta[elemPropType.type] // If we can't find this type with the `elements` mapping, we try directly from `meta`.
           : undefined); // If the current element is not known, we simply ignore its type and go with the defaults.
 
+      // If the elemNode's meta type has a __$$text property, this is the one we use to parse its value.
+      // All other properties on `elemType` are certainly attributes, which are handlded below.
+      const t = elemType?.["__$$text"]?.type ?? elemPropType?.type;
+
       let elemValue: any = {};
-      if (elemPropType?.type === "string") {
+      if (t === "string") {
         elemValue["__$$text"] = elemNode.textContent ?? "";
-      } else if (elemPropType?.type === "boolean") {
+      } else if (t === "boolean") {
         elemValue["__$$text"] = parseBoolean(elemNode.textContent ?? "");
-      } else if (elemPropType?.type === "float") {
+      } else if (t === "float") {
         elemValue["__$$text"] = parseFloat(elemNode.textContent ?? "");
-      } else if (elemPropType?.type === "integer") {
+      } else if (t === "integer") {
         elemValue["__$$text"] = parseFloat(elemNode.textContent ?? "");
       } else {
         elemValue = parse({ ...args, node: elemNode, nodeType: elemType });
@@ -463,7 +467,7 @@ function applyInstanceNs({
 //////////////////
 
 export type NamespacedProperty<P extends string, K> = K extends string
-  ? K extends `@_${string}` | `${string}:${string}` // @_xxx are attributes, xxx:xxx are elements referencing other namespaces;
+  ? K extends `@_${string}` | `${string}:${string}` | "__$$text" | "__$$element" // @_xxx are attributes, xxx:xxx are elements referencing other namespaces; __$$element and __$$text are special properties with no domain-related characteristcs. Therefore, not namespace-able.
     ? K
     : `${P}:${K}`
   : never;
