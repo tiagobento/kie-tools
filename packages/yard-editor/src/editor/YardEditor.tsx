@@ -55,13 +55,13 @@ interface Props {
   onNewEdit: (edit: WorkspaceEdit) => void;
 
   /**
-   * Delegation for NotificationsChannelApi.kogitoNotifications_setNotifications(path, notifications) to report all validation
+   * Delegation for NotificationsChannelApi.kogitoNotifications_setNotifications(pathRelativeToTheWorkspaceRoot, notifications) to report all validation
    * notifications to the Channel that will replace existing notification for the path. Increases the
    * decoupling of the ServerlessWorkflowEditor from the Channel.
-   * @param path The path that references the Notification
+   * @param pathRelativeToTheWorkspaceRoot The path that references the Notification
    * @param notifications List of Notifications
    */
-  setNotifications: (path: string, notifications: Notification[]) => void;
+  setNotifications: (pathRelativeToTheWorkspaceRoot: string, notifications: Notification[]) => void;
 
   /**
    * ChannelType where the component is running.
@@ -71,7 +71,7 @@ interface Props {
 }
 
 export type YardEditorRef = {
-  setContent(path: string, content: string): Promise<void>;
+  setContent(absolutePath: string, content: string): Promise<void>;
   moveCursorToPosition(position: Position): void;
 };
 
@@ -87,11 +87,11 @@ const RefForwardingYardEditor: React.ForwardRefRenderFunction<YardEditorRef | un
     forwardedRef,
     () => {
       return {
-        setContent: (path: string, newContent: string): Promise<void> => {
+        setContent: (absolutePath: string, newContent: string): Promise<void> => {
           try {
             setFile({
               content: newContent,
-              path: path,
+              path: absolutePath,
             });
             setYardData(deserialize(newContent));
             return Promise.resolve();
@@ -143,7 +143,7 @@ const RefForwardingYardEditor: React.ForwardRefRenderFunction<YardEditorRef | un
           endColumn: error.endColumn,
         },
       }));
-      props.setNotifications.apply(file.path, notifications);
+      props.setNotifications.apply(file.path, notifications); //FIXME: TIAGO/LUIZ: Fix this. Should've been `pathRelativeToTheWorkspaceRoot`.
     },
     [file, props.setNotifications]
   );

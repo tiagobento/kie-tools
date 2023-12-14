@@ -88,11 +88,11 @@ export class DefaultVsCodeKieEditorChannelApiImpl implements KogitoEditorChannel
     throw new Error("Document type not supported");
   }
 
-  public kogitoWorkspace_openFile(workspaceFilePath: string) {
+  public kogitoWorkspace_openFile(pathRelativeToTheWorkspaceRoot: string) {
     this.workspaceApi.kogitoWorkspace_openFile(
-      __path.isAbsolute(workspaceFilePath)
-        ? workspaceFilePath
-        : __path.join(__path.dirname(this.editor.document.document.uri.path), workspaceFilePath)
+      __path.isAbsolute(pathRelativeToTheWorkspaceRoot)
+        ? pathRelativeToTheWorkspaceRoot
+        : __path.join(__path.dirname(this.editor.document.document.uri.path), pathRelativeToTheWorkspaceRoot)
     );
   }
 
@@ -179,12 +179,15 @@ export class DefaultVsCodeKieEditorChannelApiImpl implements KogitoEditorChannel
     this.notificationsApi.kogitoNotifications_createNotification(notification);
   }
 
-  public kogitoNotifications_setNotifications(path: string, notifications: Notification[]): void {
-    this.notificationsApi.kogitoNotifications_setNotifications(path, notifications);
+  public kogitoNotifications_setNotifications(
+    pathRelativeToTheWorkspaceRoot: string,
+    notifications: Notification[]
+  ): void {
+    this.notificationsApi.kogitoNotifications_setNotifications(pathRelativeToTheWorkspaceRoot, notifications);
   }
 
-  public kogitoNotifications_removeNotifications(path: string): void {
-    this.notificationsApi.kogitoNotifications_removeNotifications(path);
+  public kogitoNotifications_removeNotifications(pathRelativeToTheWorkspaceRoot: string): void {
+    this.notificationsApi.kogitoNotifications_removeNotifications(pathRelativeToTheWorkspaceRoot);
   }
 
   public kogitoJavaCodeCompletion__getAccessors(fqcn: string, query: string): Promise<JavaCodeCompletionAccessor[]> {

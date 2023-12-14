@@ -20,6 +20,7 @@
 import { ContentType } from "./ContentType";
 
 export class ResourceContent {
+  /* This is a path releative to the workspace root */
   public readonly path: string;
   public readonly content?: string;
   public readonly type: ContentType;

@@ -23,7 +23,7 @@ import { useHistory } from "react-router";
 import { useRoutes } from "../navigation/Hooks";
 import { EditorToolbar } from "./Toolbar/EditorToolbar";
 import { useOnlineI18n } from "../i18n";
-import { ChannelType, DEFAULT_WORKING_DIR_BASE_PATH } from "@kie-tools-core/editor/dist/api";
+import { ChannelType, DEFAULT_WORKSPACE_ROOT_ABSOLUTE_PATH } from "@kie-tools-core/editor/dist/api";
 import { EmbeddedEditor, EmbeddedEditorRef, useStateControlSubscription } from "@kie-tools-core/editor/dist/embedded";
 import { Alert, AlertActionLink } from "@patternfly/react-core/dist/js/components/Alert";
 import { Page, PageSection } from "@patternfly/react-core/dist/js/components/Page";
@@ -275,7 +275,7 @@ export function EditorPage(props: Props) {
     async (request: ResourceContentRequest) => {
       return workspaces.resourceContentGet({
         workspaceId: props.workspaceId,
-        relativePath: request.path,
+        relativePath: request.path, // This is the "path relative to the workspace root", or here in the KIE Sandbox context, just "relativePath", as it is assumed that all "relativePaths" are relative to the workspace root.
         opts: request.opts,
       });
     },
@@ -299,11 +299,12 @@ export function EditorPage(props: Props) {
   }, [alertsDispatch]);
 
   const handleOpenFile = useCallback(
-    async (absolutePath: string) => {
+    // FIXME: TIAGO/LUIZ: Double check.
+    async (pathRelativeToTheWorkspaceRoot: string) => {
       if (!workspaceFilePromise.data) {
         return;
       }
-      const relativePath = relative(DEFAULT_WORKING_DIR_BASE_PATH, absolutePath);
+      const relativePath = relative(DEFAULT_WORKSPACE_ROOT_ABSOLUTE_PATH, pathRelativeToTheWorkspaceRoot);
       const file = await workspaces.getFile({
         workspaceId: workspaceFilePromise.data.workspaceFile.workspaceId,
         relativePath,
@@ -461,7 +462,7 @@ export function EditorPage(props: Props) {
                             editorEnvelopeLocator={settingsAwareEditorEnvelopeLocator}
                             channelType={ChannelType.ONLINE_MULTI_FILE}
                             locale={locale}
-                            workingDirBasePath={DEFAULT_WORKING_DIR_BASE_PATH}
+                            workspaceRootAbsolutePath={DEFAULT_WORKSPACE_ROOT_ABSOLUTE_PATH}
                           />
                         )}
                       </EditorPageDockDrawer>

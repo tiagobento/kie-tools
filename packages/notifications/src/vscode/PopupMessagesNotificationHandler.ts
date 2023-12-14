@@ -33,7 +33,10 @@ export class PopupMessagesNotificationHandler implements NotificationsChannelApi
     this.getHandleStrategyForSeverity(notification.severity)(notification.message, notification.path);
   }
 
-  public kogitoNotifications_setNotifications(path: string, notifications: Notification[]): void {
+  public kogitoNotifications_setNotifications(
+    pathRelativeToTheWorkspaceRoot: string,
+    notifications: Notification[]
+  ): void {
     if (notifications.length === 0) {
       return;
     }
@@ -43,11 +46,11 @@ export class PopupMessagesNotificationHandler implements NotificationsChannelApi
     const errorsMessage = this.consolidateMessages(errors);
     const othersMessage = this.consolidateMessages(others);
 
-    this.getHandleStrategyForSeverity("ERROR")(errorsMessage, path);
-    this.getHandleStrategyForSeverity("SUCCESS")(othersMessage, path);
+    this.getHandleStrategyForSeverity("ERROR")(errorsMessage, pathRelativeToTheWorkspaceRoot);
+    this.getHandleStrategyForSeverity("SUCCESS")(othersMessage, pathRelativeToTheWorkspaceRoot);
   }
 
-  public kogitoNotifications_removeNotifications(path: string): void {
+  public kogitoNotifications_removeNotifications(pathRelativeToTheWorkspaceRoot: string): void {
     // Popups can't be removed.
   }
 
@@ -63,14 +66,14 @@ export class PopupMessagesNotificationHandler implements NotificationsChannelApi
   }
 
   private handleStrategy(showFunction: (message: string, ...items: string[]) => Thenable<string | undefined>) {
-    return (message: string, path: string) =>
-      path.length === 0
+    return (message: string, pathRelativeToTheWorkspaceRoot: string) =>
+      pathRelativeToTheWorkspaceRoot.length === 0
         ? showFunction(message)
         : showFunction(message, this.i18n.getCurrent().open).then((selected) => {
             if (!selected) {
               return;
             }
-            this.workspaceApi.kogitoWorkspace_openFile(path);
+            this.workspaceApi.kogitoWorkspace_openFile(pathRelativeToTheWorkspaceRoot);
           });
   }
 

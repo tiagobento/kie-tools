@@ -74,21 +74,24 @@ export class VsCodeResourceContentServiceForWorkspaces implements ResourceConten
     }
   }
 
-  public async get(path: string, opts?: ResourceContentOptions): Promise<ResourceContent | undefined> {
-    const contentPath = this.resolvePath(path);
+  public async get(
+    pathRelativeToTheWorkspaceRoot: string,
+    opts?: ResourceContentOptions
+  ): Promise<ResourceContent | undefined> {
+    const contentPath = this.resolvePath(pathRelativeToTheWorkspaceRoot);
 
     if (!contentPath) {
-      return new ResourceContent(path, undefined);
+      return new ResourceContent(pathRelativeToTheWorkspaceRoot, undefined);
     }
 
     try {
       await vscode.workspace.fs.stat(vscode.Uri.parse(contentPath));
     } catch (e) {
-      console.warn(`Error checking file ${path}: ${e}`);
-      return new ResourceContent(path, undefined);
+      console.warn(`Error checking file ${pathRelativeToTheWorkspaceRoot}: ${e}`);
+      return new ResourceContent(pathRelativeToTheWorkspaceRoot, undefined);
     }
 
-    return this.retrieveContent(opts?.type, path, contentPath);
+    return this.retrieveContent(opts?.type, pathRelativeToTheWorkspaceRoot, contentPath);
   }
 
   private resolvePath(uri: string) {

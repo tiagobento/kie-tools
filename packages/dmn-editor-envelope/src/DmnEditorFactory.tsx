@@ -25,7 +25,7 @@ import {
   KogitoEditorEnvelopeContextType,
   KogitoEditorChannelApi,
   EditorTheme,
-  DEFAULT_WORKING_DIR_BASE_PATH,
+  DEFAULT_WORKSPACE_ROOT_ABSOLUTE_PATH,
 } from "@kie-tools-core/editor/dist/api";
 import { Notification } from "@kie-tools-core/notifications/dist/api";
 import { DmnEditorRoot } from "./DmnEditorRoot";
@@ -79,8 +79,8 @@ export class DmnEditorInterface implements Editor {
     return this.self.getContent();
   }
 
-  public setContent(path: string, content: string): Promise<void> {
-    return this.self.setContent(path, content);
+  public setContent(absolutePath: string, content: string): Promise<void> {
+    return this.self.setContent(absolutePath, content);
   }
 
   // This is the argument to ReactDOM.render. These props can be understood like "static globals".
@@ -89,7 +89,7 @@ export class DmnEditorInterface implements Editor {
       <DmnEditorRootWrapper
         exposing={(dmnEditorRoot) => (this.self = dmnEditorRoot)}
         envelopeContext={this.envelopeContext}
-        workingDirBasePath={this.initArgs.workingDirBasePath ?? DEFAULT_WORKING_DIR_BASE_PATH}
+        workspaceRootAbsolutePath={this.initArgs.workspaceRootAbsolutePath ?? DEFAULT_WORKSPACE_ROOT_ABSOLUTE_PATH}
       />
     );
   }
@@ -99,11 +99,11 @@ export class DmnEditorInterface implements Editor {
 function DmnEditorRootWrapper({
   envelopeContext,
   exposing,
-  workingDirBasePath,
+  workspaceRootAbsolutePath,
 }: {
   envelopeContext?: KogitoEditorEnvelopeContextType<KogitoEditorChannelApi>;
   exposing: (s: DmnEditorRoot) => void;
-  workingDirBasePath: string;
+  workspaceRootAbsolutePath: string;
 }) {
   const onNewEdit = React.useCallback(
     (workspaceEdit: WorkspaceEdit) => {
@@ -112,6 +112,7 @@ function DmnEditorRootWrapper({
     [envelopeContext]
   );
 
+  // FIXME: TIAGO/LUIZ: Double-check. Should return pathRelativeToTheWorkspaceRoot.
   const onRequestFileList = React.useCallback(
     async (resource: ResourcesList) => {
       return (
@@ -121,6 +122,7 @@ function DmnEditorRootWrapper({
     [envelopeContext]
   );
 
+  // FIXME: TIAGO/LUIZ: Double-check. Should receive and return pathRelativeToTheWorkspaceRoot.
   const onRequestFileContent = React.useCallback(
     async (resource: ResourceContent) => {
       return envelopeContext?.channelApi.requests.kogitoWorkspace_resourceContentRequest(resource);
@@ -128,9 +130,9 @@ function DmnEditorRootWrapper({
     [envelopeContext]
   );
 
-  const onOpenFile = React.useCallback(
-    (path: string) => {
-      envelopeContext?.channelApi.notifications.kogitoWorkspace_openFile.send(path);
+  const onOpenFileFromPathRelativeToWorkspaceRoot = React.useCallback(
+    (pathRelativeToTheWorkspaceRoot: string) => {
+      envelopeContext?.channelApi.notifications.kogitoWorkspace_openFile.send(pathRelativeToTheWorkspaceRoot);
     },
     [envelopeContext]
   );
@@ -141,8 +143,8 @@ function DmnEditorRootWrapper({
       onNewEdit={onNewEdit}
       onRequestFileList={onRequestFileList}
       onRequestFileContent={onRequestFileContent}
-      onOpenFile={onOpenFile}
-      workingDirBasePath={workingDirBasePath}
+      onOpenFileFromPathRelativeToWorkspaceRoot={onOpenFileFromPathRelativeToWorkspaceRoot}
+      workspaceRootAbsolutePath={workspaceRootAbsolutePath}
     />
   );
 }

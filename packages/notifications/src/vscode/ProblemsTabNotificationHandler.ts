@@ -44,14 +44,17 @@ export class ProblemsTabNotificationHandler implements NotificationsChannelApi {
     this.diagnosticCollection.set(uri, diagnostics);
   }
 
-  public kogitoNotifications_setNotifications(path: string, notifications: Notification[]): void {
-    const uri = vscode.Uri.parse(path);
+  public kogitoNotifications_setNotifications(
+    pathRelativeToTheWorkspaceRoot: string,
+    notifications: Notification[]
+  ): void {
+    const uri = vscode.Uri.parse(pathRelativeToTheWorkspaceRoot);
     const diagnostics = notifications.map((notification) => this.buildDiagnostic(notification));
     this.diagnosticCollection.set(uri, diagnostics);
   }
 
-  public kogitoNotifications_removeNotifications(path: string) {
-    this.diagnosticCollection.delete(vscode.Uri.parse(path));
+  public kogitoNotifications_removeNotifications(pathRelativeToTheWorkspaceRoot: string) {
+    this.diagnosticCollection.delete(vscode.Uri.parse(pathRelativeToTheWorkspaceRoot));
   }
 
   private buildDiagnostic(notification: Notification): vscode.Diagnostic {

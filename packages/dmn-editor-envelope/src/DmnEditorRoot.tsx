@@ -58,15 +58,15 @@ export type DmnEditorRootProps = {
   onNewEdit: (edit: WorkspaceEdit) => void;
   onRequestFileList: WorkspaceChannelApi["kogitoWorkspace_resourceListRequest"];
   onRequestFileContent: WorkspaceChannelApi["kogitoWorkspace_resourceContentRequest"];
-  onOpenFile: WorkspaceChannelApi["kogitoWorkspace_openFile"];
-  workingDirBasePath: string;
+  onOpenFileFromPathRelativeToWorkspaceRoot: WorkspaceChannelApi["kogitoWorkspace_openFile"];
+  workspaceRootAbsolutePath: string;
 };
 
 export type DmnEditorRootState = {
   marshaller: DmnMarshaller<typeof DMN_LATEST_VERSION> | undefined;
   stack: DmnLatestModel[];
   pointer: number;
-  absolutePath: string | undefined;
+  openFileAbsolutePath: string | undefined;
   externalModelsByNamespace: DmnEditor.ExternalModelsIndex;
   readonly: boolean;
   externalModelsManagerDoneBootstraping: boolean;
@@ -83,7 +83,7 @@ export class DmnEditorRoot extends React.Component<DmnEditorRootProps, DmnEditor
       marshaller: undefined,
       stack: [],
       pointer: -1,
-      absolutePath: undefined,
+      openFileAbsolutePath: undefined,
       readonly: true,
       externalModelsManagerDoneBootstraping: false,
     };
@@ -109,7 +109,7 @@ export class DmnEditorRoot extends React.Component<DmnEditorRootProps, DmnEditor
     return this.state.marshaller.builder.build(this.model);
   }
 
-  public async setContent(absolutePath: string, content: string): Promise<void> {
+  public async setContent(openFileAbsolutePath: string, content: string): Promise<void> {
     const marshaller = getMarshaller(content || EMPTY_DMN(), { upgradeTo: "latest" });
 
     // Save stack
@@ -118,7 +118,7 @@ export class DmnEditorRoot extends React.Component<DmnEditorRootProps, DmnEditor
     // Set the model and path for external models manager.
     this.setState((prev) => {
       savedStackPointer = [...prev.stack];
-      return { stack: [marshaller.parser.parse()], absolutePath, pointer: 0 };
+      return { stack: [marshaller.parser.parse()], openFileAbsolutePath, pointer: 0 };
     });
 
     // Wait the external manager models to load.
@@ -127,10 +127,11 @@ export class DmnEditorRoot extends React.Component<DmnEditorRootProps, DmnEditor
     // Set the valeus to render the DMN Editor.
     this.setState((prev) => {
       // External change to the same file.
-      if (prev.absolutePath === absolutePath) {
+      if (prev.openFileAbsolutePath === openFileAbsolutePath) {
         const newStack = savedStackPointer.slice(0, prev.pointer + 1);
         return {
           marshaller,
+          openFileAbsolutePath,
           stack: [...newStack, marshaller.parser.parse()],
           readonly: false,
           pointer: newStack.length,
@@ -142,6 +143,7 @@ export class DmnEditorRoot extends React.Component<DmnEditorRootProps, DmnEditor
       else {
         return {
           marshaller,
+          openFileAbsolutePath,
           stack: [marshaller.parser.parse()],
           readonly: false,
           pointer: 0,
@@ -171,40 +173,55 @@ export class DmnEditorRoot extends React.Component<DmnEditorRootProps, DmnEditor
           pointer: newStack.length,
         };
       },
-      () => this.props.onNewEdit({ id: `${this.state.absolutePath}__${generateUuid()}` })
+      () => this.props.onNewEdit({ id: `${this.state.openFileAbsolutePath}__${generateUuid()}` })
     );
   };
 
+  // TIAGO: Theoretically ok. Returning paths relative to the open file.
   private onRequestExternalModelsAvailableToInclude: DmnEditor.OnRequestExternalModelsAvailableToInclude = async () => {
-    if (!this.state.absolutePath) {
+    if (!this.state.openFileAbsolutePath) {
       return [];
     }
 
     const list = await this.props.onRequestFileList({
       pattern: EXTERNAL_MODELS_SEARCH_GLOB_PATTERN,
       opts: { type: SearchType.TRAVERSAL },
-    }); // FIXME: TIAGO/JHOW: WRONG PATH: Should've been returning a list of "pathsRelativeToTheWorkspaceRoot"
+    }); // FIXME: TIAGO/LUIZ: WRONG PATH: Should've been returning a list of "pathsRelativeToTheWorkspaceRoot", instead of a list of "absolutePaths"
 
     return list.paths.flatMap((p) =>
       // Ignore thisDmn's file absolutePath
-      p === this.state.absolutePath ? [] : __path.relative(__path.dirname(this.state.absolutePath!), p)
+      p === this.state.openFileAbsolutePath ? [] : __path.relative(__path.dirname(this.state.openFileAbsolutePath!), p)
     );
   };
 
+  // TIAGO: Theoretically ok. Returning paths relative to the workspace root
   private onRequestToResolvePathRelativeToTheOpenFile: DmnEditor.OnRequestToResolvePath = (
     pathRelativeToTheOpenFile
   ) => {
-    return __path.relative(
-      this.props.workingDirBasePath,
-      __path.resolve(__path.dirname(this.state.absolutePath!), pathRelativeToTheOpenFile)
+    const resolvedAbsolutePath = __path.resolve(
+      __path.dirname(this.state.openFileAbsolutePath!),
+      pathRelativeToTheOpenFile
     );
+
+    return __path.relative(this.props.workspaceRootAbsolutePath, resolvedAbsolutePath);
+
+    // Example:
+    // this.state.openFileAbsolutePath = /Users/ljmotta/packages/dmns/Dmn.dmn
+    // pathRelativeToTheOpenFile = ../../tmp/Tmp.dmn
+    // workspaceRootAbsolutePath = /Users/ljmotta
+    // resolvedAbsolutePath = /Users/ljmotta/tmp/Tmp.dmn
+    // return (which is the pathRelativeToTheWorkspaceRoot) = tmp/Tmp.dmn
   };
 
+  // TIAGO: Theoretically ok. Returning paths relative to the open file.
   private onRequestExternalModelByPathsRelativeToTheOpenFile: DmnEditor.OnRequestExternalModelByPath = async (
     pathRelativeToTheOpenFile
   ) => {
-    const absolutePath = this.onRequestToResolvePathRelativeToTheOpenFile(pathRelativeToTheOpenFile);
-    const resource = await this.props.onRequestFileContent({ path: absolutePath, opts: { type: ContentType.TEXT } }); // FIXME: TIAGO/JHOW: WRONG PATH: Should've been using "pathRelativeToTheWorkspaceRoot" as argument.
+    const pathRelativeToTheWorkspaceRoot = this.onRequestToResolvePathRelativeToTheOpenFile(pathRelativeToTheOpenFile);
+    const resource = await this.props.onRequestFileContent({
+      path: pathRelativeToTheWorkspaceRoot,
+      opts: { type: ContentType.TEXT },
+    }); // TIAGO: Theoretically ok
 
     const ext = __path.extname(pathRelativeToTheOpenFile);
     if (ext === ".dmn") {
@@ -225,17 +242,15 @@ export class DmnEditorRoot extends React.Component<DmnEditorRootProps, DmnEditor
     }
   };
 
+  // TIAGO: Theoretically ok, receiving paths relative to the open file.
   private onOpenFileFromPathRelativeToTheOpenFile = (pathRelativeToTheOpenFile: string) => {
-    if (!this.state.absolutePath) {
+    if (!this.state.openFileAbsolutePath) {
       return;
     }
 
-    const fileAbsolutePath = __path.join(
-      this.props.workingDirBasePath,
+    this.props.onOpenFileFromPathRelativeToWorkspaceRoot(
       this.onRequestToResolvePathRelativeToTheOpenFile(pathRelativeToTheOpenFile)
     );
-
-    this.props.onOpenFile(fileAbsolutePath); // FIXME: TIAGO/JHOW: WRONG PATH: Should've been using "pathRelativeToTheWorkspaceRoot".
   };
 
   public render() {
@@ -261,7 +276,7 @@ export class DmnEditorRoot extends React.Component<DmnEditorRootProps, DmnEditor
               // (end)
             />
             <ExternalModelsManager
-              thisDmnsAbsolutePath={this.state.absolutePath}
+              thisDmnsAbsolutePath={this.state.openFileAbsolutePath}
               model={this.model}
               onChange={this.setExternalModelsByNamespace}
               onRequestFileList={this.props.onRequestFileList}

@@ -41,13 +41,13 @@ interface Props {
   onNewEdit: (edit: WorkspaceEdit) => void;
 
   /**
-   * Delegation for NotificationsChannelApi.kogitoNotifications_setNotifications(path, notifications) to report all validation
+   * Delegation for NotificationsChannelApi.kogitoNotifications_setNotifications(pathRelativeToTheWorkspaceRoot, notifications) to report all validation
    * notifications to the Channel that will replace existing notification for the path. Increases the
    * decoupling of the ServerlessWorkflowEditor from the Channel.
-   * @param path The path that references the Notification
+   * @param pathRelativeToTheWorkspaceRoot The path that references the Notification
    * @param notifications List of Notifications
    */
-  setNotifications: (path: string, notifications: Notification[]) => void;
+  setNotifications: (pathRelativeToTheWorkspaceRoot: string, notifications: Notification[]) => void;
 
   /**
    * ChannelType where the component is running.
@@ -57,7 +57,7 @@ interface Props {
 }
 
 export type ServerlessWorkflowEditorRef = {
-  setContent(path: string, content: string): Promise<void>;
+  setContent(absolutePath: string, content: string): Promise<void>;
 };
 
 type ServerlessWorkflowEditorContent = {
@@ -77,11 +77,11 @@ const RefForwardingServerlessWorkflowTextEditor: React.ForwardRefRenderFunction<
     forwardedRef,
     () => {
       return {
-        setContent: (path: string, newContent: string): Promise<void> => {
+        setContent: (absolutePath: string, newContent: string): Promise<void> => {
           try {
             setInitialContent({
               originalContent: newContent,
-              path: path,
+              path: absolutePath,
             });
             return Promise.resolve();
           } catch (e) {
@@ -143,7 +143,7 @@ const RefForwardingServerlessWorkflowTextEditor: React.ForwardRefRenderFunction<
           endColumn: error.endColumn,
         },
       }));
-      props.setNotifications.apply(initialContent.path, notifications);
+      props.setNotifications.apply(initialContent.path, notifications); // FIXME: TIAGO/LUIZ: Fix this. Should've been `pathRelativeToTheWorkspaceRoot`.
     },
     [initialContent, props.setNotifications]
   );

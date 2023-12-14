@@ -41,6 +41,7 @@ import { GwtEditorWrapper } from "./GwtEditorWrapper";
 import { GwtLanguageData, Resource } from "./GwtLanguageData";
 import { GwtStateControlService } from "./gwtStateControl";
 import { kieBcEditorsI18nDefaults, kieBcEditorsI18nDictionaries } from "./i18n";
+import * as __path from "path";
 
 export interface CustomWindow extends Window {
   startStandaloneEditor?: () => void;
@@ -116,9 +117,9 @@ export class GwtEditorWrapperFactory<E extends GwtEditorWrapper> implements Edit
       },
       keyboardShortcutsService: envelopeContext.services.keyboardShortcuts,
       resourceContentEditorService: {
-        get(path: string, opts?: ResourceContentOptions) {
+        get(pathRelativeToTheWorkspaceFile: string, opts?: ResourceContentOptions) {
           return envelopeContext.channelApi.requests
-            .kogitoWorkspace_resourceContentRequest({ path, opts })
+            .kogitoWorkspace_resourceContentRequest({ path: pathRelativeToTheWorkspaceFile, opts })
             .then((r) => r?.content);
         },
         list(pattern: string, opts?: ResourceListOptions) {
@@ -128,8 +129,16 @@ export class GwtEditorWrapperFactory<E extends GwtEditorWrapper> implements Edit
         },
       },
       workspaceService: {
-        openFile(path: string): void {
-          envelopeContext.channelApi.notifications.kogitoWorkspace_openFile.send(path);
+        openFile(pathRelativeToTheOpenFile: string): void {
+          const openFileAbsolutePath = ""; // FIXME: TIAGO/LUIZ: Fix this :)
+
+          const resolvedAbsolutePath = __path.resolve(__path.dirname(openFileAbsolutePath!), pathRelativeToTheOpenFile);
+
+          const pathRelativeToTheWorkspaceRoot = __path.relative(
+            initArgs.workspaceRootAbsolutePath!,
+            resolvedAbsolutePath
+          );
+          envelopeContext.channelApi.notifications.kogitoWorkspace_openFile.send(pathRelativeToTheWorkspaceRoot);
         },
       },
       i18nService: {
@@ -144,11 +153,16 @@ export class GwtEditorWrapperFactory<E extends GwtEditorWrapper> implements Edit
         createNotification: (notification: Notification) => {
           envelopeContext.channelApi.notifications.kogitoNotifications_createNotification.send(notification);
         },
-        removeNotifications: (path: string) => {
-          envelopeContext.channelApi.notifications.kogitoNotifications_removeNotifications.send(path);
+        removeNotifications: (pathRelativeToTheWorkspaceFile: string) => {
+          envelopeContext.channelApi.notifications.kogitoNotifications_removeNotifications.send(
+            pathRelativeToTheWorkspaceFile
+          );
         },
-        setNotifications: (path: string, notifications: Notification[]) => {
-          envelopeContext.channelApi.notifications.kogitoNotifications_setNotifications.send(path, notifications);
+        setNotifications: (pathRelativeToTheWorkspaceFile: string, notifications: Notification[]) => {
+          envelopeContext.channelApi.notifications.kogitoNotifications_setNotifications.send(
+            pathRelativeToTheWorkspaceFile,
+            notifications
+          );
         },
       },
     };

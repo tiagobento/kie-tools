@@ -73,8 +73,8 @@ export class EmbeddedEditorChannelApiImpl implements KogitoEditorChannelApi {
     return this.overrides.kogitoWorkspace_resourceListRequest?.(request) ?? new ResourcesList(request.pattern, []);
   }
 
-  public kogitoWorkspace_openFile(path: string): void {
-    this.overrides.kogitoWorkspace_openFile?.(path);
+  public kogitoWorkspace_openFile(pathRelativeToTheWorkspaceRoot: string): void {
+    this.overrides.kogitoWorkspace_openFile?.(pathRelativeToTheWorkspaceRoot);
   }
 
   public kogitoEditor_ready(): void {
@@ -97,11 +97,14 @@ export class EmbeddedEditorChannelApiImpl implements KogitoEditorChannelApi {
     this.overrides.kogitoNotifications_createNotification?.(notification);
   }
 
-  public kogitoNotifications_setNotifications(path: string, notifications: Notification[]): void {
-    this.overrides.kogitoNotifications_setNotifications?.(path, notifications);
+  public kogitoNotifications_setNotifications(
+    pathRelativeToTheWorkspaceRoot: string,
+    notifications: Notification[]
+  ): void {
+    this.overrides.kogitoNotifications_setNotifications?.(pathRelativeToTheWorkspaceRoot, notifications);
   }
 
-  public kogitoNotifications_removeNotifications(path: string): void {
-    this.overrides.kogitoNotifications_removeNotifications?.(path);
+  public kogitoNotifications_removeNotifications(pathRelativeToTheWorkspaceRoot: string): void {
+    this.overrides.kogitoNotifications_removeNotifications?.(pathRelativeToTheWorkspaceRoot);
   }
 }

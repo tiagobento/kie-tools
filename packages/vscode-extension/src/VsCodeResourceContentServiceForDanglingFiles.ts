@@ -65,25 +65,36 @@ export class VsCodeResourceContentServiceForDanglingFiles implements ResourceCon
     });
   }
 
-  public async get(path: string, opts?: ResourceContentOptions): Promise<ResourceContent | undefined> {
-    let assetPath = path;
+  public async get(
+    pathRelativeToTheWorkspaceRoot: string,
+    opts?: ResourceContentOptions
+  ): Promise<ResourceContent | undefined> {
+    let assetPath = pathRelativeToTheWorkspaceRoot;
 
     if (!assetPath.startsWith(this.rootFolder)) {
-      assetPath = this.rootFolder + path;
+      assetPath = this.rootFolder + pathRelativeToTheWorkspaceRoot;
     }
 
     if (opts?.type === ContentType.BINARY) {
       return new Promise<ResourceContent | undefined>((resolve, reject) => {
         vscode.workspace.fs.readFile(vscode.Uri.parse(assetPath)).then(
-          (data) => resolve(new ResourceContent(path, Buffer.from(data).toString("base64"), ContentType.BINARY)),
-          (_err) => resolve(new ResourceContent(path, undefined, ContentType.BINARY))
+          (data) =>
+            resolve(
+              new ResourceContent(
+                pathRelativeToTheWorkspaceRoot,
+                Buffer.from(data).toString("base64"),
+                ContentType.BINARY
+              )
+            ),
+          (_err) => resolve(new ResourceContent(pathRelativeToTheWorkspaceRoot, undefined, ContentType.BINARY))
         );
       });
     }
     return new Promise<ResourceContent | undefined>((resolve, reject) => {
       vscode.workspace.fs.readFile(vscode.Uri.parse(assetPath)).then(
-        (data) => resolve(new ResourceContent(path, Buffer.from(data).toString(), ContentType.TEXT)),
-        (_err) => resolve(new ResourceContent(path, undefined))
+        (data) =>
+          resolve(new ResourceContent(pathRelativeToTheWorkspaceRoot, Buffer.from(data).toString(), ContentType.TEXT)),
+        (_err) => resolve(new ResourceContent(pathRelativeToTheWorkspaceRoot, undefined))
       );
     });
   }

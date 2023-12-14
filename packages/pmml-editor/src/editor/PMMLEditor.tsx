@@ -70,13 +70,13 @@ interface Props {
   newEdit: (edit: WorkspaceEdit) => void;
 
   /**
-   * Delegation for NotificationsChannelApi.kogitoNotifications_setNotifications(path, notifications) to report all validation
+   * Delegation for NotificationsChannelApi.kogitoNotifications_setNotifications(pathRelativeToTheWorkspaceRoot, notifications) to report all validation
    * notifications to the Channel that  will replace existing notification for the path. Increases the
    * decoupling of the PMMLEditor from the Channel.
-   * @param path The path that references the Notification
+   * @param pathRelativeToTheWorkspaceRoot The path that references the Notification
    * @param notifications List of Notifications
    */
-  setNotifications: (path: string, notifications: Notification[]) => void;
+  setNotifications: (pathRelativeToTheWorkspaceRoot: string, notifications: Notification[]) => void;
 }
 
 export interface State {
