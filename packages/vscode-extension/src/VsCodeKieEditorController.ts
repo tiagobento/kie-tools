@@ -115,9 +115,9 @@ export class VsCodeKieEditorController implements EditorApi {
     return this.envelopeServer.envelopeApi.requests.kogitoEditor_contentRequest().then((c) => c.content);
   }
 
-  public setContent(path: string, content: string) {
+  public setContent(absolutePath: string, content: string) {
     return this.envelopeServer.envelopeApi.requests.kogitoEditor_contentChanged(
-      { path, content },
+      { path: absolutePath, content },
       { showLoadingOverlay: true }
     );
   }

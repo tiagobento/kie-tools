@@ -60,9 +60,9 @@ export const App = () => {
             setContent("");
             editor.setContent("New document", "").finally();
           }}
-          setContent={(path: string, xml: string) => {
+          setContent={(absolutePath: string, xml: string) => {
             setContent(xml);
-            editor.setContent(path, xml).finally();
+            editor.setContent(absolutePath, xml).finally();
           }}
         />
       )}

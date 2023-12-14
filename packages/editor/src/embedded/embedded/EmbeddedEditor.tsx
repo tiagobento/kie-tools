@@ -181,9 +181,9 @@ const RefForwardingEmbeddedEditor: React.ForwardRefRenderFunction<EmbeddedEditor
         redo: () => Promise.resolve(envelopeServer.envelopeApi.notifications.kogitoEditor_editorRedo.send()),
         getContent: () => envelopeServer.envelopeApi.requests.kogitoEditor_contentRequest().then((c) => c.content),
         getPreview: () => envelopeServer.envelopeApi.requests.kogitoEditor_previewRequest(),
-        setContent: (path, content) =>
+        setContent: (absolutePath, content) =>
           envelopeServer.envelopeApi.requests.kogitoEditor_contentChanged(
-            { path, content },
+            { path: absolutePath, content },
             { showLoadingOverlay: false }
           ),
         validate: () => envelopeServer.envelopeApi.requests.kogitoEditor_validate(),

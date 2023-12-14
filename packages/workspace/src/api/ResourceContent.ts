@@ -25,8 +25,8 @@ export class ResourceContent {
   public readonly content?: string;
   public readonly type: ContentType;
 
-  constructor(path: string, content: string | undefined, type?: ContentType) {
-    this.path = path;
+  constructor(pathRelativeToTheWorkspaceRoot: string, content: string | undefined, type?: ContentType) {
+    this.path = pathRelativeToTheWorkspaceRoot;
     this.content = content;
     this.type = type || ContentType.TEXT;
   }

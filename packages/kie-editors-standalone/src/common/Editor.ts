@@ -61,8 +61,8 @@ export const createEditor = (
     },
     getContent: () => envelopeApi.requests.kogitoEditor_contentRequest().then((c) => c.content),
     getPreview: () => envelopeApi.requests.kogitoEditor_previewRequest(),
-    setContent: (path, content) =>
-      envelopeApi.requests.kogitoEditor_contentChanged({ path, content }, { showLoadingOverlay: true }),
+    setContent: (absolutePath, content) =>
+      envelopeApi.requests.kogitoEditor_contentChanged({ path: absolutePath, content }, { showLoadingOverlay: true }),
     subscribeToContentChanges: (callback) => stateControl.subscribe(callback),
     unsubscribeToContentChanges: (callback) => stateControl.unsubscribe(callback),
     markAsSaved: () => stateControl.setSavedCommand(),

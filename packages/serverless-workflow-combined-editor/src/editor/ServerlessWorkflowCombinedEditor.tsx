@@ -79,7 +79,7 @@ interface Props {
 }
 
 export type ServerlessWorkflowCombinedEditorRef = {
-  setContent(path: string, content: string): Promise<void>;
+  setContent(absolutePath: string, content: string): Promise<void>;
   colorNodes(nodeNames: string[], color: string, colorConnectedEnds: boolean): void;
   moveCursorToPosition(position: Position): void;
 };

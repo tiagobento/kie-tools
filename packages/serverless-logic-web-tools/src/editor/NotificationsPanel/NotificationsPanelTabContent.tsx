@@ -65,16 +65,18 @@ export const NotificationPanelTabContent = React.forwardRef<NotificationsChannel
   );
 
   const setNotifications = useCallback(
-    (path: string, notifications: Notification[]) => {
+    (pathRelativeToTheWorkspaceRoot: string, notifications: Notification[]) => {
       onNotificationsLengthChange(name, notifications.length);
       setTabNotifications(notifications);
     },
     [onNotificationsLengthChange, name]
   );
 
-  const removeNotifications = useCallback((path: string) => {
+  const removeNotifications = useCallback((pathRelativeToTheWorkspaceRoot: string) => {
     setTabNotifications((previousTabNotifications) => {
-      return previousTabNotifications.filter((tabNotification) => tabNotification.path === path);
+      return previousTabNotifications.filter(
+        (tabNotification) => tabNotification.path === pathRelativeToTheWorkspaceRoot
+      );
     });
   }, []);
 

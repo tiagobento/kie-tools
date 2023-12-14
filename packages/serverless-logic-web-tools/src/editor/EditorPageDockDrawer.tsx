@@ -48,7 +48,7 @@ export interface EditorPageDockDrawerRef {
   toggle: (panelId: PanelId) => void;
   close: () => void;
   getNotificationsPanel: () => NotificationsPanelRef | undefined;
-  setNotifications: (tabName: string, path: string, notifications: Notification[]) => void;
+  setNotifications: (tabName: string, pathRelativeToTheWorkspaceRoot: string, notifications: Notification[]) => void;
 }
 
 export const EditorPageDockDrawer = React.forwardRef<

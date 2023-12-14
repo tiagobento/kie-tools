@@ -151,14 +151,14 @@ export const App = () => {
     window.alert(JSON.stringify(notifications, undefined, 2));
   }, [editor, embeddedEditorFile, swfLanguageService]);
 
-  const onSetContent = useCallback((path: string, content: string) => {
-    const match = /\.sw\.(json|yml|yaml)$/.exec(path.toLowerCase());
-    const dotExtension = match ? match[0] : extname(path);
+  const onSetContent = useCallback((absolutePath: string, content: string) => {
+    const match = /\.sw\.(json|yml|yaml)$/.exec(absolutePath.toLowerCase());
+    const dotExtension = match ? match[0] : extname(absolutePath);
     const extension = dotExtension.slice(1);
-    const fileName = basename(path);
+    const fileName = basename(absolutePath);
 
     setEmbeddedEditorFile({
-      path: path,
+      path: absolutePath,
       getFileContents: async () => content,
       isReadOnly: false,
       fileExtension: extension,

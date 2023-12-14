@@ -29,13 +29,13 @@ import { MonacoEditorApi, MonacoEditorOperation } from "./monaco/MonacoEditorCon
 interface Props {
   onStateControlCommandUpdate: (command: StateControlCommand) => void;
   onNewEdit: (edit: WorkspaceEdit) => void;
-  setNotifications: (path: string, notifications: Notification[]) => void;
+  setNotifications: (pathRelativeToTheWorkspaceRoot: string, notifications: Notification[]) => void;
   channelType: ChannelType;
   isReadOnly: boolean;
 }
 
 export type TextEditorRef = {
-  setContent(path: string, content: string): Promise<void>;
+  setContent(absolutePath: string, content: string): Promise<void>;
 };
 
 type TextEditorContent = {
@@ -54,11 +54,11 @@ const RefForwardingTextEditor: React.ForwardRefRenderFunction<TextEditorRef | un
     forwardedRef,
     () => {
       return {
-        setContent: (path: string, newContent: string): Promise<void> => {
+        setContent: (absolutePath: string, newContent: string): Promise<void> => {
           try {
             setInitialContent({
               originalContent: newContent,
-              path: path,
+              path: absolutePath,
             });
             return Promise.resolve();
           } catch (e) {

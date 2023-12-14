@@ -42,7 +42,7 @@ interface EditorPageDockContextType {
   disabledReason: string;
   onTogglePanel: (panelId: PanelId) => void;
   onOpenPanel: (panelId: PanelId) => void;
-  setNotifications: (tabName: string, path: string, notifications: Notification[]) => void;
+  setNotifications: (tabName: string, pathRelativeToWorkspaceRoot: string, notifications: Notification[]) => void;
   addToggleItem: (panelId: PanelId, newItem: JSX.Element) => void;
   removeToggleItem: (panelId: PanelId) => void;
   toggleGroupItems: Map<PanelId, JSX.Element>;
