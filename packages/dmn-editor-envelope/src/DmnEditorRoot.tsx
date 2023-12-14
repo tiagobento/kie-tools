@@ -58,7 +58,7 @@ export type DmnEditorRootProps = {
   onNewEdit: (edit: WorkspaceEdit) => void;
   onRequestFileList: WorkspaceChannelApi["kogitoWorkspace_resourceListRequest"];
   onRequestFileContent: WorkspaceChannelApi["kogitoWorkspace_resourceContentRequest"];
-  onOpenFileFromPathRelativeToWorkspaceRoot: WorkspaceChannelApi["kogitoWorkspace_openFile"];
+  onOpenFileFromPathRelativeToTheWorkspaceRoot: WorkspaceChannelApi["kogitoWorkspace_openFile"];
   workspaceRootAbsolutePath: string;
 };
 
@@ -248,7 +248,7 @@ export class DmnEditorRoot extends React.Component<DmnEditorRootProps, DmnEditor
       return;
     }
 
-    this.props.onOpenFileFromPathRelativeToWorkspaceRoot(
+    this.props.onOpenFileFromPathRelativeToTheWorkspaceRoot(
       this.onRequestToResolvePathRelativeToTheOpenFile(pathRelativeToTheOpenFile)
     );
   };

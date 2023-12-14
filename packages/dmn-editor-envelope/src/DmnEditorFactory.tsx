@@ -130,7 +130,7 @@ function DmnEditorRootWrapper({
     [envelopeContext]
   );
 
-  const onOpenFileFromPathRelativeToWorkspaceRoot = React.useCallback(
+  const onOpenFileFromPathRelativeToTheWorkspaceRoot = React.useCallback(
     (pathRelativeToTheWorkspaceRoot: string) => {
       envelopeContext?.channelApi.notifications.kogitoWorkspace_openFile.send(pathRelativeToTheWorkspaceRoot);
     },
@@ -143,7 +143,7 @@ function DmnEditorRootWrapper({
       onNewEdit={onNewEdit}
       onRequestFileList={onRequestFileList}
       onRequestFileContent={onRequestFileContent}
-      onOpenFileFromPathRelativeToWorkspaceRoot={onOpenFileFromPathRelativeToWorkspaceRoot}
+      onOpenFileFromPathRelativeToTheWorkspaceRoot={onOpenFileFromPathRelativeToTheWorkspaceRoot}
       workspaceRootAbsolutePath={workspaceRootAbsolutePath}
     />
   );
