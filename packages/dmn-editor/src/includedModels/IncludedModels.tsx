@@ -142,7 +142,7 @@ export function IncludedModels() {
       selectedModel.type === "dmn"
         ? selectedModel.model.definitions["@_namespace"]!
         : selectedModel.type === "pmml"
-        ? getPmmlNamespace({ fileRelativePath: selectedModel.relativePath })
+        ? getPmmlNamespace({ fileRelativePath: selectedModel.pathRelativeToTheOpenFile })
         : KIE_UNKNOWN_NAMESPACE;
 
     setModalOpen(false);
@@ -153,7 +153,7 @@ export function IncludedModels() {
           xmlns,
           namespace,
           name: importName,
-          locationURI: selectedModel.relativePath,
+          locationURI: selectedModel.pathRelativeToTheOpenFile,
         },
       });
     });
@@ -196,7 +196,7 @@ export function IncludedModels() {
           console.warn(`DMN EDITOR: Could not find model with namespace '${namespace}'. Ignoring.`);
           return acc;
         } else {
-          return acc.set(externalModel.relativePath, externalModel);
+          return acc.set(externalModel.pathRelativeToTheOpenFile, externalModel);
         }
       }, new Map<string, ExternalModel>()),
     [externalModelsByNamespace]
@@ -213,7 +213,7 @@ export function IncludedModels() {
           !externalModel ||
           (externalModel.type === "dmn" && !importsByNamespace.get(externalModel.model.definitions["@_namespace"])) ||
           (externalModel.type === "pmml" &&
-            !importsByNamespace.get(getPmmlNamespace({ fileRelativePath: externalModel.relativePath })))
+            !importsByNamespace.get(getPmmlNamespace({ fileRelativePath: externalModel.pathRelativeToTheOpenFile })))
         );
       }),
     [externalModelsByPath, importsByNamespace, modelPaths]
@@ -460,8 +460,8 @@ function IncludedModelCard({
   }, [externalModel.model, externalModel.type]);
 
   const pathDisplayed = useMemo(
-    () => onRequestToResolvePath?.(externalModel.relativePath) ?? externalModel.relativePath,
-    [onRequestToResolvePath, externalModel.relativePath]
+    () => onRequestToResolvePath?.(externalModel.pathRelativeToTheOpenFile) ?? externalModel.pathRelativeToTheOpenFile,
+    [onRequestToResolvePath, externalModel.pathRelativeToTheOpenFile]
   );
 
   const [isCardActionsOpen, setCardActionsOpen] = useState(false);
@@ -526,7 +526,7 @@ function IncludedModelCard({
             variant={ButtonVariant.link}
             style={{ paddingLeft: 0, whiteSpace: "break-spaces", textAlign: "left" }}
             onClick={() => {
-              onRequestToJumpToPath?.(externalModel.relativePath);
+              onRequestToJumpToPath?.(externalModel.pathRelativeToTheOpenFile);
             }}
           >
             <i>{pathDisplayed}</i>

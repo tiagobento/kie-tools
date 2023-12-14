@@ -183,7 +183,7 @@ export class DmnEditorRoot extends React.Component<DmnEditorRootProps, DmnEditor
     const list = await this.props.onRequestFileList({
       pattern: EXTERNAL_MODELS_SEARCH_GLOB_PATTERN,
       opts: { type: SearchType.TRAVERSAL },
-    });
+    }); // FIXME: TIAGO/JHOW: WRONG PATH: Should've been returning a list of "pathsRelativeToTheWorkspaceRoot"
 
     return list.paths.flatMap((p) =>
       // Ignore thisDmn's file absolutePath
@@ -191,28 +191,32 @@ export class DmnEditorRoot extends React.Component<DmnEditorRootProps, DmnEditor
     );
   };
 
-  private onRequestToResolvePath = (relativePath: string) => {
+  private onRequestToResolvePathRelativeToTheOpenFile: DmnEditor.OnRequestToResolvePath = (
+    pathRelativeToTheOpenFile
+  ) => {
     return __path.relative(
       this.props.workingDirBasePath,
-      __path.resolve(__path.dirname(this.state.absolutePath!), relativePath)
+      __path.resolve(__path.dirname(this.state.absolutePath!), pathRelativeToTheOpenFile)
     );
   };
 
-  private onRequestExternalModelByPath: DmnEditor.OnRequestExternalModelByPath = async (relativePath) => {
-    const absolutePath = this.onRequestToResolvePath(relativePath);
-    const resource = await this.props.onRequestFileContent({ path: absolutePath, opts: { type: ContentType.TEXT } });
+  private onRequestExternalModelByPathsRelativeToTheOpenFile: DmnEditor.OnRequestExternalModelByPath = async (
+    pathRelativeToTheOpenFile
+  ) => {
+    const absolutePath = this.onRequestToResolvePathRelativeToTheOpenFile(pathRelativeToTheOpenFile);
+    const resource = await this.props.onRequestFileContent({ path: absolutePath, opts: { type: ContentType.TEXT } }); // FIXME: TIAGO/JHOW: WRONG PATH: Should've been using "pathRelativeToTheWorkspaceRoot" as argument.
 
-    const ext = __path.extname(relativePath);
+    const ext = __path.extname(pathRelativeToTheOpenFile);
     if (ext === ".dmn") {
       return {
-        relativePath,
+        pathRelativeToTheOpenFile,
         type: "dmn",
         model: getMarshaller(resource?.content ?? "", { upgradeTo: "latest" }).parser.parse(),
         svg: "",
       };
     } else if (ext === ".pmml") {
       return {
-        relativePath,
+        pathRelativeToTheOpenFile,
         type: "pmml",
         model: XML2PMML(resource?.content ?? ""),
       };
@@ -221,13 +225,17 @@ export class DmnEditorRoot extends React.Component<DmnEditorRootProps, DmnEditor
     }
   };
 
-  private onOpenFileFromRelativePath = (relativePath: string) => {
+  private onOpenFileFromPathRelativeToTheOpenFile = (pathRelativeToTheOpenFile: string) => {
     if (!this.state.absolutePath) {
       return;
     }
 
-    const fileAbsolutePath = __path.join(this.props.workingDirBasePath, this.onRequestToResolvePath(relativePath));
-    this.props.onOpenFile(fileAbsolutePath);
+    const fileAbsolutePath = __path.join(
+      this.props.workingDirBasePath,
+      this.onRequestToResolvePathRelativeToTheOpenFile(pathRelativeToTheOpenFile)
+    );
+
+    this.props.onOpenFile(fileAbsolutePath); // FIXME: TIAGO/JHOW: WRONG PATH: Should've been using "pathRelativeToTheWorkspaceRoot".
   };
 
   public render() {
@@ -235,23 +243,23 @@ export class DmnEditorRoot extends React.Component<DmnEditorRootProps, DmnEditor
       <>
         {this.model && (
           <>
-            {this.state.marshaller && this.state.externalModelsManagerDoneBootstraping && (
-              <DmnEditor.DmnEditor
-                originalVersion={this.state.marshaller.originalVersion}
-                model={this.model}
-                externalModelsByNamespace={this.state.externalModelsByNamespace}
-                evaluationResults={[]}
-                validationMessages={[]}
-                externalContextName={""}
-                externalContextDescription={""}
-                issueTrackerHref={""}
-                onModelChange={this.onModelChange}
-                onRequestExternalModelByPath={this.onRequestExternalModelByPath}
-                onRequestExternalModelsAvailableToInclude={this.onRequestExternalModelsAvailableToInclude}
-                onRequestToJumpToPath={this.onOpenFileFromRelativePath}
-                onRequestToResolvePath={this.onRequestToResolvePath}
-              />
-            )}
+            <DmnEditor.DmnEditor
+              originalVersion={this.state.marshaller?.originalVersion}
+              model={this.model}
+              externalModelsByNamespace={this.state.externalModelsByNamespace}
+              evaluationResults={[]}
+              validationMessages={[]}
+              externalContextName={""}
+              externalContextDescription={""}
+              issueTrackerHref={""}
+              onModelChange={this.onModelChange}
+              onRequestExternalModelsAvailableToInclude={this.onRequestExternalModelsAvailableToInclude}
+              // (begin) All paths coming from inside the DmnEditor component are paths relative to the open file.
+              onRequestExternalModelByPath={this.onRequestExternalModelByPathsRelativeToTheOpenFile}
+              onRequestToJumpToPath={this.onOpenFileFromPathRelativeToTheOpenFile}
+              onRequestToResolvePath={this.onRequestToResolvePathRelativeToTheOpenFile}
+              // (end)
+            />
             <ExternalModelsManager
               thisDmnsAbsolutePath={this.state.absolutePath}
               model={this.model}
@@ -355,13 +363,13 @@ function ExternalModelsManager({
               if (externalModelMap[namespace]) {
                 console.warn(
                   `DMN EDITOR ROOT: Multiple DMN models encountered with the same namespace '${namespace}': '${relativePath}' and '${
-                    externalModelMap[namespace]!.relativePath
+                    externalModelMap[namespace]!.pathRelativeToTheOpenFile
                   }'. The latter will be considered.`
                 );
               }
 
               externalModelMap[namespace] = {
-                relativePath,
+                pathRelativeToTheOpenFile: relativePath,
                 model: getMarshaller(content, { upgradeTo: "latest" }).parser.parse(),
                 type: "dmn",
                 svg: "",
@@ -372,7 +380,7 @@ function ExternalModelsManager({
             if (namespace && namespacesSet.has(namespace)) {
               // No need to check for namespaces being equal becuase there can't be two files with the same relativePath.
               externalModelMap[namespace] = {
-                relativePath,
+                pathRelativeToTheOpenFile: relativePath,
                 model: XML2PMML(content),
                 type: "pmml",
               };
