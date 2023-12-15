@@ -78,14 +78,14 @@ export const App = () => {
     window.alert(JSON.stringify(notifications, undefined, 2));
   }, [editor]);
 
-  const onSetContent = useCallback((absolutePath: string, content: string) => {
-    const match = /\.yard\.(yml|yaml)$/.exec(absolutePath.toLowerCase());
-    const dotExtension = match ? match[0] : extname(absolutePath);
+  const onSetContent = useCallback((pathRelativeToTheWorkspaceRoot: string, content: string) => {
+    const match = /\.yard\.(yml|yaml)$/.exec(pathRelativeToTheWorkspaceRoot.toLowerCase());
+    const dotExtension = match ? match[0] : extname(pathRelativeToTheWorkspaceRoot);
     const extension = dotExtension.slice(1);
-    const fileName = basename(absolutePath);
+    const fileName = basename(pathRelativeToTheWorkspaceRoot);
 
     setEmbeddedEditorFile({
-      path: absolutePath,
+      path: pathRelativeToTheWorkspaceRoot,
       getFileContents: async () => content,
       isReadOnly: false,
       fileExtension: extension,

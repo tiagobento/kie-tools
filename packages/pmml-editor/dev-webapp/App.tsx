@@ -60,9 +60,9 @@ export const App = () => {
             setContent("");
             editor.setContent("New document", "").finally();
           }}
-          setContent={(absolutePath: string, xml: string) => {
+          setContent={(pathRelativeToTheWorkspaceRoot: string, xml: string) => {
             setContent(xml);
-            editor.setContent(absolutePath, xml).finally();
+            editor.setContent(pathRelativeToTheWorkspaceRoot, xml).finally();
           }}
         />
       )}

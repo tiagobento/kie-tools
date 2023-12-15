@@ -107,7 +107,7 @@ export type TestScenarioDataObject = {
 export type TestScenarioEditorRef = {
   /* TODO Convert these to Promises */
   getContent(): string;
-  setContent(absolutePath: string, content: string): void;
+  setContent(pathRelativeToTheWorkspaceRoot: string, content: string): void;
 };
 
 export type TestScenarioSettings = {

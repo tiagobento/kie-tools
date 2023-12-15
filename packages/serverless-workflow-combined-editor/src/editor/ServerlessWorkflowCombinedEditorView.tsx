@@ -37,8 +37,8 @@ export class ServerlessWorkflowCombinedEditorView implements ServerlessWorkflowC
     this.editorRef = React.createRef<ServerlessWorkflowCombinedEditorApi>();
   }
 
-  public setContent(absolutePath: string, content: string): Promise<void> {
-    return this.editorRef.current!.setContent(absolutePath, content);
+  public setContent(pathRelativeToTheWorkspaceRoot: string, content: string): Promise<void> {
+    return this.editorRef.current!.setContent(pathRelativeToTheWorkspaceRoot, content);
   }
 
   public getContent(): Promise<string> {

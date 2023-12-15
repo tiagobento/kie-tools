@@ -116,7 +116,7 @@ interface Props {
 const UPDATE_TIME = 1000;
 
 export type DashbuilderEditorRef = {
-  setContent(absolutePath: string, content: string): Promise<void>;
+  setContent(pathRelativeToTheWorkspaceRoot: string, content: string): Promise<void>;
   moveCursorToPosition(position: Position): void;
 };
 
@@ -144,11 +144,11 @@ const RefForwardingDashbuilderEditor: React.ForwardRefRenderFunction<Dashbuilder
     forwardedRef,
     () => {
       return {
-        setContent: (absolutePath: string, newContent: string): Promise<void> => {
+        setContent: (pathRelativeToTheWorkspaceRoot: string, newContent: string): Promise<void> => {
           try {
             setInitialContent({
               originalContent: newContent,
-              path: absolutePath,
+              path: pathRelativeToTheWorkspaceRoot,
             });
             return Promise.resolve();
           } catch (e) {

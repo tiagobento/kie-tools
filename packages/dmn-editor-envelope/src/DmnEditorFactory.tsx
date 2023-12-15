@@ -79,8 +79,8 @@ export class DmnEditorInterface implements Editor {
     return this.self.getContent();
   }
 
-  public setContent(absolutePath: string, content: string): Promise<void> {
-    return this.self.setContent(absolutePath, content);
+  public setContent(pathRelativeToTheWorkspaceRoot: string, content: string): Promise<void> {
+    return this.self.setContent(pathRelativeToTheWorkspaceRoot, content);
   }
 
   // This is the argument to ReactDOM.render. These props can be understood like "static globals".

@@ -57,7 +57,7 @@ interface Props {
 }
 
 export type ServerlessWorkflowEditorRef = {
-  setContent(absolutePath: string, content: string): Promise<void>;
+  setContent(pathRelativeToTheWorkspaceRoot: string, content: string): Promise<void>;
 };
 
 type ServerlessWorkflowEditorContent = {
@@ -77,11 +77,11 @@ const RefForwardingServerlessWorkflowTextEditor: React.ForwardRefRenderFunction<
     forwardedRef,
     () => {
       return {
-        setContent: (absolutePath: string, newContent: string): Promise<void> => {
+        setContent: (pathRelativeToTheWorkspaceRoot: string, newContent: string): Promise<void> => {
           try {
             setInitialContent({
               originalContent: newContent,
-              path: absolutePath,
+              path: pathRelativeToTheWorkspaceRoot,
             });
             return Promise.resolve();
           } catch (e) {

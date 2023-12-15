@@ -125,9 +125,9 @@ export class PMMLEditor extends React.Component<Props, State> {
     this.props.ready();
   }
 
-  public setContent(absolutePath: string, content: string): Promise<void> {
+  public setContent(pathRelativeToTheWorkspaceRoot: string, content: string): Promise<void> {
     try {
-      this.doSetContent(absolutePath, content);
+      this.doSetContent(pathRelativeToTheWorkspaceRoot, content);
       this.props.setNotifications(this.state.path, this.validate());
       return Promise.resolve();
     } catch (e) {
@@ -136,7 +136,7 @@ export class PMMLEditor extends React.Component<Props, State> {
     }
   }
 
-  private doSetContent(absolutePath: string, content: string): void {
+  private doSetContent(pathRelativeToTheWorkspaceRoot: string, content: string): void {
     let pmml: PMML;
     let _content: string = content;
 
@@ -166,7 +166,7 @@ export class PMMLEditor extends React.Component<Props, State> {
     });
 
     this.setState({
-      path: absolutePath,
+      path: pathRelativeToTheWorkspaceRoot,
       content: _content,
       originalContent: _content,
       activeOperation: Operation.NONE,

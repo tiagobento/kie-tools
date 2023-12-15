@@ -169,11 +169,7 @@ export function IncludedModels() {
   useCancelableEffect(
     useCallback(
       ({ canceled }) => {
-        if (onRequestExternalModelsAvailableToInclude === undefined) {
-          return;
-        }
-
-        onRequestExternalModelsAvailableToInclude()
+        onRequestExternalModelsAvailableToInclude?.()
           .then((externalModel) => {
             if (canceled.get()) {
               return;
@@ -185,7 +181,7 @@ export function IncludedModels() {
             return;
           });
       },
-      [isModelSelectOpen, onRequestExternalModelsAvailableToInclude]
+      [onRequestExternalModelsAvailableToInclude]
     )
   );
 

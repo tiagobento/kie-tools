@@ -128,6 +128,7 @@ const RefForwardingEmbeddedEditor: React.ForwardRefRenderFunction<EmbeddedEditor
     props.file.isReadOnly,
     props.locale,
     props.channelType,
+    props.workspaceRootAbsolutePath,
     envelopeMapping?.resourcesPathPrefix,
   ]);
 

@@ -29,8 +29,8 @@ export class PMMLEditorInterface implements Editor {
 
   constructor(private readonly envelopeContext: KogitoEditorEnvelopeContextType<KogitoEditorChannelApi>) {}
 
-  public setContent(absolutePath: string, content: string): Promise<void> {
-    return this.self.setContent(absolutePath, content);
+  public setContent(pathRelativeToTheWorkspaceRoot: string, content: string): Promise<void> {
+    return this.self.setContent(pathRelativeToTheWorkspaceRoot, content);
   }
 
   public getContent(): Promise<string> {

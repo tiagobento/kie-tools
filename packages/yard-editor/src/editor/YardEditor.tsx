@@ -71,7 +71,7 @@ interface Props {
 }
 
 export type YardEditorRef = {
-  setContent(absolutePath: string, content: string): Promise<void>;
+  setContent(pathRelativeToTheWorkspaceRoot: string, content: string): Promise<void>;
   moveCursorToPosition(position: Position): void;
 };
 
@@ -87,11 +87,11 @@ const RefForwardingYardEditor: React.ForwardRefRenderFunction<YardEditorRef | un
     forwardedRef,
     () => {
       return {
-        setContent: (absolutePath: string, newContent: string): Promise<void> => {
+        setContent: (pathRelativeToTheWorkspaceRoot: string, newContent: string): Promise<void> => {
           try {
             setFile({
               content: newContent,
-              path: absolutePath,
+              path: pathRelativeToTheWorkspaceRoot,
             });
             setYardData(deserialize(newContent));
             return Promise.resolve();

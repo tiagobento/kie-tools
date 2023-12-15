@@ -35,7 +35,7 @@ interface Props {
 }
 
 export type TextEditorRef = {
-  setContent(absolutePath: string, content: string): Promise<void>;
+  setContent(pathRelativeToTheWorkspaceRoot: string, content: string): Promise<void>;
 };
 
 type TextEditorContent = {
@@ -54,11 +54,11 @@ const RefForwardingTextEditor: React.ForwardRefRenderFunction<TextEditorRef | un
     forwardedRef,
     () => {
       return {
-        setContent: (absolutePath: string, newContent: string): Promise<void> => {
+        setContent: (pathRelativeToTheWorkspaceRoot: string, newContent: string): Promise<void> => {
           try {
             setInitialContent({
               originalContent: newContent,
-              path: absolutePath,
+              path: pathRelativeToTheWorkspaceRoot,
             });
             return Promise.resolve();
           } catch (e) {

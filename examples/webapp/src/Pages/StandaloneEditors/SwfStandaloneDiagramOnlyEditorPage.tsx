@@ -36,9 +36,9 @@ export const SwfStandaloneDiagramOnlyEditorPage = () => {
   const [workflowType, setWorkflowType] = useState<ServerlessWorkflowType>();
   const [editor, setEditor] = useState<StandaloneEditorApi>();
 
-  const onSetContent = useCallback((absolutePath: string, content: string) => {
-    const match = /\.sw\.(json|yaml)$/.exec(absolutePath.toLowerCase());
-    const dotExtension = match ? match[0] : extname(absolutePath);
+  const onSetContent = useCallback((pathRelativeToTheWorkspaceRoot: string, content: string) => {
+    const match = /\.sw\.(json|yaml)$/.exec(pathRelativeToTheWorkspaceRoot.toLowerCase());
+    const dotExtension = match ? match[0] : extname(pathRelativeToTheWorkspaceRoot);
     const extension = dotExtension.slice(1);
 
     const editorApi = SwfEditor.open({

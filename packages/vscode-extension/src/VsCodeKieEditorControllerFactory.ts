@@ -157,9 +157,10 @@ export class VsCodeKieEditorControllerFactory {
     return webview.asWebviewUri(Uri.joinPath(this.context.extensionUri, relativePath)).toString();
   }
 
-  private isAssetInWorkspace(absolutePath: string): boolean {
+  private isAssetInWorkspace(openFileAbsolutePath: string): boolean {
     return (
-      vscode.workspace.workspaceFolders?.map((f) => f.uri.fsPath).find((p) => absolutePath.startsWith(p)) !== undefined
+      vscode.workspace.workspaceFolders?.map((f) => f.uri.fsPath).find((p) => openFileAbsolutePath.startsWith(p)) !==
+      undefined
     );
   }
 
