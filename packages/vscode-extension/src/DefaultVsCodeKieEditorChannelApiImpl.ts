@@ -89,10 +89,17 @@ export class DefaultVsCodeKieEditorChannelApiImpl implements KogitoEditorChannel
   }
 
   public kogitoWorkspace_openFile(pathRelativeToTheWorkspaceRoot: string) {
+    if (__path.isAbsolute(pathRelativeToTheWorkspaceRoot)) {
+      throw new Error(
+        "VS CODE DEFAULT CHANNEL API IMPL: Can't open absolute path. Paths must be relative to the workspace root."
+      );
+    }
+
     this.workspaceApi.kogitoWorkspace_openFile(
-      __path.isAbsolute(pathRelativeToTheWorkspaceRoot)
-        ? pathRelativeToTheWorkspaceRoot
-        : __path.join(__path.dirname(this.editor.document.document.uri.path), pathRelativeToTheWorkspaceRoot)
+      __path.join(
+        vscode.workspace.workspaceFolders?.[0].uri.fsPath ?? __path.dirname(this.editor.document.document.uri.fsPath),
+        pathRelativeToTheWorkspaceRoot
+      )
     );
   }
 
