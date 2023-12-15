@@ -117,7 +117,7 @@ export class DefaultVsCodeKieEditorChannelApiImpl implements KogitoEditorChannel
       }
     }
 
-    return { content, path: this.editor.document.document.uri.path };
+    return { content, path: vscode.workspace.asRelativePath(this.editor.document.document.uri, false) };
   }
 
   public kogitoEditor_setContentError(editorContent: EditorContent) {

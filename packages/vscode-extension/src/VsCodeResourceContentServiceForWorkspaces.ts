@@ -55,21 +55,26 @@ export class VsCodeResourceContentServiceForWorkspaces implements ResourceConten
     // making this action is less performatic than the git ls-files which will
     // automatically exclude the .gitignore files.
     try {
-      console.debug("Trying to use isomorphic-git to read dir.");
-      const files = await listFiles({ fs: this.vscodeEquivalentFs as any, dir: basePath });
-      console.debug("Success on using isomorphic-git!");
+      console.debug("VS CODE RESOURCE CONTENT API IMPL FOR WORKSPACES: Trying to use isomorphic-git to read dir.");
+      const filePathsRelativeToTheBasePath = await listFiles({ fs: this.vscodeEquivalentFs as any, dir: basePath });
+      console.debug("VS CODE RESOURCE CONTENT API IMPL FOR WORKSPACES: Success on using isomorphic-git!");
+
       const minimatch = new Minimatch(pattern);
-      // The regexp is 50x faster than the direct match using glob.
-      const regexp = minimatch.makeRe();
-      const paths = files.filter((file) => regexp.test(file)).map((file) => __path.join(basePath, file));
-      return new ResourcesList(pattern, paths);
+      const regexp = minimatch.makeRe(); // The regexp is ~50x faster than the direct match using glob.
+      const matchingPathsRelativeToTheBasePath = filePathsRelativeToTheBasePath.filter((p) =>
+        regexp.test(
+          "/" + p // Adding a leading slash here to make the regex have the same behavior as the glob.
+        )
+      );
+      return new ResourcesList(pattern, matchingPathsRelativeToTheBasePath);
     } catch (error) {
-      console.debug("Failed to use isomorphic-git to read dir. Falling back to vscode API. error: ", error);
+      console.debug(
+        "VS CODE RESOURCE CONTENT API IMPL FOR WORKSPACES: Failed to use isomorphic-git to read dir. Falling back to vscode's API. error: ",
+        error
+      );
       const relativePattern = new RelativePattern(basePath, pattern);
       const files = await vscode.workspace.findFiles(relativePattern);
-      const paths = files
-        .map((uri: vscode.Uri) => vscode.workspace.asRelativePath(uri))
-        .map((file) => __path.join(basePath, file));
+      const paths = files.map((uri: vscode.Uri) => vscode.workspace.asRelativePath(uri, false));
       return new ResourcesList(pattern, paths);
     }
   }
@@ -78,46 +83,47 @@ export class VsCodeResourceContentServiceForWorkspaces implements ResourceConten
     pathRelativeToTheWorkspaceRoot: string,
     opts?: ResourceContentOptions
   ): Promise<ResourceContent | undefined> {
-    const contentPath = this.resolvePath(pathRelativeToTheWorkspaceRoot);
+    if (!vscode.workspace.workspaceFolders) {
+      throw new Error("VS CODE RESOURCE CONTENT API IMPL FOR WORKSPACES: No workspaces found.");
+    }
 
-    if (!contentPath) {
-      return new ResourceContent(pathRelativeToTheWorkspaceRoot, undefined);
+    if (__path.isAbsolute(pathRelativeToTheWorkspaceRoot)) {
+      throw new Error(
+        "VS CODE RESOURCE CONTENT API IMPL FOR WORKSPACES: Can't work with absolute paths. All paths must be relative to the workspace root."
+      );
+    }
+
+    const workspaceRootAbsolutePath = vscode.workspace.workspaceFolders[0].uri.path;
+    const absolutePath = __path.join(workspaceRootAbsolutePath, pathRelativeToTheWorkspaceRoot);
+
+    if (__path.resolve(workspaceRootAbsolutePath, pathRelativeToTheWorkspaceRoot) !== absolutePath) {
+      throw new Error(
+        "VS CODE RESOURCE CONTENT API IMPL FOR WORKSPACES: Path relative to the workspace root trying to access files outside the workspace."
+      );
     }
 
     try {
-      await vscode.workspace.fs.stat(vscode.Uri.parse(contentPath));
-    } catch (e) {
-      console.warn(`Error checking file ${pathRelativeToTheWorkspaceRoot}: ${e}`);
-      return new ResourceContent(pathRelativeToTheWorkspaceRoot, undefined);
-    }
+      const content = await vscode.workspace.fs.readFile(vscode.Uri.parse(absolutePath));
 
-    return this.retrieveContent(opts?.type, pathRelativeToTheWorkspaceRoot, contentPath);
-  }
-
-  private resolvePath(uri: string) {
-    if (__path.isAbsolute(uri)) {
-      return uri;
-    }
-    const folders: ReadonlyArray<WorkspaceFolder> = vscode.workspace.workspaceFolders!;
-    if (folders) {
-      const rootPath = folders[0].uri.path;
-      if (!uri.startsWith(__path.sep)) {
-        uri = __path.sep + uri;
+      if (opts?.type === ContentType.BINARY) {
+        return new ResourceContent(
+          pathRelativeToTheWorkspaceRoot, // Always return the relative path.
+          Buffer.from(content).toString("base64"),
+          ContentType.BINARY
+        );
+      } else {
+        return new ResourceContent(
+          pathRelativeToTheWorkspaceRoot, // Always return the relative path.
+          Buffer.from(content).toString(),
+          ContentType.TEXT
+        );
       }
-      return rootPath + uri;
-    }
-    return null;
-  }
-
-  private retrieveContent(type: ContentType | undefined, path: string, contentPath: string): Thenable<ResourceContent> {
-    if (type === ContentType.BINARY) {
-      return vscode.workspace.fs
-        .readFile(vscode.Uri.parse(contentPath))
-        .then((content) => new ResourceContent(path, Buffer.from(content).toString("base64"), ContentType.BINARY));
-    } else {
-      return vscode.workspace.fs
-        .readFile(vscode.Uri.parse(contentPath))
-        .then((content) => new ResourceContent(path, Buffer.from(content).toString(), ContentType.TEXT));
+    } catch (e) {
+      console.error(
+        `VS CODE RESOURCE CONTENT API IMPL FOR WORKSPACES: Error reading file ${pathRelativeToTheWorkspaceRoot}. Returning undefined.`,
+        e
+      );
+      return new ResourceContent(pathRelativeToTheWorkspaceRoot, undefined, opts?.type);
     }
   }
 }

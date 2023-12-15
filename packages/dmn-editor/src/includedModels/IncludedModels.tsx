@@ -170,11 +170,11 @@ export function IncludedModels() {
     useCallback(
       ({ canceled }) => {
         onRequestExternalModelsAvailableToInclude?.()
-          .then((externalModel) => {
+          .then((externalModels) => {
             if (canceled.get()) {
               return;
             }
-            setModelPaths(externalModel);
+            setModelPaths(externalModels);
           })
           .catch((err) => {
             console.error(err);

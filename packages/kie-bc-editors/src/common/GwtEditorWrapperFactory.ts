@@ -130,15 +130,15 @@ export class GwtEditorWrapperFactory<E extends GwtEditorWrapper> implements Edit
       },
       workspaceService: {
         openFile(pathRelativeToTheOpenFile: string): void {
-          const openFileAbsolutePath = ""; // FIXME: TIAGO/LUIZ: Fix this :)
+          const openFilePathRelativeToTheWorkspaceRoot = ""; // FIXME: TIAGO/LUIZ: Fix this :)
 
-          const resolvedAbsolutePath = __path.resolve(__path.dirname(openFileAbsolutePath!), pathRelativeToTheOpenFile);
+          const resolvedPathRelativeToTheWorkspaceRoot = __path
+            .resolve(__path.dirname(openFilePathRelativeToTheWorkspaceRoot!), pathRelativeToTheOpenFile)
+            .substring(1); // Remove leading slash.
 
-          const pathRelativeToTheWorkspaceRoot = __path.relative(
-            initArgs.workspaceRootAbsolutePath!,
-            resolvedAbsolutePath
+          envelopeContext.channelApi.notifications.kogitoWorkspace_openFile.send(
+            resolvedPathRelativeToTheWorkspaceRoot
           );
-          envelopeContext.channelApi.notifications.kogitoWorkspace_openFile.send(pathRelativeToTheWorkspaceRoot);
         },
       },
       i18nService: {
