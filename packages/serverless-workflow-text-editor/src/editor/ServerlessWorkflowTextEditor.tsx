@@ -131,9 +131,11 @@ const RefForwardingServerlessWorkflowTextEditor: React.ForwardRefRenderFunction<
       if (!initialContent) {
         return;
       }
+      const pathRelativeToTheWorkspaceRoot = initialContent.path; // FIXME: TIAGO/LUIZ: Fix this? Should've been `pathRelativeToTheWorkspaceRoot`.
+
       const notifications: Notification[] = errors.map((error: editor.IMarker) => ({
         type: "PROBLEM",
-        path: initialContent.path,
+        pathRelativeToTheWorkspaceRoot,
         severity: "ERROR",
         message: `${error.message}`,
         position: {
@@ -143,7 +145,7 @@ const RefForwardingServerlessWorkflowTextEditor: React.ForwardRefRenderFunction<
           endColumn: error.endColumn,
         },
       }));
-      props.setNotifications.apply(initialContent.path, notifications); // FIXME: TIAGO/LUIZ: Fix this. Should've been `pathRelativeToTheWorkspaceRoot`.
+      props.setNotifications.apply(pathRelativeToTheWorkspaceRoot, notifications);
     },
     [initialContent, props.setNotifications]
   );

@@ -93,9 +93,11 @@ const RefForwardingTextEditor: React.ForwardRefRenderFunction<TextEditorRef | un
     if (!initialContent) {
       return;
     }
+    const pathRelativeToTheWorkspaceRoot = initialContent.path; // FIXME: TIAGO/LUIZ: Fix this? Should've been `pathRelativeToTheWorkspaceRoot`.
+
     const notifications: Notification[] = errors.map((error: editor.IMarker) => ({
       type: "PROBLEM",
-      path: initialContent.path,
+      pathRelativeToTheWorkspaceRoot,
       severity: "ERROR",
       message: `${error.message}`,
       position: {
@@ -105,7 +107,7 @@ const RefForwardingTextEditor: React.ForwardRefRenderFunction<TextEditorRef | un
         endColumn: error.endColumn,
       },
     }));
-    props.setNotifications(initialContent.path, notifications);
+    props.setNotifications(pathRelativeToTheWorkspaceRoot, notifications);
   };
 
   const isVscode = useCallback(() => {

@@ -117,7 +117,7 @@ export class VsCodeKieEditorController implements EditorApi {
 
   public setContent(pathRelativeToTheWorkspaceRoot: string, content: string) {
     return this.envelopeServer.envelopeApi.requests.kogitoEditor_contentChanged(
-      { path: pathRelativeToTheWorkspaceRoot, content },
+      { pathRelativeToTheWorkspaceRoot, content },
       { showLoadingOverlay: true }
     );
   }
@@ -266,7 +266,7 @@ export class VsCodeKieEditorController implements EditorApi {
       this.envelopeServer.envelopeApi.requests.kogitoEditor_contentChanged(
         {
           content: e.document.getText(),
-          path: e.document.uri.path,
+          pathRelativeToTheWorkspaceRoot: e.document.uri.path,
         },
         { showLoadingOverlay: false }
       );

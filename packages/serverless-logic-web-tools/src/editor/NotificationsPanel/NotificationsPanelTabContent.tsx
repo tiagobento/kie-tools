@@ -75,7 +75,7 @@ export const NotificationPanelTabContent = React.forwardRef<NotificationsChannel
   const removeNotifications = useCallback((pathRelativeToTheWorkspaceRoot: string) => {
     setTabNotifications((previousTabNotifications) => {
       return previousTabNotifications.filter(
-        (tabNotification) => tabNotification.path === pathRelativeToTheWorkspaceRoot
+        (tabNotification) => tabNotification.pathRelativeToTheWorkspaceRoot === pathRelativeToTheWorkspaceRoot
       );
     });
   }, []);
@@ -88,11 +88,11 @@ export const NotificationPanelTabContent = React.forwardRef<NotificationsChannel
 
   const notificationsMap: Map<string, Notification[]> = useMemo(() => {
     return tabNotifications.reduce((acc, notification) => {
-      const notificationEntry = acc.get(notification.path);
+      const notificationEntry = acc.get(notification.pathRelativeToTheWorkspaceRoot);
       if (!notificationEntry) {
-        acc.set(notification.path, [notification]);
+        acc.set(notification.pathRelativeToTheWorkspaceRoot, [notification]);
       } else {
-        acc.set(notification.path, [...notificationEntry, notification]);
+        acc.set(notification.pathRelativeToTheWorkspaceRoot, [...notificationEntry, notification]);
       }
       return acc;
     }, new Map());

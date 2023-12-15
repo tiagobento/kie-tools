@@ -69,29 +69,29 @@ export class StandaloneEditorsEditorChannelApiImpl implements KogitoEditorChanne
 
   public async kogitoEditor_contentRequest() {
     const content = await this.file.getFileContents();
-    return { content: content ?? "", path: this.file.fileName };
+    return { content: content ?? "", pathRelativeToTheWorkspaceRoot: this.file.fileName };
   }
 
   public async kogitoWorkspace_resourceContentRequest(request: ResourceContentRequest) {
-    const resource = this.resources?.get(request.path);
+    const resource = this.resources?.get(request.pathRelativeToTheWorkspaceRoot);
 
     if (!resource) {
-      console.warn("The editor requested an unspecified resource: " + request.path);
-      return new ResourceContent(request.path, undefined);
+      console.warn("The editor requested an unspecified resource: " + request.pathRelativeToTheWorkspaceRoot);
+      return new ResourceContent(request.pathRelativeToTheWorkspaceRoot, undefined);
     }
 
     const requestedContentType = request.opts?.type ?? resource.contentType;
     if (requestedContentType !== resource.contentType) {
       console.warn(
         "The editor requested a resource with a different content type from the one specified: " +
-          request.path +
+          request.pathRelativeToTheWorkspaceRoot +
           ". Content type requested: " +
           requestedContentType
       );
-      return new ResourceContent(request.path, undefined);
+      return new ResourceContent(request.pathRelativeToTheWorkspaceRoot, undefined);
     }
 
-    return new ResourceContent(request.path, await resource.content, resource.contentType);
+    return new ResourceContent(request.pathRelativeToTheWorkspaceRoot, await resource.content, resource.contentType);
   }
 
   public async kogitoWorkspace_resourceListRequest(request: ResourceListRequest) {

@@ -60,12 +60,13 @@ export class EmbeddedEditorChannelApiImpl implements KogitoEditorChannelApi {
 
   public async kogitoEditor_contentRequest() {
     const content = await this.file.getFileContents();
-    return { content: content ?? "", path: this.file.path };
+    return { content: content ?? "", pathRelativeToTheWorkspaceRoot: this.file.pathRelativeToTheWorkspaceRoot };
   }
 
   public async kogitoWorkspace_resourceContentRequest(request: ResourceContentRequest) {
     return (
-      this.overrides.kogitoWorkspace_resourceContentRequest?.(request) ?? new ResourceContent(request.path, undefined)
+      this.overrides.kogitoWorkspace_resourceContentRequest?.(request) ??
+      new ResourceContent(request.pathRelativeToTheWorkspaceRoot, undefined)
     );
   }
 

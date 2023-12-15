@@ -131,9 +131,11 @@ const RefForwardingYardEditor: React.ForwardRefRenderFunction<YardEditorRef | un
       if (!file) {
         return;
       }
+      const pathRelativeToTheWorkspaceRoot = file.path; // FIXME: TIAGO/LUIZ: Fix this? Should've been `pathRelativeToTheWorkspaceRoot`.
+
       const notifications: Notification[] = errors.map((error: editor.IMarker) => ({
         type: "PROBLEM",
-        path: file.path,
+        pathRelativeToTheWorkspaceRoot,
         severity: "ERROR",
         message: `${error.message}`,
         position: {
@@ -143,7 +145,7 @@ const RefForwardingYardEditor: React.ForwardRefRenderFunction<YardEditorRef | un
           endColumn: error.endColumn,
         },
       }));
-      props.setNotifications.apply(file.path, notifications); //FIXME: TIAGO/LUIZ: Fix this. Should've been `pathRelativeToTheWorkspaceRoot`.
+      props.setNotifications.apply(pathRelativeToTheWorkspaceRoot, notifications);
     },
     [file, props.setNotifications]
   );

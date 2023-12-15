@@ -69,13 +69,15 @@ export class VsCodeResourceContentServiceForWorkspaces implements ResourceConten
       return new ResourcesList(pattern, matchingPathsRelativeToTheBasePath);
     } catch (error) {
       console.debug(
-        "VS CODE RESOURCE CONTENT API IMPL FOR WORKSPACES: Failed to use isomorphic-git to read dir. Falling back to vscode's API. error: ",
+        "VS CODE RESOURCE CONTENT API IMPL FOR WORKSPACES: Failed to use isomorphic-git to read dir. Falling back to vscode's API.",
         error
       );
       const relativePattern = new RelativePattern(basePath, pattern);
       const files = await vscode.workspace.findFiles(relativePattern);
-      const paths = files.map((uri: vscode.Uri) => vscode.workspace.asRelativePath(uri, false));
-      return new ResourcesList(pattern, paths);
+      const pathsRelativeToTheWorkspaceRoot = files.map((uri: vscode.Uri) =>
+        vscode.workspace.asRelativePath(uri, false)
+      );
+      return new ResourcesList(pattern, pathsRelativeToTheWorkspaceRoot);
     }
   }
 

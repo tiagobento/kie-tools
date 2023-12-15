@@ -112,7 +112,7 @@ export class DefaultVsCodeKieEditorChannelApiImpl implements KogitoEditorChannel
       // This is important for the use-case where users type `code new-file.dmn` on a terminal.
       try {
         await vscode.workspace.fs.writeFile(this.editor.document.document.uri, new Uint8Array());
-        return { content: "", path: this.editor.document.document.uri.path };
+        return { content: "", pathRelativeToTheWorkspaceRoot: this.editor.document.document.uri.path };
       } catch (error) {
         console.error(
           "Failed on vscode.workspace.fs.writeFile. document uri: ",
@@ -124,7 +124,10 @@ export class DefaultVsCodeKieEditorChannelApiImpl implements KogitoEditorChannel
       }
     }
 
-    return { content, path: vscode.workspace.asRelativePath(this.editor.document.document.uri, false) };
+    return {
+      content,
+      pathRelativeToTheWorkspaceRoot: vscode.workspace.asRelativePath(this.editor.document.document.uri, false),
+    };
   }
 
   public kogitoEditor_setContentError(editorContent: EditorContent) {
@@ -171,7 +174,7 @@ export class DefaultVsCodeKieEditorChannelApiImpl implements KogitoEditorChannel
   }
 
   public kogitoWorkspace_resourceContentRequest(request: ResourceContentRequest) {
-    return this.resourceContentService.get(request.path, request.opts);
+    return this.resourceContentService.get(request.pathRelativeToTheWorkspaceRoot, request.opts);
   }
 
   public kogitoWorkspace_resourceListRequest(request: ResourceListRequest) {

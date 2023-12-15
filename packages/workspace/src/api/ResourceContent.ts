@@ -20,13 +20,12 @@
 import { ContentType } from "./ContentType";
 
 export class ResourceContent {
-  /* This is a path releative to the workspace root */
-  public readonly path: string;
+  public readonly pathRelativeToTheWorkspaceRoot: string;
   public readonly content?: string;
   public readonly type: ContentType;
 
   constructor(pathRelativeToTheWorkspaceRoot: string, content: string | undefined, type?: ContentType) {
-    this.path = pathRelativeToTheWorkspaceRoot;
+    this.pathRelativeToTheWorkspaceRoot = pathRelativeToTheWorkspaceRoot;
     this.content = content;
     this.type = type || ContentType.TEXT;
   }

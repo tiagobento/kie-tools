@@ -168,7 +168,7 @@ export function EditorPage(props: Props) {
 
           // FIXME: KOGITO-7958: PMML Editor doesn't work well after this is called. Can't edit using multiple tabs.
           setEmbeddedEditorFile({
-            path: workspaceFilePromise.data.workspaceFile.relativePath,
+            pathRelativeToTheWorkspaceRoot: workspaceFilePromise.data.workspaceFile.relativePath,
             getFileContents: async () => content,
             isReadOnly: false,
             fileExtension: workspaceFilePromise.data.workspaceFile.extension,
@@ -275,7 +275,7 @@ export function EditorPage(props: Props) {
     async (request: ResourceContentRequest) => {
       return workspaces.resourceContentGet({
         workspaceId: props.workspaceId,
-        relativePath: request.path, // This is the "path relative to the workspace root", or here in the KIE Sandbox context, just "relativePath", as it is assumed that all "relativePaths" are relative to the workspace root.
+        relativePath: request.pathRelativeToTheWorkspaceRoot, // This is the "path relative to the workspace root", or here in the KIE Sandbox context, just "relativePath", as it is assumed that all "relativePaths" are relative to the workspace root.
         opts: request.opts,
       });
     },

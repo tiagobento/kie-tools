@@ -119,13 +119,16 @@ export class GwtEditorWrapperFactory<E extends GwtEditorWrapper> implements Edit
       resourceContentEditorService: {
         get(pathRelativeToTheWorkspaceFile: string, opts?: ResourceContentOptions) {
           return envelopeContext.channelApi.requests
-            .kogitoWorkspace_resourceContentRequest({ path: pathRelativeToTheWorkspaceFile, opts })
+            .kogitoWorkspace_resourceContentRequest({
+              pathRelativeToTheWorkspaceRoot: pathRelativeToTheWorkspaceFile, // FIXME: TIAGO/LUIZ: Fix this :)
+              opts,
+            })
             .then((r) => r?.content);
         },
         list(pattern: string, opts?: ResourceListOptions) {
           return envelopeContext.channelApi.requests
             .kogitoWorkspace_resourceListRequest({ pattern, opts })
-            .then((r) => r.paths.sort());
+            .then((r) => r.pathsRelativeToTheWorkspaceRoot.sort());
         },
       },
       workspaceService: {

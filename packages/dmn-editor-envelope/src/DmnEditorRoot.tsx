@@ -188,7 +188,7 @@ export class DmnEditorRoot extends React.Component<DmnEditorRootProps, DmnEditor
       opts: { type: SearchType.TRAVERSAL },
     }); // FIXME: TIAGO/LUIZ: WRONG PATH: Should've been returning a list of "pathsRelativeToTheWorkspaceRoot", instead of a list of "absolutePaths"
 
-    return list.paths.flatMap((p) =>
+    return list.pathsRelativeToTheWorkspaceRoot.flatMap((p) =>
       // Ignore thisDmn's file absolutePath
       p === this.state.openFilePathRelativeToTheWorkspaceRoot
         ? []
@@ -220,7 +220,7 @@ export class DmnEditorRoot extends React.Component<DmnEditorRootProps, DmnEditor
   ) => {
     const pathRelativeToTheWorkspaceRoot = this.onRequestToResolvePathRelativeToTheOpenFile(pathRelativeToTheOpenFile);
     const resource = await this.props.onRequestFileContent({
-      path: pathRelativeToTheWorkspaceRoot,
+      pathRelativeToTheWorkspaceRoot,
       opts: { type: ContentType.TEXT },
     }); // TIAGO: Theoretically ok
 
@@ -356,13 +356,17 @@ function ExternalModelsManager({
     onRequestFileList({ pattern: EXTERNAL_MODELS_SEARCH_GLOB_PATTERN, opts: { type: SearchType.TRAVERSAL } })
       .then((list) => {
         const resources: Array<Promise<ResourceContent | undefined>> = [];
-        for (let i = 0; i < list.paths.length; i++) {
-          const absolutePath = list.paths[i];
+        for (let i = 0; i < list.pathsRelativeToTheWorkspaceRoot.length; i++) {
+          const absolutePath = list.pathsRelativeToTheWorkspaceRoot[i];
+
+          // FIXME: TIAGO/LUIZ: This is probably wrong.
           if (absolutePath === thisDmnsAbsolutePath) {
             continue;
           }
 
-          resources.push(onRequestFileContent({ path: absolutePath, opts: { type: ContentType.TEXT } }));
+          resources.push(
+            onRequestFileContent({ pathRelativeToTheWorkspaceRoot: absolutePath, opts: { type: ContentType.TEXT } })
+          );
         }
         return Promise.all(resources);
       })
@@ -374,7 +378,7 @@ function ExternalModelsManager({
         for (let i = 0; i < resources.length; i++) {
           const r = resources[i];
           const content = r?.content ?? "";
-          const pathRelativeToTheWorkspaceRoot = r?.path ?? "";
+          const pathRelativeToTheWorkspaceRoot = r?.pathRelativeToTheWorkspaceRoot ?? "";
 
           const ext = __path.extname(pathRelativeToTheWorkspaceRoot);
           if (ext === ".dmn") {

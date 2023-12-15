@@ -30,7 +30,10 @@ export class PopupMessagesNotificationHandler implements NotificationsChannelApi
   ) {}
 
   public kogitoNotifications_createNotification(notification: Notification): void {
-    this.getHandleStrategyForSeverity(notification.severity)(notification.message, notification.path);
+    this.getHandleStrategyForSeverity(notification.severity)(
+      notification.message,
+      notification.pathRelativeToTheWorkspaceRoot
+    );
   }
 
   public kogitoNotifications_setNotifications(

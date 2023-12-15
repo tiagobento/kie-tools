@@ -203,17 +203,17 @@ const RefForwardingServerlessWorkflowCombinedEditor: ForwardRefRenderFunction<
     forwardedRef,
     () => {
       return {
-        setContent: async (path: string, content: string) => {
+        setContent: async (pathRelativeToTheWorkspaceRoot: string, content: string) => {
           try {
-            const match = /\.sw\.(json|yml|yaml)$/.exec(path.toLowerCase());
-            const dotExtension = match ? match[0] : extname(path);
+            const match = /\.sw\.(json|yml|yaml)$/.exec(pathRelativeToTheWorkspaceRoot.toLowerCase());
+            const dotExtension = match ? match[0] : extname(pathRelativeToTheWorkspaceRoot);
             const extension = dotExtension.slice(1);
-            const fileName = basename(path);
+            const fileName = basename(pathRelativeToTheWorkspaceRoot);
             const getFileContentsFn = async () => content;
 
-            setFile({ content, path });
+            setFile({ content, path: pathRelativeToTheWorkspaceRoot });
             setEmbeddedTextEditorFile({
-              path: path,
+              pathRelativeToTheWorkspaceRoot,
               getFileContents: getFileContentsFn,
               isReadOnly: props.isReadOnly,
               fileExtension: extension,
@@ -221,7 +221,7 @@ const RefForwardingServerlessWorkflowCombinedEditor: ForwardRefRenderFunction<
             });
 
             setEmbeddedDiagramEditorFile({
-              path: path,
+              pathRelativeToTheWorkspaceRoot,
               getFileContents: getFileContentsFn,
               isReadOnly: true,
               fileExtension: extension,

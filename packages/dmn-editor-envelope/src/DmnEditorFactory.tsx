@@ -30,6 +30,7 @@ import {
 import { Notification } from "@kie-tools-core/notifications/dist/api";
 import { DmnEditorRoot } from "./DmnEditorRoot";
 import { ResourceContent, ResourcesList, WorkspaceEdit } from "@kie-tools-core/workspace/dist/api";
+import { useCallback } from "react";
 
 export class DmnEditorFactory implements EditorFactory<Editor, KogitoEditorChannelApi> {
   public createEditor(
@@ -105,7 +106,7 @@ function DmnEditorRootWrapper({
   exposing: (s: DmnEditorRoot) => void;
   workspaceRootAbsolutePath: string;
 }) {
-  const onNewEdit = React.useCallback(
+  const onNewEdit = useCallback(
     (workspaceEdit: WorkspaceEdit) => {
       envelopeContext?.channelApi.notifications.kogitoWorkspace_newEdit.send(workspaceEdit);
     },
@@ -113,7 +114,7 @@ function DmnEditorRootWrapper({
   );
 
   // FIXME: TIAGO/LUIZ: Double-check. Should return pathRelativeToTheWorkspaceRoot.
-  const onRequestFileList = React.useCallback(
+  const onRequestFileList = useCallback(
     async (resource: ResourcesList) => {
       return (
         envelopeContext?.channelApi.requests.kogitoWorkspace_resourceListRequest(resource) ?? new ResourcesList("", [])
@@ -123,14 +124,14 @@ function DmnEditorRootWrapper({
   );
 
   // FIXME: TIAGO/LUIZ: Double-check. Should receive and return pathRelativeToTheWorkspaceRoot.
-  const onRequestFileContent = React.useCallback(
+  const onRequestFileContent = useCallback(
     async (resource: ResourceContent) => {
       return envelopeContext?.channelApi.requests.kogitoWorkspace_resourceContentRequest(resource);
     },
     [envelopeContext]
   );
 
-  const onOpenFileFromPathRelativeToTheWorkspaceRoot = React.useCallback(
+  const onOpenFileFromPathRelativeToTheWorkspaceRoot = useCallback(
     (pathRelativeToTheWorkspaceRoot: string) => {
       envelopeContext?.channelApi.notifications.kogitoWorkspace_openFile.send(pathRelativeToTheWorkspaceRoot);
     },
