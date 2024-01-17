@@ -120,6 +120,8 @@ import { getDefaultColumnWidth } from "../boxedExpressions/getDefaultColumnWidth
 import { buildHierarchy } from "./graph/graph";
 import { MIME_TYPE_FOR_DMN_EDITOR_DRG_NODE } from "./DrgNodesPanel";
 import { Unpacked } from "../tsExt/tsExt";
+import { AutolayoutPanel } from "../autolayout/AutolayoutPanel";
+import { OptimizeIcon } from "@patternfly/react-icons/dist/js/icons/optimize-icon";
 
 const isFirefox = typeof (window as any).InstallTrigger !== "undefined"; // See https://stackoverflow.com/questions/9847580/how-to-detect-safari-chrome-ie-firefox-and-opera-browsers
 
@@ -1253,6 +1255,12 @@ export function TopRightCornerPanels() {
     });
   }, [dmnEditorStoreApi]);
 
+  const toggleAutolayoutPanel = useCallback(() => {
+    dmnEditorStoreApi.setState((state) => {
+      state.diagram.autolayoutPanel.isOpen = !state.diagram.autolayoutPanel.isOpen;
+    });
+  }, [dmnEditorStoreApi]);
+
   useLayoutEffect(() => {
     dmnEditorStoreApi.setState((state) => {
       if (state.diagram.overlaysPanel.isOpen) {
@@ -1267,18 +1275,50 @@ export function TopRightCornerPanels() {
     });
   }, [dmnEditorStoreApi, diagram.propertiesPanel.isOpen]);
 
+  useLayoutEffect(() => {
+    dmnEditorStoreApi.setState((state) => {
+      if (state.diagram.autolayoutPanel.isOpen) {
+        // This is necessary to make sure that the Popover is open at the correct position.
+        setTimeout(() => {
+          dmnEditorStoreApi.setState((state) => {
+            state.diagram.autolayoutPanel.isOpen = true;
+          });
+        }, 300); // That's the animation duration to open/close the properties panel.
+      }
+      state.diagram.autolayoutPanel.isOpen = false;
+    });
+  }, [dmnEditorStoreApi, diagram.propertiesPanel.isOpen]);
+
   return (
     <>
       <RF.Panel position={"top-right"} style={{ display: "flex" }}>
+        <aside className={"kie-dmn-editor--autolayout-panel-toggle"}>
+          <Popover
+            className={"kie-dmn-editor--autolayout-panel-popover"}
+            key={`${diagram.autolayoutPanel.isOpen}`}
+            aria-label="autolayout Panel"
+            position={"left-start"}
+            flipBehavior={["left-start"]}
+            enableFlip={false}
+            hideOnOutsideClick={false}
+            isVisible={diagram.autolayoutPanel.isOpen}
+            bodyContent={<AutolayoutPanel />}
+          >
+            <button className={"kie-dmn-editor--autolayout-panel-toggle-button"} onClick={toggleAutolayoutPanel}>
+              <OptimizeIcon />
+            </button>
+          </Popover>
+        </aside>
         <aside className={"kie-dmn-editor--overlays-panel-toggle"}>
           <Popover
             className={"kie-dmn-editor--overlay-panel-popover"}
             key={`${diagram.overlaysPanel.isOpen}`}
             aria-label="Overlays Panel"
             position={"bottom-end"}
+            enableFlip={false}
+            flipBehavior={["bottom-end"]}
             hideOnOutsideClick={false}
             isVisible={diagram.overlaysPanel.isOpen}
-            enableFlip={true}
             bodyContent={<OverlaysPanel />}
           >
             <button className={"kie-dmn-editor--overlays-panel-toggle-button"} onClick={toggleOverlaysPanel}>
