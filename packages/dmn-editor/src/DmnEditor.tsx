@@ -187,7 +187,7 @@ export const DmnEditorInternal = ({
           return undefined;
         }
 
-        const bounds = RF.getRectOfNodes(nodes);
+        const bounds = RF.getNodesBounds(nodes);
 
         const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         svg.setAttribute("width", bounds.width + SVG_PADDING * 2 + "");

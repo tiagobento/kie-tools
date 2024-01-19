@@ -189,7 +189,7 @@ export const defaultStaticState = () => ({
       isOpen: false,
     },
     autolayoutPanel: {
-      isOpen: false,
+      isOpen: true,
     },
     openNodesPanel: DiagramNodesPanel.NONE,
     drdSelector: {

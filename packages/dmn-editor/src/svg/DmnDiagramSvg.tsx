@@ -102,105 +102,103 @@ export function DmnDiagramSvg({
             }).full;
 
       return (
-        <>
-          <g data-kie-dmn-node-id={node.id}>
-            {node.type === NODE_TYPES.inputData && (
-              <InputDataNodeSvg
-                width={node.width!}
-                height={node.height!}
-                x={node.positionAbsolute!.x}
-                y={node.positionAbsolute!.y}
-                {...style}
-                {...shapeStyle}
-              />
-            )}
-            {node.type === NODE_TYPES.decision && (
-              <DecisionNodeSvg
-                width={node.width!}
-                height={node.height!}
-                x={node.positionAbsolute!.x}
-                y={node.positionAbsolute!.y}
-                {...style}
-                {...shapeStyle}
-              />
-            )}
-            {node.type === NODE_TYPES.bkm && (
-              <BkmNodeSvg
-                width={node.width!}
-                height={node.height!}
-                x={node.positionAbsolute!.x}
-                y={node.positionAbsolute!.y}
-                {...style}
-                {...shapeStyle}
-              />
-            )}
-            {node.type === NODE_TYPES.knowledgeSource && (
-              <KnowledgeSourceNodeSvg
-                width={node.width!}
-                height={node.height!}
-                x={node.positionAbsolute!.x}
-                y={node.positionAbsolute!.y}
-                {...style}
-                {...shapeStyle}
-              />
-            )}
-            {node.type === NODE_TYPES.decisionService && (
-              <DecisionServiceNodeSvg
-                width={node.width!}
-                height={node.height!}
-                x={node.positionAbsolute!.x}
-                y={node.positionAbsolute!.y}
-                showSectionLabels={false}
-                isReadonly={true}
-                {...style}
-                {...shapeStyle}
-              />
-            )}
-            {node.type === NODE_TYPES.group && (
-              <GroupNodeSvg
-                width={node.width!}
-                height={node.height!}
-                x={node.positionAbsolute!.x}
-                y={node.positionAbsolute!.y}
-                {...style}
-                {...(shapeStyle as any)}
-              />
-            )}
-            {node.type === NODE_TYPES.textAnnotation && (
-              <TextAnnotationNodeSvg
-                width={node.width!}
-                height={node.height!}
-                x={node.positionAbsolute!.x}
-                y={node.positionAbsolute!.y}
-                {...style}
-                {...shapeStyle}
-              />
-            )}
-            {node.type === NODE_TYPES.unknown && (
-              <UnknownNodeSvg
-                width={node.width!}
-                height={node.height!}
-                x={node.positionAbsolute!.x}
-                y={node.positionAbsolute!.y}
-                {...style}
-                {...(shapeStyle as any)}
-              />
-            )}
-            <>
-              {label.split("\n").map((labelLine, i) => (
-                <Text
-                  key={i}
-                  lineHeight={fontStyle.lineHeight}
-                  style={{ ...fontStyle }}
-                  dy={`calc(1.5em * ${i})`}
-                  {...getNodeLabelSvgTextAlignmentProps(node, getNodeLabelPosition(node.type as NodeType))}
-                >
-                  {labelLine}
-                </Text>
-              ))}
-            </>
-          </g>
-        </>
+        <g data-kie-dmn-node-id={node.id} key={node.id}>
+          {node.type === NODE_TYPES.inputData && (
+            <InputDataNodeSvg
+              width={node.width!}
+              height={node.height!}
+              x={node.positionAbsolute!.x}
+              y={node.positionAbsolute!.y}
+              {...style}
+              {...shapeStyle}
+            />
+          )}
+          {node.type === NODE_TYPES.decision && (
+            <DecisionNodeSvg
+              width={node.width!}
+              height={node.height!}
+              x={node.positionAbsolute!.x}
+              y={node.positionAbsolute!.y}
+              {...style}
+              {...shapeStyle}
+            />
+          )}
+          {node.type === NODE_TYPES.bkm && (
+            <BkmNodeSvg
+              width={node.width!}
+              height={node.height!}
+              x={node.positionAbsolute!.x}
+              y={node.positionAbsolute!.y}
+              {...style}
+              {...shapeStyle}
+            />
+          )}
+          {node.type === NODE_TYPES.knowledgeSource && (
+            <KnowledgeSourceNodeSvg
+              width={node.width!}
+              height={node.height!}
+              x={node.positionAbsolute!.x}
+              y={node.positionAbsolute!.y}
+              {...style}
+              {...shapeStyle}
+            />
+          )}
+          {node.type === NODE_TYPES.decisionService && (
+            <DecisionServiceNodeSvg
+              width={node.width!}
+              height={node.height!}
+              x={node.positionAbsolute!.x}
+              y={node.positionAbsolute!.y}
+              showSectionLabels={false}
+              isReadonly={true}
+              {...style}
+              {...shapeStyle}
+            />
+          )}
+          {node.type === NODE_TYPES.group && (
+            <GroupNodeSvg
+              width={node.width!}
+              height={node.height!}
+              x={node.positionAbsolute!.x}
+              y={node.positionAbsolute!.y}
+              {...style}
+              {...(shapeStyle as any)}
+            />
+          )}
+          {node.type === NODE_TYPES.textAnnotation && (
+            <TextAnnotationNodeSvg
+              width={node.width!}
+              height={node.height!}
+              x={node.positionAbsolute!.x}
+              y={node.positionAbsolute!.y}
+              {...style}
+              {...shapeStyle}
+            />
+          )}
+          {node.type === NODE_TYPES.unknown && (
+            <UnknownNodeSvg
+              width={node.width!}
+              height={node.height!}
+              x={node.positionAbsolute!.x}
+              y={node.positionAbsolute!.y}
+              {...style}
+              {...(shapeStyle as any)}
+            />
+          )}
+          <>
+            {label.split("\n").map((labelLine, i) => (
+              <Text
+                key={i}
+                lineHeight={fontStyle.lineHeight}
+                style={{ ...fontStyle }}
+                dy={`calc(1.5em * ${i})`}
+                {...getNodeLabelSvgTextAlignmentProps(node, getNodeLabelPosition(node.type as NodeType))}
+              >
+                {labelLine}
+              </Text>
+            ))}
+          </>
+        </g>
       );
     });
 
@@ -209,7 +207,6 @@ export function DmnDiagramSvg({
 
   return (
     <>
-      .
       <EdgeMarkers />
       {edges.map((e) => {
         const { path } = getSnappedMultiPointAnchoredEdgePath({
@@ -221,14 +218,14 @@ export function DmnDiagramSvg({
           targetNode: nodesById?.get(e.target),
         });
         return (
-          <>
+          <React.Fragment key={e.id}>
             {e.type === EDGE_TYPES.informationRequirement && <InformationRequirementPath d={path} />}
             {e.type === EDGE_TYPES.knowledgeRequirement && <KnowledgeRequirementPath d={path} />}
             {e.type === EDGE_TYPES.authorityRequirement && (
               <AuthorityRequirementPath d={path} centerToConnectionPoint={true} />
             )}
             {e.type === EDGE_TYPES.association && <AssociationPath d={path} />}
-          </>
+          </React.Fragment>
         );
       })}
       {nodesSvg}
