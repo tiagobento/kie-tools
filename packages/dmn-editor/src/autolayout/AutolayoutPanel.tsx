@@ -17,6 +17,7 @@
  * under the License.
  */
 
+import * as React from "react";
 import { generateUuid } from "@kie-tools/boxed-expression-component/dist/api";
 import { DC__Bounds, DMNDI15__DMNShape } from "@kie-tools/dmn-marshaller/dist/schemas/dmn-1_5/ts-gen/types";
 import { XmlQName, parseXmlQName } from "@kie-tools/xml-parser-ts/dist/qNames";
@@ -85,8 +86,8 @@ export function AutolayoutPanel() {
     const nodeParentsById = new Map<string, Set<string>>();
 
     /**
-      Used to tell Elk that dependencies of nodes' children should be considered the node's dependency too.
-      This allows us to not rely on INCLUDE_STRATEGY hierarchy handling on Elk, keeping disjoint graph components separate, rendering side-by-side.
+      Used to tell ELK that dependencies of nodes' children should be considered the node's dependency too.
+      This allows us to not rely on INCLUDE_STRATEGY hierarchy handling on ELK, keeping disjoint graph components separate, rendering side-by-side.
      */
     const fakeEdgesForElk = new Set<Elk.ElkExtendedEdge>();
 
@@ -95,7 +96,7 @@ export function AutolayoutPanel() {
 
     const adjMatrix = getAdjMatrix(edges);
 
-    // 1. First we populate the `parentById` map so that we know exactly what parent nodes we're dealing with.
+    // 1. First we populate the `parentNodesById` map so that we know exactly what parent nodes we're dealing with.
     for (const node of nodes) {
       const dependencies = new Set<string>();
       const dependents = new Set<string>();
@@ -110,8 +111,8 @@ export function AutolayoutPanel() {
         parentNodesById.set(node.id, {
           elkNode: {
             id: node.id,
-            width: dsSize["@_width"],
-            height: dsSize["@_height"],
+            width: node.data.shape["dc:Bounds"]?.["@_width"] ?? dsSize["@_width"],
+            height: node.data.shape["dc:Bounds"]?.["@_height"] ?? dsSize["@_height"],
             children: [],
             layoutOptions: {
               ...ELK_OPTIONS,
@@ -131,8 +132,8 @@ export function AutolayoutPanel() {
         parentNodesById.set(node.id, {
           elkNode: {
             id: node.id,
-            width: groupSize["@_width"],
-            height: groupSize["@_height"],
+            width: groupBounds?.["@_width"] ?? groupSize["@_width"],
+            height: groupBounds?.["@_height"] ?? groupSize["@_height"],
             children: [],
             layoutOptions: {
               ...ELK_OPTIONS,
@@ -160,14 +161,14 @@ export function AutolayoutPanel() {
     const elkNodes = nodes.flatMap((node) => {
       const parent = parentNodesById.get(node.id);
       if (parent) {
-        return [parent.elkNode];
+        return [];
       }
 
-      const size = DEFAULT_NODE_SIZES[node.type as NodeType](snapGrid);
+      const defaultSize = DEFAULT_NODE_SIZES[node.type as NodeType](snapGrid);
       const elkNode: Elk.ElkNode = {
         id: node.id,
-        width: size["@_width"],
-        height: size["@_height"],
+        width: node.data.shape["dc:Bounds"]?.["@_width"] ?? defaultSize["@_width"],
+        height: node.data.shape["dc:Bounds"]?.["@_height"] ?? defaultSize["@_height"],
         children: [],
         layoutOptions: {
           "partitioning.partition":
@@ -179,12 +180,12 @@ export function AutolayoutPanel() {
         },
       };
 
-      // FIXME: Tiago --> Improve performance.
+      // FIXME: Tiago --> Improve performance here.
       const parents = [...parentNodesById.values()].filter((p) =>
         p.contains({ id: elkNode.id, bounds: node.data.shape["dc:Bounds"] })
       );
       if (parents.length > 0) {
-        parents[0].elkNode.children?.push(elkNode); // The only relationship that Elk will know about is the first matching container for this node.
+        parents[0].elkNode.children?.push(elkNode); // The only relationship that ELK will know about is the first matching container for this node.
         for (const p of parents) {
           p.contained?.add(elkNode.id); // We need to keep track of nodes that are contained by multiple groups, but ELK will only know about one of those containment relationships.
           nodeParentsById.set(node.id, new Set([...(nodeParentsById.get(node.id) ?? []), p.elkNode.id]));
@@ -196,28 +197,35 @@ export function AutolayoutPanel() {
     });
 
     // 3. After we have all containment relationships defined, we can proceed to resolving the hierarchical relationships.
-    for (const [_, node] of parentNodesById) {
-      traverse(adjMatrix, node.contained, [...node.contained], "down", (n) => {
-        node.dependencies.add(n);
+    for (const [_, parentNode] of parentNodesById) {
+      traverse(adjMatrix, parentNode.contained, [...parentNode.contained], "down", (n) => {
+        parentNode.dependencies.add(n);
       });
-      traverse(adjMatrix, node.contained, [...node.contained], "up", (n) => {
-        node.dependents.add(n);
+      traverse(adjMatrix, parentNode.contained, [...parentNode.contained], "up", (n) => {
+        parentNode.dependents.add(n);
       });
+
+      const p = nodesById.get(parentNode.elkNode.id);
+      if (p?.type === NODE_TYPES.group && parentNode.elkNode.children?.length === 0) {
+        continue; // Ignore empty group nodes.
+      } else {
+        elkNodes.push(parentNode.elkNode);
+      }
     }
 
-    // 4. After we have all containment and hierarchical relationships defined, we can add the fake edges so that Elk creates the structure correctly.
-    for (const n of nodes) {
+    // 4. After we have all containment and hierarchical relationships defined, we can add the fake edges so that ELK creates the structure correctly.
+    for (const node of nodes) {
       const parentNodes = [...parentNodesById.values()];
 
-      const dependents = parentNodes.filter((p) => p.hasDependencyTo({ id: n.id }));
+      const dependents = parentNodes.filter((p) => p.hasDependencyTo({ id: node.id }));
       for (const dependent of dependents) {
         fakeEdgesForElk.add({
           id: generateUuid(),
-          sources: [n.id],
+          sources: [node.id],
           targets: [dependent.elkNode.id],
         });
 
-        for (const p of nodeParentsById.get(n.id) ?? []) {
+        for (const p of nodeParentsById.get(node.id) ?? []) {
           fakeEdgesForElk.add({
             id: generateUuid(),
             sources: [p],
@@ -226,15 +234,15 @@ export function AutolayoutPanel() {
         }
       }
 
-      const dependencies = parentNodes.filter((p) => p.isDependencyOf({ id: n.id }));
+      const dependencies = parentNodes.filter((p) => p.isDependencyOf({ id: node.id }));
       for (const dependency of dependencies) {
         fakeEdgesForElk.add({
           id: generateUuid(),
           sources: [dependency.elkNode.id],
-          targets: [n.id],
+          targets: [node.id],
         });
 
-        for (const p of nodeParentsById.get(n.id) ?? []) {
+        for (const p of nodeParentsById.get(node.id) ?? []) {
           fakeEdgesForElk.add({
             id: generateUuid(),
             sources: [dependency.elkNode.id],
@@ -263,10 +271,6 @@ export function AutolayoutPanel() {
         visitNodeAndNested(topLevelElkNode, { x: 100, y: 100 }, (elkNode, positionOffset) => {
           const nodeId = elkNode.id;
           const node = nodesById.get(nodeId)!;
-          if (node.type === NODE_TYPES.group && elkNode.children?.length === 0) {
-            // Empty group nodes will be repositioned later using their `contained` property from AutolayoutParentNode.
-            return;
-          }
 
           repositionNode({
             definitions: s.dmn.model.definitions,
