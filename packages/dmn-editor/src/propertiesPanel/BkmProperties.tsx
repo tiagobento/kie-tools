@@ -27,7 +27,6 @@ import { TypeRefSelector } from "../dataTypes/TypeRefSelector";
 import { useDmnEditorStore, useDmnEditorStoreApi } from "../store/Store";
 import { renameDrgElement } from "../mutations/renameNode";
 import { InlineFeelNameInput } from "../feel/InlineFeelNameInput";
-import { useDmnEditorDerivedStore } from "../store/DerivedStore";
 import { useDmnEditor } from "../DmnEditorContext";
 import { useResolvedTypeRef } from "../dataTypes/useResolvedTypeRef";
 
@@ -45,7 +44,7 @@ export function BkmProperties({
   const thisDmnsNamespace = useDmnEditorStore((s) => s.dmn.model.definitions["@_namespace"]);
   const isReadonly = !!namespace && namespace !== thisDmnsNamespace;
 
-  const { allFeelVariableUniqueNames } = useDmnEditorDerivedStore();
+  const allFeelVariableUniqueNames = useDmnEditorStore((s) => s.computed.allFeelVariableUniqueNames);
   const { dmnEditorRootElementRef } = useDmnEditor();
 
   const resolvedTypeRef = useResolvedTypeRef(bkm.variable?.["@_typeRef"], namespace);

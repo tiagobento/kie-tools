@@ -26,7 +26,6 @@ import { ArrowUpIcon } from "@patternfly/react-icons/dist/js/icons/arrow-up-icon
 import { DmnEditorTab, useDmnEditorStore, useDmnEditorStoreApi } from "../store/Store";
 import { Button, ButtonVariant } from "@patternfly/react-core/dist/js/components/Button";
 import { Tooltip } from "@patternfly/react-core/dist/js/components/Tooltip";
-import { useDmnEditorDerivedStore } from "../store/DerivedStore";
 import { DataType } from "./DataTypes";
 import { builtInFeelTypeNames, builtInFeelTypes } from "./BuiltInFeelTypes";
 import { Flex } from "@patternfly/react-core/dist/js/layouts/Flex";
@@ -48,7 +47,7 @@ export function TypeRefSelector(props: {
 }) {
   const [isOpen, setOpen] = useState(false);
 
-  const { allTopLevelDataTypesByFeelName } = useDmnEditorDerivedStore();
+  const allTopLevelDataTypesByFeelName = useDmnEditorStore((s) => s.computed.dataTypes.allTopLevelDataTypesByFeelName);
 
   const selectedDataType = useMemo(() => {
     return props.typeRef ? allTopLevelDataTypesByFeelName.get(props.typeRef) : undefined;

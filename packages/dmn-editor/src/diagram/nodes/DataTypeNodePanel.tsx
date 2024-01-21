@@ -40,7 +40,7 @@ export function DataTypeNodePanel(props: {
   onCreate?: OnCreateDataType;
   namespace: string | undefined;
 }) {
-  const diagram = useDmnEditorStore((s) => s.diagram);
+  const enableDataTypesToolbarOnNodes = useDmnEditorStore((s) => s.diagram.overlays.enableDataTypesToolbarOnNodes);
 
   const { dmnEditorRootElementRef } = useDmnEditor();
 
@@ -51,7 +51,7 @@ export function DataTypeNodePanel(props: {
 
   return (
     <>
-      {props.isVisible && diagram.overlays.enableDataTypesToolbarOnNodes && (
+      {props.isVisible && enableDataTypesToolbarOnNodes && (
         <div
           className={"kie-dmn-editor--data-type-node-panel"}
           // Do not allow any events to go to the node itself...

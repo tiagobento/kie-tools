@@ -23,7 +23,6 @@ import { DMN15__tDefinitions, DMNDI15__DMNShape } from "@kie-tools/dmn-marshalle
 import { useDmnEditorStore } from "../store/Store";
 import { useMemo } from "react";
 import { Unpacked } from "../tsExt/tsExt";
-import { useDmnEditorDerivedStore } from "../store/DerivedStore";
 import { XmlQName, buildXmlQName } from "@kie-tools/xml-parser-ts/dist/qNames";
 import { Button, ButtonVariant } from "@patternfly/react-core/dist/js/components/Button";
 import { useDmnEditor } from "../DmnEditorContext";
@@ -32,7 +31,7 @@ import { Divider } from "@patternfly/react-core/dist/js/components/Divider";
 export function UnknownProperties(props: { shape: DMNDI15__DMNShape; dmnElementRefQName: XmlQName }) {
   const thisDmn = useDmnEditorStore((s) => s.dmn);
 
-  const { externalDmnsByNamespace } = useDmnEditorDerivedStore();
+  const externalDmnsByNamespace = useDmnEditorStore((s) => s.computed.externalModelTypesByNamespace.dmns);
   const { onRequestToJumpToPath } = useDmnEditor();
 
   const content = useMemo(() => {

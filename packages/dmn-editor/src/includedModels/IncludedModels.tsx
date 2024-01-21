@@ -19,7 +19,6 @@
 
 import * as React from "react";
 import { generateUuid } from "@kie-tools/boxed-expression-component/dist/api";
-import { ns as dmn15ns } from "@kie-tools/dmn-marshaller/dist/schemas/dmn-1_5/ts-gen/meta";
 import { ns as dmn12ns } from "@kie-tools/dmn-marshaller/dist/schemas/dmn-1_2/ts-gen/meta";
 import { DMN15__tImport } from "@kie-tools/dmn-marshaller/dist/schemas/dmn-1_5/ts-gen/types";
 import { Button, ButtonVariant } from "@patternfly/react-core/dist/js/components/Button";
@@ -43,7 +42,6 @@ import { InlineFeelNameInput, OnInlineFeelNameRenamed } from "../feel/InlineFeel
 import { addImport } from "../mutations/addImport";
 import { deleteImport } from "../mutations/deleteImport";
 import { renameImport } from "../mutations/renameImport";
-import { useDmnEditorDerivedStore } from "../store/DerivedStore";
 import { useDmnEditorStore, useDmnEditorStoreApi } from "../store/Store";
 import { KIE_UNKNOWN_NAMESPACE } from "../kie/kie";
 import { ExternalModelLabel } from "./ExternalModelLabel";
@@ -71,7 +69,8 @@ export function IncludedModels() {
 
   const { externalContextDescription, externalContextName, dmnEditorRootElementRef, onRequestToResolvePath } =
     useDmnEditor();
-  const { importsByNamespace, allFeelVariableUniqueNames } = useDmnEditorDerivedStore();
+  const importsByNamespace = useDmnEditorStore((s) => s.computed.importsByNamespace);
+  const allFeelVariableUniqueNames = useDmnEditorStore((s) => s.computed.allFeelVariableUniqueNames);
   const { externalModelsByNamespace, onRequestExternalModelsAvailableToInclude, onRequestExternalModelByPath } =
     useExternalModels();
 
@@ -447,7 +446,8 @@ function IncludedModelCard({
     [dmnEditorStoreApi]
   );
 
-  const { allFeelVariableUniqueNames, allTopLevelDataTypesByFeelName } = useDmnEditorDerivedStore();
+  const allTopLevelDataTypesByFeelName = useDmnEditorStore((s) => s.computed.dataTypes.allTopLevelDataTypesByFeelName);
+  const allFeelVariableUniqueNames = useDmnEditorStore((s) => s.computed.allFeelVariableUniqueNames);
 
   const rename = useCallback<OnInlineFeelNameRenamed>(
     (newName) => {
@@ -576,7 +576,8 @@ function UnknownIncludedModelCard({
     [dmnEditorStoreApi]
   );
 
-  const { allFeelVariableUniqueNames, allTopLevelDataTypesByFeelName } = useDmnEditorDerivedStore();
+  const allTopLevelDataTypesByFeelName = useDmnEditorStore((s) => s.computed.dataTypes.allTopLevelDataTypesByFeelName);
+  const allFeelVariableUniqueNames = useDmnEditorStore((s) => s.computed.allFeelVariableUniqueNames);
 
   const rename = useCallback<OnInlineFeelNameRenamed>(
     (newName) => {

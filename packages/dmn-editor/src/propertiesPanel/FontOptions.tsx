@@ -22,7 +22,7 @@ import { useState, useMemo, useCallback, useEffect } from "react";
 import { FormSection } from "@patternfly/react-core/dist/js/components/Form";
 import { PencilAltIcon } from "@patternfly/react-icons/dist/js/icons/pencil-alt-icon";
 import { PropertiesPanelHeader } from "./PropertiesPanelHeader";
-import { State, useDmnEditorStoreApi } from "../store/Store";
+import { State, useDmnEditorStore, useDmnEditorStoreApi } from "../store/Store";
 import { NumberInput } from "@patternfly/react-core/dist/js/components/NumberInput";
 import { DMNDI15__DMNShape } from "@kie-tools/dmn-marshaller/dist/schemas/dmn-1_5/ts-gen/types";
 import { addOrGetDrd } from "../mutations/addOrGetDrd";
@@ -30,12 +30,11 @@ import { ToggleGroup, ToggleGroupItem } from "@patternfly/react-core/dist/js/com
 import { Select, SelectVariant, SelectOption } from "@patternfly/react-core/dist/js/components/Select";
 import { useInViewSelect } from "../responsiveness/useInViewSelect";
 import { useDmnEditor } from "../DmnEditorContext";
-import { useDmnEditorDerivedStore } from "../store/DerivedStore";
-import "./FontOptions.css";
 import { Button, ButtonVariant } from "@patternfly/react-core/dist/js/components/Button";
 import { UndoAltIcon } from "@patternfly/react-icons/dist/js/icons/undo-alt-icon";
 import { Tooltip } from "@patternfly/react-core/dist/js/components/Tooltip";
 import { ColorPicker } from "./ColorPicker";
+import "./FontOptions.css";
 
 // https://www.w3schools.com/cssref/css_websafe_fonts.php
 // Array of [name, family]
@@ -67,7 +66,7 @@ export function FontOptions({ startExpanded, nodeIds }: { startExpanded: boolean
   const dmnEditorStoreApi = useDmnEditorStoreApi();
   const [isStyleSectionExpanded, setStyleSectionExpanded] = useState<boolean>(startExpanded);
 
-  const { dmnShapesByHref } = useDmnEditorDerivedStore();
+  const dmnShapesByHref = useDmnEditorStore((s) => s.computed.indexes.dmnShapesByHref);
   const shapes = useMemo(() => nodeIds.map((nodeId) => dmnShapesByHref.get(nodeId)), [dmnShapesByHref, nodeIds]);
   const shapesStyle = useMemo(() => shapes.map((shape) => shape?.["di:Style"]), [shapes]);
 

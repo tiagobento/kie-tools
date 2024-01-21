@@ -23,9 +23,8 @@ import { FormGroup, FormSection } from "@patternfly/react-core/dist/js/component
 import { TextInput } from "@patternfly/react-core/dist/js/components/TextInput";
 import { CubeIcon } from "@patternfly/react-icons/dist/js/icons/cube-icon";
 import { PropertiesPanelHeader } from "./PropertiesPanelHeader";
-import { useDmnEditorDerivedStore } from "../store/DerivedStore";
 import { DC__Bounds, DMNDI15__DMNShape } from "@kie-tools/dmn-marshaller/dist/schemas/dmn-1_5/ts-gen/types";
-import { State, useDmnEditorStoreApi } from "../store/Store";
+import { State, useDmnEditorStore, useDmnEditorStoreApi } from "../store/Store";
 import { addOrGetDrd } from "../mutations/addOrGetDrd";
 import { ArrowsAltVIcon } from "@patternfly/react-icons/dist/js/icons/arrows-alt-v-icon";
 import { ArrowsAltHIcon } from "@patternfly/react-icons/dist/js/icons/arrows-alt-h-icon";
@@ -34,7 +33,6 @@ import UndoAltIcon from "@patternfly/react-icons/dist/js/icons/undo-alt-icon";
 import { ColorPicker } from "./ColorPicker";
 import { ToggleGroup, ToggleGroupItem } from "@patternfly/react-core/dist/js/components/ToggleGroup";
 import "./ShapeOptions.css";
-import { Color } from "../diagram/nodes/NodeStyle";
 
 export function ShapeOptions({
   startExpanded,
@@ -49,7 +47,7 @@ export function ShapeOptions({
 }) {
   const [isShapeSectionExpanded, setShapeSectionExpanded] = useState<boolean>(startExpanded);
   const dmnEditorStoreApi = useDmnEditorStoreApi();
-  const { dmnShapesByHref } = useDmnEditorDerivedStore();
+  const dmnShapesByHref = useDmnEditorStore((s) => s.computed.indexes.dmnShapesByHref);
 
   const shapes = useMemo(() => nodeIds.map((nodeId) => dmnShapesByHref.get(nodeId)), [dmnShapesByHref, nodeIds]);
   // it only edits the first selected node

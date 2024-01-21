@@ -21,7 +21,6 @@ import * as React from "react";
 import { DmnBuiltInDataType } from "@kie-tools/boxed-expression-component/dist/api";
 import { buildFeelQNameFromXmlQName } from "../feel/buildFeelQName";
 import { useMemo } from "react";
-import { useDmnEditorDerivedStore } from "../store/DerivedStore";
 import { buildXmlQName, parseXmlQName } from "@kie-tools/xml-parser-ts/dist/qNames";
 import { useDmnEditorStore } from "../store/Store";
 import { getXmlNamespaceDeclarationName } from "../xml/xmlNamespaceDeclarations";
@@ -37,7 +36,7 @@ export function TypeRefLabel({
   typeRef: string | undefined;
   relativeToNamespace?: string;
 }) {
-  const { importsByNamespace } = useDmnEditorDerivedStore();
+  const importsByNamespace = useDmnEditorStore((s) => s.computed.importsByNamespace);
   const thisDmn = useDmnEditorStore((s) => s.dmn);
 
   const feelName = useMemo(() => {

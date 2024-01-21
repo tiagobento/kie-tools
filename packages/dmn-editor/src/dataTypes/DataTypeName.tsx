@@ -23,9 +23,8 @@ import { DMN15__tItemDefinition } from "@kie-tools/dmn-marshaller/dist/schemas/d
 import { Flex } from "@patternfly/react-core/dist/js/layouts/Flex";
 import { EditableNodeLabel, useEditableNodeLabel } from "../diagram/nodes/EditableNodeLabel";
 import { TypeRefLabel } from "./TypeRefLabel";
-import { useDmnEditorStoreApi } from "../store/Store";
+import { useDmnEditorStore, useDmnEditorStoreApi } from "../store/Store";
 import { renameItemDefinition } from "../mutations/renameItemDefinition";
-import { useDmnEditorDerivedStore } from "../store/DerivedStore";
 import { UniqueNameIndex } from "../Dmn15Spec";
 import { buildFeelQNameFromNamespace } from "../feel/buildFeelQName";
 import { InlineFeelNameInput, OnInlineFeelNameRenamed } from "../feel/InlineFeelNameInput";
@@ -54,9 +53,8 @@ export function DataTypeName({
   );
 
   const dmnEditorStoreApi = useDmnEditorStoreApi();
-  const { allDataTypesById, importsByNamespace } = useDmnEditorDerivedStore();
-
-  const dataType = allDataTypesById.get(itemDefinition["@_id"]!);
+  const dataType = useDmnEditorStore((s) => s.computed.dataTypes.allDataTypesById.get(itemDefinition["@_id"]!));
+  const importsByNamespace = useDmnEditorStore((s) => s.computed.importsByNamespace);
 
   const feelQNameToDisplay = buildFeelQNameFromNamespace({
     namedElement: itemDefinition,
@@ -76,11 +74,11 @@ export function DataTypeName({
           definitions: state.dmn.model.definitions,
           newName,
           itemDefinitionId: itemDefinition["@_id"]!,
-          allDataTypesById,
+          allDataTypesById: state.computed.dataTypes.allDataTypesById,
         });
       });
     },
-    [allDataTypesById, dmnEditorStoreApi, isReadonly, itemDefinition]
+    [dmnEditorStoreApi, isReadonly, itemDefinition]
   );
 
   const _shouldCommitOnBlur = shouldCommitOnBlur ?? true; // Defaults to true

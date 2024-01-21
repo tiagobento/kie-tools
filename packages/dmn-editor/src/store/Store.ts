@@ -24,6 +24,11 @@ import { WithImmer, immer } from "zustand/middleware/immer";
 import { useStoreWithEqualityFn } from "zustand/traditional";
 import { DmnLatestModel } from "@kie-tools/dmn-marshaller";
 import { DmnDiagramNodeData } from "../diagram/nodes/Nodes";
+import { NodeType } from "../diagram/connections/graphStructure";
+import { DMN15__tImport } from "@kie-tools/dmn-marshaller/dist/schemas/dmn-1_5/ts-gen/types";
+import { diagramData, externalModelsByType, indexes } from "./DiagramData";
+import { allFeelVariableUniqueNames, allUniqueFeelNames, dataTypes } from "./DerivedStore";
+import { isValidContainment } from "../diagram/connections/isValidContainment";
 
 export interface DmnEditorDiagramNodeStatus {
   selected: boolean;
@@ -53,8 +58,23 @@ export enum DiagramNodesPanel {
 
 export type DropTargetNode = undefined | RF.Node<DmnDiagramNodeData>;
 
+// Read this to understand why we need computed as part of the store.
+// https://github.com/pmndrs/zustand/issues/132#issuecomment-1120467721
+export type Computed = {
+  isDropTargetNodeValidForSelection: boolean;
+  isDiagramEditingInProgress: boolean;
+  importsByNamespace: Map<string, DMN15__tImport>;
+  indexes: ReturnType<typeof indexes>;
+  diagramData: ReturnType<typeof diagramData>;
+  externalModelTypesByNamespace: ReturnType<typeof externalModelsByType>;
+  dataTypes: ReturnType<typeof dataTypes>;
+  allFeelVariableUniqueNames: ReturnType<typeof allFeelVariableUniqueNames>;
+  allUniqueFeelNames: ReturnType<typeof allUniqueFeelNames>;
+};
+
 export interface State {
   dispatch: Dispatch;
+  computed: Computed;
   dmn: { model: DmnLatestModel };
   focus: {
     consumableId: string | undefined;
@@ -311,6 +331,85 @@ export function createDmnEditorStore(model: State["dmn"]["model"]) {
           },
         },
       },
+      computed: {
+        get allUniqueFeelNames() {
+          return cache("allUniqueFeelNames", get(), (s) => {
+            return allUniqueFeelNames(s);
+          });
+        },
+        get isDiagramEditingInProgress() {
+          return cache("isDiagramEditingInProgress", get(), ({ diagram }) => {
+            return (
+              diagram.draggingNodes.length > 0 ||
+              diagram.resizingNodes.length > 0 ||
+              diagram.draggingWaypoints.length > 0 ||
+              diagram.movingDividerLines.length > 0 ||
+              diagram.editingStyle
+            );
+          });
+        },
+        get isDropTargetNodeValidForSelection() {
+          return cache("isDropTargetNodeValidForSelection", get(), ({ diagram, computed }) => {
+            return (
+              !!diagram.dropTargetNode &&
+              isValidContainment({
+                nodeTypes: computed.diagramData.selectedNodeTypes,
+                inside: diagram.dropTargetNode.type as NodeType,
+                dmnObjectQName: diagram.dropTargetNode.data.dmnObjectQName,
+              })
+            );
+          });
+        },
+        get importsByNamespace() {
+          return cache("importsByNamespace", get(), ({ dmn }) => {
+            const thisDmnsImports = dmn.model.definitions.import ?? [];
+            const ret = new Map<string, DMN15__tImport>();
+            for (let i = 0; i < thisDmnsImports.length; i++) {
+              ret.set(thisDmnsImports[i]["@_namespace"], thisDmnsImports[i]);
+            }
+            return ret;
+          });
+        },
+        get dataTypes() {
+          return cache("dataTypes", get(), (s) => {
+            return dataTypes(s, s.computed.externalModelTypesByNamespace.dmns, s.computed.importsByNamespace);
+          });
+        },
+        get allFeelVariableUniqueNames() {
+          return cache("allFeelVariableUniqueNames", get(), ({ computed }) => {
+            return allFeelVariableUniqueNames(computed.dataTypes);
+          });
+        },
+        get externalModelTypesByNamespace() {
+          return cache("externalModelTypesByNamespace", get(), (s) => {
+            const externalModelsByNamespace = {};
+            return externalModelsByType(s, externalModelsByNamespace); // FIXME: Tiago
+          });
+        },
+        get indexes() {
+          return cache("indexes", get(), (s) => {
+            return indexes(s);
+          });
+        },
+        get diagramData() {
+          return cache("diagramData", get(), (s) => {
+            return diagramData(s, s.computed.externalModelTypesByNamespace.dmns, s.computed.indexes);
+          });
+        },
+      },
     }))
   );
+}
+
+export const computedCache = new Map<State, Computed>();
+(window as any).cc = computedCache;
+
+export function cache<K extends keyof Computed>(key: K, state: State, delegate: (s: State) => Computed[K]) {
+  let c;
+  computedCache.set(state, (c = computedCache.get(state) ?? ({} as Computed)));
+  if (Object.hasOwn(c ?? {}, key)) {
+    return c![key];
+  }
+
+  return (c![key] = delegate(state));
 }

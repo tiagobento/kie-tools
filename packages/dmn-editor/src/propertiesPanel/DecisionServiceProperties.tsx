@@ -34,7 +34,6 @@ import { buildXmlHref, parseXmlHref } from "../xml/xmlHrefs";
 import { DmnObjectListItem } from "../externalNodes/DmnObjectListItem";
 import { renameDrgElement } from "../mutations/renameNode";
 import { InlineFeelNameInput } from "../feel/InlineFeelNameInput";
-import { useDmnEditorDerivedStore } from "../store/DerivedStore";
 import { Divider } from "@patternfly/react-core/dist/js/components/Divider";
 import { useDmnEditor } from "../DmnEditorContext";
 import { useResolvedTypeRef } from "../dataTypes/useResolvedTypeRef";
@@ -56,7 +55,8 @@ export function DecisionServiceProperties({
   const { setState } = useDmnEditorStoreApi();
 
   const thisDmn = useDmnEditorStore((s) => s.dmn);
-  const { externalDmnsByNamespace, allFeelVariableUniqueNames } = useDmnEditorDerivedStore();
+  const allFeelVariableUniqueNames = useDmnEditorStore((s) => s.computed.allFeelVariableUniqueNames);
+  const externalDmnsByNamespace = useDmnEditorStore((s) => s.computed.externalModelTypesByNamespace.dmns);
 
   const allDrgElementsByHref = useMemo(() => {
     const ret: AllKnownDrgElementsByHref = new Map();

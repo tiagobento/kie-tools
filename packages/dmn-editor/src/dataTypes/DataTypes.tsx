@@ -32,9 +32,8 @@ import { PlusCircleIcon } from "@patternfly/react-icons/dist/js/icons/plus-circl
 import { State, useDmnEditorStore, useDmnEditorStoreApi } from "../store/Store";
 import { DataTypesEmptyState } from "./DataTypesEmptyState";
 import { DataTypePanel } from "./DataTypePanel";
-import { findDataTypeById, getNewItemDefinition, isStruct } from "./DataTypeSpec";
+import { findDataTypeById, isStruct } from "./DataTypeSpec";
 import { DataTypeName } from "./DataTypeName";
-import { useDmnEditorDerivedStore } from "../store/DerivedStore";
 import { Label } from "@patternfly/react-core/dist/js/components/Label";
 import { DMN15_SPEC } from "../Dmn15Spec";
 import { invalidInlineFeelNameStyle } from "../feel/InlineFeelNameInput";
@@ -90,7 +89,11 @@ export function DataTypes() {
 
   const [filter, setFilter] = useState("");
 
-  const { allDataTypesById, dataTypesTree, allTopLevelItemDefinitionUniqueNames } = useDmnEditorDerivedStore();
+  const allTopLevelItemDefinitionUniqueNames = useDmnEditorStore(
+    (s) => s.computed.dataTypes.allTopLevelItemDefinitionUniqueNames
+  );
+  const allDataTypesById = useDmnEditorStore((s) => s.computed.dataTypes.allDataTypesById);
+  const dataTypesTree = useDmnEditorStore((s) => s.computed.dataTypes.dataTypesTree);
 
   const activeDataType = useMemo(() => {
     return activeItemDefinitionId ? allDataTypesById.get(activeItemDefinitionId) : undefined;

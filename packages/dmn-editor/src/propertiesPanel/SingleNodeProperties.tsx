@@ -30,8 +30,7 @@ import { DecisionServiceProperties } from "./DecisionServiceProperties";
 import { KnowledgeSourceProperties } from "./KnowledgeSourceProperties";
 import { TextAnnotationProperties } from "./TextAnnotationProperties";
 import { useMemo } from "react";
-import { useDmnEditorStoreApi } from "../store/Store";
-import { useDmnEditorDerivedStore } from "../store/DerivedStore";
+import { useDmnEditorStore, useDmnEditorStoreApi } from "../store/Store";
 import { NODE_TYPES } from "../diagram/nodes/NodeTypes";
 import {
   DMN15__tBusinessKnowledgeModel,
@@ -53,12 +52,8 @@ import "./SingleNodeProperties.css";
 
 export function SingleNodeProperties({ nodeId }: { nodeId: string }) {
   const dmnEditorStoreApi = useDmnEditorStoreApi();
-  const { nodesById } = useDmnEditorDerivedStore();
+  const node = useDmnEditorStore((s) => s.computed.diagramData.nodesById.get(nodeId));
   const [isSectionExpanded, setSectionExpanded] = useState<boolean>(true);
-
-  const node = useMemo(() => {
-    return nodesById.get(nodeId);
-  }, [nodeId, nodesById]);
 
   if (!node) {
     return <>Node not found: {nodeId}</>;

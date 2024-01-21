@@ -51,7 +51,6 @@ import { Title } from "@patternfly/react-core/dist/js/components/Title";
 import { ErrorCircleOIcon } from "@patternfly/react-icons/dist/js/icons/error-circle-o-icon";
 import { InfoIcon } from "@patternfly/react-icons/dist/js/icons/info-icon";
 import { builtInFeelTypes } from "../dataTypes/BuiltInFeelTypes";
-import { useDmnEditorDerivedStore } from "../store/DerivedStore";
 import { isStruct } from "../dataTypes/DataTypeSpec";
 import { DmnDiagramNodeData } from "../diagram/nodes/Nodes";
 import { DataTypeIndex } from "../dataTypes/DataTypes";
@@ -95,7 +94,7 @@ export function BoxedExpression({ container }: { container: React.RefObject<HTML
   const diagram = useDmnEditorStore((s) => s.diagram);
   const dispatch = useDmnEditorStore((s) => s.dispatch);
   const boxedExpressionEditor = useDmnEditorStore((s) => s.boxedExpressionEditor);
-  const { externalDmnsByNamespace } = useDmnEditorDerivedStore();
+  const externalDmnsByNamespace = useDmnEditorStore((s) => s.computed.externalModelTypesByNamespace.dmns);
   const dmnEditorStoreApi = useDmnEditorStoreApi();
 
   const feelVariables = useMemo(() => {
@@ -182,8 +181,11 @@ export function BoxedExpression({ container }: { container: React.RefObject<HTML
 
   ////
 
-  const { dataTypesTree, allTopLevelDataTypesByFeelName, nodesById, importsByNamespace, externalPmmlsByNamespace } =
-    useDmnEditorDerivedStore();
+  const dataTypesTree = useDmnEditorStore((s) => s.computed.dataTypes.dataTypesTree);
+  const allTopLevelDataTypesByFeelName = useDmnEditorStore((s) => s.computed.dataTypes.allTopLevelDataTypesByFeelName);
+  const nodesById = useDmnEditorStore((s) => s.computed.diagramData.nodesById);
+  const importsByNamespace = useDmnEditorStore((s) => s.computed.importsByNamespace);
+  const externalPmmlsByNamespace = useDmnEditorStore((s) => s.computed.externalModelTypesByNamespace.pmmls);
 
   const dataTypes = useMemo<DmnDataType[]>(() => {
     const customDataTypes = dataTypesTree.map((d) => ({

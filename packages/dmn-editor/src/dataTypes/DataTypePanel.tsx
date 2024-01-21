@@ -42,7 +42,6 @@ import { getNewItemDefinition, isStruct } from "./DataTypeSpec";
 import { TrashIcon } from "@patternfly/react-icons/dist/js/icons/trash-icon";
 import { Label } from "@patternfly/react-core/dist/js/components/Label";
 import { CopyIcon } from "@patternfly/react-icons/dist/js/icons/copy-icon";
-import { useDmnEditorDerivedStore } from "../store/DerivedStore";
 import { UniqueNameIndex } from "../Dmn15Spec";
 import { buildFeelQNameFromNamespace } from "../feel/buildFeelQName";
 import { buildClipboardFromDataType } from "../clipboard/Clipboard";
@@ -163,8 +162,10 @@ export function DataTypePanel({
   const [dropdownOpenFor, setDropdownOpenFor] = useState<string | undefined>(undefined);
   const [topLevelDropdownOpen, setTopLevelDropdownOpen] = useState<boolean>(false);
 
-  const { importsByNamespace, allTopLevelItemDefinitionUniqueNames, allTopLevelDataTypesByFeelName } =
-    useDmnEditorDerivedStore();
+  const importsByNamespace = useDmnEditorStore((s) => s.computed.importsByNamespace);
+  const allTopLevelItemDefinitionUniqueNames = useDmnEditorStore(
+    (s) => s.computed.dataTypes.allTopLevelItemDefinitionUniqueNames
+  );
 
   const allUniqueNames = useMemo(
     () =>

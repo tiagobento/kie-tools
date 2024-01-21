@@ -21,13 +21,13 @@ import * as React from "react";
 
 import { DrawerHead, DrawerPanelContent } from "@patternfly/react-core/dist/js/components/Drawer";
 import { GlobalDiagramProperties } from "./GlobalDiagramProperties";
-import "./DiagramPropertiesPanel.css";
-import { useDmnEditorDerivedStore } from "../store/DerivedStore";
 import { SingleNodeProperties } from "./SingleNodeProperties";
 import { MultipleNodeProperties } from "./MultipleNodeProperties";
+import { useDmnEditorStore } from "../store/Store";
+import "./DiagramPropertiesPanel.css";
 
 export function DiagramPropertiesPanel() {
-  const { selectedNodesById } = useDmnEditorDerivedStore();
+  const selectedNodesById = useDmnEditorStore((s) => s.computed.diagramData.selectedNodesById);
 
   return (
     <DrawerPanelContent

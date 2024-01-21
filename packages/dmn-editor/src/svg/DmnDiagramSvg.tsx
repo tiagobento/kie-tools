@@ -54,7 +54,6 @@ import {
 } from "../diagram/nodes/NodeStyle";
 import { NodeType } from "../diagram/connections/graphStructure";
 import { buildFeelQNameFromXmlQName } from "../feel/buildFeelQName";
-import { DerivedStore } from "../store/DerivedStore";
 import { Text } from "@visx/text";
 
 export function DmnDiagramSvg({
@@ -68,7 +67,7 @@ export function DmnDiagramSvg({
   edges: RF.Edge<DmnDiagramEdgeData>[];
   snapGrid: SnapGrid;
   thisDmn: State["dmn"];
-  importsByNamespace: DerivedStore["importsByNamespace"];
+  importsByNamespace: State["computed"]["importsByNamespace"];
 }) {
   const { nodesSvg, nodesById } = useMemo(() => {
     const nodesById = new Map<string, RF.Node<DmnDiagramNodeData>>();

@@ -37,14 +37,12 @@ import { DEFAULT_NODE_SIZES } from "../nodes/DefaultSizes";
 import { useDmnEditorStore } from "../../store/Store";
 import { useKieEdgePath } from "../edges/useKieEdgePath";
 import { PositionalNodeHandleId } from "./PositionalNodeHandles";
-import { useDmnEditorDerivedStore } from "../../store/DerivedStore";
 
 export function ConnectionLine({ toX, toY, fromNode, fromHandle }: RF.ConnectionLineComponentProps) {
-  const diagram = useDmnEditorStore((s) => s.diagram);
-
-  const edgeId = useDmnEditorStore((s) => s.diagram.edgeIdBeingUpdated);
-  const { edgesById } = useDmnEditorDerivedStore();
-  const edge = edgeId ? edgesById.get(edgeId) : undefined;
+  const snapGrid = useDmnEditorStore((s) => s.diagram.snapGrid);
+  const edge = useDmnEditorStore((s) =>
+    s.diagram.edgeIdBeingUpdated ? s.computed.diagramData.edgesById.get(s.diagram.edgeIdBeingUpdated) : undefined
+  );
   const kieEdgePath = useKieEdgePath(edge?.source, edge?.target, edge?.data);
 
   // This works because nodes are configured with:
@@ -81,9 +79,9 @@ export function ConnectionLine({ toX, toY, fromNode, fromHandle }: RF.Connection
   // Nodes
   else {
     const nodeType = handleId as NodeType;
-    const { "@_x": toXsnapped, "@_y": toYsnapped } = snapPoint(diagram.snapGrid, { "@_x": toX, "@_y": toY });
+    const { "@_x": toXsnapped, "@_y": toYsnapped } = snapPoint(snapGrid, { "@_x": toX, "@_y": toY });
 
-    const defaultSize = DEFAULT_NODE_SIZES[nodeType](diagram.snapGrid);
+    const defaultSize = DEFAULT_NODE_SIZES[nodeType](snapGrid);
     const [toXauto, toYauto] = getPositionalHandlePosition(
       { x: toXsnapped, y: toYsnapped, width: defaultSize["@_width"], height: defaultSize["@_height"] },
       { x: fromX, y: fromY, width: 1, height: 1 }

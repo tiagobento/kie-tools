@@ -32,8 +32,7 @@ import { DEFAULT_NODE_SIZES, MIN_NODE_SIZES } from "../diagram/nodes/DefaultSize
 import { NODE_TYPES } from "../diagram/nodes/NodeTypes";
 import { repositionNode } from "../mutations/repositionNode";
 import { resizeNode } from "../mutations/resizeNode";
-import { useDmnEditorDerivedStore } from "../store/DerivedStore";
-import { useDmnEditorStore, useDmnEditorStoreApi } from "../store/Store";
+import { useDmnEditorStoreApi } from "../store/Store";
 import { buildXmlHref } from "../xml/xmlHrefs";
 
 const elk = new ELK();
@@ -62,7 +61,7 @@ export const ELK_OPTIONS = {
 
 const PARENT_NODE_ELK_OPTIONS = {
   "elk.padding": "[left=60, top=60, right=60, bottom=30]",
-  "elk.spacing.componentComponent": "0",
+  "elk.spacing.componentComponent": "60",
 };
 
 export interface AutolayoutParentNode {
@@ -76,10 +75,7 @@ export interface AutolayoutParentNode {
 }
 
 export function AutolayoutPanel() {
-  const { nodesById, edgesById } = useDmnEditorDerivedStore();
-  const { snapGrid } = useDmnEditorStore((s) => s.diagram);
-
-  const dmnStoreApi = useDmnEditorStoreApi();
+  const dmnEditorStoreApi = useDmnEditorStoreApi();
 
   const onApply = useCallback(async () => {
     const parentNodesById = new Map<string, AutolayoutParentNode>();
@@ -91,6 +87,9 @@ export function AutolayoutPanel() {
      */
     const fakeEdgesForElk = new Set<Elk.ElkExtendedEdge>();
 
+    const snapGrid = dmnEditorStoreApi.getState().diagram.snapGrid;
+    const nodesById = dmnEditorStoreApi.getState().computed.diagramData.nodesById;
+    const edgesById = dmnEditorStoreApi.getState().computed.diagramData.edgesById;
     const nodes = [...nodesById.values()];
     const edges = [...edgesById.values()];
 
@@ -266,7 +265,7 @@ export function AutolayoutPanel() {
     const autolayouted = await runElk(elkNodes, elkEdges, ELK_OPTIONS);
 
     // 7. Update all nodes positions skipping empty groups, which will be positioned manually after all nodes are done being repositioned.
-    dmnStoreApi.setState((s) => {
+    dmnEditorStoreApi.setState((s) => {
       for (const topLevelElkNode of autolayouted.nodes ?? []) {
         visitNodeAndNested(topLevelElkNode, { x: 100, y: 100 }, (elkNode, positionOffset) => {
           const nodeId = elkNode.id;
@@ -360,7 +359,7 @@ export function AutolayoutPanel() {
         // 10. After all nodes have been repositioned, it's time for the empty groups to be repositioned.
       }
     });
-  }, [dmnStoreApi, edgesById, nodesById, snapGrid]);
+  }, [dmnEditorStoreApi]);
 
   return <Button onClick={onApply}>Apply</Button>;
 }

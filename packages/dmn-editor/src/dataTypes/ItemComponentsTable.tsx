@@ -59,7 +59,6 @@ import { builtInFeelTypeNames } from "./BuiltInFeelTypes";
 import { useDmnEditor } from "../DmnEditorContext";
 import { DMN15__tItemDefinition } from "@kie-tools/dmn-marshaller/dist/schemas/dmn-1_5/ts-gen/types";
 import { resolveTypeRef } from "./resolveTypeRef";
-import { useDmnEditorDerivedStore } from "../store/DerivedStore";
 import { useExternalModels } from "../includedModels/DmnEditorDependenciesContext";
 
 export const BRIGHTNESS_DECREASE_STEP_IN_PERCENTAGE_PER_NESTING_LEVEL = 5;
@@ -91,8 +90,9 @@ export function ItemComponentsTable({
 }) {
   const dmnEditorStoreApi = useDmnEditorStoreApi();
 
-  const { expandedItemComponentIds } = useDmnEditorStore((s) => s.dataTypesEditor);
-  const { allTopLevelDataTypesByFeelName, importsByNamespace } = useDmnEditorDerivedStore();
+  const expandedItemComponentIds = useDmnEditorStore((s) => s.dataTypesEditor.expandedItemComponentIds);
+  const allTopLevelDataTypesByFeelName = useDmnEditorStore((s) => s.computed.dataTypes.allTopLevelDataTypesByFeelName);
+  const importsByNamespace = useDmnEditorStore((s) => s.computed.importsByNamespace);
   const { externalModelsByNamespace } = useExternalModels();
 
   const thisDmnsNamespace = useDmnEditorStore((s) => s.dmn.model.definitions["@_namespace"]);

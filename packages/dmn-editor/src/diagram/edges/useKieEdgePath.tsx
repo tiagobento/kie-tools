@@ -28,7 +28,7 @@ export function useKieEdgePath(
   target: string | undefined,
   data: DmnDiagramEdgeData | undefined
 ) {
-  const diagram = useDmnEditorStore((s) => s.diagram);
+  const snapGrid = useDmnEditorStore((s) => s.diagram.snapGrid);
   const sourceNode = RF.useStore(
     useCallback((store) => (source ? store.nodeInternals.get(source) : undefined), [source])
   );
@@ -42,13 +42,13 @@ export function useKieEdgePath(
   return useMemo(
     () =>
       getSnappedMultiPointAnchoredEdgePath({
-        snapGrid: diagram.snapGrid,
+        snapGrid,
         dmnEdge,
         sourceNode,
         targetNode,
         dmnShapeSource,
         dmnShapeTarget,
       }),
-    [diagram.snapGrid, dmnEdge, dmnShapeSource, dmnShapeTarget, sourceNode, targetNode]
+    [dmnEdge, dmnShapeSource, dmnShapeTarget, snapGrid, sourceNode, targetNode]
   );
 }
