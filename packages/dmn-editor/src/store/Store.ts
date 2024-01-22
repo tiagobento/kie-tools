@@ -382,8 +382,8 @@ export function createDmnEditorStore(model: State["dmn"]["model"]) {
         },
         get externalModelTypesByNamespace() {
           return cache("externalModelTypesByNamespace", get(), (s) => {
-            const externalModelsByNamespace = {};
-            return externalModelsByType(s, externalModelsByNamespace); // FIXME: Tiago
+            const externalModelsByNamespace = {}; // FIXME: Tiago
+            return externalModelsByType(s, externalModelsByNamespace);
           });
         },
         get indexes() {
