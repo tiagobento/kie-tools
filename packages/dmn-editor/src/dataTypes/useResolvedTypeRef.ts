@@ -29,7 +29,7 @@ export function useResolvedTypeRef(typeRef: string | undefined, relativeToNamesp
     return resolveTypeRef({
       typeRef: typeRef || DmnBuiltInDataType.Undefined,
       namespace: relativeToNamespace || thisDmnsNamespace,
-      allTopLevelDataTypesByFeelName: s.computed.dataTypes.allTopLevelDataTypesByFeelName,
+      allTopLevelDataTypesByFeelName: s.computed.getDataTypes(externalModelsByNamespace).allTopLevelDataTypesByFeelName,
       externalModelsByNamespace,
       thisDmnsImportsByNamespace: s.computed.importsByNamespace,
       relativeToNamespace: thisDmnsNamespace,

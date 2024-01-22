@@ -34,6 +34,7 @@ import { repositionNode } from "../mutations/repositionNode";
 import { resizeNode } from "../mutations/resizeNode";
 import { useDmnEditorStoreApi } from "../store/Store";
 import { buildXmlHref } from "../xml/xmlHrefs";
+import { useExternalModels } from "../includedModels/DmnEditorDependenciesContext";
 
 const elk = new ELK();
 
@@ -76,6 +77,7 @@ export interface AutolayoutParentNode {
 
 export function AutolayoutPanel() {
   const dmnEditorStoreApi = useDmnEditorStoreApi();
+  const { externalModelsByNamespace } = useExternalModels();
 
   const onApply = useCallback(async () => {
     const parentNodesById = new Map<string, AutolayoutParentNode>();
@@ -88,8 +90,8 @@ export function AutolayoutPanel() {
     const fakeEdgesForElk = new Set<Elk.ElkExtendedEdge>();
 
     const snapGrid = dmnEditorStoreApi.getState().diagram.snapGrid;
-    const nodesById = dmnEditorStoreApi.getState().computed.diagramData.nodesById;
-    const edgesById = dmnEditorStoreApi.getState().computed.diagramData.edgesById;
+    const nodesById = dmnEditorStoreApi.getState().computed.getDiagramData(externalModelsByNamespace).nodesById;
+    const edgesById = dmnEditorStoreApi.getState().computed.getDiagramData(externalModelsByNamespace).edgesById;
     const nodes = [...nodesById.values()];
     const edges = [...edgesById.values()];
 
@@ -359,7 +361,7 @@ export function AutolayoutPanel() {
         // 10. After all nodes have been repositioned, it's time for the empty groups to be repositioned.
       }
     });
-  }, [dmnEditorStoreApi]);
+  }, [dmnEditorStoreApi, externalModelsByNamespace]);
 
   return <Button onClick={onApply}>Apply</Button>;
 }

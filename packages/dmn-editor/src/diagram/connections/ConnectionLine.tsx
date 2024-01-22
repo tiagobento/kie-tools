@@ -37,11 +37,15 @@ import { DEFAULT_NODE_SIZES } from "../nodes/DefaultSizes";
 import { useDmnEditorStore } from "../../store/Store";
 import { useKieEdgePath } from "../edges/useKieEdgePath";
 import { PositionalNodeHandleId } from "./PositionalNodeHandles";
+import { useExternalModels } from "../../includedModels/DmnEditorDependenciesContext";
 
 export function ConnectionLine({ toX, toY, fromNode, fromHandle }: RF.ConnectionLineComponentProps) {
   const snapGrid = useDmnEditorStore((s) => s.diagram.snapGrid);
+  const { externalModelsByNamespace } = useExternalModels();
   const edge = useDmnEditorStore((s) =>
-    s.diagram.edgeIdBeingUpdated ? s.computed.diagramData.edgesById.get(s.diagram.edgeIdBeingUpdated) : undefined
+    s.diagram.edgeIdBeingUpdated
+      ? s.computed.getDiagramData(externalModelsByNamespace).edgesById.get(s.diagram.edgeIdBeingUpdated)
+      : undefined
   );
   const kieEdgePath = useKieEdgePath(edge?.source, edge?.target, edge?.data);
 

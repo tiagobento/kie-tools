@@ -28,12 +28,16 @@ import { useDmnEditorStore, useDmnEditorStoreApi } from "../store/Store";
 import { useMemo } from "react";
 import { buildXmlHref } from "../xml/xmlHrefs";
 import { SingleNodeProperties } from "./SingleNodeProperties";
+import { useExternalModels } from "../includedModels/DmnEditorDependenciesContext";
 
 export function BeePropertiesPanel() {
   const dmnEditorStoreApi = useDmnEditorStoreApi();
   const { selectedObjectId, activeDrgElementId } = useDmnEditorStore((s) => s.boxedExpressionEditor);
+  const { externalModelsByNamespace } = useExternalModels();
   const node = useDmnEditorStore((s) =>
-    activeDrgElementId ? s.computed.diagramData.nodesById.get(buildXmlHref({ id: activeDrgElementId })) : undefined
+    activeDrgElementId
+      ? s.computed.getDiagramData(externalModelsByNamespace).nodesById.get(buildXmlHref({ id: activeDrgElementId }))
+      : undefined
   );
 
   const shouldDisplayDecisionOrBkmProps = useMemo(

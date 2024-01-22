@@ -55,6 +55,7 @@ import {
 import { getNewDmnIdRandomizer } from "../idRandomizer/dmnIdRandomizer";
 import { addTopLevelItemDefinition as _addTopLevelItemDefinition } from "../mutations/addTopLevelItemDefinition";
 import { DmnBuiltInDataType } from "@kie-tools/boxed-expression-component/dist/api";
+import { useExternalModels } from "../includedModels/DmnEditorDependenciesContext";
 
 export type DataType = {
   itemDefinition: DMN15__tItemDefinition;
@@ -88,12 +89,14 @@ export function DataTypes() {
   const { activeItemDefinitionId } = useDmnEditorStore((s) => s.dataTypesEditor);
 
   const [filter, setFilter] = useState("");
-
+  const { externalModelsByNamespace } = useExternalModels();
   const allTopLevelItemDefinitionUniqueNames = useDmnEditorStore(
-    (s) => s.computed.dataTypes.allTopLevelItemDefinitionUniqueNames
+    (s) => s.computed.getDataTypes(externalModelsByNamespace).allTopLevelItemDefinitionUniqueNames
   );
-  const allDataTypesById = useDmnEditorStore((s) => s.computed.dataTypes.allDataTypesById);
-  const dataTypesTree = useDmnEditorStore((s) => s.computed.dataTypes.dataTypesTree);
+  const allDataTypesById = useDmnEditorStore(
+    (s) => s.computed.getDataTypes(externalModelsByNamespace).allDataTypesById
+  );
+  const dataTypesTree = useDmnEditorStore((s) => s.computed.getDataTypes(externalModelsByNamespace).dataTypesTree);
 
   const activeDataType = useMemo(() => {
     return activeItemDefinitionId ? allDataTypesById.get(activeItemDefinitionId) : undefined;

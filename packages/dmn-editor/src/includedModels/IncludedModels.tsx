@@ -70,9 +70,11 @@ export function IncludedModels() {
   const { externalContextDescription, externalContextName, dmnEditorRootElementRef, onRequestToResolvePath } =
     useDmnEditor();
   const importsByNamespace = useDmnEditorStore((s) => s.computed.importsByNamespace);
-  const allFeelVariableUniqueNames = useDmnEditorStore((s) => s.computed.allFeelVariableUniqueNames);
   const { externalModelsByNamespace, onRequestExternalModelsAvailableToInclude, onRequestExternalModelByPath } =
     useExternalModels();
+  const allFeelVariableUniqueNames = useDmnEditorStore((s) =>
+    s.computed.getAllFeelVariableUniqueNames(externalModelsByNamespace)
+  );
 
   const [isModalOpen, setModalOpen] = useState(false);
   const [isModelSelectOpen, setModelSelectOpen] = useState(false);
@@ -435,6 +437,7 @@ function IncludedModelCard({
   isReadonly: boolean;
 }) {
   const dmnEditorStoreApi = useDmnEditorStoreApi();
+
   const { onRequestToJumpToPath, onRequestToResolvePath } = useDmnEditor();
 
   const remove = useCallback(
@@ -446,8 +449,13 @@ function IncludedModelCard({
     [dmnEditorStoreApi]
   );
 
-  const allTopLevelDataTypesByFeelName = useDmnEditorStore((s) => s.computed.dataTypes.allTopLevelDataTypesByFeelName);
-  const allFeelVariableUniqueNames = useDmnEditorStore((s) => s.computed.allFeelVariableUniqueNames);
+  const { externalModelsByNamespace } = useExternalModels();
+  const allTopLevelDataTypesByFeelName = useDmnEditorStore(
+    (s) => s.computed.getDataTypes(externalModelsByNamespace).allTopLevelDataTypesByFeelName
+  );
+  const allFeelVariableUniqueNames = useDmnEditorStore((s) =>
+    s.computed.getAllFeelVariableUniqueNames(externalModelsByNamespace)
+  );
 
   const rename = useCallback<OnInlineFeelNameRenamed>(
     (newName) => {
@@ -576,8 +584,13 @@ function UnknownIncludedModelCard({
     [dmnEditorStoreApi]
   );
 
-  const allTopLevelDataTypesByFeelName = useDmnEditorStore((s) => s.computed.dataTypes.allTopLevelDataTypesByFeelName);
-  const allFeelVariableUniqueNames = useDmnEditorStore((s) => s.computed.allFeelVariableUniqueNames);
+  const { externalModelsByNamespace } = useExternalModels();
+  const allTopLevelDataTypesByFeelName = useDmnEditorStore(
+    (s) => s.computed.getDataTypes(externalModelsByNamespace).allTopLevelDataTypesByFeelName
+  );
+  const allFeelVariableUniqueNames = useDmnEditorStore((s) =>
+    s.computed.getAllFeelVariableUniqueNames(externalModelsByNamespace)
+  );
 
   const rename = useCallback<OnInlineFeelNameRenamed>(
     (newName) => {

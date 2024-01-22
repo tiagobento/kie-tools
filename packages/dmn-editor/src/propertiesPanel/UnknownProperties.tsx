@@ -27,11 +27,14 @@ import { XmlQName, buildXmlQName } from "@kie-tools/xml-parser-ts/dist/qNames";
 import { Button, ButtonVariant } from "@patternfly/react-core/dist/js/components/Button";
 import { useDmnEditor } from "../DmnEditorContext";
 import { Divider } from "@patternfly/react-core/dist/js/components/Divider";
+import { useExternalModels } from "../includedModels/DmnEditorDependenciesContext";
 
 export function UnknownProperties(props: { shape: DMNDI15__DMNShape; dmnElementRefQName: XmlQName }) {
   const thisDmn = useDmnEditorStore((s) => s.dmn);
-
-  const externalDmnsByNamespace = useDmnEditorStore((s) => s.computed.externalModelTypesByNamespace.dmns);
+  const { externalModelsByNamespace } = useExternalModels();
+  const externalDmnsByNamespace = useDmnEditorStore(
+    (s) => s.computed.getExternalModelTypesByNamespace(externalModelsByNamespace).dmns
+  );
   const { onRequestToJumpToPath } = useDmnEditor();
 
   const content = useMemo(() => {

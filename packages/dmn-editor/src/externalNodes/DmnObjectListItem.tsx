@@ -27,6 +27,7 @@ import { buildFeelQNameFromNamespace } from "../feel/buildFeelQName";
 import { Flex } from "@patternfly/react-core/dist/js/layouts/Flex";
 import { DmnBuiltInDataType } from "@kie-tools/boxed-expression-component/dist/api";
 import { useDmnEditorStore } from "../store/Store";
+import { useExternalModels } from "../includedModels/DmnEditorDependenciesContext";
 
 export function DmnObjectListItem({
   dmnObject,
@@ -40,7 +41,10 @@ export function DmnObjectListItem({
   relativeToNamespace: string;
 }) {
   const importsByNamespace = useDmnEditorStore((s) => s.computed.importsByNamespace);
-  const allTopLevelDataTypesByFeelName = useDmnEditorStore((s) => s.computed.dataTypes.allTopLevelDataTypesByFeelName);
+  const { externalModelsByNamespace } = useExternalModels();
+  const allTopLevelDataTypesByFeelName = useDmnEditorStore(
+    (s) => s.computed.getDataTypes(externalModelsByNamespace).allTopLevelDataTypesByFeelName
+  );
   if (!dmnObject) {
     return <>{dmnObjectHref}</>;
   }

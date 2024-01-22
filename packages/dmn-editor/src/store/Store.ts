@@ -17,18 +17,29 @@
  * under the License.
  */
 
+import { DmnLatestModel } from "@kie-tools/dmn-marshaller";
+import { DMN15__tImport } from "@kie-tools/dmn-marshaller/dist/schemas/dmn-1_5/ts-gen/types";
 import { createContext, useContext } from "react";
 import * as RF from "reactflow";
 import { StoreApi, UseBoundStore, create } from "zustand";
 import { WithImmer, immer } from "zustand/middleware/immer";
 import { useStoreWithEqualityFn } from "zustand/traditional";
-import { DmnLatestModel } from "@kie-tools/dmn-marshaller";
-import { DmnDiagramNodeData } from "../diagram/nodes/Nodes";
+import { ExternalModelsIndex } from "../DmnEditor";
 import { NodeType } from "../diagram/connections/graphStructure";
-import { DMN15__tImport } from "@kie-tools/dmn-marshaller/dist/schemas/dmn-1_5/ts-gen/types";
-import { diagramData, externalModelsByType, indexes } from "./DiagramData";
-import { allFeelVariableUniqueNames, allUniqueFeelNames, dataTypes } from "./DerivedStore";
 import { isValidContainment } from "../diagram/connections/isValidContainment";
+import { DmnDiagramNodeData } from "../diagram/nodes/Nodes";
+import {
+  computeAllFeelVariableUniqueNames,
+  computeAllUniqueFeelNames,
+  computeDataTypes,
+  computeDiagramData,
+  computeExternalModelsByType,
+  computeImportsByNamespace,
+  computeIndexes,
+  computeIsDiagramEditingInProgress,
+  computeIsDropTargetNodeValidForSelection,
+} from "./ComputedState";
+import { cached } from "./ComputedStateCache";
 
 export interface DmnEditorDiagramNodeStatus {
   selected: boolean;
@@ -57,20 +68,6 @@ export enum DiagramNodesPanel {
 }
 
 export type DropTargetNode = undefined | RF.Node<DmnDiagramNodeData>;
-
-// Read this to understand why we need computed as part of the store.
-// https://github.com/pmndrs/zustand/issues/132#issuecomment-1120467721
-export type Computed = {
-  isDropTargetNodeValidForSelection: boolean;
-  isDiagramEditingInProgress: boolean;
-  importsByNamespace: Map<string, DMN15__tImport>;
-  indexes: ReturnType<typeof indexes>;
-  diagramData: ReturnType<typeof diagramData>;
-  externalModelTypesByNamespace: ReturnType<typeof externalModelsByType>;
-  dataTypes: ReturnType<typeof dataTypes>;
-  allFeelVariableUniqueNames: ReturnType<typeof allFeelVariableUniqueNames>;
-  allUniqueFeelNames: ReturnType<typeof allUniqueFeelNames>;
-};
 
 export interface State {
   dispatch: Dispatch;
@@ -130,6 +127,24 @@ export interface State {
   };
 }
 
+// Read this to understand why we need computed as part of the store.
+// https://github.com/pmndrs/zustand/issues/132#issuecomment-1120467721
+export type Computed = {
+  allUniqueFeelNames: ReturnType<typeof computeAllUniqueFeelNames>;
+  isDiagramEditingInProgress: boolean;
+  importsByNamespace: Map<string, DMN15__tImport>;
+  indexes: ReturnType<typeof computeIndexes>;
+  getDiagramData(e: ExternalModelsIndex | undefined): ReturnType<typeof computeDiagramData>;
+  isDropTargetNodeValidForSelection(e: ExternalModelsIndex | undefined): boolean;
+  getExternalModelTypesByNamespace: (
+    e: ExternalModelsIndex | undefined
+  ) => ReturnType<typeof computeExternalModelsByType>;
+  getDataTypes(e: ExternalModelsIndex | undefined): ReturnType<typeof computeDataTypes>;
+  getAllFeelVariableUniqueNames(
+    e: ExternalModelsIndex | undefined
+  ): ReturnType<typeof computeAllFeelVariableUniqueNames>;
+};
+
 export type Dispatch = {
   dmn: {
     reset: (model: State["dmn"]["model"]) => void;
@@ -155,13 +170,6 @@ export enum DmnEditorTab {
   INCLUDED_MODELS,
 }
 
-export const NODE_LAYERS = {
-  GROUP_NODE: 0,
-  NODES: 1000, // We need a difference > 1000 here, since ReactFlow will add 1000 to the z-index when a node is selected.
-  DECISION_SERVICE_NODE: 2000, // We need a difference > 1000 here, since ReactFlow will add 1000 to the z-index when a node is selected.
-  NESTED_NODES: 4000,
-};
-
 type ExtractState = StoreApi<State> extends { getState: () => infer T } ? T : never;
 
 export function useDmnEditorStore<StateSlice = ExtractState>(
@@ -181,11 +189,11 @@ export function useDmnEditorStoreApi() {
   return useContext(DmnEditorStoreApiContext);
 }
 
-export const DmnEditorStoreApiContext = createContext<StoreApiType>({} as any);
-
 export type StoreApiType = UseBoundStore<WithImmer<StoreApi<State>>>;
 
-export const defaultStaticState = () => ({
+export const DmnEditorStoreApiContext = createContext<StoreApiType>({} as any);
+
+export const defaultStaticState = (): Omit<State, "dmn" | "dispatch" | "computed"> => ({
   boxedExpressionEditor: {
     activeDrgElementId: undefined,
     selectedObjectId: undefined,
@@ -195,6 +203,13 @@ export const defaultStaticState = () => ({
   },
   navigation: {
     tab: DmnEditorTab.EDITOR,
+  },
+  focus: {
+    consumableId: undefined,
+  },
+  dataTypesEditor: {
+    activeItemDefinitionId: undefined,
+    expandedItemComponentIds: [],
   },
   diagram: {
     drdIndex: 0,
@@ -222,7 +237,11 @@ export const defaultStaticState = () => ({
       enableDataTypesToolbarOnNodes: true,
       enableStyles: true,
     },
-    snapGrid: { isEnabled: true, x: 20, y: 20 },
+    snapGrid: {
+      isEnabled: true,
+      x: 20,
+      y: 20,
+    },
     _selectedNodes: [],
     _selectedEdges: [],
     draggingNodes: [],
@@ -238,13 +257,6 @@ export function createDmnEditorStore(model: State["dmn"]["model"]) {
     immer<State>((set, get) => ({
       dmn: {
         model,
-      },
-      focus: {
-        consumableId: undefined,
-      },
-      dataTypesEditor: {
-        activeItemDefinitionId: undefined,
-        expandedItemComponentIds: [],
       },
       ...defaultStaticState(),
       dispatch: {
@@ -333,83 +345,64 @@ export function createDmnEditorStore(model: State["dmn"]["model"]) {
       },
       computed: {
         get allUniqueFeelNames() {
-          return cache("allUniqueFeelNames", get(), (s) => {
-            return allUniqueFeelNames(s);
-          });
+          return cached("allUniqueFeelNames", get(), (s) => computeAllUniqueFeelNames(s));
         },
         get isDiagramEditingInProgress() {
-          return cache("isDiagramEditingInProgress", get(), ({ diagram }) => {
-            return (
-              diagram.draggingNodes.length > 0 ||
-              diagram.resizingNodes.length > 0 ||
-              diagram.draggingWaypoints.length > 0 ||
-              diagram.movingDividerLines.length > 0 ||
-              diagram.editingStyle
-            );
-          });
-        },
-        get isDropTargetNodeValidForSelection() {
-          return cache("isDropTargetNodeValidForSelection", get(), ({ diagram, computed }) => {
-            return (
-              !!diagram.dropTargetNode &&
-              isValidContainment({
-                nodeTypes: computed.diagramData.selectedNodeTypes,
-                inside: diagram.dropTargetNode.type as NodeType,
-                dmnObjectQName: diagram.dropTargetNode.data.dmnObjectQName,
-              })
-            );
-          });
+          return cached("isDiagramEditingInProgress", get(), (s) => computeIsDiagramEditingInProgress(s));
         },
         get importsByNamespace() {
-          return cache("importsByNamespace", get(), ({ dmn }) => {
-            const thisDmnsImports = dmn.model.definitions.import ?? [];
-            const ret = new Map<string, DMN15__tImport>();
-            for (let i = 0; i < thisDmnsImports.length; i++) {
-              ret.set(thisDmnsImports[i]["@_namespace"], thisDmnsImports[i]);
-            }
-            return ret;
-          });
-        },
-        get dataTypes() {
-          return cache("dataTypes", get(), (s) => {
-            return dataTypes(s, s.computed.externalModelTypesByNamespace.dmns, s.computed.importsByNamespace);
-          });
-        },
-        get allFeelVariableUniqueNames() {
-          return cache("allFeelVariableUniqueNames", get(), ({ computed }) => {
-            return allFeelVariableUniqueNames(computed.dataTypes);
-          });
-        },
-        get externalModelTypesByNamespace() {
-          return cache("externalModelTypesByNamespace", get(), (s) => {
-            const externalModelsByNamespace = {}; // FIXME: Tiago
-            return externalModelsByType(s, externalModelsByNamespace);
-          });
+          return cached("importsByNamespace", get(), (s) => computeImportsByNamespace(s));
         },
         get indexes() {
-          return cache("indexes", get(), (s) => {
-            return indexes(s);
-          });
+          return cached("indexes", get(), (s) => computeIndexes(s));
         },
-        get diagramData() {
-          return cache("diagramData", get(), (s) => {
-            return diagramData(s, s.computed.externalModelTypesByNamespace.dmns, s.computed.indexes);
-          });
-        },
+        isDropTargetNodeValidForSelection: (externalModelsByNamespace: ExternalModelsIndex | undefined) =>
+          cached(
+            "isDropTargetNodeValidForSelection",
+            get(),
+            (state, computed) =>
+              computeIsDropTargetNodeValidForSelection(state, computed.getDiagramData(externalModelsByNamespace)),
+            [externalModelsByNamespace]
+          ),
+        getDataTypes: (externalModelsByNamespace: ExternalModelsIndex | undefined) =>
+          cached(
+            "getDataTypes",
+            get(),
+            (state, computed) =>
+              computeDataTypes(
+                state,
+                computed.getExternalModelTypesByNamespace(externalModelsByNamespace),
+                computed.importsByNamespace
+              ),
+            [externalModelsByNamespace]
+          ),
+        getAllFeelVariableUniqueNames: (externalModelsByNamespace: ExternalModelsIndex | undefined) =>
+          cached(
+            "getAllFeelVariableUniqueNames",
+            get(),
+            (state, computed) => computeAllFeelVariableUniqueNames(computed.getDataTypes(externalModelsByNamespace)),
+            [externalModelsByNamespace]
+          ),
+        getExternalModelTypesByNamespace: (externalModelsByNamespace: ExternalModelsIndex | undefined) =>
+          cached(
+            "getExternalModelTypesByNamespace",
+            get(),
+            (state) => computeExternalModelsByType(state, externalModelsByNamespace),
+            [externalModelsByNamespace]
+          ),
+        getDiagramData: (externalModelsByNamespace: ExternalModelsIndex | undefined) =>
+          cached(
+            "getDiagramData",
+            get(),
+            (state, computed) =>
+              computeDiagramData(
+                state,
+                computed.getExternalModelTypesByNamespace(externalModelsByNamespace),
+                computed.indexes
+              ),
+            [externalModelsByNamespace]
+          ),
       },
     }))
   );
-}
-
-export const computedCache = new Map<State, Computed>();
-(window as any).cc = computedCache;
-
-export function cache<K extends keyof Computed>(key: K, state: State, delegate: (s: State) => Computed[K]) {
-  let c;
-  computedCache.set(state, (c = computedCache.get(state) ?? ({} as Computed)));
-  if (Object.hasOwn(c ?? {}, key)) {
-    return c![key];
-  }
-
-  return (c![key] = delegate(state));
 }

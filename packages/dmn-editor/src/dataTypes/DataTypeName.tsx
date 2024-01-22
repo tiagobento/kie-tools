@@ -28,6 +28,7 @@ import { renameItemDefinition } from "../mutations/renameItemDefinition";
 import { UniqueNameIndex } from "../Dmn15Spec";
 import { buildFeelQNameFromNamespace } from "../feel/buildFeelQName";
 import { InlineFeelNameInput, OnInlineFeelNameRenamed } from "../feel/InlineFeelNameInput";
+import { useExternalModels } from "../includedModels/DmnEditorDependenciesContext";
 
 export function DataTypeName({
   isReadonly,
@@ -53,7 +54,10 @@ export function DataTypeName({
   );
 
   const dmnEditorStoreApi = useDmnEditorStoreApi();
-  const dataType = useDmnEditorStore((s) => s.computed.dataTypes.allDataTypesById.get(itemDefinition["@_id"]!));
+  const { externalModelsByNamespace } = useExternalModels();
+  const dataType = useDmnEditorStore((s) =>
+    s.computed.getDataTypes(externalModelsByNamespace).allDataTypesById.get(itemDefinition["@_id"]!)
+  );
   const importsByNamespace = useDmnEditorStore((s) => s.computed.importsByNamespace);
 
   const feelQNameToDisplay = buildFeelQNameFromNamespace({
@@ -74,11 +78,11 @@ export function DataTypeName({
           definitions: state.dmn.model.definitions,
           newName,
           itemDefinitionId: itemDefinition["@_id"]!,
-          allDataTypesById: state.computed.dataTypes.allDataTypesById,
+          allDataTypesById: state.computed.getDataTypes(externalModelsByNamespace).allDataTypesById,
         });
       });
     },
-    [dmnEditorStoreApi, isReadonly, itemDefinition]
+    [dmnEditorStoreApi, externalModelsByNamespace, isReadonly, itemDefinition]
   );
 
   const _shouldCommitOnBlur = shouldCommitOnBlur ?? true; // Defaults to true

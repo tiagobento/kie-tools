@@ -31,6 +31,7 @@ import { useIsHovered } from "../useIsHovered";
 import { usePotentialWaypointControls } from "./usePotentialWaypointControls";
 import { useAlwaysVisibleEdgeUpdatersAtNodeBorders } from "./useAlwaysVisibleEdgeUpdatersAtNodeBorders";
 import { DEFAULT_INTRACTION_WIDTH } from "../maths/DmnMaths";
+import { propsHaveSameValuesDeep } from "../memoization/memoization";
 
 export type DmnDiagramEdgeData = {
   dmnEdge: (DMNDI15__DMNEdge & { index: number }) | undefined;
@@ -54,7 +55,8 @@ export const InformationRequirementPath = React.memo(
         <path ref={svgRef} style={{ strokeWidth: 1, stroke: "black" }} markerEnd={"url(#closed-arrow)"} {...props} />
       </>
     );
-  }
+  },
+  propsHaveSameValuesDeep
 );
 
 export const KnowledgeRequirementPath = React.memo(
@@ -70,7 +72,8 @@ export const KnowledgeRequirementPath = React.memo(
         />
       </>
     );
-  }
+  },
+  propsHaveSameValuesDeep
 );
 
 export const AuthorityRequirementPath = React.memo(
@@ -90,7 +93,8 @@ export const AuthorityRequirementPath = React.memo(
         />
       </>
     );
-  }
+  },
+  propsHaveSameValuesDeep
 );
 
 export const AssociationPath = React.memo(
@@ -109,7 +113,8 @@ export const AssociationPath = React.memo(
         />
       </>
     );
-  }
+  },
+  propsHaveSameValuesDeep
 );
 
 export function useEdgeClassName(isConnecting: boolean, isDraggingWaypoint: boolean) {

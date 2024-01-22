@@ -90,10 +90,12 @@ export function ItemComponentsTable({
 }) {
   const dmnEditorStoreApi = useDmnEditorStoreApi();
 
-  const expandedItemComponentIds = useDmnEditorStore((s) => s.dataTypesEditor.expandedItemComponentIds);
-  const allTopLevelDataTypesByFeelName = useDmnEditorStore((s) => s.computed.dataTypes.allTopLevelDataTypesByFeelName);
-  const importsByNamespace = useDmnEditorStore((s) => s.computed.importsByNamespace);
   const { externalModelsByNamespace } = useExternalModels();
+  const expandedItemComponentIds = useDmnEditorStore((s) => s.dataTypesEditor.expandedItemComponentIds);
+  const allTopLevelDataTypesByFeelName = useDmnEditorStore(
+    (s) => s.computed.getDataTypes(externalModelsByNamespace).allTopLevelDataTypesByFeelName
+  );
+  const importsByNamespace = useDmnEditorStore((s) => s.computed.importsByNamespace);
 
   const thisDmnsNamespace = useDmnEditorStore((s) => s.dmn.model.definitions["@_namespace"]);
 

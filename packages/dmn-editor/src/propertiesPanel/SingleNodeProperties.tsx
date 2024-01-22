@@ -48,11 +48,13 @@ import { Button, ButtonVariant } from "@patternfly/react-core/dist/js/components
 import { TimesIcon } from "@patternfly/react-icons/dist/js/icons/times-icon";
 import { PropertiesPanelHeader } from "./PropertiesPanelHeader";
 import { UnknownProperties } from "./UnknownProperties";
+import { useExternalModels } from "../includedModels/DmnEditorDependenciesContext";
 import "./SingleNodeProperties.css";
 
 export function SingleNodeProperties({ nodeId }: { nodeId: string }) {
   const dmnEditorStoreApi = useDmnEditorStoreApi();
-  const node = useDmnEditorStore((s) => s.computed.diagramData.nodesById.get(nodeId));
+  const { externalModelsByNamespace } = useExternalModels();
+  const node = useDmnEditorStore((s) => s.computed.getDiagramData(externalModelsByNamespace).nodesById.get(nodeId));
   const [isSectionExpanded, setSectionExpanded] = useState<boolean>(true);
 
   if (!node) {

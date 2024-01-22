@@ -50,6 +50,7 @@ import { original } from "immer";
 import { builtInFeelTypeNames } from "./BuiltInFeelTypes";
 import { useDmnEditor } from "../DmnEditorContext";
 import { useResolvedTypeRef } from "./useResolvedTypeRef";
+import { useExternalModels } from "../includedModels/DmnEditorDependenciesContext";
 
 export function DataTypePanel({
   isReadonly,
@@ -161,10 +162,10 @@ export function DataTypePanel({
 
   const [dropdownOpenFor, setDropdownOpenFor] = useState<string | undefined>(undefined);
   const [topLevelDropdownOpen, setTopLevelDropdownOpen] = useState<boolean>(false);
-
+  const { externalModelsByNamespace } = useExternalModels();
   const importsByNamespace = useDmnEditorStore((s) => s.computed.importsByNamespace);
   const allTopLevelItemDefinitionUniqueNames = useDmnEditorStore(
-    (s) => s.computed.dataTypes.allTopLevelItemDefinitionUniqueNames
+    (s) => s.computed.getDataTypes(externalModelsByNamespace).allTopLevelItemDefinitionUniqueNames
   );
 
   const allUniqueNames = useMemo(

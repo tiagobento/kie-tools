@@ -88,13 +88,17 @@ import { getDefaultColumnWidth } from "./getDefaultColumnWidth";
 import { FeelVariables } from "@kie-tools/dmn-feel-antlr4-parser";
 import { DmnLatestModel } from "@kie-tools/dmn-marshaller";
 import { ArrowRightIcon } from "@patternfly/react-icons/dist/js/icons/arrow-right-icon";
+import { useExternalModels } from "../includedModels/DmnEditorDependenciesContext";
 
 export function BoxedExpression({ container }: { container: React.RefObject<HTMLElement> }) {
   const thisDmn = useDmnEditorStore((s) => s.dmn);
   const diagram = useDmnEditorStore((s) => s.diagram);
   const dispatch = useDmnEditorStore((s) => s.dispatch);
   const boxedExpressionEditor = useDmnEditorStore((s) => s.boxedExpressionEditor);
-  const externalDmnsByNamespace = useDmnEditorStore((s) => s.computed.externalModelTypesByNamespace.dmns);
+  const { externalModelsByNamespace } = useExternalModels();
+  const externalDmnsByNamespace = useDmnEditorStore(
+    (s) => s.computed.getExternalModelTypesByNamespace(externalModelsByNamespace).dmns
+  );
   const dmnEditorStoreApi = useDmnEditorStoreApi();
 
   const feelVariables = useMemo(() => {
@@ -181,11 +185,15 @@ export function BoxedExpression({ container }: { container: React.RefObject<HTML
 
   ////
 
-  const dataTypesTree = useDmnEditorStore((s) => s.computed.dataTypes.dataTypesTree);
-  const allTopLevelDataTypesByFeelName = useDmnEditorStore((s) => s.computed.dataTypes.allTopLevelDataTypesByFeelName);
-  const nodesById = useDmnEditorStore((s) => s.computed.diagramData.nodesById);
+  const dataTypesTree = useDmnEditorStore((s) => s.computed.getDataTypes(externalModelsByNamespace).dataTypesTree);
+  const allTopLevelDataTypesByFeelName = useDmnEditorStore(
+    (s) => s.computed.getDataTypes(externalModelsByNamespace).allTopLevelDataTypesByFeelName
+  );
+  const nodesById = useDmnEditorStore((s) => s.computed.getDiagramData(externalModelsByNamespace).nodesById);
   const importsByNamespace = useDmnEditorStore((s) => s.computed.importsByNamespace);
-  const externalPmmlsByNamespace = useDmnEditorStore((s) => s.computed.externalModelTypesByNamespace.pmmls);
+  const externalPmmlsByNamespace = useDmnEditorStore(
+    (s) => s.computed.getExternalModelTypesByNamespace(externalModelsByNamespace).pmmls
+  );
 
   const dataTypes = useMemo<DmnDataType[]>(() => {
     const customDataTypes = dataTypesTree.map((d) => ({

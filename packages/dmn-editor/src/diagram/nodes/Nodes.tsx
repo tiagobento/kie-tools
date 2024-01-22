@@ -32,7 +32,6 @@ import {
 import { XmlQName } from "@kie-tools/xml-parser-ts/dist/qNames";
 import { drag } from "d3-drag";
 import { select } from "d3-selection";
-import fastDeepEqual from "fast-deep-equal";
 import * as React from "react";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import * as RF from "reactflow";
@@ -67,6 +66,8 @@ import {
 } from "./NodeSvgs";
 import { NODE_TYPES } from "./NodeTypes";
 import { OutgoingStuffNodePanel } from "./OutgoingStuffNodePanel";
+import { propsHaveSameValuesDeep } from "../memoization/memoization";
+import { useExternalModels } from "../../includedModels/DmnEditorDependenciesContext";
 
 export type ElementFilter<E extends { __$$element: string }, Filter extends string> = E extends any
   ? E["__$$element"] extends Filter
@@ -92,9 +93,6 @@ export type DmnDiagramNodeData<T extends NodeDmnObjects = NodeDmnObjects> = {
    * */
   parentRfNode: RF.Node<DmnDiagramNodeData> | undefined;
 };
-
-const nodeEqualityFn = (prev: Readonly<React.ComponentProps<any>>, next: Readonly<React.ComponentProps<any>>) =>
-  fastDeepEqual(prev, next);
 
 export const InputDataNode = React.memo(
   ({
@@ -124,8 +122,8 @@ export const InputDataNode = React.memo(
 
     const dmnEditorStoreApi = useDmnEditorStoreApi();
 
-    const { isTargeted, isValidConnectionTarget, isConnecting } = useConnectionTargetStatus(id, shouldActLikeHovered);
-    const className = useNodeClassName(isConnecting, isValidConnectionTarget, id);
+    const { isTargeted, isValidConnectionTarget } = useConnectionTargetStatus(id, shouldActLikeHovered);
+    const className = useNodeClassName(isValidConnectionTarget, id);
     const nodeDimensions = useNodeDimensions(type as NodeType, snapGrid, shape, isExternal);
 
     const setName = useCallback<OnEditableNodeLabelChange>(
@@ -185,7 +183,7 @@ export const InputDataNode = React.memo(
           <InfoNodePanel isVisible={!isTargeted && shouldActLikeHovered} />
 
           <OutgoingStuffNodePanel
-            isVisible={!isConnecting && !isTargeted && shouldActLikeHovered}
+            isVisible={!isTargeted && shouldActLikeHovered}
             nodeTypes={outgoingStructure[NODE_TYPES.inputData].nodes}
             edgeTypes={outgoingStructure[NODE_TYPES.inputData].edges}
           />
@@ -221,7 +219,7 @@ export const InputDataNode = React.memo(
       </>
     );
   },
-  nodeEqualityFn
+  propsHaveSameValuesDeep
 );
 
 export const DecisionNode = React.memo(
@@ -253,8 +251,8 @@ export const DecisionNode = React.memo(
 
     const dmnEditorStoreApi = useDmnEditorStoreApi();
 
-    const { isTargeted, isValidConnectionTarget, isConnecting } = useConnectionTargetStatus(id, shouldActLikeHovered);
-    const className = useNodeClassName(isConnecting, isValidConnectionTarget, id);
+    const { isTargeted, isValidConnectionTarget } = useConnectionTargetStatus(id, shouldActLikeHovered);
+    const className = useNodeClassName(isValidConnectionTarget, id);
     const nodeDimensions = useNodeDimensions(type as NodeType, snapGrid, shape, isExternal);
     const setName = useCallback<OnEditableNodeLabelChange>(
       (newName: string) => {
@@ -316,7 +314,7 @@ export const DecisionNode = React.memo(
             <EditExpressionNodePanel isVisible={!isTargeted && shouldActLikeHovered} id={decision["@_id"]!} />
           )}
           <OutgoingStuffNodePanel
-            isVisible={!isConnecting && !isTargeted && shouldActLikeHovered}
+            isVisible={!isTargeted && shouldActLikeHovered}
             nodeTypes={outgoingStructure[NODE_TYPES.decision].nodes}
             edgeTypes={outgoingStructure[NODE_TYPES.decision].edges}
           />
@@ -352,7 +350,7 @@ export const DecisionNode = React.memo(
       </>
     );
   },
-  nodeEqualityFn
+  propsHaveSameValuesDeep
 );
 
 export const BkmNode = React.memo(
@@ -384,8 +382,8 @@ export const BkmNode = React.memo(
 
     const dmnEditorStoreApi = useDmnEditorStoreApi();
 
-    const { isTargeted, isValidConnectionTarget, isConnecting } = useConnectionTargetStatus(id, shouldActLikeHovered);
-    const className = useNodeClassName(isConnecting, isValidConnectionTarget, id);
+    const { isTargeted, isValidConnectionTarget } = useConnectionTargetStatus(id, shouldActLikeHovered);
+    const className = useNodeClassName(isValidConnectionTarget, id);
     const nodeDimensions = useNodeDimensions(type as NodeType, snapGrid, shape, isExternal);
     const setName = useCallback<OnEditableNodeLabelChange>(
       (newName: string) => {
@@ -446,7 +444,7 @@ export const BkmNode = React.memo(
           <InfoNodePanel isVisible={!isTargeted && shouldActLikeHovered} />
           {!isExternal && <EditExpressionNodePanel isVisible={!isTargeted && shouldActLikeHovered} id={bkm["@_id"]!} />}
           <OutgoingStuffNodePanel
-            isVisible={!isConnecting && !isTargeted && shouldActLikeHovered}
+            isVisible={!isTargeted && shouldActLikeHovered}
             nodeTypes={outgoingStructure[NODE_TYPES.bkm].nodes}
             edgeTypes={outgoingStructure[NODE_TYPES.bkm].edges}
           />
@@ -482,7 +480,7 @@ export const BkmNode = React.memo(
       </>
     );
   },
-  nodeEqualityFn
+  propsHaveSameValuesDeep
 );
 
 export const KnowledgeSourceNode = React.memo(
@@ -515,8 +513,8 @@ export const KnowledgeSourceNode = React.memo(
 
     const dmnEditorStoreApi = useDmnEditorStoreApi();
 
-    const { isTargeted, isValidConnectionTarget, isConnecting } = useConnectionTargetStatus(id, shouldActLikeHovered);
-    const className = useNodeClassName(isConnecting, isValidConnectionTarget, id);
+    const { isTargeted, isValidConnectionTarget } = useConnectionTargetStatus(id, shouldActLikeHovered);
+    const className = useNodeClassName(isValidConnectionTarget, id);
     const nodeDimensions = useNodeDimensions(type as NodeType, snapGrid, shape, isExternal);
     const setName = useCallback<OnEditableNodeLabelChange>(
       (newName: string) => {
@@ -563,7 +561,7 @@ export const KnowledgeSourceNode = React.memo(
           <br />
           <InfoNodePanel isVisible={!isTargeted && shouldActLikeHovered} />
           <OutgoingStuffNodePanel
-            isVisible={!isConnecting && !isTargeted && shouldActLikeHovered}
+            isVisible={!isTargeted && shouldActLikeHovered}
             nodeTypes={outgoingStructure[NODE_TYPES.knowledgeSource].nodes}
             edgeTypes={outgoingStructure[NODE_TYPES.knowledgeSource].edges}
           />
@@ -592,7 +590,7 @@ export const KnowledgeSourceNode = React.memo(
       </>
     );
   },
-  nodeEqualityFn
+  propsHaveSameValuesDeep
 );
 
 export const TextAnnotationNode = React.memo(
@@ -625,8 +623,8 @@ export const TextAnnotationNode = React.memo(
 
     const dmnEditorStoreApi = useDmnEditorStoreApi();
 
-    const { isTargeted, isValidConnectionTarget, isConnecting } = useConnectionTargetStatus(id, shouldActLikeHovered);
-    const className = useNodeClassName(isConnecting, isValidConnectionTarget, id);
+    const { isTargeted, isValidConnectionTarget } = useConnectionTargetStatus(id, shouldActLikeHovered);
+    const className = useNodeClassName(isValidConnectionTarget, id);
     const nodeDimensions = useNodeDimensions(type as NodeType, snapGrid, shape, isExternal);
     const setText = useCallback(
       (newText: string) => {
@@ -673,7 +671,7 @@ export const TextAnnotationNode = React.memo(
           <br />
           <InfoNodePanel isVisible={!isTargeted && shouldActLikeHovered} />
           <OutgoingStuffNodePanel
-            isVisible={!isConnecting && !isTargeted && shouldActLikeHovered}
+            isVisible={!isTargeted && shouldActLikeHovered}
             nodeTypes={outgoingStructure[NODE_TYPES.textAnnotation].nodes}
             edgeTypes={outgoingStructure[NODE_TYPES.textAnnotation].edges}
           />
@@ -703,7 +701,7 @@ export const TextAnnotationNode = React.memo(
       </>
     );
   },
-  nodeEqualityFn
+  propsHaveSameValuesDeep
 );
 
 export const DecisionServiceNode = React.memo(
@@ -736,8 +734,8 @@ export const DecisionServiceNode = React.memo(
     useHoveredNodeAlwaysOnTop(ref, zIndex, shouldActLikeHovered, dragging, selected, isEditingLabel);
     const dmnEditorStoreApi = useDmnEditorStoreApi();
 
-    const { isTargeted, isValidConnectionTarget, isConnecting } = useConnectionTargetStatus(id, shouldActLikeHovered);
-    const className = useNodeClassName(isConnecting, isValidConnectionTarget, id);
+    const { isTargeted, isValidConnectionTarget } = useConnectionTargetStatus(id, shouldActLikeHovered);
+    const className = useNodeClassName(isValidConnectionTarget, id);
 
     const nodeDimensions = useNodeDimensions(type as NodeType, snapGrid, shape, isExternal);
     const setName = useCallback<OnEditableNodeLabelChange>(
@@ -864,7 +862,7 @@ export const DecisionServiceNode = React.memo(
           <br />
           <InfoNodePanel isVisible={!isTargeted && selected && !dragging} />
           <OutgoingStuffNodePanel
-            isVisible={!isConnecting && !isTargeted && selected && !dragging}
+            isVisible={!isTargeted && selected && !dragging}
             nodeTypes={outgoingStructure[NODE_TYPES.decisionService].nodes}
             edgeTypes={outgoingStructure[NODE_TYPES.decisionService].edges}
           />
@@ -901,7 +899,7 @@ export const DecisionServiceNode = React.memo(
       </>
     );
   },
-  nodeEqualityFn
+  propsHaveSameValuesDeep
 );
 
 export const GroupNode = React.memo(
@@ -932,8 +930,8 @@ export const GroupNode = React.memo(
     const { isEditingLabel, setEditingLabel, triggerEditing, triggerEditingIfEnter } = useEditableNodeLabel(
       group["@_id"]
     );
-    const { isTargeted, isValidConnectionTarget, isConnecting } = useConnectionTargetStatus(id, shouldActLikeHovered);
-    const className = useNodeClassName(isConnecting, isValidConnectionTarget, id);
+    const { isTargeted, isValidConnectionTarget } = useConnectionTargetStatus(id, shouldActLikeHovered);
+    const className = useNodeClassName(isValidConnectionTarget, id);
     const nodeDimensions = useNodeDimensions(type as NodeType, snapGrid, shape, isExternal);
     const setName = useCallback<OnEditableNodeLabelChange>(
       (newName: string) => {
@@ -1002,7 +1000,7 @@ export const GroupNode = React.memo(
           {`render count: ${renderCount.current}`}
           <br />
           <OutgoingStuffNodePanel
-            isVisible={!isConnecting && !isTargeted && selected && !dragging}
+            isVisible={!isTargeted && selected && !dragging}
             nodeTypes={outgoingStructure[NODE_TYPES.group].nodes}
             edgeTypes={outgoingStructure[NODE_TYPES.group].edges}
           />
@@ -1032,7 +1030,7 @@ export const GroupNode = React.memo(
       </>
     );
   },
-  nodeEqualityFn
+  propsHaveSameValuesDeep
 );
 
 export const UnknownNode = React.memo(
@@ -1058,8 +1056,8 @@ export const UnknownNode = React.memo(
       (s) => (isHovered || isResizing) && s.diagram.draggingNodes.length === 0
     );
 
-    const { isTargeted, isValidConnectionTarget, isConnecting } = useConnectionTargetStatus(id, shouldActLikeHovered);
-    const className = useNodeClassName(isConnecting, isValidConnectionTarget, id);
+    const { isTargeted, isValidConnectionTarget } = useConnectionTargetStatus(id, shouldActLikeHovered);
+    const className = useNodeClassName(isValidConnectionTarget, id);
     const nodeDimensions = useNodeDimensions(type as NodeType, snapGrid, shape, isExternal);
 
     return (
@@ -1099,7 +1097,7 @@ export const UnknownNode = React.memo(
       </>
     );
   },
-  nodeEqualityFn
+  propsHaveSameValuesDeep
 );
 
 ///
@@ -1187,14 +1185,15 @@ function useHoveredNodeAlwaysOnTop(
 
 export function useConnection(nodeId: string) {
   const connectionNodeId = RF.useStore((s) => s.connectionNodeId);
-  const connectionHandleId = RF.useStore((s) => s.connectionHandleId);
   const connectionHandleType = RF.useStore((s) => s.connectionHandleType);
-  const edgeIdBeingUpdated = useDmnEditorStore((s) => s.diagram.edgeIdBeingUpdated);
-  const typeOfEdgeBeingUpdated = RF.useStore((s) => s.edges.find((e) => e.id === edgeIdBeingUpdated)?.type);
 
   const source = connectionNodeId;
   const target = nodeId;
-  const sourceHandle = connectionHandleId ?? typeOfEdgeBeingUpdated ?? null;
+
+  const edgeIdBeingUpdated = useDmnEditorStore((s) => s.diagram.edgeIdBeingUpdated);
+  const sourceHandle = RF.useStore(
+    (s) => s.connectionHandleId ?? s.edges.find((e) => e.id === edgeIdBeingUpdated)?.type ?? null
+  );
 
   const connection = useMemo(
     () => ({
@@ -1213,33 +1212,34 @@ export function useConnectionTargetStatus(nodeId: string, shouldActLikeHovered: 
   const isTargeted = RF.useStore((s) => !!s.connectionNodeId && s.connectionNodeId !== nodeId && shouldActLikeHovered);
   const connection = useConnection(nodeId);
   const isValidConnectionTarget = RF.useStore((s) => s.isValidConnection?.(connection) ?? false);
-  const isConnecting = RF.useStore((s) => !!s.connectionNodeId);
 
   return useMemo(
     () => ({
       isTargeted,
       isValidConnectionTarget,
-      isConnecting,
     }),
-    [isConnecting, isTargeted, isValidConnectionTarget]
+    [isTargeted, isValidConnectionTarget]
   );
 }
 
-export function useNodeClassName(isConnecting: boolean, isValidConnectionTarget: boolean, nodeId: string) {
+export function useNodeClassName(isValidConnectionTarget: boolean, nodeId: string) {
   const isDropTarget = useDmnEditorStore(
     (s) => s.diagram.dropTargetNode?.id === nodeId && containment.get(s.diagram.dropTargetNode?.type as NodeType)
   );
-  const isDropTargetNodeValidForSelection = useDmnEditorStore((s) => s.computed.isDropTargetNodeValidForSelection);
+  const { externalModelsByNamespace } = useExternalModels();
+  const isDropTargetNodeValidForSelection = useDmnEditorStore((s) =>
+    s.computed.isDropTargetNodeValidForSelection(externalModelsByNamespace)
+  );
   const isConnectionNodeId = RF.useStore((s) => s.connectionNodeId === nodeId);
   const connection = useConnection(nodeId);
   const isEdgeConnection = !!Object.values(EDGE_TYPES).find((s) => s === connection.sourceHandle);
   const isNodeConnection = !!Object.values(NODE_TYPES).find((s) => s === connection.sourceHandle);
 
-  if (isNodeConnection && isConnecting && !isConnectionNodeId) {
+  if (isNodeConnection && !isConnectionNodeId) {
     return "dimmed";
   }
 
-  if (isEdgeConnection && isConnecting && (!isValidConnectionTarget || isConnectionNodeId)) {
+  if (isEdgeConnection && (!isValidConnectionTarget || isConnectionNodeId)) {
     return "dimmed";
   }
 

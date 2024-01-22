@@ -29,6 +29,7 @@ import { renameDrgElement } from "../mutations/renameNode";
 import { InlineFeelNameInput } from "../feel/InlineFeelNameInput";
 import { useDmnEditor } from "../DmnEditorContext";
 import { useResolvedTypeRef } from "../dataTypes/useResolvedTypeRef";
+import { useExternalModels } from "../includedModels/DmnEditorDependenciesContext";
 
 export function BkmProperties({
   bkm,
@@ -44,7 +45,10 @@ export function BkmProperties({
   const thisDmnsNamespace = useDmnEditorStore((s) => s.dmn.model.definitions["@_namespace"]);
   const isReadonly = !!namespace && namespace !== thisDmnsNamespace;
 
-  const allFeelVariableUniqueNames = useDmnEditorStore((s) => s.computed.allFeelVariableUniqueNames);
+  const { externalModelsByNamespace } = useExternalModels();
+  const allFeelVariableUniqueNames = useDmnEditorStore((s) =>
+    s.computed.getAllFeelVariableUniqueNames(externalModelsByNamespace)
+  );
   const { dmnEditorRootElementRef } = useDmnEditor();
 
   const resolvedTypeRef = useResolvedTypeRef(bkm.variable?.["@_typeRef"], namespace);

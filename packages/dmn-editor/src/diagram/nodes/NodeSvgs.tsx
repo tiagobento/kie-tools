@@ -358,7 +358,7 @@ export const GroupNodeSvg = React.forwardRef<SVGRectElement, NodeSvgProps & { st
   }
 );
 
-export const UnknownNodeSvg = (_props: NodeSvgProps & { strokeDasharray?: string }) => {
+export function UnknownNodeSvg(_props: NodeSvgProps & { strokeDasharray?: string }) {
   const { strokeWidth, x, y, width, height, props } = normalize(_props);
   const strokeDasharray = props.strokeDasharray ?? "2,4";
   return (
@@ -377,4 +377,4 @@ export const UnknownNodeSvg = (_props: NodeSvgProps & { strokeDasharray?: string
       />
     </>
   );
-};
+}

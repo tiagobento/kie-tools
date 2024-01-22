@@ -42,7 +42,6 @@ import {
   DmnEditorStoreApiContext,
   DmnEditorTab,
   StoreApiType,
-  computedCache,
   createDmnEditorStore,
   defaultStaticState,
   useDmnEditorStore,
@@ -58,6 +57,7 @@ import { DmnEditorErrorFallback } from "./DmnEditorErrorFallback";
 import { DmnLatestModel, AllDmnMarshallers } from "@kie-tools/dmn-marshaller";
 import { PMML } from "@kie-tools/pmml-editor-marshaller";
 import { DmnDiagramSvg } from "./svg/DmnDiagramSvg";
+import { clearComputedCache } from "./store/ComputedStateCache";
 
 import "@kie-tools/dmn-marshaller/dist/kie-extensions"; // This is here because of the KIE Extension for DMN.
 import "./DmnEditor.css"; // Leave it for last, as this overrides some of the PF and RF styles.
@@ -367,9 +367,15 @@ export const DmnEditorInternal = ({
 export const DmnEditor = React.forwardRef((props: DmnEditorProps, ref: React.Ref<DmnEditorRef>) => {
   const storeRef = React.useRef<StoreApiType>(createDmnEditorStore(props.model));
 
-  storeRef.current?.subscribe((state, prev) => {
-    computedCache.delete(prev);
-  });
+  useEffect(() => {
+    const dispose = storeRef.current?.subscribe((state, prev) => {
+      clearComputedCache(prev);
+    });
+
+    return () => {
+      dispose();
+    };
+  }, []);
 
   const resetState: ErrorBoundaryPropsWithFallback["onReset"] = useCallback(({ args }) => {
     storeRef.current?.setState((state) => {
