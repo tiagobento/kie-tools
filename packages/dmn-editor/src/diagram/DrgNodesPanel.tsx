@@ -26,7 +26,8 @@ import { TimesIcon } from "@patternfly/react-icons/dist/js/icons/times-icon";
 import * as React from "react";
 import { useCallback, useState } from "react";
 import { DmnObjectListItem } from "../externalNodes/DmnObjectListItem";
-import { DiagramNodesPanel, useDmnEditorStore, useDmnEditorStoreApi } from "../store/Store";
+import { DiagramNodesPanel } from "../store/Store";
+import { useDmnEditorStore, useDmnEditorStoreApi } from "../store/StoreContext";
 import { Unpacked } from "../tsExt/tsExt";
 import { buildXmlHref } from "../xml/xmlHrefs";
 

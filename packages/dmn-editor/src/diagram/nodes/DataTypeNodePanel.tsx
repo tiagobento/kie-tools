@@ -23,7 +23,7 @@ import {
   DMNDI15__DMNShape,
 } from "@kie-tools/dmn-marshaller/dist/schemas/dmn-1_5/ts-gen/types";
 import { DmnBuiltInDataType } from "@kie-tools/boxed-expression-component/dist/api";
-import { useDmnEditorStore } from "../../store/Store";
+import { useDmnEditorStore } from "../../store/StoreContext";
 import { OnCreateDataType, OnTypeRefChange, TypeRefSelector } from "../../dataTypes/TypeRefSelector";
 import { useDmnEditor } from "../../DmnEditorContext";
 import { useResolvedTypeRef } from "../../dataTypes/useResolvedTypeRef";

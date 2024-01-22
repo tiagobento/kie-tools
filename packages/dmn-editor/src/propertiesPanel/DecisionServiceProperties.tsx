@@ -28,7 +28,7 @@ import { FormGroup } from "@patternfly/react-core/dist/js/components/Form";
 import { TextArea } from "@patternfly/react-core/dist/js/components/TextArea";
 import { DocumentationLinksFormGroup } from "./DocumentationLinksFormGroup";
 import { TypeRefSelector } from "../dataTypes/TypeRefSelector";
-import { useDmnEditorStore, useDmnEditorStoreApi } from "../store/Store";
+import { useDmnEditorStore, useDmnEditorStoreApi } from "../store/StoreContext";
 import { useMemo } from "react";
 import { buildXmlHref, parseXmlHref } from "../xml/xmlHrefs";
 import { DmnObjectListItem } from "../externalNodes/DmnObjectListItem";

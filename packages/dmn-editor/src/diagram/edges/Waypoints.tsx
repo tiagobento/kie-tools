@@ -20,7 +20,7 @@
 import * as React from "react";
 import { DC__Point } from "@kie-tools/dmn-marshaller/dist/schemas/dmn-1_5/ts-gen/types";
 import { deleteEdgeWaypoint } from "../../mutations/deleteEdgeWaypoint";
-import { useDmnEditorStore, useDmnEditorStoreApi } from "../../store/Store";
+import { useDmnEditorStore, useDmnEditorStoreApi } from "../../store/StoreContext";
 import { drag } from "d3-drag";
 import { select } from "d3-selection";
 import { useEffect } from "react";

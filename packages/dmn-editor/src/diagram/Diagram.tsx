@@ -76,7 +76,8 @@ import { repositionNode } from "../mutations/repositionNode";
 import { resizeNode } from "../mutations/resizeNode";
 import { updateExpression } from "../mutations/updateExpression";
 import { OverlaysPanel } from "../overlaysPanel/OverlaysPanel";
-import { DiagramNodesPanel, SnapGrid, useDmnEditorStore, useDmnEditorStoreApi } from "../store/Store";
+import { DiagramNodesPanel, SnapGrid } from "../store/Store";
+import { useDmnEditorStore, useDmnEditorStoreApi } from "../store/StoreContext";
 import { Unpacked } from "../tsExt/tsExt";
 import { buildXmlHref, parseXmlHref } from "../xml/xmlHrefs";
 import { getXmlNamespaceDeclarationName } from "../xml/xmlNamespaceDeclarations";
@@ -1054,7 +1055,7 @@ export const Diagram = React.forwardRef<DiagramRef, { container: React.RefObject
             onEdgeUpdateStart={onEdgeUpdateStart}
             onEdgeUpdateEnd={onEdgeUpdateEnd}
             onEdgeUpdate={onEdgeUpdate}
-            onlyRenderVisibleElements={true}
+            onlyRenderVisibleElements={false}
             zoomOnDoubleClick={false}
             elementsSelectable={true}
             panOnScroll={true}

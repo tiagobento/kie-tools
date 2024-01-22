@@ -29,7 +29,8 @@ import {
 import { Flex } from "@patternfly/react-core/dist/js/layouts/Flex";
 import { InfrastructureIcon } from "@patternfly/react-icons/dist/js/icons/infrastructure-icon";
 import { PlusCircleIcon } from "@patternfly/react-icons/dist/js/icons/plus-circle-icon";
-import { State, useDmnEditorStore, useDmnEditorStoreApi } from "../store/Store";
+import { State } from "../store/Store";
+import { useDmnEditorStore, useDmnEditorStoreApi } from "../store/StoreContext";
 import { DataTypesEmptyState } from "./DataTypesEmptyState";
 import { DataTypePanel } from "./DataTypePanel";
 import { findDataTypeById, isStruct } from "./DataTypeSpec";

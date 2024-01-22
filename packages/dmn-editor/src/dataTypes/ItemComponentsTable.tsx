@@ -26,7 +26,7 @@ import { PasteIcon } from "@patternfly/react-icons/dist/js/icons/paste-icon";
 import { PlusCircleIcon } from "@patternfly/react-icons/dist/js/icons/plus-circle-icon";
 import * as React from "react";
 import { useCallback, useMemo } from "react";
-import { useDmnEditorStore, useDmnEditorStoreApi } from "../store/Store";
+import { useDmnEditorStore, useDmnEditorStoreApi } from "../store/StoreContext";
 import { TypeRefSelector } from "./TypeRefSelector";
 import {
   Dropdown,

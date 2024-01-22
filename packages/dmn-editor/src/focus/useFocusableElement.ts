@@ -18,7 +18,7 @@
  */
 
 import { useEffect } from "react";
-import { useDmnEditorStore, useDmnEditorStoreApi } from "../store/Store";
+import { useDmnEditorStore, useDmnEditorStoreApi } from "../store/StoreContext";
 
 export function useFocusableElement(
   ref: React.RefObject<HTMLInputElement>,

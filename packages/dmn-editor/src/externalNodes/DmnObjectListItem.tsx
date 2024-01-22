@@ -26,7 +26,7 @@ import { getNodeTypeFromDmnObject } from "../diagram/maths/DmnMaths";
 import { buildFeelQNameFromNamespace } from "../feel/buildFeelQName";
 import { Flex } from "@patternfly/react-core/dist/js/layouts/Flex";
 import { DmnBuiltInDataType } from "@kie-tools/boxed-expression-component/dist/api";
-import { useDmnEditorStore } from "../store/Store";
+import { useDmnEditorStore } from "../store/StoreContext";
 import { useExternalModels } from "../includedModels/DmnEditorDependenciesContext";
 
 export function DmnObjectListItem({

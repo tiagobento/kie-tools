@@ -24,7 +24,7 @@ import { FormGroup } from "@patternfly/react-core/dist/js/components/Form";
 import { TextArea } from "@patternfly/react-core/dist/js/components/TextArea";
 import { TextInput } from "@patternfly/react-core/dist/js/components/TextInput";
 import { DocumentationLinksFormGroup } from "./DocumentationLinksFormGroup";
-import { useDmnEditorStore, useDmnEditorStoreApi } from "../store/Store";
+import { useDmnEditorStore, useDmnEditorStoreApi } from "../store/StoreContext";
 import { renameDrgElement } from "../mutations/renameNode";
 import { InlineFeelNameInput } from "../feel/InlineFeelNameInput";
 import { useExternalModels } from "../includedModels/DmnEditorDependenciesContext";

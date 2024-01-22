@@ -22,7 +22,7 @@ import { Switch } from "@patternfly/react-core/dist/js/components/Switch";
 import { Form, FormGroup } from "@patternfly/react-core/dist/js/components/Form";
 import { Divider } from "@patternfly/react-core/dist/js/components/Divider";
 import { Slider } from "@patternfly/react-core/dist/js/components/Slider";
-import { useDmnEditorStore, useDmnEditorStoreApi } from "../store/Store";
+import { useDmnEditorStore, useDmnEditorStoreApi } from "../store/StoreContext";
 
 const MIN_SNAP = 5;
 const MAX_SNAP = 50;

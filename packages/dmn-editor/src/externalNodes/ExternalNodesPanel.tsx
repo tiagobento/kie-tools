@@ -19,7 +19,8 @@
 
 import * as React from "react";
 import { useCallback, useState } from "react";
-import { DiagramNodesPanel, DmnEditorTab, useDmnEditorStore, useDmnEditorStoreApi } from "../store/Store";
+import { DiagramNodesPanel, DmnEditorTab } from "../store/Store";
+import { useDmnEditorStore, useDmnEditorStoreApi } from "../store/StoreContext";
 import { Flex } from "@patternfly/react-core/dist/js/layouts/Flex";
 import { buildXmlHref } from "../xml/xmlHrefs";
 import {

@@ -27,7 +27,7 @@ import { Title } from "@patternfly/react-core/dist/js/components/Title";
 import { Flex, FlexItem } from "@patternfly/react-core/dist/js/layouts/Flex";
 import * as React from "react";
 import { useCallback, useMemo, useState } from "react";
-import { useDmnEditorStore, useDmnEditorStoreApi } from "../store/Store";
+import { useDmnEditorStore, useDmnEditorStoreApi } from "../store/StoreContext";
 import { TypeRefSelector } from "./TypeRefSelector";
 import {
   Dropdown,

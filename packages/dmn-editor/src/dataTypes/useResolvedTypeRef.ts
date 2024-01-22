@@ -19,7 +19,7 @@
 
 import { DmnBuiltInDataType } from "@kie-tools/boxed-expression-component/dist/api";
 import { useExternalModels } from "../includedModels/DmnEditorDependenciesContext";
-import { useDmnEditorStore } from "../store/Store";
+import { useDmnEditorStore } from "../store/StoreContext";
 import { resolveTypeRef } from "./resolveTypeRef";
 
 export function useResolvedTypeRef(typeRef: string | undefined, relativeToNamespace: string | undefined) {

@@ -21,7 +21,7 @@ import * as React from "react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { EmptyLabel } from "./Nodes";
 import { XmlQName } from "@kie-tools/xml-parser-ts/dist/qNames";
-import { useDmnEditorStore } from "../../store/Store";
+import { useDmnEditorStore } from "../../store/StoreContext";
 import { UniqueNameIndex } from "../../Dmn15Spec";
 import { buildFeelQNameFromXmlQName } from "../../feel/buildFeelQName";
 import { DMN15__tNamedElement } from "@kie-tools/dmn-marshaller/dist/schemas/dmn-1_5/ts-gen/types";

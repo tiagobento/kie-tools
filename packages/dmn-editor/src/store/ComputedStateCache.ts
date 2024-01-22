@@ -17,35 +17,36 @@
  * under the License.
  */
 
-import { Computed, State } from "./Store";
-
 export type TypeOrReturnType<T> = T extends (...args: any[]) => any ? ReturnType<T> : T;
 
-export type CacheEntry<T> = {
-  [K in keyof T]: { value: TypeOrReturnType<T[K]>; dependencies: any[] };
+export type X<T> = {
+  value: TypeOrReturnType<T> | undefined;
+  dependencies: readonly any[];
 };
 
-export const computedCache = new Map<State, CacheEntry<Computed>>();
-(window as any).__KIE_DMN_EDITOR__zustandComputedStateCache = computedCache;
+export type Cache<T> = {
+  [K in keyof T]: X<T[K]>;
+};
 
 let r: number = 0;
 let h: number = 0;
 let m: number = 0;
 
-export function cached<K extends keyof Computed>(
-  key: K,
-  state: State,
-  delegate: (state: Omit<State, "computed">, computed: Computed) => TypeOrReturnType<Computed[K]>,
-  dependencies?: any[]
-): TypeOrReturnType<Computed[K]> {
-  r++;
-  dependencies ??= [];
+export class ComputedStateCache<T extends Record<string, any>> {
+  private readonly cache: Cache<T>;
 
-  let cacheEntry: Partial<CacheEntry<Computed>>;
-  computedCache.set(state, (cacheEntry = computedCache.get(state) ?? ({} as CacheEntry<Computed>)));
+  constructor(initialValues: Cache<T>) {
+    this.cache = { ...initialValues };
+  }
 
-  if (Object.hasOwn(cacheEntry, key)) {
-    const cachedDeps = cacheEntry[key]?.dependencies ?? [];
+  public cached<K extends keyof T, D extends readonly any[]>(
+    key: K,
+    delegate: (...dependencies: D) => TypeOrReturnType<T[K]>,
+    dependencies: D
+  ): TypeOrReturnType<T[K]> {
+    r++;
+
+    const cachedDeps = this.cache[key]?.dependencies ?? [];
 
     let depsAreEqual = cachedDeps.length === dependencies.length;
     if (depsAreEqual) {
@@ -55,30 +56,23 @@ export function cached<K extends keyof Computed>(
         }
       }
     } else {
-      console.debug(`${r}: COMPUTED STORE CACHE: (Miss) Deps don't have the same length... (${key})`);
-      console.debug(`${r}: ${key} ${cachedDeps} ${dependencies}`);
+      console.debug(`${r}: COMPUTED STORE CACHE: (Miss) Deps don't have the same length... (${String(key)})`);
+      console.debug(`${r}: ${String(key)} ${cachedDeps} ${dependencies}`);
     }
 
     if (depsAreEqual) {
-      console.debug(`${r}: COMPUTED STORE CACHE: Hit ${++h}! (${key})`);
-      return cacheEntry[key]!.value;
+      console.debug(`${r}: COMPUTED STORE CACHE: Hit ${++h}! (${String(key)})`);
+      return this.cache[key].value!;
     } else {
-      console.debug(`${r}: COMPUTED STORE CACHE: (Miss) Deps have different values... (${key})`);
-      console.debug(`${r}: ${key} ${cachedDeps} ${dependencies}`);
+      console.debug(`${r}: COMPUTED STORE CACHE: (Miss) Deps have different values... (${String(key)})`);
+      console.debug(`${r}: ${String(key)} ${cachedDeps} ${dependencies}`);
     }
+
+    console.debug(`${r}: COMPUTED STORE CACHE: Miss (${++m}})... (${String(key)})`);
+
+    const v = delegate(...dependencies);
+    this.cache[key].dependencies = dependencies;
+    this.cache[key].value = v;
+    return v;
   }
-
-  console.debug(`${r}: COMPUTED STORE CACHE: Miss (${++m}})... (${key})`);
-
-  const { computed, ...s } = state;
-  const v = delegate(s, computed);
-  cacheEntry[key] = {} as any;
-  cacheEntry[key]!.dependencies = dependencies;
-  cacheEntry[key]!.value = v;
-  return v;
-}
-
-export function clearComputedCache(s: State) {
-  console.debug(`${r}: COMPUTED STORE CACHE: Clearing...`);
-  computedCache.delete(s);
 }

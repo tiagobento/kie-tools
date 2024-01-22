@@ -38,15 +38,8 @@ import { Diagram, DiagramRef } from "./diagram/Diagram";
 import { DmnVersionLabel } from "./diagram/DmnVersionLabel";
 import { IncludedModels } from "./includedModels/IncludedModels";
 import { DiagramPropertiesPanel } from "./propertiesPanel/DiagramPropertiesPanel";
-import {
-  DmnEditorStoreApiContext,
-  DmnEditorTab,
-  StoreApiType,
-  createDmnEditorStore,
-  defaultStaticState,
-  useDmnEditorStore,
-  useDmnEditorStoreApi,
-} from "./store/Store";
+import { Computed, DmnEditorTab, createDmnEditorStore, defaultStaticState } from "./store/Store";
+import { DmnEditorStoreApiContext, StoreApiType, useDmnEditorStore, useDmnEditorStoreApi } from "./store/StoreContext";
 import { useEffectAfterFirstRender } from "./useEffectAfterFirstRender";
 import { Label } from "@patternfly/react-core/dist/js/components/Label";
 import { BeePropertiesPanel } from "./propertiesPanel/BeePropertiesPanel";
@@ -57,10 +50,11 @@ import { DmnEditorErrorFallback } from "./DmnEditorErrorFallback";
 import { DmnLatestModel, AllDmnMarshallers } from "@kie-tools/dmn-marshaller";
 import { PMML } from "@kie-tools/pmml-editor-marshaller";
 import { DmnDiagramSvg } from "./svg/DmnDiagramSvg";
-import { clearComputedCache } from "./store/ComputedStateCache";
+import { ComputedStateCache } from "./store/ComputedStateCache";
 
 import "@kie-tools/dmn-marshaller/dist/kie-extensions"; // This is here because of the KIE Extension for DMN.
 import "./DmnEditor.css"; // Leave it for last, as this overrides some of the PF and RF styles.
+import { INITIAL_COMPUTED_CACHE } from "./store/ComputedState";
 
 const ON_MODEL_CHANGE_DEBOUNCE_TIME_IN_MS = 500;
 
@@ -365,17 +359,9 @@ export const DmnEditorInternal = ({
 };
 
 export const DmnEditor = React.forwardRef((props: DmnEditorProps, ref: React.Ref<DmnEditorRef>) => {
-  const storeRef = React.useRef<StoreApiType>(createDmnEditorStore(props.model));
-
-  useEffect(() => {
-    const dispose = storeRef.current?.subscribe((state, prev) => {
-      clearComputedCache(prev);
-    });
-
-    return () => {
-      dispose();
-    };
-  }, []);
+  const storeRef = React.useRef<StoreApiType>(
+    createDmnEditorStore(props.model, new ComputedStateCache<Computed>(INITIAL_COMPUTED_CACHE))
+  );
 
   const resetState: ErrorBoundaryPropsWithFallback["onReset"] = useCallback(({ args }) => {
     storeRef.current?.setState((state) => {

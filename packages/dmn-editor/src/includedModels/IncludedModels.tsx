@@ -42,7 +42,7 @@ import { InlineFeelNameInput, OnInlineFeelNameRenamed } from "../feel/InlineFeel
 import { addImport } from "../mutations/addImport";
 import { deleteImport } from "../mutations/deleteImport";
 import { renameImport } from "../mutations/renameImport";
-import { useDmnEditorStore, useDmnEditorStoreApi } from "../store/Store";
+import { useDmnEditorStore, useDmnEditorStoreApi } from "../store/StoreContext";
 import { KIE_UNKNOWN_NAMESPACE } from "../kie/kie";
 import { ExternalModelLabel } from "./ExternalModelLabel";
 import { useExternalModels } from "./DmnEditorDependenciesContext";

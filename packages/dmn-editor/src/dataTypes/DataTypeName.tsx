@@ -23,7 +23,7 @@ import { DMN15__tItemDefinition } from "@kie-tools/dmn-marshaller/dist/schemas/d
 import { Flex } from "@patternfly/react-core/dist/js/layouts/Flex";
 import { EditableNodeLabel, useEditableNodeLabel } from "../diagram/nodes/EditableNodeLabel";
 import { TypeRefLabel } from "./TypeRefLabel";
-import { useDmnEditorStore, useDmnEditorStoreApi } from "../store/Store";
+import { useDmnEditorStore, useDmnEditorStoreApi } from "../store/StoreContext";
 import { renameItemDefinition } from "../mutations/renameItemDefinition";
 import { UniqueNameIndex } from "../Dmn15Spec";
 import { buildFeelQNameFromNamespace } from "../feel/buildFeelQName";

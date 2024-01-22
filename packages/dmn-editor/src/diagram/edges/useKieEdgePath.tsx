@@ -20,7 +20,7 @@
 import * as RF from "reactflow";
 import { useCallback, useMemo } from "react";
 import { getSnappedMultiPointAnchoredEdgePath } from "./getSnappedMultiPointAnchoredEdgePath";
-import { useDmnEditorStore } from "../../store/Store";
+import { useDmnEditorStore } from "../../store/StoreContext";
 import { DmnDiagramEdgeData } from "./Edges";
 
 export function useKieEdgePath(

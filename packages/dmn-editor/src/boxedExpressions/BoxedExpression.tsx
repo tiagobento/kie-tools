@@ -17,7 +17,6 @@
  * under the License.
  */
 
-import * as RF from "reactflow";
 import {
   BeeGwtService,
   DmnBuiltInDataType,
@@ -28,37 +27,15 @@ import {
   generateUuid,
 } from "@kie-tools/boxed-expression-component/dist/api";
 import { BoxedExpressionEditor } from "@kie-tools/boxed-expression-component/dist/expressions";
-import { Label } from "@patternfly/react-core/dist/js/components/Label";
-import * as React from "react";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { updateExpression } from "../mutations/updateExpression";
-import { DmnEditorTab, useDmnEditorStore, useDmnEditorStoreApi } from "../store/Store";
-import { dmnToBee, getUndefinedExpressionDefinition } from "./dmnToBee";
-import { getDefaultExpressionDefinitionByLogicType } from "./getDefaultExpressionDefinitionByLogicType";
+import { FeelVariables } from "@kie-tools/dmn-feel-antlr4-parser";
+import { DmnLatestModel } from "@kie-tools/dmn-marshaller";
 import {
   DMN15__tBusinessKnowledgeModel,
   DMN15__tDecision,
   DMN15__tItemDefinition,
 } from "@kie-tools/dmn-marshaller/dist/schemas/dmn-1_5/ts-gen/types";
-import {
-  EmptyState,
-  EmptyStateBody,
-  EmptyStateIcon,
-  EmptyStatePrimary,
-} from "@patternfly/react-core/dist/js/components/EmptyState";
-import { Button } from "@patternfly/react-core/dist/js/components/Button";
-import { Title } from "@patternfly/react-core/dist/js/components/Title";
-import { ErrorCircleOIcon } from "@patternfly/react-icons/dist/js/icons/error-circle-o-icon";
-import { InfoIcon } from "@patternfly/react-icons/dist/js/icons/info-icon";
-import { builtInFeelTypes } from "../dataTypes/BuiltInFeelTypes";
-import { isStruct } from "../dataTypes/DataTypeSpec";
-import { DmnDiagramNodeData } from "../diagram/nodes/Nodes";
-import { DataTypeIndex } from "../dataTypes/DataTypes";
-import { Flex, FlexItem } from "@patternfly/react-core/dist/js/layouts/Flex";
-import { getNodeTypeFromDmnObject } from "../diagram/maths/DmnMaths";
-import { NodeIcon } from "../icons/Icons";
-import { Text, TextContent, TextVariants } from "@patternfly/react-core/dist/js/components/Text";
 import { PMMLDocumentData } from "@kie-tools/pmml-editor-marshaller/dist/api";
+import { PMMLFieldData } from "@kie-tools/pmml-editor-marshaller/dist/api/PMMLFieldData";
 import { PMMLModelData } from "@kie-tools/pmml-editor-marshaller/dist/api/PMMLModelData";
 import {
   AnomalyDetectionModel,
@@ -83,22 +60,74 @@ import {
   TimeSeriesModel,
   TreeModel,
 } from "@kie-tools/pmml-editor-marshaller/dist/marshaller/model/pmml4_4";
-import { PMMLFieldData } from "@kie-tools/pmml-editor-marshaller/dist/api/PMMLFieldData";
-import { getDefaultColumnWidth } from "./getDefaultColumnWidth";
-import { FeelVariables } from "@kie-tools/dmn-feel-antlr4-parser";
-import { DmnLatestModel } from "@kie-tools/dmn-marshaller";
+import { Button } from "@patternfly/react-core/dist/js/components/Button";
+import {
+  EmptyState,
+  EmptyStateBody,
+  EmptyStateIcon,
+  EmptyStatePrimary,
+} from "@patternfly/react-core/dist/js/components/EmptyState";
+import { Label } from "@patternfly/react-core/dist/js/components/Label";
+import { Text, TextContent, TextVariants } from "@patternfly/react-core/dist/js/components/Text";
+import { Title } from "@patternfly/react-core/dist/js/components/Title";
+import { Flex, FlexItem } from "@patternfly/react-core/dist/js/layouts/Flex";
 import { ArrowRightIcon } from "@patternfly/react-icons/dist/js/icons/arrow-right-icon";
+import { ErrorCircleOIcon } from "@patternfly/react-icons/dist/js/icons/error-circle-o-icon";
+import { InfoIcon } from "@patternfly/react-icons/dist/js/icons/info-icon";
+import * as React from "react";
+import { useCallback, useMemo } from "react";
+import * as RF from "reactflow";
+import { builtInFeelTypes } from "../dataTypes/BuiltInFeelTypes";
+import { isStruct } from "../dataTypes/DataTypeSpec";
+import { DataTypeIndex } from "../dataTypes/DataTypes";
+import { getNodeTypeFromDmnObject } from "../diagram/maths/DmnMaths";
+import { DmnDiagramNodeData } from "../diagram/nodes/Nodes";
+import { NodeIcon } from "../icons/Icons";
 import { useExternalModels } from "../includedModels/DmnEditorDependenciesContext";
+import { updateExpression } from "../mutations/updateExpression";
+import { DmnEditorTab } from "../store/Store";
+import { useDmnEditorStore, useDmnEditorStoreApi } from "../store/StoreContext";
+import { dmnToBee, getUndefinedExpressionDefinition } from "./dmnToBee";
+import { getDefaultColumnWidth } from "./getDefaultColumnWidth";
+import { getDefaultExpressionDefinitionByLogicType } from "./getDefaultExpressionDefinitionByLogicType";
 
 export function BoxedExpression({ container }: { container: React.RefObject<HTMLElement> }) {
-  const thisDmn = useDmnEditorStore((s) => s.dmn);
-  const diagram = useDmnEditorStore((s) => s.diagram);
-  const dispatch = useDmnEditorStore((s) => s.dispatch);
-  const boxedExpressionEditor = useDmnEditorStore((s) => s.boxedExpressionEditor);
   const { externalModelsByNamespace } = useExternalModels();
-  const externalDmnsByNamespace = useDmnEditorStore(
-    (s) => s.computed.getExternalModelTypesByNamespace(externalModelsByNamespace).dmns
-  );
+
+  //
+
+  const thisDmn = useDmnEditorStore((s) => {
+    return s.dmn;
+  });
+  const diagram = useDmnEditorStore((s) => {
+    return s.diagram;
+  });
+  const dispatch = useDmnEditorStore((s) => {
+    return s.dispatch;
+  });
+  const boxedExpressionEditor = useDmnEditorStore((s) => {
+    return s.boxedExpressionEditor;
+  });
+  const externalDmnsByNamespace = useDmnEditorStore((s) => {
+    return s.computed.getExternalModelTypesByNamespace(externalModelsByNamespace).dmns;
+  });
+  const dataTypesTree = useDmnEditorStore((s) => {
+    return s.computed.getDataTypes(externalModelsByNamespace).dataTypesTree;
+  });
+  const allTopLevelDataTypesByFeelName = useDmnEditorStore((s) => {
+    return s.computed.getDataTypes(externalModelsByNamespace).allTopLevelDataTypesByFeelName;
+  });
+  const nodesById = useDmnEditorStore((s) => {
+    return s.computed.getDiagramData(externalModelsByNamespace).nodesById;
+  });
+  const importsByNamespace = useDmnEditorStore((s) => {
+    return s.computed.importsByNamespace;
+  });
+  const externalPmmlsByNamespace = useDmnEditorStore((s) => {
+    return s.computed.getExternalModelTypesByNamespace(externalModelsByNamespace).pmmls;
+  });
+
+  //
   const dmnEditorStoreApi = useDmnEditorStoreApi();
 
   const feelVariables = useMemo(() => {
@@ -153,13 +182,6 @@ export function BoxedExpression({ container }: { container: React.RefObject<HTML
     };
   }, [boxedExpressionEditor.activeDrgElementId, thisDmn.model.definitions.drgElement, widthsById]);
 
-  const [lastValidExpression, setLastValidExpression] = useState<typeof expression>(undefined);
-  useEffect(() => {
-    if (expression) {
-      setLastValidExpression(expression);
-    }
-  }, [expression, setLastValidExpression]);
-
   const setExpression: React.Dispatch<React.SetStateAction<ExpressionDefinition>> = useCallback(
     (expressionAction) => {
       dmnEditorStoreApi.setState((state) => {
@@ -184,16 +206,6 @@ export function BoxedExpression({ container }: { container: React.RefObject<HTML
   }, [expression?.drgElementType]);
 
   ////
-
-  const dataTypesTree = useDmnEditorStore((s) => s.computed.getDataTypes(externalModelsByNamespace).dataTypesTree);
-  const allTopLevelDataTypesByFeelName = useDmnEditorStore(
-    (s) => s.computed.getDataTypes(externalModelsByNamespace).allTopLevelDataTypesByFeelName
-  );
-  const nodesById = useDmnEditorStore((s) => s.computed.getDiagramData(externalModelsByNamespace).nodesById);
-  const importsByNamespace = useDmnEditorStore((s) => s.computed.importsByNamespace);
-  const externalPmmlsByNamespace = useDmnEditorStore(
-    (s) => s.computed.getExternalModelTypesByNamespace(externalModelsByNamespace).pmmls
-  );
 
   const dataTypes = useMemo<DmnDataType[]>(() => {
     const customDataTypes = dataTypesTree.map((d) => ({

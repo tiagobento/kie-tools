@@ -22,7 +22,7 @@ import { DmnBuiltInDataType } from "@kie-tools/boxed-expression-component/dist/a
 import { buildFeelQNameFromXmlQName } from "../feel/buildFeelQName";
 import { useMemo } from "react";
 import { buildXmlQName, parseXmlQName } from "@kie-tools/xml-parser-ts/dist/qNames";
-import { useDmnEditorStore } from "../store/Store";
+import { useDmnEditorStore } from "../store/StoreContext";
 import { getXmlNamespaceDeclarationName } from "../xml/xmlNamespaceDeclarations";
 import { parseFeelQName } from "../feel/parseFeelQName";
 import { builtInFeelTypeNames } from "./BuiltInFeelTypes";

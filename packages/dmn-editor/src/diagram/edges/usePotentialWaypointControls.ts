@@ -20,7 +20,7 @@
 import * as RF from "reactflow";
 import { useState, useCallback, useMemo } from "react";
 import { addEdgeWaypoint } from "../../mutations/addEdgeWaypoint";
-import { useDmnEditorStore, useDmnEditorStoreApi } from "../../store/Store";
+import { useDmnEditorStore, useDmnEditorStoreApi } from "../../store/StoreContext";
 import { snapPoint } from "../SnapGrid";
 import { DC__Point } from "@kie-tools/dmn-marshaller/dist/schemas/dmn-1_5/ts-gen/types";
 import { DmnDiagramNodeData } from "../nodes/Nodes";

@@ -39,7 +39,8 @@ import { OnCreateDataType, OnTypeRefChange } from "../../dataTypes/TypeRefSelect
 import { addTopLevelItemDefinition } from "../../mutations/addTopLevelItemDefinition";
 import { renameDrgElement, renameGroupNode, updateTextAnnotation } from "../../mutations/renameNode";
 import { updateDecisionServiceDividerLine } from "../../mutations/updateDecisionServiceDividerLine";
-import { DmnEditorTab, SnapGrid, useDmnEditorStore, useDmnEditorStoreApi } from "../../store/Store";
+import { DmnEditorTab, SnapGrid } from "../../store/Store";
+import { useDmnEditorStore, useDmnEditorStoreApi } from "../../store/StoreContext";
 import { Unpacked } from "../../tsExt/tsExt";
 import { snapShapeDimensions } from "../SnapGrid";
 import { PositionalNodeHandles } from "../connections/PositionalNodeHandles";

@@ -30,7 +30,7 @@ import { DecisionServiceProperties } from "./DecisionServiceProperties";
 import { KnowledgeSourceProperties } from "./KnowledgeSourceProperties";
 import { TextAnnotationProperties } from "./TextAnnotationProperties";
 import { useMemo } from "react";
-import { useDmnEditorStore, useDmnEditorStoreApi } from "../store/Store";
+import { useDmnEditorStore, useDmnEditorStoreApi } from "../store/StoreContext";
 import { NODE_TYPES } from "../diagram/nodes/NodeTypes";
 import {
   DMN15__tBusinessKnowledgeModel,

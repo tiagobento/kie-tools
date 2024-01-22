@@ -34,7 +34,7 @@ import { getNodeCenterPoint, pointsToPath } from "../maths/DmnMaths";
 import { NodeType, getDefaultEdgeTypeBetween } from "./graphStructure";
 import { switchExpression } from "@kie-tools-core/switch-expression-ts";
 import { DEFAULT_NODE_SIZES } from "../nodes/DefaultSizes";
-import { useDmnEditorStore } from "../../store/Store";
+import { useDmnEditorStore } from "../../store/StoreContext";
 import { useKieEdgePath } from "../edges/useKieEdgePath";
 import { PositionalNodeHandleId } from "./PositionalNodeHandles";
 import { useExternalModels } from "../../includedModels/DmnEditorDependenciesContext";

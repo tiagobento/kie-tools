@@ -19,14 +19,10 @@
 
 import { DmnLatestModel } from "@kie-tools/dmn-marshaller";
 import { DMN15__tImport } from "@kie-tools/dmn-marshaller/dist/schemas/dmn-1_5/ts-gen/types";
-import { createContext, useContext } from "react";
 import * as RF from "reactflow";
-import { StoreApi, UseBoundStore, create } from "zustand";
-import { WithImmer, immer } from "zustand/middleware/immer";
-import { useStoreWithEqualityFn } from "zustand/traditional";
+import { create } from "zustand";
+import { immer } from "zustand/middleware/immer";
 import { ExternalModelsIndex } from "../DmnEditor";
-import { NodeType } from "../diagram/connections/graphStructure";
-import { isValidContainment } from "../diagram/connections/isValidContainment";
 import { DmnDiagramNodeData } from "../diagram/nodes/Nodes";
 import {
   computeAllFeelVariableUniqueNames,
@@ -36,10 +32,9 @@ import {
   computeExternalModelsByType,
   computeImportsByNamespace,
   computeIndexes,
-  computeIsDiagramEditingInProgress,
   computeIsDropTargetNodeValidForSelection,
 } from "./ComputedState";
-import { cached } from "./ComputedStateCache";
+import { ComputedStateCache } from "./ComputedStateCache";
 
 export interface DmnEditorDiagramNodeStatus {
   selected: boolean;
@@ -170,29 +165,6 @@ export enum DmnEditorTab {
   INCLUDED_MODELS,
 }
 
-type ExtractState = StoreApi<State> extends { getState: () => infer T } ? T : never;
-
-export function useDmnEditorStore<StateSlice = ExtractState>(
-  selector: (state: State) => StateSlice,
-  equalityFn?: (a: StateSlice, b: StateSlice) => boolean
-) {
-  const store = useContext(DmnEditorStoreApiContext);
-
-  if (store === null) {
-    throw new Error("Can't use DMN Editor Store outside of the DmnEditor component.");
-  }
-
-  return useStoreWithEqualityFn(store, selector, equalityFn);
-}
-
-export function useDmnEditorStoreApi() {
-  return useContext(DmnEditorStoreApiContext);
-}
-
-export type StoreApiType = UseBoundStore<WithImmer<StoreApi<State>>>;
-
-export const DmnEditorStoreApiContext = createContext<StoreApiType>({} as any);
-
 export const defaultStaticState = (): Omit<State, "dmn" | "dispatch" | "computed"> => ({
   boxedExpressionEditor: {
     activeDrgElementId: undefined,
@@ -252,7 +224,7 @@ export const defaultStaticState = (): Omit<State, "dmn" | "dispatch" | "computed
   },
 });
 
-export function createDmnEditorStore(model: State["dmn"]["model"]) {
+export function createDmnEditorStore(model: State["dmn"]["model"], computedCache: ComputedStateCache<Computed>) {
   return create(
     immer<State>((set, get) => ({
       dmn: {
@@ -344,64 +316,80 @@ export function createDmnEditorStore(model: State["dmn"]["model"]) {
         },
       },
       computed: {
-        get allUniqueFeelNames() {
-          return cached("allUniqueFeelNames", get(), (s) => computeAllUniqueFeelNames(s));
-        },
         get isDiagramEditingInProgress() {
-          return cached("isDiagramEditingInProgress", get(), (s) => computeIsDiagramEditingInProgress(s));
+          return computedCache.cached(
+            "isDiagramEditingInProgress",
+            (
+              draggingNodesCount: number,
+              resizingNodeCount: number,
+              draggingWaypointsCount: number,
+              movingDividerLinesCount: number,
+              isEditingStyle: boolean
+            ) =>
+              draggingNodesCount > 0 ||
+              resizingNodeCount > 0 ||
+              draggingWaypointsCount > 0 ||
+              movingDividerLinesCount > 0 ||
+              isEditingStyle,
+            [
+              get().diagram.draggingNodes.length,
+              get().diagram.resizingNodes.length,
+              get().diagram.draggingWaypoints.length,
+              get().diagram.movingDividerLines.length,
+              get().diagram.editingStyle,
+            ]
+          );
         },
-        get importsByNamespace() {
-          return cached("importsByNamespace", get(), (s) => computeImportsByNamespace(s));
-        },
+
         get indexes() {
-          return cached("indexes", get(), (s) => computeIndexes(s));
+          return computedCache.cached("indexes", computeIndexes, [get().dmn.model.definitions, get().diagram.drdIndex]);
         },
+
+        get allUniqueFeelNames() {
+          return computedCache.cached("allUniqueFeelNames", computeAllUniqueFeelNames, [
+            get().dmn.model.definitions.drgElement,
+            get().dmn.model.definitions.import,
+          ]);
+        },
+
+        get importsByNamespace() {
+          return computedCache.cached("importsByNamespace", computeImportsByNamespace, [
+            get().dmn.model.definitions.import,
+          ]);
+        },
+
         isDropTargetNodeValidForSelection: (externalModelsByNamespace: ExternalModelsIndex | undefined) =>
-          cached(
-            "isDropTargetNodeValidForSelection",
-            get(),
-            (state, computed) =>
-              computeIsDropTargetNodeValidForSelection(state, computed.getDiagramData(externalModelsByNamespace)),
-            [externalModelsByNamespace]
-          ),
+          computedCache.cached("isDropTargetNodeValidForSelection", computeIsDropTargetNodeValidForSelection, [
+            get().diagram.dropTargetNode,
+            get().computed.getDiagramData(externalModelsByNamespace),
+          ]),
+
         getDataTypes: (externalModelsByNamespace: ExternalModelsIndex | undefined) =>
-          cached(
-            "getDataTypes",
-            get(),
-            (state, computed) =>
-              computeDataTypes(
-                state,
-                computed.getExternalModelTypesByNamespace(externalModelsByNamespace),
-                computed.importsByNamespace
-              ),
-            [externalModelsByNamespace]
-          ),
+          computedCache.cached("getDataTypes", computeDataTypes, [
+            get().dmn.model.definitions["@_namespace"],
+            get().dmn.model.definitions.itemDefinition,
+            get().computed.getExternalModelTypesByNamespace(externalModelsByNamespace),
+            get().computed.importsByNamespace,
+          ]),
+
         getAllFeelVariableUniqueNames: (externalModelsByNamespace: ExternalModelsIndex | undefined) =>
-          cached(
-            "getAllFeelVariableUniqueNames",
-            get(),
-            (state, computed) => computeAllFeelVariableUniqueNames(computed.getDataTypes(externalModelsByNamespace)),
-            [externalModelsByNamespace]
-          ),
+          computedCache.cached("getAllFeelVariableUniqueNames", computeAllFeelVariableUniqueNames, [
+            get().computed.getDataTypes(externalModelsByNamespace),
+          ]),
+
         getExternalModelTypesByNamespace: (externalModelsByNamespace: ExternalModelsIndex | undefined) =>
-          cached(
-            "getExternalModelTypesByNamespace",
-            get(),
-            (state) => computeExternalModelsByType(state, externalModelsByNamespace),
-            [externalModelsByNamespace]
-          ),
+          computedCache.cached("getExternalModelTypesByNamespace", computeExternalModelsByType, [
+            get().dmn.model.definitions.import,
+            externalModelsByNamespace,
+          ]),
+
         getDiagramData: (externalModelsByNamespace: ExternalModelsIndex | undefined) =>
-          cached(
-            "getDiagramData",
-            get(),
-            (state, computed) =>
-              computeDiagramData(
-                state,
-                computed.getExternalModelTypesByNamespace(externalModelsByNamespace),
-                computed.indexes
-              ),
-            [externalModelsByNamespace]
-          ),
+          computedCache.cached("getDiagramData", computeDiagramData, [
+            get().diagram,
+            get().dmn.model.definitions,
+            get().computed.getExternalModelTypesByNamespace(externalModelsByNamespace),
+            get().computed.indexes,
+          ]),
       },
     }))
   );

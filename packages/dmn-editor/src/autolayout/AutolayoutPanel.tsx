@@ -32,7 +32,7 @@ import { DEFAULT_NODE_SIZES, MIN_NODE_SIZES } from "../diagram/nodes/DefaultSize
 import { NODE_TYPES } from "../diagram/nodes/NodeTypes";
 import { repositionNode } from "../mutations/repositionNode";
 import { resizeNode } from "../mutations/resizeNode";
-import { useDmnEditorStoreApi } from "../store/Store";
+import { useDmnEditorStoreApi } from "../store/StoreContext";
 import { buildXmlHref } from "../xml/xmlHrefs";
 import { useExternalModels } from "../includedModels/DmnEditorDependenciesContext";
 

@@ -46,7 +46,46 @@ import { Unpacked } from "../tsExt/tsExt";
 import { buildXmlHref } from "../xml/xmlHrefs";
 import { Computed, State } from "./Store";
 import { isValidContainment } from "../diagram/connections/isValidContainment";
-import { TypeOrReturnType } from "./ComputedStateCache";
+import { TypeOrReturnType, Cache } from "./ComputedStateCache";
+
+export const INITIAL_COMPUTED_CACHE: Cache<Computed> = {
+  allUniqueFeelNames: {
+    value: undefined,
+    dependencies: [],
+  },
+  isDiagramEditingInProgress: {
+    value: undefined,
+    dependencies: [],
+  },
+  importsByNamespace: {
+    value: undefined,
+    dependencies: [],
+  },
+  indexes: {
+    value: undefined,
+    dependencies: [],
+  },
+  getDiagramData: {
+    value: undefined,
+    dependencies: [],
+  },
+  isDropTargetNodeValidForSelection: {
+    value: undefined,
+    dependencies: [],
+  },
+  getExternalModelTypesByNamespace: {
+    value: undefined,
+    dependencies: [],
+  },
+  getDataTypes: {
+    value: undefined,
+    dependencies: [],
+  },
+  getAllFeelVariableUniqueNames: {
+    value: undefined,
+    dependencies: [],
+  },
+};
 
 export const NODE_LAYERS = {
   GROUP_NODE: 0,
@@ -55,18 +94,22 @@ export const NODE_LAYERS = {
   NESTED_NODES: 4000,
 };
 
-export function computeAllUniqueFeelNames(state: Omit<State, "computed">) {
+export function computeAllUniqueFeelNames(
+  drgElements: DMN15__tDefinitions["drgElement"] | undefined,
+  imports: DMN15__tImport[] | undefined
+) {
   const ret: UniqueNameIndex = new Map();
 
-  const drgElements = state.dmn.model.definitions.drgElement ?? [];
+  drgElements ??= [];
+  imports ??= [];
+
   for (let i = 0; i < drgElements.length; i++) {
     const drgElement = drgElements[i];
     ret.set(drgElement["@_name"]!, drgElement["@_id"]!);
   }
 
-  const thisDmnsImports = state.dmn.model.definitions.import ?? [];
-  for (let i = 0; i < thisDmnsImports.length; i++) {
-    const _import = thisDmnsImports[i];
+  for (let i = 0; i < imports.length; i++) {
+    const _import = imports[i];
     ret.set(_import["@_name"], _import["@_id"]!);
   }
 
@@ -88,7 +131,8 @@ export function computeAllFeelVariableUniqueNames(dataTypes: TypeOrReturnType<Co
 }
 
 export function computeDataTypes(
-  state: Omit<State, "computed">,
+  namespace: State["dmn"]["model"]["definitions"]["@_namespace"],
+  itemDefinitions: State["dmn"]["model"]["definitions"]["itemDefinition"],
   externalModelTypesByNamespace: TypeOrReturnType<Computed["getExternalModelTypesByNamespace"]>,
   thisDmnsImportsByNamespace: TypeOrReturnType<Computed["importsByNamespace"]>
 ) {
@@ -104,21 +148,21 @@ export function computeDataTypes(
       undefined,
       new Set(),
       externalDmn.model.definitions["@_namespace"],
-      state.dmn.model.definitions["@_namespace"]
+      namespace
     );
   });
 
   // Purposefully do thisDmn's after. This will make sure thisDmn's ItemDefintiions
   // take precedence over any external ones imported to the default namespace.
   const thisDmnsDataTypeTree = buildDataTypesTree(
-    state.dmn.model.definitions.itemDefinition ?? [],
+    itemDefinitions ?? [],
     thisDmnsImportsByNamespace,
     allDataTypesById,
     allTopLevelDataTypesByFeelName,
     undefined,
     new Set(),
-    state.dmn.model.definitions["@_namespace"],
-    state.dmn.model.definitions["@_namespace"]
+    namespace,
+    namespace
   );
 
   const allTopLevelItemDefinitionUniqueNames: UniqueNameIndex = new Map();
@@ -140,10 +184,10 @@ export function computeDataTypes(
 }
 
 export function computeExternalModelsByType(
-  state: Omit<State, "computed">,
+  imports: DMN15__tImport[] | undefined,
   externalModelsByNamespace: ExternalModelsIndex | undefined
 ) {
-  return (state.dmn.model.definitions.import ?? []).reduce<{ dmns: ExternalDmnsIndex; pmmls: ExternalPmmlsIndex }>(
+  return (imports ?? []).reduce<{ dmns: ExternalDmnsIndex; pmmls: ExternalPmmlsIndex }>(
     (acc, _import) => {
       const externalModel = externalModelsByNamespace?.[getNamespaceOfDmnImport({ dmnImport: _import })];
       if (!externalModel) {
@@ -167,15 +211,12 @@ export function computeExternalModelsByType(
   );
 }
 
-export function computeIndexes(state: Omit<State, "computed">) {
+export function computeIndexes(definitions: DMN15__tDefinitions, drdIndex: State["diagram"]["drdIndex"]) {
   const dmnEdgesByDmnElementRef = new Map<string, DMNDI15__DMNEdge & { index: number }>();
   const dmnShapesByHref = new Map<string, DMNDI15__DMNShape & { index: number; dmnElementRefQName: XmlQName }>();
   const hrefsOfDmnElementRefsOfShapesPointingToExternalDmnObjects = new Set<string>();
 
-  const diagramElements =
-    state.dmn.model.definitions["dmndi:DMNDI"]?.["dmndi:DMNDiagram"]?.[state.diagram.drdIndex][
-      "dmndi:DMNDiagramElement"
-    ] ?? [];
+  const diagramElements = definitions["dmndi:DMNDI"]?.["dmndi:DMNDiagram"]?.[drdIndex]["dmndi:DMNDiagramElement"] ?? [];
   for (let i = 0; i < diagramElements.length; i++) {
     const e = diagramElements[i];
     // DMNEdge
@@ -192,8 +233,7 @@ export function computeIndexes(state: Omit<State, "computed">) {
       // Do not skip adding it to the regular `dmnShapesByHref`, as nodes will query this.
       const dmnElementRefQName = parseXmlQName(e["@_dmnElementRef"]);
       if (dmnElementRefQName.prefix) {
-        const namespace =
-          state.dmn.model.definitions[`@_xmlns:${dmnElementRefQName.prefix}`] ?? KIE_DMN_UNKNOWN_NAMESPACE;
+        const namespace = definitions[`@_xmlns:${dmnElementRefQName.prefix}`] ?? KIE_DMN_UNKNOWN_NAMESPACE;
         href = buildXmlHref({ namespace, id: dmnElementRefQName.localPart });
         hrefsOfDmnElementRefsOfShapesPointingToExternalDmnObjects.add(href);
       } else {
@@ -213,7 +253,8 @@ export function computeIndexes(state: Omit<State, "computed">) {
 }
 
 export function computeDiagramData(
-  state: Omit<State, "computed">,
+  diagram: State["diagram"],
+  definitions: State["dmn"]["model"]["definitions"],
   externalModelTypesByNamespace: TypeOrReturnType<Computed["getExternalModelTypesByNamespace"]>,
   indexes: TypeOrReturnType<Computed["indexes"]>
 ) {
@@ -231,10 +272,10 @@ export function computeDiagramData(
   const parentIdsById = new Map<string, DmnDiagramNodeData>();
 
   const { selectedNodes, draggingNodes, resizingNodes, selectedEdges } = {
-    selectedNodes: new Set(state.diagram._selectedNodes),
-    draggingNodes: new Set(state.diagram.draggingNodes),
-    resizingNodes: new Set(state.diagram.resizingNodes),
-    selectedEdges: new Set(state.diagram._selectedEdges),
+    selectedNodes: new Set(diagram._selectedNodes),
+    draggingNodes: new Set(diagram.draggingNodes),
+    resizingNodes: new Set(diagram.resizingNodes),
+    selectedEdges: new Set(diagram._selectedEdges),
   };
 
   function ackEdge({
@@ -276,7 +317,7 @@ export function computeDiagramData(
 
   const edges: RF.Edge<DmnDiagramEdgeData>[] = [
     // information requirements
-    ...(state.dmn.model.definitions.drgElement ?? []).reduce<RF.Edge<DmnDiagramEdgeData>[]>((acc, dmnObject) => {
+    ...(definitions.drgElement ?? []).reduce<RF.Edge<DmnDiagramEdgeData>[]>((acc, dmnObject) => {
       if (dmnObject.__$$element === "decision") {
         acc.push(
           ...(dmnObject.informationRequirement ?? []).map((ir, index) =>
@@ -340,7 +381,7 @@ export function computeDiagramData(
       return acc;
     }, []),
     // associations
-    ...(state.dmn.model.definitions.artifact ?? []).flatMap((dmnObject, index) =>
+    ...(definitions.artifact ?? []).flatMap((dmnObject, index) =>
       dmnObject.__$$element === "association"
         ? [
             ackEdge({
@@ -374,7 +415,7 @@ export function computeDiagramData(
     // If the QName is composite, we try and get the namespace from the XML namespace declarations. If it's not found, we use `UNKNOWN_DMN_NAMESPACE`
     // If the QName is simple, we simply say that the namespace is undefined, which is the same as the default namespace.
     const dmnObjectNamespace = dmnObjectQName.prefix
-      ? state.dmn.model.definitions[`@_xmlns:${dmnObjectQName.prefix}`] ?? KIE_DMN_UNKNOWN_NAMESPACE
+      ? definitions[`@_xmlns:${dmnObjectQName.prefix}`] ?? KIE_DMN_UNKNOWN_NAMESPACE
       : undefined;
 
     const id = buildXmlHref({ namespace: dmnObjectNamespace, id: dmnObjectQName.localPart });
@@ -402,10 +443,10 @@ export function computeDiagramData(
       selected: selectedNodes.has(id),
       dragging: draggingNodes.has(id),
       resizing: resizingNodes.has(id),
-      position: snapShapePosition(state.diagram.snapGrid, shape),
+      position: snapShapePosition(diagram.snapGrid, shape),
       data,
       zIndex: NODE_LAYERS.NODES,
-      style: { ...snapShapeDimensions(state.diagram.snapGrid, shape, MIN_NODE_SIZES[type](state.diagram.snapGrid)) },
+      style: { ...snapShapeDimensions(diagram.snapGrid, shape, MIN_NODE_SIZES[type](diagram.snapGrid)) },
     };
 
     if (dmnObject?.__$$element === "decisionService") {
@@ -430,11 +471,11 @@ export function computeDiagramData(
   }
 
   const localNodes: RF.Node<DmnDiagramNodeData>[] = [
-    ...(state.dmn.model.definitions.drgElement ?? []).flatMap((dmnObject, index) => {
+    ...(definitions.drgElement ?? []).flatMap((dmnObject, index) => {
       const newNode = ackNode({ type: "xml-qname", localPart: dmnObject["@_id"]! }, dmnObject, index);
       return newNode ? [newNode] : [];
     }),
-    ...(state.dmn.model.definitions.artifact ?? []).flatMap((dmnObject, index) => {
+    ...(definitions.artifact ?? []).flatMap((dmnObject, index) => {
       if (dmnObject.__$$element === "association") {
         return [];
       }
@@ -474,7 +515,7 @@ export function computeDiagramData(
       return newNode ? [newNode] : [];
     }
 
-    const namespace = state.dmn.model.definitions[`@_xmlns:${shape.dmnElementRefQName.prefix}`];
+    const namespace = definitions[`@_xmlns:${shape.dmnElementRefQName.prefix}`];
     if (!namespace) {
       console.warn(
         `DMN DIAGRAM: Found a shape that references an external node with a namespace that is not declared at this DMN.`,
@@ -517,7 +558,7 @@ export function computeDiagramData(
 
   // console.timeEnd("nodes");
 
-  if (state.diagram.overlays.enableNodeHierarchyHighlight) {
+  if (diagram.overlays.enableNodeHierarchyHighlight) {
     assignClassesToHighlightedHierarchyNodes([...selectedNodesById.keys()], nodesById, edges);
   }
 
@@ -533,35 +574,26 @@ export function computeDiagramData(
   };
 }
 
-export function computeIsDiagramEditingInProgress({ diagram }: Omit<State, "computed">) {
-  return (
-    diagram.draggingNodes.length > 0 ||
-    diagram.resizingNodes.length > 0 ||
-    diagram.draggingWaypoints.length > 0 ||
-    diagram.movingDividerLines.length > 0 ||
-    diagram.editingStyle
-  );
-}
+export function computeImportsByNamespace(imports: State["dmn"]["model"]["definitions"]["import"]) {
+  imports ??= [];
 
-export function computeImportsByNamespace(state: Omit<State, "computed">) {
-  const thisDmnsImports = state.dmn.model.definitions.import ?? [];
   const ret = new Map<string, DMN15__tImport>();
-  for (let i = 0; i < thisDmnsImports.length; i++) {
-    ret.set(thisDmnsImports[i]["@_namespace"], thisDmnsImports[i]);
+  for (let i = 0; i < imports.length; i++) {
+    ret.set(imports[i]["@_namespace"], imports[i]);
   }
   return ret;
 }
 
 export function computeIsDropTargetNodeValidForSelection(
-  { diagram }: Omit<State, "computed">,
+  dropTargetNode: State["diagram"]["dropTargetNode"],
   diagramData: ReturnType<Computed["getDiagramData"]>
 ) {
   return (
-    !!diagram.dropTargetNode &&
+    !!dropTargetNode &&
     isValidContainment({
       nodeTypes: diagramData.selectedNodeTypes,
-      inside: diagram.dropTargetNode.type as NodeType,
-      dmnObjectQName: diagram.dropTargetNode.data.dmnObjectQName,
+      inside: dropTargetNode.type as NodeType,
+      dmnObjectQName: dropTargetNode.data.dmnObjectQName,
     })
   );
 }

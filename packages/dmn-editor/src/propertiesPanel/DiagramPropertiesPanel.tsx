@@ -23,7 +23,7 @@ import { DrawerHead, DrawerPanelContent } from "@patternfly/react-core/dist/js/c
 import { GlobalDiagramProperties } from "./GlobalDiagramProperties";
 import { SingleNodeProperties } from "./SingleNodeProperties";
 import { MultipleNodeProperties } from "./MultipleNodeProperties";
-import { useDmnEditorStore } from "../store/Store";
+import { useDmnEditorStore } from "../store/StoreContext";
 import { useExternalModels } from "../includedModels/DmnEditorDependenciesContext";
 import "./DiagramPropertiesPanel.css";
 

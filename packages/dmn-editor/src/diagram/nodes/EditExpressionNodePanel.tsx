@@ -19,7 +19,7 @@
 
 import * as React from "react";
 import { Label } from "@patternfly/react-core/dist/js/components/Label";
-import { useDmnEditorStore, useDmnEditorStoreApi } from "../../store/Store";
+import { useDmnEditorStore, useDmnEditorStoreApi } from "../../store/StoreContext";
 
 export function EditExpressionNodePanel(props: { isVisible: boolean; id: string }) {
   const dispatch = useDmnEditorStore((s) => s.dispatch);
