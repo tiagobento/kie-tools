@@ -35,7 +35,7 @@ export const MIME_TYPE_FOR_DMN_EDITOR_DRG_NODE = "kie-dmn-editor--drg-node";
 
 export function DrgNodesPanel() {
   const thisDmn = useDmnEditorStore((s) => s.dmn);
-  const dmnShapesByHref = useDmnEditorStore((s) => s.computed.indexes.dmnShapesByHref);
+  const dmnShapesByHref = useDmnEditorStore((s) => s.computed(s).indexes().dmnShapesByHref);
 
   const dmnEditorStoreApi = useDmnEditorStoreApi();
 

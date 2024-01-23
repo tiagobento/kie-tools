@@ -54,7 +54,7 @@ import "./SingleNodeProperties.css";
 export function SingleNodeProperties({ nodeId }: { nodeId: string }) {
   const dmnEditorStoreApi = useDmnEditorStoreApi();
   const { externalModelsByNamespace } = useExternalModels();
-  const node = useDmnEditorStore((s) => s.computed.getDiagramData(externalModelsByNamespace).nodesById.get(nodeId));
+  const node = useDmnEditorStore((s) => s.computed(s).getDiagramData(externalModelsByNamespace).nodesById.get(nodeId));
   const [isSectionExpanded, setSectionExpanded] = useState<boolean>(true);
 
   if (!node) {

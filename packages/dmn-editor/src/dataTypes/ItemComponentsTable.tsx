@@ -93,9 +93,9 @@ export function ItemComponentsTable({
   const { externalModelsByNamespace } = useExternalModels();
   const expandedItemComponentIds = useDmnEditorStore((s) => s.dataTypesEditor.expandedItemComponentIds);
   const allTopLevelDataTypesByFeelName = useDmnEditorStore(
-    (s) => s.computed.getDataTypes(externalModelsByNamespace).allTopLevelDataTypesByFeelName
+    (s) => s.computed(s).getDataTypes(externalModelsByNamespace).allTopLevelDataTypesByFeelName
   );
-  const importsByNamespace = useDmnEditorStore((s) => s.computed.importsByNamespace);
+  const importsByNamespace = useDmnEditorStore((s) => s.computed(s).importsByNamespace());
 
   const thisDmnsNamespace = useDmnEditorStore((s) => s.dmn.model.definitions["@_namespace"]);
 

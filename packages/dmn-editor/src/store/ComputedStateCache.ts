@@ -57,7 +57,6 @@ export class ComputedStateCache<T extends Record<string, any>> {
       }
     } else {
       console.debug(`${r}: COMPUTED STORE CACHE: (Miss) Deps don't have the same length... (${String(key)})`);
-      console.debug(`${r}: ${String(key)} ${cachedDeps} ${dependencies}`);
     }
 
     if (depsAreEqual) {
@@ -65,7 +64,6 @@ export class ComputedStateCache<T extends Record<string, any>> {
       return this.cache[key].value!;
     } else {
       console.debug(`${r}: COMPUTED STORE CACHE: (Miss) Deps have different values... (${String(key)})`);
-      console.debug(`${r}: ${String(key)} ${cachedDeps} ${dependencies}`);
     }
 
     console.debug(`${r}: COMPUTED STORE CACHE: Miss (${++m}})... (${String(key)})`);

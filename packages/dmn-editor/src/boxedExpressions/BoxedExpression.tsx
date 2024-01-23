@@ -102,29 +102,26 @@ export function BoxedExpression({ container }: { container: React.RefObject<HTML
   const diagram = useDmnEditorStore((s) => {
     return s.diagram;
   });
-  const dispatch = useDmnEditorStore((s) => {
-    return s.dispatch;
-  });
   const boxedExpressionEditor = useDmnEditorStore((s) => {
     return s.boxedExpressionEditor;
   });
   const externalDmnsByNamespace = useDmnEditorStore((s) => {
-    return s.computed.getExternalModelTypesByNamespace(externalModelsByNamespace).dmns;
+    return s.computed(s).getExternalModelTypesByNamespace(externalModelsByNamespace).dmns;
   });
   const dataTypesTree = useDmnEditorStore((s) => {
-    return s.computed.getDataTypes(externalModelsByNamespace).dataTypesTree;
+    return s.computed(s).getDataTypes(externalModelsByNamespace).dataTypesTree;
   });
   const allTopLevelDataTypesByFeelName = useDmnEditorStore((s) => {
-    return s.computed.getDataTypes(externalModelsByNamespace).allTopLevelDataTypesByFeelName;
+    return s.computed(s).getDataTypes(externalModelsByNamespace).allTopLevelDataTypesByFeelName;
   });
   const nodesById = useDmnEditorStore((s) => {
-    return s.computed.getDiagramData(externalModelsByNamespace).nodesById;
+    return s.computed(s).getDiagramData(externalModelsByNamespace).nodesById;
   });
   const importsByNamespace = useDmnEditorStore((s) => {
-    return s.computed.importsByNamespace;
+    return s.computed(s).importsByNamespace();
   });
   const externalPmmlsByNamespace = useDmnEditorStore((s) => {
-    return s.computed.getExternalModelTypesByNamespace(externalModelsByNamespace).pmmls;
+    return s.computed(s).getExternalModelTypesByNamespace(externalModelsByNamespace).pmmls;
   });
 
   //
@@ -292,7 +289,7 @@ export function BoxedExpression({ container }: { container: React.RefObject<HTML
               className={"kie-dmn-editor--boxed-expression-back"}
               onClick={() => {
                 dmnEditorStoreApi.setState((state) => {
-                  dispatch.boxedExpressionEditor.close(state);
+                  state.dispatch(state).boxedExpressionEditor.close();
                 });
               }}
             >
@@ -352,7 +349,7 @@ export function BoxedExpression({ container }: { container: React.RefObject<HTML
                   variant="link"
                   onClick={() => {
                     dmnEditorStoreApi.setState((state) => {
-                      dispatch.boxedExpressionEditor.close(state);
+                      state.dispatch(state).boxedExpressionEditor.close();
                     });
                   }}
                 >

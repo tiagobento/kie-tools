@@ -67,7 +67,7 @@ export function FontOptions({ startExpanded, nodeIds }: { startExpanded: boolean
   const dmnEditorStoreApi = useDmnEditorStoreApi();
   const [isStyleSectionExpanded, setStyleSectionExpanded] = useState<boolean>(startExpanded);
 
-  const dmnShapesByHref = useDmnEditorStore((s) => s.computed.indexes.dmnShapesByHref);
+  const dmnShapesByHref = useDmnEditorStore((s) => s.computed(s).indexes().dmnShapesByHref);
   const shapes = useMemo(() => nodeIds.map((nodeId) => dmnShapesByHref.get(nodeId)), [dmnShapesByHref, nodeIds]);
   const shapesStyle = useMemo(() => shapes.map((shape) => shape?.["di:Style"]), [shapes]);
 

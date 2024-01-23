@@ -30,7 +30,7 @@ import "./DiagramPropertiesPanel.css";
 export function DiagramPropertiesPanel() {
   const { externalModelsByNamespace } = useExternalModels();
   const selectedNodesById = useDmnEditorStore(
-    (s) => s.computed.getDiagramData(externalModelsByNamespace).selectedNodesById
+    (s) => s.computed(s).getDiagramData(externalModelsByNamespace).selectedNodesById
   );
 
   return (

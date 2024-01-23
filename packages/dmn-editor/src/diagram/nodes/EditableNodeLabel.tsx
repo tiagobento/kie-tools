@@ -78,7 +78,7 @@ export function EditableNodeLabel({
 
     const feelName = buildFeelQNameFromXmlQName({
       namedElement,
-      importsByNamespace: s.computed.importsByNamespace,
+      importsByNamespace: s.computed(s).importsByNamespace(),
       model: s.dmn.model.definitions,
       namedElementQName,
       relativeToNamespace: s.dmn.model.definitions["@_namespace"],

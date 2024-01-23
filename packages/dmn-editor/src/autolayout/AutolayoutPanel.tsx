@@ -89,9 +89,11 @@ export function AutolayoutPanel() {
      */
     const fakeEdgesForElk = new Set<Elk.ElkExtendedEdge>();
 
-    const snapGrid = dmnEditorStoreApi.getState().diagram.snapGrid;
-    const nodesById = dmnEditorStoreApi.getState().computed.getDiagramData(externalModelsByNamespace).nodesById;
-    const edgesById = dmnEditorStoreApi.getState().computed.getDiagramData(externalModelsByNamespace).edgesById;
+    const state = dmnEditorStoreApi.getState();
+
+    const snapGrid = state.diagram.snapGrid;
+    const nodesById = state.computed(state).getDiagramData(externalModelsByNamespace).nodesById;
+    const edgesById = state.computed(state).getDiagramData(externalModelsByNamespace).edgesById;
     const nodes = [...nodesById.values()];
     const edges = [...edgesById.values()];
 
@@ -297,39 +299,7 @@ export function AutolayoutPanel() {
         });
       }
 
-      // 8. Recalculate `dmnShapesByHref`, as the state has just changed.
-      //
-      // THIS WHOLE BLOCK IS COPY/PASTED....
-      // WE NEED TO MOVE ALL THE NODES, AND ONLY THEN RESIZE THEM.
-      const dmnShapesByHref = new Map<string, DMNDI15__DMNShape & { index: number; dmnElementRefQName: XmlQName }>();
-      const diagramElements =
-        s.dmn.model.definitions["dmndi:DMNDI"]?.["dmndi:DMNDiagram"]?.[s.diagram.drdIndex]["dmndi:DMNDiagramElement"] ??
-        [];
-      for (let i = 0; i < diagramElements.length; i++) {
-        const e = diagramElements[i];
-
-        // DMNShape
-        if (e.__$$element === "dmndi:DMNShape") {
-          let href: string;
-          // @_dmnElementRef is a xsd:QName, meaning it can be prefixed with a namespace name.
-          // If we find the namespace as a namespace declaration on the `definitions` object, then this shape represents a node from an included model.
-          // Therefore, we need to add it to `dmnShapesForExternalNodesByDmnRefId`, so we can draw these nodes.
-          // Do not skip adding it to the regular `dmnShapesByHref`, as nodes will query this.
-          const dmnElementRefQName = parseXmlQName(e["@_dmnElementRef"]);
-          if (dmnElementRefQName.prefix) {
-            const namespace =
-              s.dmn.model.definitions[`@_xmlns:${dmnElementRefQName.prefix}`] ?? KIE_DMN_UNKNOWN_NAMESPACE;
-            href = buildXmlHref({ namespace, id: dmnElementRefQName.localPart });
-          } else {
-            href = buildXmlHref({ id: dmnElementRefQName.localPart });
-          }
-
-          dmnShapesByHref.set(href, { ...e, index: i, dmnElementRefQName });
-        }
-      }
-      // ....UNTIL HERE.
-
-      // 9. Resize all nodes using the sizes calculated by ELK.
+      // 8. Resize all nodes using the sizes calculated by ELK.
       for (const topLevelElkNode of autolayouted.nodes ?? []) {
         visitNodeAndNested(topLevelElkNode, { x: 0, y: 0 }, (elkNode) => {
           const nodeId = elkNode.id;
@@ -337,7 +307,7 @@ export function AutolayoutPanel() {
           resizeNode({
             definitions: s.dmn.model.definitions,
             drdIndex: s.diagram.drdIndex,
-            dmnShapesByHref,
+            dmnShapesByHref: s.computed(s).indexes().dmnShapesByHref,
             snapGrid,
             change: {
               index: node.data.index,
@@ -358,7 +328,7 @@ export function AutolayoutPanel() {
           });
         });
 
-        // 10. After all nodes have been repositioned, it's time for the empty groups to be repositioned.
+        // 9. After all nodes have been repositioned, it's time for the empty groups to be repositioned.
       }
     });
   }, [dmnEditorStoreApi, externalModelsByNamespace]);

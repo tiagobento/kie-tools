@@ -147,7 +147,7 @@ export const InputDataNode = React.memo(
       [dmnEditorStoreApi, index, inputData]
     );
 
-    // const allFeelVariableUniqueNames = useDmnEditorStore((s) => s.computed.allFeelVariableUniqueNames);
+    // const allFeelVariableUniqueNames = useDmnEditorStore((s) => s.computed(s).allFeelVariableUniqueNames);
 
     const onCreateDataType = useDataTypeCreationCallbackForNodes(index, inputData["@_name"]);
 
@@ -275,7 +275,7 @@ export const DecisionNode = React.memo(
       [decision, dmnEditorStoreApi, index]
     );
 
-    // const allFeelVariableUniqueNames = useDmnEditorStore((s) => s.computed.allFeelVariableUniqueNames);
+    // const allFeelVariableUniqueNames = useDmnEditorStore((s) => s.computed(s).allFeelVariableUniqueNames);
 
     const onCreateDataType = useDataTypeCreationCallbackForNodes(index, decision["@_name"]);
 
@@ -406,7 +406,7 @@ export const BkmNode = React.memo(
       [bkm, dmnEditorStoreApi, index]
     );
 
-    // const allFeelVariableUniqueNames = useDmnEditorStore((s) => s.computed.allFeelVariableUniqueNames);
+    // const allFeelVariableUniqueNames = useDmnEditorStore((s) => s.computed(s).allFeelVariableUniqueNames);
 
     const onCreateDataType = useDataTypeCreationCallbackForNodes(index, bkm["@_name"]);
 
@@ -526,7 +526,7 @@ export const KnowledgeSourceNode = React.memo(
       [dmnEditorStoreApi, index]
     );
 
-    // const allFeelVariableUniqueNames = useDmnEditorStore((s) => s.computed.allFeelVariableUniqueNames);
+    // const allFeelVariableUniqueNames = useDmnEditorStore((s) => s.computed(s).allFeelVariableUniqueNames);
 
     const { fontCssProperties, shapeStyle } = useNodeStyle({
       dmnStyle: shape["di:Style"],
@@ -636,7 +636,7 @@ export const TextAnnotationNode = React.memo(
       [dmnEditorStoreApi, index]
     );
 
-    // const allFeelVariableUniqueNames = useDmnEditorStore((s) => s.computed.allFeelVariableUniqueNames);
+    // const allFeelVariableUniqueNames = useDmnEditorStore((s) => s.computed(s).allFeelVariableUniqueNames);
 
     const { fontCssProperties, shapeStyle } = useNodeStyle({
       dmnStyle: shape["di:Style"],
@@ -778,7 +778,7 @@ export const DecisionServiceNode = React.memo(
       [decisionService, dmnEditorStoreApi, index]
     );
 
-    // const allFeelVariableUniqueNames = useDmnEditorStore((s) => s.computed.allFeelVariableUniqueNames);
+    // const allFeelVariableUniqueNames = useDmnEditorStore((s) => s.computed(s).allFeelVariableUniqueNames);
 
     const dividerLineRef = useRef<SVGPathElement>(null);
 
@@ -796,7 +796,7 @@ export const DecisionServiceNode = React.memo(
       const dragHandler = drag<SVGCircleElement, unknown>()
         .on("start", () => {
           dmnEditorStoreApi.setState((state) =>
-            state.dispatch.diagram.setDividerLineStatus(state, id, { moving: true })
+            state.dispatch(state).diagram.setDividerLineStatus(id, { moving: true })
           );
         })
         .on("drag", (e) => {
@@ -804,7 +804,7 @@ export const DecisionServiceNode = React.memo(
             updateDecisionServiceDividerLine({
               definitions: state.dmn.model.definitions,
               drdIndex: state.diagram.drdIndex,
-              dmnShapesByHref: state.computed.indexes.dmnShapesByHref,
+              dmnShapesByHref: state.computed(state).indexes().dmnShapesByHref,
               drgElementIndex: index,
               shapeIndex: shape.index,
               localYPosition: e.y,
@@ -814,7 +814,7 @@ export const DecisionServiceNode = React.memo(
         })
         .on("end", (e) => {
           dmnEditorStoreApi.setState((state) =>
-            state.dispatch.diagram.setDividerLineStatus(state, id, { moving: false })
+            state.dispatch(state).diagram.setDividerLineStatus(id, { moving: false })
           );
         });
 
@@ -968,7 +968,7 @@ export const GroupNode = React.memo(
       };
     }, [dmnEditorStoreApi, reactFlow, shape]);
 
-    // const allFeelVariableUniqueNames = useDmnEditorStore((s) => s.computed.allFeelVariableUniqueNames);
+    // const allFeelVariableUniqueNames = useDmnEditorStore((s) => s.computed(s).allFeelVariableUniqueNames);
 
     const { fontCssProperties, shapeStyle } = useNodeStyle({
       dmnStyle: shape["di:Style"],
@@ -1229,7 +1229,7 @@ export function useNodeClassName(isValidConnectionTarget: boolean, nodeId: strin
   );
   const { externalModelsByNamespace } = useExternalModels();
   const isDropTargetNodeValidForSelection = useDmnEditorStore((s) =>
-    s.computed.isDropTargetNodeValidForSelection(externalModelsByNamespace)
+    s.computed(s).isDropTargetNodeValidForSelection(externalModelsByNamespace)
   );
   const isConnectionNodeId = RF.useStore((s) => s.connectionNodeId === nodeId);
   const connection = useConnection(nodeId);

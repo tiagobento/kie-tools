@@ -36,7 +36,7 @@ export function TypeRefLabel({
   typeRef: string | undefined;
   relativeToNamespace?: string;
 }) {
-  const importsByNamespace = useDmnEditorStore((s) => s.computed.importsByNamespace);
+  const importsByNamespace = useDmnEditorStore((s) => s.computed(s).importsByNamespace());
   const thisDmn = useDmnEditorStore((s) => s.dmn);
 
   const feelName = useMemo(() => {

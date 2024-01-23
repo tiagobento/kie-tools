@@ -121,6 +121,7 @@ import {
   UnknownNode,
 } from "./nodes/Nodes";
 import { useExternalModels } from "../includedModels/DmnEditorDependenciesContext";
+import { startCase } from "lodash";
 
 const isFirefox = typeof (window as any).InstallTrigger !== "undefined"; // See https://stackoverflow.com/questions/9847580/how-to-detect-safari-chrome-ie-firefox-and-opera-browsers
 
@@ -196,8 +197,14 @@ export const Diagram = React.forwardRef<DiagramRef, { container: React.RefObject
       (connection) => {
         console.debug("DMN DIAGRAM: `onConnect`: ", connection);
         dmnEditorStoreApi.setState((state) => {
-          const sourceNode = state.computed.getDiagramData(externalModelsByNamespace).nodesById.get(connection.source!);
-          const targetNode = state.computed.getDiagramData(externalModelsByNamespace).nodesById.get(connection.target!);
+          const sourceNode = state
+            .computed(state)
+            .getDiagramData(externalModelsByNamespace)
+            .nodesById.get(connection.source!);
+          const targetNode = state
+            .computed(state)
+            .getDiagramData(externalModelsByNamespace)
+            .nodesById.get(connection.target!);
           if (!sourceNode || !targetNode) {
             throw new Error("Cannot create connection without target and source nodes!");
           }
@@ -328,7 +335,8 @@ export const Diagram = React.forwardRef<DiagramRef, { container: React.RefObject
           // --------- This is where we draw the line between the diagram and the model.
           dmnEditorStoreApi.setState((state) => {
             const externalDrgElement = (
-              state.computed
+              state
+                .computed(state)
                 .getExternalModelTypesByNamespace(externalModelsByNamespace)
                 .dmns.get(externalNode.externalDrgElementNamespace)?.model.definitions.drgElement ?? []
             ).find((s) => s["@_id"] === externalNode.externalDrgElementId);
@@ -455,14 +463,15 @@ export const Diagram = React.forwardRef<DiagramRef, { container: React.RefObject
             return;
           }
 
-          const sourceNode = state.computed
+          const sourceNode = state
+            .computed(state)
             .getDiagramData(externalModelsByNamespace)
             .nodesById.get(state.diagram.ongoingConnection.nodeId);
           if (!sourceNode) {
             return;
           }
 
-          const sourceNodeBounds = state.computed.indexes.dmnShapesByHref.get(sourceNode.id)?.["dc:Bounds"];
+          const sourceNodeBounds = state.computed(state).indexes().dmnShapesByHref.get(sourceNode.id)?.["dc:Bounds"];
           if (!sourceNodeBounds) {
             return;
           }
@@ -523,7 +532,7 @@ export const Diagram = React.forwardRef<DiagramRef, { container: React.RefObject
           edgeOrConnection.source !== edgeOrConnection.target &&
           // Matches DMNs structure.
           checkIsValidConnection(
-            state.computed.getDiagramData(externalModelsByNamespace).nodesById,
+            state.computed(state).getDiagramData(externalModelsByNamespace).nodesById,
             edgeOrConnection,
             edgeType
           ) &&
@@ -550,13 +559,16 @@ export const Diagram = React.forwardRef<DiagramRef, { container: React.RefObject
             switch (change.type) {
               case "add":
                 console.debug(`DMN DIAGRAM: 'onNodesChange' --> add '${change.item.id}'`);
-                state.dispatch.diagram.setNodeStatus(state, change.item.id, { selected: true });
+                state.dispatch(state).diagram.setNodeStatus(change.item.id, { selected: true });
                 break;
               case "dimensions":
                 console.debug(`DMN DIAGRAM: 'onNodesChange' --> dimensions '${change.id}'`);
-                state.dispatch.diagram.setNodeStatus(state, change.id, { resizing: change.resizing });
+                state.dispatch(state).diagram.setNodeStatus(change.id, { resizing: change.resizing });
                 if (change.dimensions) {
-                  const node = state.computed.getDiagramData(externalModelsByNamespace).nodesById.get(change.id)!;
+                  const node = state
+                    .computed(state)
+                    .getDiagramData(externalModelsByNamespace)
+                    .nodesById.get(change.id)!;
                   // We only need to resize the node if its snapped dimensions change, as snapping is non-destructive.
                   const snappedShape = snapShapeDimensions(
                     state.diagram.snapGrid,
@@ -570,19 +582,21 @@ export const Diagram = React.forwardRef<DiagramRef, { container: React.RefObject
                     resizeNode({
                       definitions: state.dmn.model.definitions,
                       drdIndex: state.diagram.drdIndex,
-                      dmnShapesByHref: state.computed.indexes.dmnShapesByHref,
+                      dmnShapesByHref: state.computed(state).indexes().dmnShapesByHref,
                       snapGrid: state.diagram.snapGrid,
                       change: {
                         isExternal: !!node.data.dmnObjectQName.prefix,
                         nodeType: node.type as NodeType,
                         index: node.data.index,
                         shapeIndex: node.data.shape.index,
-                        sourceEdgeIndexes: state.computed
+                        sourceEdgeIndexes: state
+                          .computed(state)
                           .getDiagramData(externalModelsByNamespace)
                           .edges.flatMap((e) =>
                             e.source === change.id && e.data?.dmnEdge ? [e.data.dmnEdge.index] : []
                           ),
-                        targetEdgeIndexes: state.computed
+                        targetEdgeIndexes: state
+                          .computed(state)
                           .getDiagramData(externalModelsByNamespace)
                           .edges.flatMap((e) =>
                             e.target === change.id && e.data?.dmnEdge ? [e.data.dmnEdge.index] : []
@@ -598,9 +612,12 @@ export const Diagram = React.forwardRef<DiagramRef, { container: React.RefObject
                 break;
               case "position":
                 console.debug(`DMN DIAGRAM: 'onNodesChange' --> position '${change.id}'`);
-                state.dispatch.diagram.setNodeStatus(state, change.id, { dragging: change.dragging });
+                state.dispatch(state).diagram.setNodeStatus(change.id, { dragging: change.dragging });
                 if (change.positionAbsolute) {
-                  const node = state.computed.getDiagramData(externalModelsByNamespace).nodesById.get(change.id)!;
+                  const node = state
+                    .computed(state)
+                    .getDiagramData(externalModelsByNamespace)
+                    .nodesById.get(change.id)!;
                   const { delta } = repositionNode({
                     definitions: state.dmn.model.definitions,
                     drdIndex: state.diagram.drdIndex,
@@ -609,15 +626,17 @@ export const Diagram = React.forwardRef<DiagramRef, { container: React.RefObject
                       type: "absolute",
                       nodeType: node.type as NodeType,
                       selectedEdges: [
-                        ...state.computed.getDiagramData(externalModelsByNamespace).selectedEdgesById.keys(),
+                        ...state.computed(state).getDiagramData(externalModelsByNamespace).selectedEdgesById.keys(),
                       ],
                       shapeIndex: node.data.shape.index,
-                      sourceEdgeIndexes: state.computed
+                      sourceEdgeIndexes: state
+                        .computed(state)
                         .getDiagramData(externalModelsByNamespace)
                         .edges.flatMap((e) =>
                           e.source === change.id && e.data?.dmnEdge ? [e.data.dmnEdge.index] : []
                         ),
-                      targetEdgeIndexes: state.computed
+                      targetEdgeIndexes: state
+                        .computed(state)
                         .getDiagramData(externalModelsByNamespace)
                         .edges.flatMap((e) =>
                           e.target === change.id && e.data?.dmnEdge ? [e.data.dmnEdge.index] : []
@@ -638,7 +657,8 @@ export const Diagram = React.forwardRef<DiagramRef, { container: React.RefObject
                     ];
 
                     for (let i = 0; i < nested.length; i++) {
-                      const nestedNode = state.computed
+                      const nestedNode = state
+                        .computed(state)
                         .getDiagramData(externalModelsByNamespace)
                         .nodesById.get(nested[i]["@_href"])!;
                       const snappedNestedNodeShapeWithAppliedDelta = snapShapePosition(
@@ -652,16 +672,19 @@ export const Diagram = React.forwardRef<DiagramRef, { container: React.RefObject
                         change: {
                           type: "absolute",
                           nodeType: nestedNode.type as NodeType,
-                          selectedEdges: state.computed
+                          selectedEdges: state
+                            .computed(state)
                             .getDiagramData(externalModelsByNamespace)
                             .edges.map((e) => e.id),
                           shapeIndex: nestedNode.data.shape.index,
-                          sourceEdgeIndexes: state.computed
+                          sourceEdgeIndexes: state
+                            .computed(state)
                             .getDiagramData(externalModelsByNamespace)
                             .edges.flatMap((e) =>
                               e.source === nestedNode.id && e.data?.dmnEdge ? [e.data.dmnEdge.index] : []
                             ),
-                          targetEdgeIndexes: state.computed
+                          targetEdgeIndexes: state
+                            .computed(state)
                             .getDiagramData(externalModelsByNamespace)
                             .edges.flatMap((e) =>
                               e.target === nestedNode.id && e.data?.dmnEdge ? [e.data.dmnEdge.index] : []
@@ -675,7 +698,7 @@ export const Diagram = React.forwardRef<DiagramRef, { container: React.RefObject
                 break;
               case "remove":
                 console.debug(`DMN DIAGRAM: 'onNodesChange' --> remove '${change.id}'`);
-                const node = state.computed.getDiagramData(externalModelsByNamespace).nodesById.get(change.id)!;
+                const node = state.computed(state).getDiagramData(externalModelsByNamespace).nodesById.get(change.id)!;
                 deleteNode({
                   definitions: state.dmn.model.definitions,
                   drdIndex: state.diagram.drdIndex,
@@ -683,21 +706,21 @@ export const Diagram = React.forwardRef<DiagramRef, { container: React.RefObject
                   dmnObjectId: node.data.dmnObject?.["@_id"],
                   nodeNature: nodeNatures[node.type as NodeType],
                 });
-                state.dispatch.diagram.setNodeStatus(state, node.id, {
+                state.dispatch(state).diagram.setNodeStatus(node.id, {
                   selected: false,
                   dragging: false,
                   resizing: false,
                 });
                 break;
               case "reset":
-                state.dispatch.diagram.setNodeStatus(state, change.item.id, {
+                state.dispatch(state).diagram.setNodeStatus(change.item.id, {
                   selected: false,
                   dragging: false,
                   resizing: false,
                 });
                 break;
               case "select":
-                state.dispatch.diagram.setNodeStatus(state, change.id, { selected: change.selected });
+                state.dispatch(state).diagram.setNodeStatus(change.id, { selected: change.selected });
                 break;
             }
           }
@@ -751,7 +774,8 @@ export const Diagram = React.forwardRef<DiagramRef, { container: React.RefObject
         try {
           dmnEditorStoreApi.setState((state) => {
             console.debug("DMN DIAGRAM: `onNodeDragStop`");
-            const nodeBeingDragged = state.computed
+            const nodeBeingDragged = state
+              .computed(state)
               .getDiagramData(externalModelsByNamespace)
               .nodesById.get(nodeIdBeingDraggedRef.current!);
             nodeIdBeingDraggedRef.current = null;
@@ -764,11 +788,11 @@ export const Diagram = React.forwardRef<DiagramRef, { container: React.RefObject
             if (
               dropTargetNode &&
               containment.has(dropTargetNode.type as NodeType) &&
-              !state.computed.isDropTargetNodeValidForSelection
+              !state.computed(state).isDropTargetNodeValidForSelection
             ) {
               console.debug(
                 `DMN DIAGRAM: Invalid containment: '${[
-                  ...state.computed.getDiagramData(externalModelsByNamespace).selectedNodeTypes,
+                  ...state.computed(state).getDiagramData(externalModelsByNamespace).selectedNodeTypes,
                 ].join("', '")}' inside '${dropTargetNode.type}'. Ignoring nodes dropped.`
               );
               resetToBeforeEditingBegan();
@@ -776,7 +800,7 @@ export const Diagram = React.forwardRef<DiagramRef, { container: React.RefObject
             }
 
             const selectedNodes = [
-              ...state.computed.getDiagramData(externalModelsByNamespace).selectedNodesById.values(),
+              ...state.computed(state).getDiagramData(externalModelsByNamespace).selectedNodesById.values(),
             ];
 
             state.diagram.dropTargetNode = undefined;
@@ -787,7 +811,8 @@ export const Diagram = React.forwardRef<DiagramRef, { container: React.RefObject
 
             // Un-parent
             if (nodeBeingDragged.data.parentRfNode) {
-              const p = state.computed
+              const p = state
+                .computed(state)
                 .getDiagramData(externalModelsByNamespace)
                 .nodesById.get(nodeBeingDragged.data.parentRfNode.id);
               if (p?.type === NODE_TYPES.decisionService && nodeBeingDragged.type === NODE_TYPES.decision) {
@@ -812,7 +837,8 @@ export const Diagram = React.forwardRef<DiagramRef, { container: React.RefObject
                   definitions: state.dmn.model.definitions,
                   drdIndex: state.diagram.drdIndex,
                   decisionId: selectedNodes[i].data.dmnObject!["@_id"]!, // We can assume that all selected nodes are Decisions because the contaiment was validated above.
-                  decisionServiceId: state.computed
+                  decisionServiceId: state
+                    .computed(state)
                     .getDiagramData(externalModelsByNamespace)
                     .nodesById.get(dropTargetNode.id)!.data.dmnObject!["@_id"]!,
                   snapGrid: state.diagram.snapGrid,
@@ -839,18 +865,18 @@ export const Diagram = React.forwardRef<DiagramRef, { container: React.RefObject
             switch (change.type) {
               case "select":
                 console.debug(`DMN DIAGRAM: 'onEdgesChange' --> select '${change.id}'`);
-                state.dispatch.diagram.setEdgeStatus(state, change.id, { selected: change.selected });
+                state.dispatch(state).diagram.setEdgeStatus(change.id, { selected: change.selected });
                 break;
               case "remove":
                 console.debug(`DMN DIAGRAM: 'onEdgesChange' --> remove '${change.id}'`);
-                const edge = state.computed.getDiagramData(externalModelsByNamespace).edgesById.get(change.id);
+                const edge = state.computed(state).getDiagramData(externalModelsByNamespace).edgesById.get(change.id);
                 if (edge?.data) {
                   deleteEdge({
                     definitions: state.dmn.model.definitions,
                     drdIndex: state.diagram.drdIndex,
                     edge: { id: change.id, dmnObject: edge.data.dmnObject },
                   });
-                  state.dispatch.diagram.setEdgeStatus(state, change.id, { selected: false, draggingWaypoint: false });
+                  state.dispatch(state).diagram.setEdgeStatus(change.id, { selected: false, draggingWaypoint: false });
                 }
                 break;
               case "add":
@@ -868,10 +894,12 @@ export const Diagram = React.forwardRef<DiagramRef, { container: React.RefObject
         console.debug("DMN DIAGRAM: `onEdgeUpdate`", oldEdge, newConnection);
 
         dmnEditorStoreApi.setState((state) => {
-          const sourceNode = state.computed
+          const sourceNode = state
+            .computed(state)
             .getDiagramData(externalModelsByNamespace)
             .nodesById.get(newConnection.source!);
-          const targetNode = state.computed
+          const targetNode = state
+            .computed(state)
             .getDiagramData(externalModelsByNamespace)
             .nodesById.get(newConnection.target!);
           if (!sourceNode || !targetNode) {
@@ -985,7 +1013,7 @@ export const Diagram = React.forwardRef<DiagramRef, { container: React.RefObject
         const s = dmnEditorStoreApi.getState();
 
         if (e.key === "Escape") {
-          if (s.computed.isDiagramEditingInProgress && dmnModelBeforeEditingRef.current) {
+          if (s.computed(s).isDiagramEditingInProgress() && dmnModelBeforeEditingRef.current) {
             console.debug(
               "DMN DIAGRAM: Intercepting Escape pressed and preventing propagation. Reverting DMN model to what it was before editing began."
             );
@@ -997,16 +1025,16 @@ export const Diagram = React.forwardRef<DiagramRef, { container: React.RefObject
           } else if (!s.diagram.ongoingConnection) {
             dmnEditorStoreApi.setState((state) => {
               if (
-                state.computed.getDiagramData(externalModelsByNamespace).selectedNodesById.size > 0 ||
-                state.computed.getDiagramData(externalModelsByNamespace).selectedEdgesById.size > 0
+                state.computed(s).getDiagramData(externalModelsByNamespace).selectedNodesById.size > 0 ||
+                state.computed(s).getDiagramData(externalModelsByNamespace).selectedEdgesById.size > 0
               ) {
                 console.debug("DMN DIAGRAM: Esc pressed. Desselecting everything.");
                 state.diagram._selectedNodes = [];
                 state.diagram._selectedEdges = [];
                 e.preventDefault();
               } else if (
-                state.computed.getDiagramData(externalModelsByNamespace).selectedNodesById.size <= 0 &&
-                state.computed.getDiagramData(externalModelsByNamespace).selectedEdgesById.size <= 0
+                state.computed(s).getDiagramData(externalModelsByNamespace).selectedNodesById.size <= 0 &&
+                state.computed(s).getDiagramData(externalModelsByNamespace).selectedEdgesById.size <= 0
               ) {
                 console.debug("DMN DIAGRAM: Esc pressed. Closing all open panels.");
                 state.diagram.propertiesPanel.isOpen = false;
@@ -1027,11 +1055,12 @@ export const Diagram = React.forwardRef<DiagramRef, { container: React.RefObject
 
     const [showEmptyState, setShowEmptyState] = useState(true);
 
-    const nodes = useDmnEditorStore((s) => s.computed.getDiagramData(externalModelsByNamespace).nodes);
-    const edges = useDmnEditorStore((s) => s.computed.getDiagramData(externalModelsByNamespace).edges);
+    const nodes = useDmnEditorStore((s) => s.computed(s).getDiagramData(externalModelsByNamespace).nodes);
+    const edges = useDmnEditorStore((s) => s.computed(s).getDiagramData(externalModelsByNamespace).edges);
     const drgElementsWithoutVisualRepresentationOnCurrentDrdLength = useDmnEditorStore(
       (s) =>
-        s.computed.getDiagramData(externalModelsByNamespace).drgElementsWithoutVisualRepresentationOnCurrentDrd.length
+        s.computed(s).getDiagramData(externalModelsByNamespace).drgElementsWithoutVisualRepresentationOnCurrentDrd
+          .length
     );
 
     const isEmptyStateShowing =
@@ -1182,7 +1211,7 @@ function DmnDiagramEmptyState({
                     }),
                   });
 
-                  state.dispatch.boxedExpressionEditor.open(state, parseXmlHref(decisionNodeHref).id);
+                  state.dispatch(state).boxedExpressionEditor.open(parseXmlHref(decisionNodeHref).id);
                 });
               }}
             >
@@ -1363,10 +1392,10 @@ export function SelectionStatus() {
 
   const { externalModelsByNamespace } = useExternalModels();
   const selectedNodesCount = useDmnEditorStore(
-    (s) => s.computed.getDiagramData(externalModelsByNamespace).selectedNodesById.size
+    (s) => s.computed(s).getDiagramData(externalModelsByNamespace).selectedNodesById.size
   );
   const selectedEdgesCount = useDmnEditorStore(
-    (s) => s.computed.getDiagramData(externalModelsByNamespace).selectedEdgesById.size
+    (s) => s.computed(s).getDiagramData(externalModelsByNamespace).selectedEdgesById.size
   );
   const dmnEditorStoreApi = useDmnEditorStoreApi();
 
@@ -1489,7 +1518,7 @@ export function KeyboardShortcuts(props: {}) {
             drdIndex: state.diagram.drdIndex,
             edge: { id: edge.id, dmnObject: edge.data!.dmnObject },
           });
-          state.dispatch.diagram.setEdgeStatus(state, edge.id, {
+          state.dispatch(state).diagram.setEdgeStatus(edge.id, {
             selected: false,
             draggingWaypoint: false,
           });
@@ -1508,7 +1537,7 @@ export function KeyboardShortcuts(props: {}) {
                 dmnObjectId: node.data.dmnObject?.["@_id"],
                 nodeNature: nodeNatures[node.type as NodeType],
               });
-              state.dispatch.diagram.setNodeStatus(state, node.id, {
+              state.dispatch(state).diagram.setNodeStatus(node.id, {
                 selected: false,
                 dragging: false,
                 resizing: false,
@@ -1662,7 +1691,7 @@ export function KeyboardShortcuts(props: {}) {
         },
       });
 
-      state.dispatch.diagram.setNodeStatus(state, newNodeId, { selected: true });
+      state.dispatch(state).diagram.setNodeStatus(newNodeId, { selected: true });
     });
   }, [dmnEditorStoreApi, g, rf]);
 

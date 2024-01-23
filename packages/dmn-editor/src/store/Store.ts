@@ -68,8 +68,8 @@ export enum DiagramNodesPanel {
 export type DropTargetNode = undefined | RF.Node<DmnDiagramNodeData>;
 
 export interface State {
-  dispatch: Dispatch;
-  computed: Computed;
+  dispatch: (s: State) => Dispatch;
+  computed: (s: State) => Computed;
   dmn: { model: DmnLatestModel };
   focus: {
     consumableId: string | undefined;
@@ -128,10 +128,10 @@ export interface State {
 // Read this to understand why we need computed as part of the store.
 // https://github.com/pmndrs/zustand/issues/132#issuecomment-1120467721
 export type Computed = {
-  isDiagramEditingInProgress: boolean;
-  importsByNamespace: Map<string, DMN15__tImport>;
-  allUniqueFeelNames: ReturnType<typeof computeAllUniqueFeelNames>;
-  indexes: ReturnType<typeof computeIndexes>;
+  isDiagramEditingInProgress(): boolean;
+  importsByNamespace(): Map<string, DMN15__tImport>;
+  allUniqueFeelNames(): ReturnType<typeof computeAllUniqueFeelNames>;
+  indexes(): ReturnType<typeof computeIndexes>;
   getDiagramData(e: ExternalModelsIndex | undefined): ReturnType<typeof computeDiagramData>;
   isDropTargetNodeValidForSelection(e: ExternalModelsIndex | undefined): boolean;
   getExternalModelTypesByNamespace: (
@@ -148,17 +148,13 @@ export type Dispatch = {
     reset: (model: State["dmn"]["model"]) => void;
   };
   boxedExpressionEditor: {
-    open: (state: State, id: string) => void;
-    close: (state: State) => void;
+    open: (id: string) => void;
+    close: () => void;
   };
   diagram: {
-    setNodeStatus: (state: State, nodeId: string, status: Partial<DmnEditorDiagramNodeStatus>) => void;
-    setEdgeStatus: (state: State, edgeId: string, status: Partial<DmnEditorDiagramEdgeStatus>) => void;
-    setDividerLineStatus: (
-      state: State,
-      decisionServiceId: string,
-      status: Partial<DmnEditorDiagramDividerLineStatus>
-    ) => void;
+    setNodeStatus: (nodeId: string, status: Partial<DmnEditorDiagramNodeStatus>) => void;
+    setEdgeStatus: (edgeId: string, status: Partial<DmnEditorDiagramEdgeStatus>) => void;
+    setDividerLineStatus: (decisionServiceId: string, status: Partial<DmnEditorDiagramDividerLineStatus>) => void;
   };
 };
 
@@ -229,170 +225,170 @@ export const defaultStaticState = (): Omit<State, "dmn" | "dispatch" | "computed
 
 export function createDmnEditorStore(model: State["dmn"]["model"], computedCache: ComputedStateCache<Computed>) {
   return create(
-    immer<State>((set, get) => ({
+    immer<State>(() => ({
       dmn: {
         model,
       },
       ...defaultStaticState(),
-      dispatch: {
-        dmn: {
-          reset: (model) => {
-            set((state) => {
-              state.diagram._selectedNodes = [];
-              state.diagram.draggingNodes = [];
-              state.diagram.resizingNodes = [];
-              state.navigation.tab = DmnEditorTab.EDITOR;
-              state.boxedExpressionEditor.activeDrgElementId = undefined;
-              state.boxedExpressionEditor.selectedObjectId = undefined;
-            });
+      dispatch(s: State) {
+        return {
+          dmn: {
+            reset: () => {
+              s.diagram._selectedNodes = [];
+              s.diagram.draggingNodes = [];
+              s.diagram.resizingNodes = [];
+              s.navigation.tab = DmnEditorTab.EDITOR;
+              s.boxedExpressionEditor.activeDrgElementId = undefined;
+              s.boxedExpressionEditor.selectedObjectId = undefined;
+            },
           },
-        },
-        boxedExpressionEditor: {
-          open: (state, id) => {
-            state.boxedExpressionEditor.activeDrgElementId = id;
-            state.boxedExpressionEditor.selectedObjectId = undefined;
-            state.boxedExpressionEditor.propertiesPanel.isOpen = state.diagram.propertiesPanel.isOpen;
+          boxedExpressionEditor: {
+            open: (id) => {
+              s.boxedExpressionEditor.activeDrgElementId = id;
+              s.boxedExpressionEditor.selectedObjectId = undefined;
+              s.boxedExpressionEditor.propertiesPanel.isOpen = s.diagram.propertiesPanel.isOpen;
+            },
+            close: () => {
+              s.diagram.propertiesPanel.isOpen = s.boxedExpressionEditor.propertiesPanel.isOpen;
+              s.boxedExpressionEditor.activeDrgElementId = undefined;
+              s.boxedExpressionEditor.selectedObjectId = undefined;
+            },
           },
-          close: (state) => {
-            state.diagram.propertiesPanel.isOpen = state.boxedExpressionEditor.propertiesPanel.isOpen;
-            state.boxedExpressionEditor.activeDrgElementId = undefined;
-            state.boxedExpressionEditor.selectedObjectId = undefined;
+          diagram: {
+            setNodeStatus: (nodeId, newStatus) => {
+              //selected
+              if (newStatus.selected !== undefined) {
+                if (newStatus.selected) {
+                  s.diagram._selectedNodes.push(nodeId);
+                } else {
+                  s.diagram._selectedNodes = s.diagram._selectedNodes.filter((s) => s !== nodeId);
+                }
+              }
+              //dragging
+              if (newStatus.dragging !== undefined) {
+                if (newStatus.dragging) {
+                  s.diagram.draggingNodes.push(nodeId);
+                } else {
+                  s.diagram.draggingNodes = s.diagram.draggingNodes.filter((s) => s !== nodeId);
+                }
+              }
+              // resizing
+              if (newStatus.resizing !== undefined) {
+                if (newStatus.resizing) {
+                  s.diagram.resizingNodes.push(nodeId);
+                } else {
+                  s.diagram.resizingNodes = s.diagram.resizingNodes.filter((s) => s !== nodeId);
+                }
+              }
+            },
+            setEdgeStatus: (edgeId, newStatus) => {
+              //selected
+              if (newStatus.selected !== undefined) {
+                if (newStatus.selected) {
+                  s.diagram._selectedEdges.push(edgeId);
+                } else {
+                  s.diagram._selectedEdges = s.diagram._selectedEdges.filter((s) => s !== edgeId);
+                }
+              }
+              //dragging
+              if (newStatus.draggingWaypoint !== undefined) {
+                if (newStatus.draggingWaypoint) {
+                  s.diagram.draggingWaypoints.push(edgeId);
+                } else {
+                  s.diagram.draggingWaypoints = s.diagram.draggingWaypoints.filter((s) => s !== edgeId);
+                }
+              }
+            },
+            setDividerLineStatus: (decisionServiceId, newStatus) => {
+              //dragging
+              if (newStatus.moving !== undefined) {
+                if (newStatus.moving) {
+                  s.diagram.movingDividerLines.push(decisionServiceId);
+                } else {
+                  s.diagram.movingDividerLines = s.diagram.movingDividerLines.filter((s) => s !== decisionServiceId);
+                }
+              }
+            },
           },
-        },
-        diagram: {
-          setNodeStatus: (prev, nodeId, newStatus) => {
-            //selected
-            if (newStatus.selected !== undefined) {
-              if (newStatus.selected) {
-                prev.diagram._selectedNodes.push(nodeId);
-              } else {
-                prev.diagram._selectedNodes = prev.diagram._selectedNodes.filter((s) => s !== nodeId);
-              }
-            }
-            //dragging
-            if (newStatus.dragging !== undefined) {
-              if (newStatus.dragging) {
-                prev.diagram.draggingNodes.push(nodeId);
-              } else {
-                prev.diagram.draggingNodes = prev.diagram.draggingNodes.filter((s) => s !== nodeId);
-              }
-            }
-            // resizing
-            if (newStatus.resizing !== undefined) {
-              if (newStatus.resizing) {
-                prev.diagram.resizingNodes.push(nodeId);
-              } else {
-                prev.diagram.resizingNodes = prev.diagram.resizingNodes.filter((s) => s !== nodeId);
-              }
-            }
-          },
-          setEdgeStatus: (prev, edgeId, newStatus) => {
-            //selected
-            if (newStatus.selected !== undefined) {
-              if (newStatus.selected) {
-                prev.diagram._selectedEdges.push(edgeId);
-              } else {
-                prev.diagram._selectedEdges = prev.diagram._selectedEdges.filter((s) => s !== edgeId);
-              }
-            }
-            //dragging
-            if (newStatus.draggingWaypoint !== undefined) {
-              if (newStatus.draggingWaypoint) {
-                prev.diagram.draggingWaypoints.push(edgeId);
-              } else {
-                prev.diagram.draggingWaypoints = prev.diagram.draggingWaypoints.filter((s) => s !== edgeId);
-              }
-            }
-          },
-          setDividerLineStatus: (prev, decisionServiceId, newStatus) => {
-            //dragging
-            if (newStatus.moving !== undefined) {
-              if (newStatus.moving) {
-                prev.diagram.movingDividerLines.push(decisionServiceId);
-              } else {
-                prev.diagram.movingDividerLines = prev.diagram.movingDividerLines.filter(
-                  (s) => s !== decisionServiceId
-                );
-              }
-            }
-          },
-        },
+        };
       },
-      computed: {
-        get isDiagramEditingInProgress() {
-          return computedCache.cached(
-            "isDiagramEditingInProgress",
-            (
-              draggingNodesCount: number,
-              resizingNodesCount: number,
-              draggingWaypointsCount: number,
-              movingDividerLinesCount: number,
-              isEditingStyle: boolean
-            ) =>
-              draggingNodesCount > 0 ||
-              resizingNodesCount > 0 ||
-              draggingWaypointsCount > 0 ||
-              movingDividerLinesCount > 0 ||
-              isEditingStyle,
-            [
-              get().diagram.draggingNodes.length,
-              get().diagram.resizingNodes.length,
-              get().diagram.draggingWaypoints.length,
-              get().diagram.movingDividerLines.length,
-              get().diagram.editingStyle,
-            ]
-          );
-        },
+      computed(s: State) {
+        return {
+          isDiagramEditingInProgress: () => {
+            return computedCache.cached(
+              "isDiagramEditingInProgress",
+              (
+                draggingNodesCount: number,
+                resizingNodesCount: number,
+                draggingWaypointsCount: number,
+                movingDividerLinesCount: number,
+                isEditingStyle: boolean
+              ) =>
+                draggingNodesCount > 0 ||
+                resizingNodesCount > 0 ||
+                draggingWaypointsCount > 0 ||
+                movingDividerLinesCount > 0 ||
+                isEditingStyle,
+              [
+                s.diagram.draggingNodes.length,
+                s.diagram.resizingNodes.length,
+                s.diagram.draggingWaypoints.length,
+                s.diagram.movingDividerLines.length,
+                s.diagram.editingStyle,
+              ]
+            );
+          },
 
-        get indexes() {
-          return computedCache.cached("indexes", computeIndexes, [get().dmn.model.definitions, get().diagram.drdIndex]);
-        },
+          indexes: () => {
+            return computedCache.cached("indexes", computeIndexes, [s.dmn.model.definitions, s.diagram.drdIndex]);
+          },
 
-        get allUniqueFeelNames() {
-          return computedCache.cached("allUniqueFeelNames", computeAllUniqueFeelNames, [
-            get().dmn.model.definitions.drgElement,
-            get().dmn.model.definitions.import,
-          ]);
-        },
+          allUniqueFeelNames: () => {
+            return computedCache.cached("allUniqueFeelNames", computeAllUniqueFeelNames, [
+              s.dmn.model.definitions.drgElement,
+              s.dmn.model.definitions.import,
+            ]);
+          },
 
-        get importsByNamespace() {
-          return computedCache.cached("importsByNamespace", computeImportsByNamespace, [
-            get().dmn.model.definitions.import,
-          ]);
-        },
+          importsByNamespace: () => {
+            return computedCache.cached("importsByNamespace", computeImportsByNamespace, [
+              s.dmn.model.definitions.import,
+            ]);
+          },
 
-        isDropTargetNodeValidForSelection: (externalModelsByNamespace: ExternalModelsIndex | undefined) =>
-          computedCache.cached("isDropTargetNodeValidForSelection", computeIsDropTargetNodeValidForSelection, [
-            get().diagram.dropTargetNode,
-            get().computed.getDiagramData(externalModelsByNamespace),
-          ]),
+          isDropTargetNodeValidForSelection: (externalModelsByNamespace: ExternalModelsIndex | undefined) =>
+            computedCache.cached("isDropTargetNodeValidForSelection", computeIsDropTargetNodeValidForSelection, [
+              s.diagram.dropTargetNode,
+              s.computed(this).getDiagramData(externalModelsByNamespace),
+            ]),
 
-        getDataTypes: (externalModelsByNamespace: ExternalModelsIndex | undefined) =>
-          computedCache.cached("getDataTypes", computeDataTypes, [
-            get().dmn.model.definitions["@_namespace"],
-            get().dmn.model.definitions.itemDefinition,
-            get().computed.getExternalModelTypesByNamespace(externalModelsByNamespace),
-            get().computed.importsByNamespace,
-          ]),
+          getDataTypes: (externalModelsByNamespace: ExternalModelsIndex | undefined) =>
+            computedCache.cached("getDataTypes", computeDataTypes, [
+              s.dmn.model.definitions["@_namespace"],
+              s.dmn.model.definitions.itemDefinition,
+              s.computed(this).getExternalModelTypesByNamespace(externalModelsByNamespace),
+              s.computed(this).importsByNamespace(),
+            ]),
 
-        getAllFeelVariableUniqueNames: (externalModelsByNamespace: ExternalModelsIndex | undefined) =>
-          computedCache.cached("getAllFeelVariableUniqueNames", computeAllFeelVariableUniqueNames, [
-            get().computed.getDataTypes(externalModelsByNamespace),
-          ]),
+          getAllFeelVariableUniqueNames: (externalModelsByNamespace: ExternalModelsIndex | undefined) =>
+            computedCache.cached("getAllFeelVariableUniqueNames", computeAllFeelVariableUniqueNames, [
+              s.computed(this).getDataTypes(externalModelsByNamespace),
+            ]),
 
-        getExternalModelTypesByNamespace: (externalModelsByNamespace: ExternalModelsIndex | undefined) =>
-          computedCache.cached("getExternalModelTypesByNamespace", computeExternalModelsByType, [
-            get().dmn.model.definitions.import,
-            externalModelsByNamespace,
-          ]),
+          getExternalModelTypesByNamespace: (externalModelsByNamespace: ExternalModelsIndex | undefined) =>
+            computedCache.cached("getExternalModelTypesByNamespace", computeExternalModelsByType, [
+              s.dmn.model.definitions.import,
+              externalModelsByNamespace,
+            ]),
 
-        getDiagramData: (externalModelsByNamespace: ExternalModelsIndex | undefined) =>
-          computedCache.cached("getDiagramData", computeDiagramData, [
-            get().diagram,
-            get().dmn.model.definitions,
-            get().computed.getExternalModelTypesByNamespace(externalModelsByNamespace),
-            get().computed.indexes,
-          ]),
+          getDiagramData: (externalModelsByNamespace: ExternalModelsIndex | undefined) =>
+            computedCache.cached("getDiagramData", computeDiagramData, [
+              s.diagram,
+              s.dmn.model.definitions,
+              s.computed(this).getExternalModelTypesByNamespace(externalModelsByNamespace),
+              s.computed(this).indexes(),
+            ]),
+        };
       },
     }))
   );

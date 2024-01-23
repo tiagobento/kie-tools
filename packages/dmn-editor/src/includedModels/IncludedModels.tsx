@@ -69,11 +69,11 @@ export function IncludedModels() {
 
   const { externalContextDescription, externalContextName, dmnEditorRootElementRef, onRequestToResolvePath } =
     useDmnEditor();
-  const importsByNamespace = useDmnEditorStore((s) => s.computed.importsByNamespace);
+  const importsByNamespace = useDmnEditorStore((s) => s.computed(s).importsByNamespace());
   const { externalModelsByNamespace, onRequestExternalModelsAvailableToInclude, onRequestExternalModelByPath } =
     useExternalModels();
   const allFeelVariableUniqueNames = useDmnEditorStore((s) =>
-    s.computed.getAllFeelVariableUniqueNames(externalModelsByNamespace)
+    s.computed(s).getAllFeelVariableUniqueNames(externalModelsByNamespace)
   );
 
   const [isModalOpen, setModalOpen] = useState(false);
@@ -451,10 +451,10 @@ function IncludedModelCard({
 
   const { externalModelsByNamespace } = useExternalModels();
   const allTopLevelDataTypesByFeelName = useDmnEditorStore(
-    (s) => s.computed.getDataTypes(externalModelsByNamespace).allTopLevelDataTypesByFeelName
+    (s) => s.computed(s).getDataTypes(externalModelsByNamespace).allTopLevelDataTypesByFeelName
   );
   const allFeelVariableUniqueNames = useDmnEditorStore((s) =>
-    s.computed.getAllFeelVariableUniqueNames(externalModelsByNamespace)
+    s.computed(s).getAllFeelVariableUniqueNames(externalModelsByNamespace)
   );
 
   const rename = useCallback<OnInlineFeelNameRenamed>(
@@ -586,10 +586,10 @@ function UnknownIncludedModelCard({
 
   const { externalModelsByNamespace } = useExternalModels();
   const allTopLevelDataTypesByFeelName = useDmnEditorStore(
-    (s) => s.computed.getDataTypes(externalModelsByNamespace).allTopLevelDataTypesByFeelName
+    (s) => s.computed(s).getDataTypes(externalModelsByNamespace).allTopLevelDataTypesByFeelName
   );
   const allFeelVariableUniqueNames = useDmnEditorStore((s) =>
-    s.computed.getAllFeelVariableUniqueNames(externalModelsByNamespace)
+    s.computed(s).getAllFeelVariableUniqueNames(externalModelsByNamespace)
   );
 
   const rename = useCallback<OnInlineFeelNameRenamed>(

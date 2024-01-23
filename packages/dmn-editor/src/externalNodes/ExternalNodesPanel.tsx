@@ -51,12 +51,12 @@ export const MIME_TYPE_FOR_DMN_EDITOR_EXTERNAL_NODES_FROM_INCLUDED_MODELS =
 
 export function ExternalNodesPanel() {
   const dmnEditorStoreApi = useDmnEditorStoreApi();
-  const importsByNamespace = useDmnEditorStore((s) => s.computed.importsByNamespace);
+  const importsByNamespace = useDmnEditorStore((s) => s.computed(s).importsByNamespace());
   const { externalModelsByNamespace } = useExternalModels();
   const externalDmnsByNamespace = useDmnEditorStore(
-    (s) => s.computed.getExternalModelTypesByNamespace(externalModelsByNamespace).dmns
+    (s) => s.computed(s).getExternalModelTypesByNamespace(externalModelsByNamespace).dmns
   );
-  const dmnShapesByHref = useDmnEditorStore((s) => s.computed.indexes.dmnShapesByHref);
+  const dmnShapesByHref = useDmnEditorStore((s) => s.computed(s).indexes().dmnShapesByHref);
   const { onRequestToResolvePath } = useDmnEditor();
 
   const onDragStart = useCallback((event: React.DragEvent, externalNode: ExternalNode) => {

@@ -163,9 +163,9 @@ export function DataTypePanel({
   const [dropdownOpenFor, setDropdownOpenFor] = useState<string | undefined>(undefined);
   const [topLevelDropdownOpen, setTopLevelDropdownOpen] = useState<boolean>(false);
   const { externalModelsByNamespace } = useExternalModels();
-  const importsByNamespace = useDmnEditorStore((s) => s.computed.importsByNamespace);
+  const importsByNamespace = useDmnEditorStore((s) => s.computed(s).importsByNamespace());
   const allTopLevelItemDefinitionUniqueNames = useDmnEditorStore(
-    (s) => s.computed.getDataTypes(externalModelsByNamespace).allTopLevelItemDefinitionUniqueNames
+    (s) => s.computed(s).getDataTypes(externalModelsByNamespace).allTopLevelItemDefinitionUniqueNames
   );
 
   const allUniqueNames = useMemo(

@@ -29,9 +29,10 @@ export function useResolvedTypeRef(typeRef: string | undefined, relativeToNamesp
     return resolveTypeRef({
       typeRef: typeRef || DmnBuiltInDataType.Undefined,
       namespace: relativeToNamespace || thisDmnsNamespace,
-      allTopLevelDataTypesByFeelName: s.computed.getDataTypes(externalModelsByNamespace).allTopLevelDataTypesByFeelName,
+      allTopLevelDataTypesByFeelName: s.computed(s).getDataTypes(externalModelsByNamespace)
+        .allTopLevelDataTypesByFeelName,
       externalModelsByNamespace,
-      thisDmnsImportsByNamespace: s.computed.importsByNamespace,
+      thisDmnsImportsByNamespace: s.computed(s).importsByNamespace(),
       relativeToNamespace: thisDmnsNamespace,
     });
   });

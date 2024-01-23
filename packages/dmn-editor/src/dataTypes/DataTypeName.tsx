@@ -56,9 +56,9 @@ export function DataTypeName({
   const dmnEditorStoreApi = useDmnEditorStoreApi();
   const { externalModelsByNamespace } = useExternalModels();
   const dataType = useDmnEditorStore((s) =>
-    s.computed.getDataTypes(externalModelsByNamespace).allDataTypesById.get(itemDefinition["@_id"]!)
+    s.computed(s).getDataTypes(externalModelsByNamespace).allDataTypesById.get(itemDefinition["@_id"]!)
   );
-  const importsByNamespace = useDmnEditorStore((s) => s.computed.importsByNamespace);
+  const importsByNamespace = useDmnEditorStore((s) => s.computed(s).importsByNamespace());
 
   const feelQNameToDisplay = buildFeelQNameFromNamespace({
     namedElement: itemDefinition,
@@ -78,7 +78,7 @@ export function DataTypeName({
           definitions: state.dmn.model.definitions,
           newName,
           itemDefinitionId: itemDefinition["@_id"]!,
-          allDataTypesById: state.computed.getDataTypes(externalModelsByNamespace).allDataTypesById,
+          allDataTypesById: state.computed(state).getDataTypes(externalModelsByNamespace).allDataTypesById,
         });
       });
     },

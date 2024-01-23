@@ -161,7 +161,7 @@ export const DmnEditorInternal = ({
   const isDiagramPropertiesPanelOpen = useDmnEditorStore((s) => s.diagram.propertiesPanel.isOpen);
   const navigationTab = useDmnEditorStore((s) => s.navigation.tab);
   const dmn = useDmnEditorStore((s) => s.dmn);
-  const isDiagramEditingInProgress = useDmnEditorStore((s) => s.computed.isDiagramEditingInProgress);
+  const isDiagramEditingInProgress = useDmnEditorStore((s) => s.computed(s).isDiagramEditingInProgress());
 
   const dmnEditorStoreApi = useDmnEditorStoreApi();
 
@@ -177,7 +177,10 @@ export const DmnEditorInternal = ({
   useImperativeHandle(
     forwardRef,
     () => ({
-      reset: (model) => dmnEditorStoreApi.getState().dispatch.dmn.reset(model),
+      reset: (model) => {
+        const state = dmnEditorStoreApi.getState();
+        return state.dispatch(state).dmn.reset(model);
+      },
       getDiagramSvg: async () => {
         const nodes = diagramRef.current?.getReactFlowInstance()?.getNodes();
         const edges = diagramRef.current?.getReactFlowInstance()?.getEdges();
@@ -191,6 +194,8 @@ export const DmnEditorInternal = ({
         svg.setAttribute("width", bounds.width + SVG_PADDING * 2 + "");
         svg.setAttribute("height", bounds.height + SVG_PADDING * 2 + "");
 
+        const state = dmnEditorStoreApi.getState();
+
         // We're still on React 17.
         // eslint-disable-next-line react/no-deprecated
         ReactDOM.render(
@@ -199,9 +204,9 @@ export const DmnEditorInternal = ({
             <DmnDiagramSvg
               nodes={nodes}
               edges={edges}
-              snapGrid={dmnEditorStoreApi.getState().diagram.snapGrid}
-              importsByNamespace={dmnEditorStoreApi.getState().computed.importsByNamespace}
-              thisDmn={dmnEditorStoreApi.getState().dmn}
+              snapGrid={state.diagram.snapGrid}
+              importsByNamespace={state.computed(state).importsByNamespace()}
+              thisDmn={state.dmn}
             />
           </g>,
           svg

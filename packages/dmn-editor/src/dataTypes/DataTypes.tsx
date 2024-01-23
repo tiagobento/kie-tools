@@ -92,12 +92,12 @@ export function DataTypes() {
   const [filter, setFilter] = useState("");
   const { externalModelsByNamespace } = useExternalModels();
   const allTopLevelItemDefinitionUniqueNames = useDmnEditorStore(
-    (s) => s.computed.getDataTypes(externalModelsByNamespace).allTopLevelItemDefinitionUniqueNames
+    (s) => s.computed(s).getDataTypes(externalModelsByNamespace).allTopLevelItemDefinitionUniqueNames
   );
   const allDataTypesById = useDmnEditorStore(
-    (s) => s.computed.getDataTypes(externalModelsByNamespace).allDataTypesById
+    (s) => s.computed(s).getDataTypes(externalModelsByNamespace).allDataTypesById
   );
-  const dataTypesTree = useDmnEditorStore((s) => s.computed.getDataTypes(externalModelsByNamespace).dataTypesTree);
+  const dataTypesTree = useDmnEditorStore((s) => s.computed(s).getDataTypes(externalModelsByNamespace).dataTypesTree);
 
   const activeDataType = useMemo(() => {
     return activeItemDefinitionId ? allDataTypesById.get(activeItemDefinitionId) : undefined;

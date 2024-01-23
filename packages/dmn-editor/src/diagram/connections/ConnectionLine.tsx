@@ -44,7 +44,7 @@ export function ConnectionLine({ toX, toY, fromNode, fromHandle }: RF.Connection
   const { externalModelsByNamespace } = useExternalModels();
   const edge = useDmnEditorStore((s) =>
     s.diagram.edgeIdBeingUpdated
-      ? s.computed.getDiagramData(externalModelsByNamespace).edgesById.get(s.diagram.edgeIdBeingUpdated)
+      ? s.computed(s).getDiagramData(externalModelsByNamespace).edgesById.get(s.diagram.edgeIdBeingUpdated)
       : undefined
   );
   const kieEdgePath = useKieEdgePath(edge?.source, edge?.target, edge?.data);

@@ -36,7 +36,10 @@ export function BeePropertiesPanel() {
   const { externalModelsByNamespace } = useExternalModels();
   const node = useDmnEditorStore((s) =>
     activeDrgElementId
-      ? s.computed.getDiagramData(externalModelsByNamespace).nodesById.get(buildXmlHref({ id: activeDrgElementId }))
+      ? s
+          .computed(s)
+          .getDiagramData(externalModelsByNamespace)
+          .nodesById.get(buildXmlHref({ id: activeDrgElementId }))
       : undefined
   );
 

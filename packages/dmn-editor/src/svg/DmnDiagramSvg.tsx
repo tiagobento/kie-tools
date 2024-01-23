@@ -27,7 +27,7 @@ import {
   KnowledgeRequirementPath,
 } from "../diagram/edges/Edges";
 import { DmnDiagramNodeData } from "../diagram/nodes/Nodes";
-import { SnapGrid, State } from "../store/Store";
+import { Computed, SnapGrid, State } from "../store/Store";
 import { EdgeMarkers } from "../diagram/edges/EdgeMarkers";
 import { EDGE_TYPES } from "../diagram/edges/EdgeTypes";
 import { getSnappedMultiPointAnchoredEdgePath } from "../diagram/edges/getSnappedMultiPointAnchoredEdgePath";
@@ -55,6 +55,7 @@ import {
 import { NodeType } from "../diagram/connections/graphStructure";
 import { buildFeelQNameFromXmlQName } from "../feel/buildFeelQName";
 import { Text } from "@visx/text";
+import { TypeOrReturnType } from "../store/ComputedStateCache";
 
 export function DmnDiagramSvg({
   nodes,
@@ -67,7 +68,7 @@ export function DmnDiagramSvg({
   edges: RF.Edge<DmnDiagramEdgeData>[];
   snapGrid: SnapGrid;
   thisDmn: State["dmn"];
-  importsByNamespace: State["computed"]["importsByNamespace"];
+  importsByNamespace: TypeOrReturnType<Computed["importsByNamespace"]>;
 }) {
   const { nodesSvg, nodesById } = useMemo(() => {
     const nodesById = new Map<string, RF.Node<DmnDiagramNodeData>>();

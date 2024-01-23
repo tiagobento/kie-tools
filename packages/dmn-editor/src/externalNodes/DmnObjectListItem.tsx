@@ -40,10 +40,10 @@ export function DmnObjectListItem({
   namespace: string;
   relativeToNamespace: string;
 }) {
-  const importsByNamespace = useDmnEditorStore((s) => s.computed.importsByNamespace);
+  const importsByNamespace = useDmnEditorStore((s) => s.computed(s).importsByNamespace());
   const { externalModelsByNamespace } = useExternalModels();
   const allTopLevelDataTypesByFeelName = useDmnEditorStore(
-    (s) => s.computed.getDataTypes(externalModelsByNamespace).allTopLevelDataTypesByFeelName
+    (s) => s.computed(s).getDataTypes(externalModelsByNamespace).allTopLevelDataTypesByFeelName
   );
   if (!dmnObject) {
     return <>{dmnObjectHref}</>;

@@ -48,7 +48,7 @@ export function ShapeOptions({
 }) {
   const [isShapeSectionExpanded, setShapeSectionExpanded] = useState<boolean>(startExpanded);
   const dmnEditorStoreApi = useDmnEditorStoreApi();
-  const dmnShapesByHref = useDmnEditorStore((s) => s.computed.indexes.dmnShapesByHref);
+  const dmnShapesByHref = useDmnEditorStore((s) => s.computed(s).indexes().dmnShapesByHref);
 
   const shapes = useMemo(() => nodeIds.map((nodeId) => dmnShapesByHref.get(nodeId)), [dmnShapesByHref, nodeIds]);
   // it only edits the first selected node

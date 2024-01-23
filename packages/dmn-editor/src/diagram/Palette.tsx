@@ -84,7 +84,7 @@ export function Palette({ pulse }: { pulse: boolean }) {
         },
       });
 
-      state.dispatch.diagram.setNodeStatus(state, newNodeId, { selected: true });
+      state.dispatch(state).diagram.setNodeStatus(newNodeId, { selected: true });
     });
   }, [diagram.drdIndex, dmnEditorStoreApi, rfStoreApi]);
 

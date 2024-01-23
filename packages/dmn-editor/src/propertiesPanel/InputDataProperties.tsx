@@ -47,7 +47,7 @@ export function InputDataProperties({
 
   const { externalModelsByNamespace } = useExternalModels();
   const allFeelVariableUniqueNames = useDmnEditorStore((s) =>
-    s.computed.getAllFeelVariableUniqueNames(externalModelsByNamespace)
+    s.computed(s).getAllFeelVariableUniqueNames(externalModelsByNamespace)
   );
 
   const { dmnEditorRootElementRef } = useDmnEditor();

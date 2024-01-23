@@ -58,10 +58,10 @@ export function DecisionServiceProperties({
   const thisDmn = useDmnEditorStore((s) => s.dmn);
   const { externalModelsByNamespace } = useExternalModels();
   const externalDmnsByNamespace = useDmnEditorStore(
-    (s) => s.computed.getExternalModelTypesByNamespace(externalModelsByNamespace).dmns
+    (s) => s.computed(s).getExternalModelTypesByNamespace(externalModelsByNamespace).dmns
   );
   const allFeelVariableUniqueNames = useDmnEditorStore((s) =>
-    s.computed.getAllFeelVariableUniqueNames(externalModelsByNamespace)
+    s.computed(s).getAllFeelVariableUniqueNames(externalModelsByNamespace)
   );
 
   const allDrgElementsByHref = useMemo(() => {

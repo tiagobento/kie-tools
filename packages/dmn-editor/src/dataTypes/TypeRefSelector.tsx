@@ -50,7 +50,7 @@ export function TypeRefSelector(props: {
   const [isOpen, setOpen] = useState(false);
   const { externalModelsByNamespace } = useExternalModels();
   const allTopLevelDataTypesByFeelName = useDmnEditorStore(
-    (s) => s.computed.getDataTypes(externalModelsByNamespace).allTopLevelDataTypesByFeelName
+    (s) => s.computed(s).getDataTypes(externalModelsByNamespace).allTopLevelDataTypesByFeelName
   );
 
   const selectedDataType = useMemo(() => {
