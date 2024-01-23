@@ -29,8 +29,8 @@ export type Cache<T> = {
 };
 
 let r: number = 0;
-let h: number = 0;
-let m: number = 0;
+// let h: number = 0;
+// let m: number = 0;
 
 export class ComputedStateCache<T extends Record<string, any>> {
   private readonly cache: Cache<T>;

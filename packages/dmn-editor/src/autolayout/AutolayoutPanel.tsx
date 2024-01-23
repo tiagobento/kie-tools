@@ -333,7 +333,7 @@ export function AutolayoutPanel() {
     });
   }, [dmnEditorStoreApi, externalModelsByNamespace]);
 
-  return <Button onClick={onApply}>Apply</Button>;
+  return <Button onClick={onApply}>Apply 2</Button>;
 }
 
 //
