@@ -19,6 +19,7 @@
 
 import { DmnLatestModel } from "@kie-tools/dmn-marshaller";
 import { DMN15__tImport } from "@kie-tools/dmn-marshaller/dist/schemas/dmn-1_5/ts-gen/types";
+import { enableMapSet } from "immer";
 import * as RF from "reactflow";
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
@@ -35,6 +36,8 @@ import {
   computeIsDropTargetNodeValidForSelection,
 } from "./ComputedState";
 import { ComputedStateCache } from "./ComputedStateCache";
+
+enableMapSet(); // Necessary because `Computed` has a lot of Maps and Sets.
 
 export interface DmnEditorDiagramNodeStatus {
   selected: boolean;
@@ -125,9 +128,9 @@ export interface State {
 // Read this to understand why we need computed as part of the store.
 // https://github.com/pmndrs/zustand/issues/132#issuecomment-1120467721
 export type Computed = {
-  allUniqueFeelNames: ReturnType<typeof computeAllUniqueFeelNames>;
   isDiagramEditingInProgress: boolean;
   importsByNamespace: Map<string, DMN15__tImport>;
+  allUniqueFeelNames: ReturnType<typeof computeAllUniqueFeelNames>;
   indexes: ReturnType<typeof computeIndexes>;
   getDiagramData(e: ExternalModelsIndex | undefined): ReturnType<typeof computeDiagramData>;
   isDropTargetNodeValidForSelection(e: ExternalModelsIndex | undefined): boolean;
@@ -321,13 +324,13 @@ export function createDmnEditorStore(model: State["dmn"]["model"], computedCache
             "isDiagramEditingInProgress",
             (
               draggingNodesCount: number,
-              resizingNodeCount: number,
+              resizingNodesCount: number,
               draggingWaypointsCount: number,
               movingDividerLinesCount: number,
               isEditingStyle: boolean
             ) =>
               draggingNodesCount > 0 ||
-              resizingNodeCount > 0 ||
+              resizingNodesCount > 0 ||
               draggingWaypointsCount > 0 ||
               movingDividerLinesCount > 0 ||
               isEditingStyle,

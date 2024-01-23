@@ -20,41 +20,39 @@
 import "@patternfly/react-core/dist/styles/base.css";
 import "reactflow/dist/style.css";
 
-import { enableMapSet, original } from "immer";
-enableMapSet();
-
-import * as React from "react";
-import * as ReactDOM from "react-dom";
-import * as RF from "reactflow";
-import { useCallback, useEffect, useImperativeHandle, useRef, useState, useMemo } from "react";
+import { AllDmnMarshallers, DmnLatestModel } from "@kie-tools/dmn-marshaller";
+import { PMML } from "@kie-tools/pmml-editor-marshaller";
 import { Drawer, DrawerContent, DrawerContentBody } from "@patternfly/react-core/dist/js/components/Drawer";
+import { Label } from "@patternfly/react-core/dist/js/components/Label";
 import { Tab, TabTitleIcon, TabTitleText, Tabs } from "@patternfly/react-core/dist/js/components/Tabs";
 import { FileIcon } from "@patternfly/react-icons/dist/js/icons/file-icon";
 import { InfrastructureIcon } from "@patternfly/react-icons/dist/js/icons/infrastructure-icon";
 import { PficonTemplateIcon } from "@patternfly/react-icons/dist/js/icons/pficon-template-icon";
+import { original } from "immer";
+import * as React from "react";
+import { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
+import * as ReactDOM from "react-dom";
+import { ErrorBoundary, ErrorBoundaryPropsWithFallback } from "react-error-boundary";
+import * as RF from "reactflow";
+import { DmnEditorContextProvider, useDmnEditor } from "./DmnEditorContext";
+import { DmnEditorErrorFallback } from "./DmnEditorErrorFallback";
 import { BoxedExpression } from "./boxedExpressions/BoxedExpression";
 import { DataTypes } from "./dataTypes/DataTypes";
 import { Diagram, DiagramRef } from "./diagram/Diagram";
 import { DmnVersionLabel } from "./diagram/DmnVersionLabel";
+import { DmnEditorExternalModelsContextProvider } from "./includedModels/DmnEditorDependenciesContext";
 import { IncludedModels } from "./includedModels/IncludedModels";
+import { BeePropertiesPanel } from "./propertiesPanel/BeePropertiesPanel";
 import { DiagramPropertiesPanel } from "./propertiesPanel/DiagramPropertiesPanel";
+import { ComputedStateCache } from "./store/ComputedStateCache";
 import { Computed, DmnEditorTab, createDmnEditorStore, defaultStaticState } from "./store/Store";
 import { DmnEditorStoreApiContext, StoreApiType, useDmnEditorStore, useDmnEditorStoreApi } from "./store/StoreContext";
-import { useEffectAfterFirstRender } from "./useEffectAfterFirstRender";
-import { Label } from "@patternfly/react-core/dist/js/components/Label";
-import { BeePropertiesPanel } from "./propertiesPanel/BeePropertiesPanel";
-import { DmnEditorContextProvider, useDmnEditor } from "./DmnEditorContext";
-import { DmnEditorExternalModelsContextProvider } from "./includedModels/DmnEditorDependenciesContext";
-import { ErrorBoundary, ErrorBoundaryPropsWithFallback } from "react-error-boundary";
-import { DmnEditorErrorFallback } from "./DmnEditorErrorFallback";
-import { DmnLatestModel, AllDmnMarshallers } from "@kie-tools/dmn-marshaller";
-import { PMML } from "@kie-tools/pmml-editor-marshaller";
 import { DmnDiagramSvg } from "./svg/DmnDiagramSvg";
-import { ComputedStateCache } from "./store/ComputedStateCache";
+import { useEffectAfterFirstRender } from "./useEffectAfterFirstRender";
+import { INITIAL_COMPUTED_CACHE } from "./store/ComputedState";
 
 import "@kie-tools/dmn-marshaller/dist/kie-extensions"; // This is here because of the KIE Extension for DMN.
 import "./DmnEditor.css"; // Leave it for last, as this overrides some of the PF and RF styles.
-import { INITIAL_COMPUTED_CACHE } from "./store/ComputedState";
 
 const ON_MODEL_CHANGE_DEBOUNCE_TIME_IN_MS = 500;
 
@@ -359,9 +357,13 @@ export const DmnEditorInternal = ({
 };
 
 export const DmnEditor = React.forwardRef((props: DmnEditorProps, ref: React.Ref<DmnEditorRef>) => {
-  const storeRef = React.useRef<StoreApiType>(
-    createDmnEditorStore(props.model, new ComputedStateCache<Computed>(INITIAL_COMPUTED_CACHE))
+  const store = useMemo(
+    () => createDmnEditorStore(props.model, new ComputedStateCache<Computed>(INITIAL_COMPUTED_CACHE)),
+    // Purposefully empty. This memoizes the initial value of the store
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
   );
+  const storeRef = React.useRef<StoreApiType>(store);
 
   const resetState: ErrorBoundaryPropsWithFallback["onReset"] = useCallback(({ args }) => {
     storeRef.current?.setState((state) => {

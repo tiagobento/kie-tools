@@ -95,8 +95,8 @@ export const NODE_LAYERS = {
 };
 
 export function computeAllUniqueFeelNames(
-  drgElements: DMN15__tDefinitions["drgElement"] | undefined,
-  imports: DMN15__tImport[] | undefined
+  drgElements: State["dmn"]["model"]["definitions"]["drgElement"],
+  imports: State["dmn"]["model"]["definitions"]["import"]
 ) {
   const ret: UniqueNameIndex = new Map();
 
@@ -184,7 +184,7 @@ export function computeDataTypes(
 }
 
 export function computeExternalModelsByType(
-  imports: DMN15__tImport[] | undefined,
+  imports: State["dmn"]["model"]["definitions"]["import"],
   externalModelsByNamespace: ExternalModelsIndex | undefined
 ) {
   return (imports ?? []).reduce<{ dmns: ExternalDmnsIndex; pmmls: ExternalPmmlsIndex }>(
@@ -211,7 +211,10 @@ export function computeExternalModelsByType(
   );
 }
 
-export function computeIndexes(definitions: DMN15__tDefinitions, drdIndex: State["diagram"]["drdIndex"]) {
+export function computeIndexes(
+  definitions: State["dmn"]["model"]["definitions"],
+  drdIndex: State["diagram"]["drdIndex"]
+) {
   const dmnEdgesByDmnElementRef = new Map<string, DMNDI15__DMNEdge & { index: number }>();
   const dmnShapesByHref = new Map<string, DMNDI15__DMNShape & { index: number; dmnElementRefQName: XmlQName }>();
   const hrefsOfDmnElementRefsOfShapesPointingToExternalDmnObjects = new Set<string>();
