@@ -24,7 +24,4 @@ import fastDeepEqual from "fast-deep-equal";
  * references, and they'll always be different, resulting in every node and edge re-rendering for every change. By
  * comparing the values inside the objects, we avoid re-rendering unnecessarily.
  */
-export const propsHaveSameValuesDeep = (
-  prev: Readonly<React.ComponentProps<any>>,
-  next: Readonly<React.ComponentProps<any>>
-) => fastDeepEqual(prev, next);
+export const propsHaveSameValuesDeep = fastDeepEqual;
