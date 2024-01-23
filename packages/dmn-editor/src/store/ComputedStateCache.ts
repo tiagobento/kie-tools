@@ -56,17 +56,17 @@ export class ComputedStateCache<T extends Record<string, any>> {
         }
       }
     } else {
-      console.debug(`${r}: COMPUTED STORE CACHE: (Miss) Deps don't have the same length... (${String(key)})`);
+      // console.debug(`${r}: COMPUTED STORE CACHE: (Miss) Deps don't have the same length... (${String(key)})`);
     }
 
     if (depsAreEqual) {
-      console.debug(`${r}: COMPUTED STORE CACHE: Hit ${++h}! (${String(key)})`);
+      // console.debug(`${r}: COMPUTED STORE CACHE: Hit ${++h}! (${String(key)})`);
       return this.cache[key].value!;
     } else {
-      console.debug(`${r}: COMPUTED STORE CACHE: (Miss) Deps have different values... (${String(key)})`);
+      // console.debug(`${r}: COMPUTED STORE CACHE: (Miss) Deps have different values... (${String(key)})`);
     }
 
-    console.debug(`${r}: COMPUTED STORE CACHE: Miss (${++m}})... (${String(key)})`);
+    // console.debug(`${r}: COMPUTED STORE CACHE: Miss (${++m}})... (${String(key)})`);
 
     const v = delegate(...dependencies);
     this.cache[key].dependencies = dependencies;
