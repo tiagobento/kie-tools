@@ -110,9 +110,8 @@ export interface State {
     overlays: {
       enableNodeHierarchyHighlight: boolean;
       enableExecutionHitsHighlights: boolean;
-      enableCustomNodeStyles: boolean;
       enableDataTypesToolbarOnNodes: boolean;
-      enableStyles: boolean;
+      enableCustomNodeStyles: boolean;
     };
     snapGrid: SnapGrid;
     _selectedNodes: Array<string>;
@@ -121,7 +120,7 @@ export interface State {
     resizingNodes: Array<string>;
     draggingWaypoints: Array<string>;
     movingDividerLines: Array<string>;
-    editingStyle: boolean;
+    isEditingStyle: boolean;
   };
 }
 
@@ -129,15 +128,23 @@ export interface State {
 // https://github.com/pmndrs/zustand/issues/132#issuecomment-1120467721
 export type Computed = {
   isDiagramEditingInProgress(): boolean;
+
   importsByNamespace(): Map<string, DMN15__tImport>;
+
   allUniqueFeelNames(): ReturnType<typeof computeAllUniqueFeelNames>;
+
   indexes(): ReturnType<typeof computeIndexes>;
+
   getDiagramData(e: ExternalModelsIndex | undefined): ReturnType<typeof computeDiagramData>;
+
   isDropTargetNodeValidForSelection(e: ExternalModelsIndex | undefined): boolean;
+
   getExternalModelTypesByNamespace: (
     e: ExternalModelsIndex | undefined
   ) => ReturnType<typeof computeExternalModelsByType>;
+
   getDataTypes(e: ExternalModelsIndex | undefined): ReturnType<typeof computeDataTypes>;
+
   getAllFeelVariableUniqueNames(
     e: ExternalModelsIndex | undefined
   ): ReturnType<typeof computeAllFeelVariableUniqueNames>;
@@ -206,7 +213,6 @@ export const defaultStaticState = (): Omit<State, "dmn" | "dispatch" | "computed
       enableExecutionHitsHighlights: false,
       enableCustomNodeStyles: false,
       enableDataTypesToolbarOnNodes: true,
-      enableStyles: true,
     },
     snapGrid: {
       isEnabled: true,
@@ -219,7 +225,7 @@ export const defaultStaticState = (): Omit<State, "dmn" | "dispatch" | "computed
     resizingNodes: [],
     draggingWaypoints: [],
     movingDividerLines: [],
-    editingStyle: false,
+    isEditingStyle: false,
   },
 });
 
@@ -322,19 +328,19 @@ export function createDmnEditorStore(model: State["dmn"]["model"], computedCache
                 resizingNodesCount: number,
                 draggingWaypointsCount: number,
                 movingDividerLinesCount: number,
-                isEditingStyle: boolean
+                isisEditingStyle: boolean
               ) =>
                 draggingNodesCount > 0 ||
                 resizingNodesCount > 0 ||
                 draggingWaypointsCount > 0 ||
                 movingDividerLinesCount > 0 ||
-                isEditingStyle,
+                isisEditingStyle,
               [
                 s.diagram.draggingNodes.length,
                 s.diagram.resizingNodes.length,
                 s.diagram.draggingWaypoints.length,
                 s.diagram.movingDividerLines.length,
-                s.diagram.editingStyle,
+                s.diagram.isEditingStyle,
               ]
             );
           },

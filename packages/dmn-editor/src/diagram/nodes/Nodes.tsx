@@ -111,7 +111,7 @@ export const InputDataNode = React.memo(
     const isExternal = !!dmnObjectQName.prefix;
 
     const snapGrid = useDmnEditorStore((s) => s.diagram.snapGrid);
-    const enableStyles = useDmnEditorStore((s) => s.diagram.overlays.enableStyles);
+    const enableCustomNodeStyles = useDmnEditorStore((s) => s.diagram.overlays.enableCustomNodeStyles);
     const isHovered = useIsHovered(ref);
     const isResizing = useNodeResizing(id);
     const shouldActLikeHovered = useDmnEditorStore(
@@ -154,7 +154,7 @@ export const InputDataNode = React.memo(
     const { fontCssProperties, shapeStyle } = useNodeStyle({
       dmnStyle: shape["di:Style"],
       nodeType: type as NodeType,
-      isEnabled: enableStyles,
+      isEnabled: enableCustomNodeStyles,
     });
 
     const additionalClasses = `${className} ${dmnObjectQName.prefix ? "external" : ""}`;
@@ -239,7 +239,7 @@ export const DecisionNode = React.memo(
     const isExternal = !!dmnObjectQName.prefix;
 
     const snapGrid = useDmnEditorStore((s) => s.diagram.snapGrid);
-    const enableStyles = useDmnEditorStore((s) => s.diagram.overlays.enableStyles);
+    const enableCustomNodeStyles = useDmnEditorStore((s) => s.diagram.overlays.enableCustomNodeStyles);
     const isHovered = useIsHovered(ref);
     const isResizing = useNodeResizing(id);
     const shouldActLikeHovered = useDmnEditorStore(
@@ -282,7 +282,7 @@ export const DecisionNode = React.memo(
     const { fontCssProperties, shapeStyle } = useNodeStyle({
       dmnStyle: shape["di:Style"],
       nodeType: type as NodeType,
-      isEnabled: enableStyles,
+      isEnabled: enableCustomNodeStyles,
     });
 
     const additionalClasses = `${className} ${dmnObjectQName.prefix ? "external" : ""}`;
@@ -370,7 +370,7 @@ export const BkmNode = React.memo(
     const isExternal = !!dmnObjectQName.prefix;
 
     const snapGrid = useDmnEditorStore((s) => s.diagram.snapGrid);
-    const enableStyles = useDmnEditorStore((s) => s.diagram.overlays.enableStyles);
+    const enableCustomNodeStyles = useDmnEditorStore((s) => s.diagram.overlays.enableCustomNodeStyles);
     const isHovered = useIsHovered(ref);
     const isResizing = useNodeResizing(id);
     const shouldActLikeHovered = useDmnEditorStore(
@@ -413,7 +413,7 @@ export const BkmNode = React.memo(
     const { fontCssProperties, shapeStyle } = useNodeStyle({
       dmnStyle: shape["di:Style"],
       nodeType: type as NodeType,
-      isEnabled: enableStyles,
+      isEnabled: enableCustomNodeStyles,
     });
 
     const additionalClasses = `${className} ${dmnObjectQName.prefix ? "external" : ""}`;
@@ -500,7 +500,7 @@ export const KnowledgeSourceNode = React.memo(
     const isExternal = !!dmnObjectQName.prefix;
 
     const snapGrid = useDmnEditorStore((s) => s.diagram.snapGrid);
-    const enableStyles = useDmnEditorStore((s) => s.diagram.overlays.enableStyles);
+    const enableCustomNodeStyles = useDmnEditorStore((s) => s.diagram.overlays.enableCustomNodeStyles);
     const isHovered = useIsHovered(ref);
     const isResizing = useNodeResizing(id);
     const shouldActLikeHovered = useDmnEditorStore(
@@ -531,7 +531,7 @@ export const KnowledgeSourceNode = React.memo(
     const { fontCssProperties, shapeStyle } = useNodeStyle({
       dmnStyle: shape["di:Style"],
       nodeType: type as NodeType,
-      isEnabled: enableStyles,
+      isEnabled: enableCustomNodeStyles,
     });
 
     const additionalClasses = `${className} ${dmnObjectQName.prefix ? "external" : ""}`;
@@ -610,7 +610,7 @@ export const TextAnnotationNode = React.memo(
     const isExternal = !!dmnObjectQName.prefix;
 
     const snapGrid = useDmnEditorStore((s) => s.diagram.snapGrid);
-    const enableStyles = useDmnEditorStore((s) => s.diagram.overlays.enableStyles);
+    const enableCustomNodeStyles = useDmnEditorStore((s) => s.diagram.overlays.enableCustomNodeStyles);
     const isHovered = useIsHovered(ref);
     const isResizing = useNodeResizing(id);
     const shouldActLikeHovered = useDmnEditorStore(
@@ -641,7 +641,7 @@ export const TextAnnotationNode = React.memo(
     const { fontCssProperties, shapeStyle } = useNodeStyle({
       dmnStyle: shape["di:Style"],
       nodeType: type as NodeType,
-      isEnabled: enableStyles,
+      isEnabled: enableCustomNodeStyles,
     });
 
     const additionalClasses = `${className} ${dmnObjectQName.prefix ? "external" : ""}`;
@@ -721,7 +721,7 @@ export const DecisionServiceNode = React.memo(
     const isExternal = !!dmnObjectQName.prefix;
 
     const snapGrid = useDmnEditorStore((s) => s.diagram.snapGrid);
-    const enableStyles = useDmnEditorStore((s) => s.diagram.overlays.enableStyles);
+    const enableCustomNodeStyles = useDmnEditorStore((s) => s.diagram.overlays.enableCustomNodeStyles);
     const isHovered = useIsHovered(ref);
     const isResizing = useNodeResizing(id);
     const shouldActLikeHovered = useDmnEditorStore(
@@ -827,7 +827,7 @@ export const DecisionServiceNode = React.memo(
     const { fontCssProperties, shapeStyle } = useNodeStyle({
       dmnStyle: shape["di:Style"],
       nodeType: type as NodeType,
-      isEnabled: enableStyles,
+      isEnabled: enableCustomNodeStyles,
     });
 
     const additionalClasses = `${className} ${dmnObjectQName.prefix ? "external" : ""}`;
@@ -919,7 +919,7 @@ export const GroupNode = React.memo(
     const isExternal = !!dmnObjectQName.prefix;
 
     const snapGrid = useDmnEditorStore((s) => s.diagram.snapGrid);
-    const enableStyles = useDmnEditorStore((s) => s.diagram.overlays.enableStyles);
+    const enableCustomNodeStyles = useDmnEditorStore((s) => s.diagram.overlays.enableCustomNodeStyles);
     const isHovered = useIsHovered(ref);
     const isResizing = useNodeResizing(id);
     const shouldActLikeHovered = useDmnEditorStore(
@@ -973,7 +973,7 @@ export const GroupNode = React.memo(
     const { fontCssProperties, shapeStyle } = useNodeStyle({
       dmnStyle: shape["di:Style"],
       nodeType: type as NodeType,
-      isEnabled: enableStyles,
+      isEnabled: enableCustomNodeStyles,
     });
 
     const additionalClasses = `${className} ${dmnObjectQName.prefix ? "external" : ""}`;
@@ -1050,7 +1050,7 @@ export const UnknownNode = React.memo(
     const isExternal = !!dmnObjectQName.prefix;
 
     const snapGrid = useDmnEditorStore((s) => s.diagram.snapGrid);
-    const enableStyles = useDmnEditorStore((s) => s.diagram.overlays.enableStyles);
+    const enableCustomNodeStyles = useDmnEditorStore((s) => s.diagram.overlays.enableCustomNodeStyles);
     const isHovered = useIsHovered(ref);
     const isResizing = useNodeResizing(id);
     const shouldActLikeHovered = useDmnEditorStore(

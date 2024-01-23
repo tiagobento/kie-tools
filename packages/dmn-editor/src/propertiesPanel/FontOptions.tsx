@@ -208,7 +208,7 @@ export function FontOptions({ startExpanded, nodeIds }: { startExpanded: boolean
     (newColor: string) => {
       setTemporaryFontColor(newColor.replace("#", ""));
       editShapeStyle((shapes, state) => {
-        state!.diagram.editingStyle = true;
+        state!.diagram.isEditingStyle = true;
       });
     },
     [editShapeStyle]
@@ -226,7 +226,7 @@ export function FontOptions({ startExpanded, nodeIds }: { startExpanded: boolean
             green !== shape?.["di:Style"]?.["dmndi:FontColor"]?.["@_green"] &&
             blue !== shape?.["di:Style"]?.["dmndi:FontColor"]?.["@_blue"]
           ) {
-            state!.diagram.editingStyle = false;
+            state!.diagram.isEditingStyle = false;
             shape!["di:Style"]!["dmndi:FontColor"] ??= { "@_blue": 0, "@_green": 0, "@_red": 0 };
             shape!["di:Style"]!["dmndi:FontColor"]["@_red"] = red;
             shape!["di:Style"]!["dmndi:FontColor"]["@_green"] = green;
@@ -243,7 +243,7 @@ export function FontOptions({ startExpanded, nodeIds }: { startExpanded: boolean
   const onReset = useCallback(() => {
     setTemporaryFontColor("000000");
     editShapeStyle((shapes, state) => {
-      state!.diagram.editingStyle = false;
+      state!.diagram.isEditingStyle = false;
       shapes.forEach((shape) => {
         shape["di:Style"]!["@_fontBold"] = undefined;
         shape["di:Style"]!["@_fontItalic"] = undefined;

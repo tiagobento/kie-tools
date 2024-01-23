@@ -145,7 +145,7 @@ export function ShapeOptions({
     (newColor: string) => {
       setTemporaryStrokeColor(newColor.replace("#", ""));
       editShapeStyle((shapes, state) => {
-        state!.diagram.editingStyle = true;
+        state!.diagram.isEditingStyle = true;
       });
     },
     [editShapeStyle]
@@ -163,7 +163,7 @@ export function ShapeOptions({
             green !== shape?.["di:Style"]?.["dmndi:StrokeColor"]?.["@_green"] &&
             blue !== shape?.["di:Style"]?.["dmndi:StrokeColor"]?.["@_blue"]
           ) {
-            state!.diagram.editingStyle = false;
+            state!.diagram.isEditingStyle = false;
             shape!["di:Style"]!["dmndi:StrokeColor"] ??= { "@_blue": 0, "@_green": 0, "@_red": 0 };
             shape!["di:Style"]!["dmndi:StrokeColor"]["@_red"] = red;
             shape!["di:Style"]!["dmndi:StrokeColor"]["@_green"] = green;
@@ -182,7 +182,7 @@ export function ShapeOptions({
     (newColor: string) => {
       setTemporaryFillColor(newColor.replace("#", ""));
       editShapeStyle((shapes, state) => {
-        state!.diagram.editingStyle = true;
+        state!.diagram.isEditingStyle = true;
       });
     },
     [editShapeStyle]
@@ -200,7 +200,7 @@ export function ShapeOptions({
             green !== shape?.["di:Style"]?.["dmndi:FillColor"]?.["@_green"] &&
             blue !== shape?.["di:Style"]?.["dmndi:FillColor"]?.["@_blue"]
           ) {
-            state!.diagram.editingStyle = false;
+            state!.diagram.isEditingStyle = false;
             shape!["di:Style"]!["dmndi:FillColor"] ??= { "@_blue": 255, "@_green": 255, "@_red": 255 };
             shape!["di:Style"]!["dmndi:FillColor"]["@_red"] = red;
             shape!["di:Style"]!["dmndi:FillColor"]["@_green"] = green;
