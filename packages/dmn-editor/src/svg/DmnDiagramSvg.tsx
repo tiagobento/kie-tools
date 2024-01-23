@@ -209,13 +209,25 @@ export function DmnDiagramSvg({
     <>
       <EdgeMarkers />
       {edges.map((e) => {
+        const s = nodesById?.get(e.source);
+        const t = nodesById?.get(e.target);
         const { path } = getSnappedMultiPointAnchoredEdgePath({
           snapGrid,
           dmnEdge: e.data?.dmnEdge,
           dmnShapeSource: e.data?.dmnShapeSource,
           dmnShapeTarget: e.data?.dmnShapeTarget,
-          sourceNode: nodesById?.get(e.source),
-          targetNode: nodesById?.get(e.target),
+          sourceNodeBounds: {
+            x: s?.positionAbsolute?.x,
+            y: s?.positionAbsolute?.y,
+            width: s?.width,
+            height: s?.height,
+          },
+          targetNodeBounds: {
+            x: t?.positionAbsolute?.x,
+            y: t?.positionAbsolute?.y,
+            width: t?.width,
+            height: t?.height,
+          },
         });
         return (
           <React.Fragment key={e.id}>

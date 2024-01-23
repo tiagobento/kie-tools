@@ -30,7 +30,8 @@ import {
 import { NODE_TYPES } from "../nodes/NodeTypes";
 import { getPositionalHandlePosition } from "../maths/Maths";
 import { DecisionNodeSvg, BkmNodeSvg, KnowledgeSourceNodeSvg, TextAnnotationNodeSvg } from "../nodes/NodeSvgs";
-import { getNodeCenterPoint, pointsToPath } from "../maths/DmnMaths";
+import { pointsToPath } from "../maths/DmnMaths";
+import { getBoundsCenterPoint } from "../maths/Maths";
 import { NodeType, getDefaultEdgeTypeBetween } from "./graphStructure";
 import { switchExpression } from "@kie-tools-core/switch-expression-ts";
 import { DEFAULT_NODE_SIZES } from "../nodes/DefaultSizes";
@@ -59,7 +60,12 @@ export function ConnectionLine({ toX, toY, fromNode, fromHandle }: RF.Connection
     (k) => (PositionalNodeHandleId as any)[k] === fromHandle?.id
   );
 
-  const { "@_x": fromX, "@_y": fromY } = getNodeCenterPoint(fromNode);
+  const { "@_x": fromX, "@_y": fromY } = getBoundsCenterPoint({
+    x: fromNode?.positionAbsolute?.x,
+    y: fromNode?.positionAbsolute?.y,
+    width: fromNode?.width,
+    height: fromNode?.height,
+  });
 
   const connectionLinePath =
     edge && kieEdgePath.points

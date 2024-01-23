@@ -102,7 +102,7 @@ import { buildHierarchy } from "./graph/graph";
 import {
   CONTAINER_NODES_DESIRABLE_PADDING,
   getBounds,
-  getBoundsCenterPoint,
+  getDmnBoundsCenterPoint,
   getContainmentRelationship,
   getHandlePosition,
   getNodeTypeFromDmnObject,
@@ -916,10 +916,10 @@ export const Diagram = React.forwardRef<DiagramRef, { container: React.RefObject
 
           const lastWaypoint = oldEdge.data?.dmnEdge
             ? oldEdge.data!.dmnEdge!["di:waypoint"]![oldEdge.data!.dmnEdge!["di:waypoint"]!.length - 1]!
-            : getBoundsCenterPoint(targetBounds);
+            : getDmnBoundsCenterPoint(targetBounds);
           const firstWaypoint = oldEdge.data?.dmnEdge
             ? oldEdge.data!.dmnEdge!["di:waypoint"]![0]!
-            : getBoundsCenterPoint(sourceBounds);
+            : getDmnBoundsCenterPoint(sourceBounds);
 
           const { newDmnEdge } = addEdge({
             definitions: state.dmn.model.definitions,
