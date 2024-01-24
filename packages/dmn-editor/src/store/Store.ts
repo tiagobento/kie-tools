@@ -27,7 +27,6 @@ import { ExternalModelsIndex } from "../DmnEditor";
 import { DmnDiagramNodeData } from "../diagram/nodes/Nodes";
 import {
   computeAllFeelVariableUniqueNames,
-  computeAllUniqueFeelNames,
   computeDataTypes,
   computeDiagramData,
   computeExternalModelsByType,
@@ -131,8 +130,6 @@ export type Computed = {
 
   importsByNamespace(): Map<string, DMN15__tImport>;
 
-  allUniqueFeelNames(): ReturnType<typeof computeAllUniqueFeelNames>;
-
   indexes(): ReturnType<typeof computeIndexes>;
 
   getDiagramData(e: ExternalModelsIndex | undefined): ReturnType<typeof computeDiagramData>;
@@ -145,9 +142,7 @@ export type Computed = {
 
   getDataTypes(e: ExternalModelsIndex | undefined): ReturnType<typeof computeDataTypes>;
 
-  getAllFeelVariableUniqueNames(
-    e: ExternalModelsIndex | undefined
-  ): ReturnType<typeof computeAllFeelVariableUniqueNames>;
+  getAllFeelVariableUniqueNames(): ReturnType<typeof computeAllFeelVariableUniqueNames>;
 };
 
 export type Dispatch = {
@@ -349,13 +344,6 @@ export function createDmnEditorStore(model: State["dmn"]["model"], computedCache
             return computedCache.cached("indexes", computeIndexes, [s.dmn.model.definitions, s.diagram.drdIndex]);
           },
 
-          allUniqueFeelNames: () => {
-            return computedCache.cached("allUniqueFeelNames", computeAllUniqueFeelNames, [
-              s.dmn.model.definitions.drgElement,
-              s.dmn.model.definitions.import,
-            ]);
-          },
-
           importsByNamespace: () => {
             return computedCache.cached("importsByNamespace", computeImportsByNamespace, [
               s.dmn.model.definitions.import,
@@ -376,10 +364,12 @@ export function createDmnEditorStore(model: State["dmn"]["model"], computedCache
               s.computed(s).importsByNamespace(),
             ]),
 
-          getAllFeelVariableUniqueNames: (externalModelsByNamespace: ExternalModelsIndex | undefined) =>
-            computedCache.cached("getAllFeelVariableUniqueNames", computeAllFeelVariableUniqueNames, [
-              s.computed(s).getDataTypes(externalModelsByNamespace),
-            ]),
+          getAllFeelVariableUniqueNames: () => {
+            return computedCache.cached("getAllFeelVariableUniqueNames", computeAllFeelVariableUniqueNames, [
+              s.dmn.model.definitions.drgElement,
+              s.dmn.model.definitions.import,
+            ]);
+          },
 
           getExternalModelTypesByNamespace: (externalModelsByNamespace: ExternalModelsIndex | undefined) =>
             computedCache.cached("getExternalModelTypesByNamespace", computeExternalModelsByType, [

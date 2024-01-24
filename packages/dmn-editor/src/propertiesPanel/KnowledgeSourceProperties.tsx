@@ -27,7 +27,7 @@ import { DocumentationLinksFormGroup } from "./DocumentationLinksFormGroup";
 import { useDmnEditorStore, useDmnEditorStoreApi } from "../store/StoreContext";
 import { renameDrgElement } from "../mutations/renameNode";
 import { InlineFeelNameInput } from "../feel/InlineFeelNameInput";
-import { useExternalModels } from "../includedModels/DmnEditorDependenciesContext";
+import { useCallback } from "react";
 
 export function KnowledgeSourceProperties({
   knowledgeSource,
@@ -42,11 +42,6 @@ export function KnowledgeSourceProperties({
 
   const thisDmnsNamespace = useDmnEditorStore((s) => s.dmn.model.definitions["@_namespace"]);
   const isReadonly = !!namespace && namespace !== thisDmnsNamespace;
-
-  const { externalModelsByNamespace } = useExternalModels();
-  const allFeelVariableUniqueNames = useDmnEditorStore((s) =>
-    s.computed(s).getAllFeelVariableUniqueNames(externalModelsByNamespace)
-  );
 
   return (
     <>
@@ -68,7 +63,7 @@ export function KnowledgeSourceProperties({
               });
             });
           }}
-          allUniqueNames={allFeelVariableUniqueNames}
+          allUniqueNames={useCallback((s) => s.computed(s).getAllFeelVariableUniqueNames(), [])}
         />
       </FormGroup>
 

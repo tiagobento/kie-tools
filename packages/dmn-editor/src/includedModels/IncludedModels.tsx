@@ -54,6 +54,7 @@ import { Dropdown, DropdownItem, KebabToggle } from "@patternfly/react-core/dist
 import { TrashIcon } from "@patternfly/react-icons/dist/js/icons/trash-icon";
 import { useInViewSelect } from "../responsiveness/useInViewSelect";
 import { useCancelableEffect } from "@kie-tools-core/react-hooks/dist/useCancelableEffect";
+import { State } from "../store/Store";
 
 export const EMPTY_IMPORT_NAME_NAMESPACE_IDENTIFIER = "<Default>";
 
@@ -64,17 +65,13 @@ const namespaceForNewImportsByFileExtension: Record<string, string> = {
 
 export function IncludedModels() {
   const dmnEditorStoreApi = useDmnEditorStoreApi();
-  const thisDmn = useDmnEditorStore((s) => s.dmn);
-  const thisDmnsImports = useMemo(() => thisDmn.model.definitions.import ?? [], [thisDmn.model.definitions.import]);
+  const thisDmnsImports = useDmnEditorStore((s) => s.dmn.model.definitions.import ?? []);
 
   const { externalContextDescription, externalContextName, dmnEditorRootElementRef, onRequestToResolvePath } =
     useDmnEditor();
   const importsByNamespace = useDmnEditorStore((s) => s.computed(s).importsByNamespace());
   const { externalModelsByNamespace, onRequestExternalModelsAvailableToInclude, onRequestExternalModelByPath } =
     useExternalModels();
-  const allFeelVariableUniqueNames = useDmnEditorStore((s) =>
-    s.computed(s).getAllFeelVariableUniqueNames(externalModelsByNamespace)
-  );
 
   const [isModalOpen, setModalOpen] = useState(false);
   const [isModelSelectOpen, setModelSelectOpen] = useState(false);
@@ -127,10 +124,11 @@ export function IncludedModels() {
   }, []);
 
   const add = useCallback(() => {
+    const s = dmnEditorStoreApi.getState();
     if (
       !selectedPathRelativeToThisDmn ||
       !selectedModel ||
-      !DMN15_SPEC.IMPORT.name.isValid(generateUuid(), importName, allFeelVariableUniqueNames)
+      !DMN15_SPEC.IMPORT.name.isValid(generateUuid(), importName, s.computed(s).getAllFeelVariableUniqueNames())
     ) {
       return;
     }
@@ -167,7 +165,7 @@ export function IncludedModels() {
     }, 5000); // Give it time for the `externalModelsByNamespace` object to be reassembled externally.
 
     cancel();
-  }, [selectedPathRelativeToThisDmn, selectedModel, importName, allFeelVariableUniqueNames, dmnEditorStoreApi, cancel]);
+  }, [dmnEditorStoreApi, selectedPathRelativeToThisDmn, selectedModel, importName, cancel]);
 
   const [modelPathRelativeToThisDmn, setModelPathsRelativeToThisDmn] = useState<string[] | undefined>(undefined);
   useCancelableEffect(
@@ -234,6 +232,8 @@ export function IncludedModels() {
 
   const selectToggleRef = useRef<HTMLButtonElement>(null);
   const inViewSelect = useInViewSelect(dmnEditorRootElementRef, selectToggleRef);
+
+  const getAllUniqueNames = useCallback((s: State) => s.computed(s).getAllFeelVariableUniqueNames(), []);
 
   return (
     <>
@@ -344,7 +344,7 @@ export function IncludedModels() {
                       shouldCommitOnBlur={true}
                       className={"pf-c-form-control"}
                       onRenamed={setImportName}
-                      allUniqueNames={allFeelVariableUniqueNames}
+                      allUniqueNames={getAllUniqueNames}
                     />
                   </FormGroup>
                   <br />
@@ -450,20 +450,22 @@ function IncludedModelCard({
   );
 
   const { externalModelsByNamespace } = useExternalModels();
-  const allTopLevelDataTypesByFeelName = useDmnEditorStore(
-    (s) => s.computed(s).getDataTypes(externalModelsByNamespace).allTopLevelDataTypesByFeelName
-  );
-  const allFeelVariableUniqueNames = useDmnEditorStore((s) =>
-    s.computed(s).getAllFeelVariableUniqueNames(externalModelsByNamespace)
-  );
+
+  useCallback((s: State) => s.computed(s).getAllFeelVariableUniqueNames(), []);
 
   const rename = useCallback<OnInlineFeelNameRenamed>(
     (newName) => {
       dmnEditorStoreApi.setState((state) => {
-        renameImport({ definitions: state.dmn.model.definitions, index, newName, allTopLevelDataTypesByFeelName });
+        renameImport({
+          definitions: state.dmn.model.definitions,
+          index,
+          newName,
+          allTopLevelDataTypesByFeelName: state.computed(state).getDataTypes(externalModelsByNamespace)
+            .allTopLevelDataTypesByFeelName,
+        });
       });
     },
-    [allTopLevelDataTypesByFeelName, dmnEditorStoreApi, index]
+    [dmnEditorStoreApi, externalModelsByNamespace, index]
   );
 
   const extension = useMemo(() => {
@@ -529,7 +531,7 @@ function IncludedModelCard({
           <InlineFeelNameInput
             placeholder={EMPTY_IMPORT_NAME_NAMESPACE_IDENTIFIER}
             isPlain={true}
-            allUniqueNames={allFeelVariableUniqueNames}
+            allUniqueNames={useCallback((s) => s.computed(s).getAllFeelVariableUniqueNames(), [])}
             id={_import["@_id"]!}
             name={_import["@_name"]}
             isReadonly={false}
@@ -585,20 +587,20 @@ function UnknownIncludedModelCard({
   );
 
   const { externalModelsByNamespace } = useExternalModels();
-  const allTopLevelDataTypesByFeelName = useDmnEditorStore(
-    (s) => s.computed(s).getDataTypes(externalModelsByNamespace).allTopLevelDataTypesByFeelName
-  );
-  const allFeelVariableUniqueNames = useDmnEditorStore((s) =>
-    s.computed(s).getAllFeelVariableUniqueNames(externalModelsByNamespace)
-  );
 
   const rename = useCallback<OnInlineFeelNameRenamed>(
     (newName) => {
       dmnEditorStoreApi.setState((state) => {
-        renameImport({ definitions: state.dmn.model.definitions, index, newName, allTopLevelDataTypesByFeelName });
+        renameImport({
+          definitions: state.dmn.model.definitions,
+          index,
+          newName,
+          allTopLevelDataTypesByFeelName: state.computed(state).getDataTypes(externalModelsByNamespace)
+            .allTopLevelDataTypesByFeelName,
+        });
       });
     },
-    [allTopLevelDataTypesByFeelName, dmnEditorStoreApi, index]
+    [dmnEditorStoreApi, externalModelsByNamespace, index]
   );
 
   const extension = useMemo(() => {
@@ -649,7 +651,7 @@ function UnknownIncludedModelCard({
           <InlineFeelNameInput
             placeholder={EMPTY_IMPORT_NAME_NAMESPACE_IDENTIFIER}
             isPlain={true}
-            allUniqueNames={allFeelVariableUniqueNames}
+            allUniqueNames={useCallback((s) => s.computed(s).getAllFeelVariableUniqueNames(), [])}
             id={_import["@_id"]!}
             name={_import["@_name"]}
             isReadonly={false}

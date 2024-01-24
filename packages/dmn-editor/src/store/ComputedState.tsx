@@ -49,10 +49,6 @@ import { isValidContainment } from "../diagram/connections/isValidContainment";
 import { TypeOrReturnType, Cache } from "./ComputedStateCache";
 
 export const INITIAL_COMPUTED_CACHE: Cache<Computed> = {
-  allUniqueFeelNames: {
-    value: undefined,
-    dependencies: [],
-  },
   isDiagramEditingInProgress: {
     value: undefined,
     dependencies: [],
@@ -94,7 +90,7 @@ export const NODE_LAYERS = {
   NESTED_NODES: 4000,
 };
 
-export function computeAllUniqueFeelNames(
+export function computeAllFeelVariableUniqueNames(
   drgElements: State["dmn"]["model"]["definitions"]["drgElement"],
   imports: State["dmn"]["model"]["definitions"]["import"]
 ) {
@@ -111,20 +107,6 @@ export function computeAllUniqueFeelNames(
   for (let i = 0; i < imports.length; i++) {
     const _import = imports[i];
     ret.set(_import["@_name"], _import["@_id"]!);
-  }
-
-  return ret;
-}
-
-export function computeAllFeelVariableUniqueNames(dataTypes: TypeOrReturnType<Computed["getDataTypes"]>) {
-  const ret: UniqueNameIndex = new Map();
-
-  for (const [k, v] of dataTypes.allTopLevelDataTypesByFeelName.entries()) {
-    ret.set(k, v.itemDefinition["@_id"]!);
-  }
-
-  for (const type of builtInFeelTypeNames) {
-    ret.set(type, type);
   }
 
   return ret;

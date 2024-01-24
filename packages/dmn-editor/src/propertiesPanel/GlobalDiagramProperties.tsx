@@ -85,7 +85,7 @@ export function GlobalDiagramProperties() {
                       state.dmn.model.definitions["@_name"] = newName;
                     });
                   }}
-                  allUniqueNames={new Map()} // Right now, there's no way to know what are the unique names of all DMNs in the scope. So we let any name go.
+                  allUniqueNames={() => new Map()} // Right now, there's no way to know what are the unique names of all DMNs in the scope. So we let any name go.
                 />
               </FormGroup>
               <FormGroup label="Description">

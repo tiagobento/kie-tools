@@ -374,7 +374,7 @@ function DocumentationLinksInput({
                   // reset the changedByToogle
                   updatedOnToogle.current = false;
                 }}
-                allUniqueNames={allUniqueNames}
+                allUniqueNames={() => allUniqueNames}
                 validate={validateTitle}
                 autoFocus={parentAutoFocus || autoFocus}
                 onKeyDown={(e) => {
@@ -400,7 +400,7 @@ function DocumentationLinksInput({
                   // reset the changedByToogle
                   updatedOnToogle.current = false;
                 }}
-                allUniqueNames={allUniqueNames}
+                allUniqueNames={() => allUniqueNames}
                 validate={validateUrl}
                 saveInvalidValue={true}
                 onKeyDown={(e) => {

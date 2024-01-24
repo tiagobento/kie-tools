@@ -102,7 +102,7 @@ export function Palette({ pulse }: { pulse: boolean }) {
           <div ref={drdSelectorPopoverRef} style={{ position: "absolute", left: "56px", height: "100%", zIndex: -1 }} />
           <InlineFeelNameInput
             validate={() => true}
-            allUniqueNames={new Map()}
+            allUniqueNames={() => new Map()}
             name={drd?.["@_name"] ?? ""}
             id={diagram.drdIndex + ""}
             onRenamed={(newName) => {

@@ -29,7 +29,7 @@ import { renameDrgElement } from "../mutations/renameNode";
 import { InlineFeelNameInput } from "../feel/InlineFeelNameInput";
 import { useDmnEditor } from "../DmnEditorContext";
 import { useResolvedTypeRef } from "../dataTypes/useResolvedTypeRef";
-import { useExternalModels } from "../includedModels/DmnEditorDependenciesContext";
+import { useCallback } from "react";
 
 export function DecisionProperties({
   decision,
@@ -44,11 +44,6 @@ export function DecisionProperties({
 
   const thisDmnsNamespace = useDmnEditorStore((s) => s.dmn.model.definitions["@_namespace"]);
   const isReadonly = !!namespace && namespace !== thisDmnsNamespace;
-
-  const { externalModelsByNamespace } = useExternalModels();
-  const allFeelVariableUniqueNames = useDmnEditorStore((s) =>
-    s.computed(s).getAllFeelVariableUniqueNames(externalModelsByNamespace)
-  );
 
   const { dmnEditorRootElementRef } = useDmnEditor();
 
@@ -74,7 +69,7 @@ export function DecisionProperties({
               });
             });
           }}
-          allUniqueNames={allFeelVariableUniqueNames}
+          allUniqueNames={useCallback((s) => s.computed(s).getAllFeelVariableUniqueNames(), [])}
         />
       </FormGroup>
 

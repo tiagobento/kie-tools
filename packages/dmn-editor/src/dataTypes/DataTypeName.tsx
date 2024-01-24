@@ -29,6 +29,7 @@ import { UniqueNameIndex } from "../Dmn15Spec";
 import { buildFeelQNameFromNamespace } from "../feel/buildFeelQName";
 import { InlineFeelNameInput, OnInlineFeelNameRenamed } from "../feel/InlineFeelNameInput";
 import { useExternalModels } from "../includedModels/DmnEditorDependenciesContext";
+import { State } from "../store/Store";
 
 export function DataTypeName({
   isReadonly,
@@ -46,7 +47,7 @@ export function DataTypeName({
   isActive: boolean;
   relativeToNamespace: string;
   shouldCommitOnBlur?: boolean;
-  allUniqueNames: UniqueNameIndex;
+  allUniqueNames: (s: State) => UniqueNameIndex;
   enableAutoFocusing?: boolean;
 }) {
   const { isEditingLabel, setEditingLabel, triggerEditing, triggerEditingIfEnter } = useEditableNodeLabel(

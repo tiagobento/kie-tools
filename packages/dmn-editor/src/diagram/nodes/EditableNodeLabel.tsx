@@ -33,6 +33,7 @@ import { useFocusableElement } from "../../focus/useFocusableElement";
 import { flushSync } from "react-dom";
 import { NodeLabelPosition } from "./NodeSvgs";
 import "./EditableNodeLabel.css";
+import { State } from "../../store/Store";
 
 export type OnEditableNodeLabelChange = (value: string | undefined) => void;
 
@@ -50,7 +51,7 @@ export function EditableNodeLabel({
   shouldCommitOnBlur,
   skipValidation,
   allUniqueNames,
-  fontCssProperties: fontStyle,
+  fontCssProperties,
 }: {
   id?: string;
   shouldCommitOnBlur?: boolean;
@@ -64,7 +65,7 @@ export function EditableNodeLabel({
   setEditing: React.Dispatch<React.SetStateAction<boolean>>;
   onChange: OnEditableNodeLabelChange;
   skipValidation?: boolean;
-  allUniqueNames: UniqueNameIndex;
+  allUniqueNames: (s: State) => UniqueNameIndex;
   fontCssProperties?: React.CSSProperties;
 }) {
   const displayValue = useDmnEditorStore((s) => {
@@ -126,13 +127,15 @@ export function EditableNodeLabel({
     }, 0);
   }, []);
 
-  const isValid = useMemo(() => {
+  const isValid = useDmnEditorStore((s) => {
     if (skipValidation) {
       return true;
     }
 
-    return DMN15_SPEC.namedElement.isValidName(namedElement?.["@_id"] ?? generateUuid(), internalValue, allUniqueNames);
-  }, [skipValidation, namedElement, internalValue, allUniqueNames]);
+    const newLocal = allUniqueNames(s);
+    const ret = DMN15_SPEC.namedElement.isValidName(namedElement?.["@_id"] ?? generateUuid(), internalValue, newLocal);
+    return ret;
+  });
 
   const onBlur = useCallback(() => {
     setEditing(false);
@@ -214,7 +217,7 @@ export function EditableNodeLabel({
         <input
           spellCheck={"false"} // Let's not confuse FEEL name validation with the browser's grammar check.
           style={{
-            ...fontStyle,
+            ...fontCssProperties,
             ...(isValid ? {} : invalidInlineFeelNameStyle),
           }}
           onMouseDownCapture={(e) => e.stopPropagation()} // Make sure mouse events stay inside the node.
@@ -229,7 +232,7 @@ export function EditableNodeLabel({
         <span
           style={{
             whiteSpace: "pre-wrap",
-            ...fontStyle,
+            ...fontCssProperties,
             ...(isValid ? {} : invalidInlineFeelNameStyle),
           }}
         >

@@ -39,7 +39,7 @@ import { OnCreateDataType, OnTypeRefChange } from "../../dataTypes/TypeRefSelect
 import { addTopLevelItemDefinition } from "../../mutations/addTopLevelItemDefinition";
 import { renameDrgElement, renameGroupNode, updateTextAnnotation } from "../../mutations/renameNode";
 import { updateDecisionServiceDividerLine } from "../../mutations/updateDecisionServiceDividerLine";
-import { DmnEditorTab, SnapGrid } from "../../store/Store";
+import { DmnEditorTab, SnapGrid, State } from "../../store/Store";
 import { useDmnEditorStore, useDmnEditorStoreApi } from "../../store/StoreContext";
 import { Unpacked } from "../../tsExt/tsExt";
 import { snapShapeDimensions } from "../SnapGrid";
@@ -147,7 +147,7 @@ export const InputDataNode = React.memo(
       [dmnEditorStoreApi, index, inputData]
     );
 
-    // const allFeelVariableUniqueNames = useDmnEditorStore((s) => s.computed(s).allFeelVariableUniqueNames);
+    const getAllFeelVariableUniqueNames = useCallback((s: State) => s.computed(s).getAllFeelVariableUniqueNames(), []);
 
     const onCreateDataType = useDataTypeCreationCallbackForNodes(index, inputData["@_name"]);
 
@@ -179,8 +179,8 @@ export const InputDataNode = React.memo(
           onDoubleClick={triggerEditing}
           onKeyDown={triggerEditingIfEnter}
         >
-          {/* {`render count: ${renderCount.current}`} */}
-          {/* <br /> */}
+          {`render count: ${renderCount.current}`}
+          <br />
           <InfoNodePanel isVisible={!isTargeted && shouldActLikeHovered} />
 
           <OutgoingStuffNodePanel
@@ -196,7 +196,7 @@ export const InputDataNode = React.memo(
             position={getNodeLabelPosition(type as NodeType)}
             value={inputData["@_label"] ?? inputData["@_name"]}
             onChange={setName}
-            allUniqueNames={new Map()} // FIXME: Tiago --> This needs to be the "allUniqueFeelVariableNames";
+            allUniqueNames={getAllFeelVariableUniqueNames}
             shouldCommitOnBlur={true}
             fontCssProperties={fontCssProperties}
           />
@@ -275,7 +275,7 @@ export const DecisionNode = React.memo(
       [decision, dmnEditorStoreApi, index]
     );
 
-    // const allFeelVariableUniqueNames = useDmnEditorStore((s) => s.computed(s).allFeelVariableUniqueNames);
+    const getAllFeelVariableUniqueNames = useCallback((s: State) => s.computed(s).getAllFeelVariableUniqueNames(), []);
 
     const onCreateDataType = useDataTypeCreationCallbackForNodes(index, decision["@_name"]);
 
@@ -308,8 +308,8 @@ export const DecisionNode = React.memo(
           onDoubleClick={triggerEditing}
           onKeyDown={triggerEditingIfEnter}
         >
-          {/* {`render count: ${renderCount.current}`} */}
-          {/* <br /> */}
+          {`render count: ${renderCount.current}`}
+          <br />
           <InfoNodePanel isVisible={!isTargeted && shouldActLikeHovered} />
           {!isExternal && (
             <EditExpressionNodePanel isVisible={!isTargeted && shouldActLikeHovered} id={decision["@_id"]!} />
@@ -327,7 +327,7 @@ export const DecisionNode = React.memo(
             position={getNodeLabelPosition(type as NodeType)}
             value={decision["@_label"] ?? decision["@_name"]}
             onChange={setName}
-            allUniqueNames={new Map()} // FIXME: Tiago --> This needs to be the "allUniqueFeelVariableNames";
+            allUniqueNames={getAllFeelVariableUniqueNames}
             shouldCommitOnBlur={true}
             fontCssProperties={fontCssProperties}
           />
@@ -406,7 +406,7 @@ export const BkmNode = React.memo(
       [bkm, dmnEditorStoreApi, index]
     );
 
-    // const allFeelVariableUniqueNames = useDmnEditorStore((s) => s.computed(s).allFeelVariableUniqueNames);
+    const getAllFeelVariableUniqueNames = useCallback((s: State) => s.computed(s).getAllFeelVariableUniqueNames(), []);
 
     const onCreateDataType = useDataTypeCreationCallbackForNodes(index, bkm["@_name"]);
 
@@ -440,8 +440,8 @@ export const BkmNode = React.memo(
           onDoubleClick={triggerEditing}
           onKeyDown={triggerEditingIfEnter}
         >
-          {/* {`render count: ${renderCount.current}`} */}
-          {/* <br /> */}
+          {`render count: ${renderCount.current}`}
+          <br />
           <InfoNodePanel isVisible={!isTargeted && shouldActLikeHovered} />
           {!isExternal && <EditExpressionNodePanel isVisible={!isTargeted && shouldActLikeHovered} id={bkm["@_id"]!} />}
           <OutgoingStuffNodePanel
@@ -457,7 +457,7 @@ export const BkmNode = React.memo(
             position={getNodeLabelPosition(type as NodeType)}
             value={bkm["@_label"] ?? bkm["@_name"]}
             onChange={setName}
-            allUniqueNames={new Map()} // FIXME: Tiago --> This needs to be the "allUniqueFeelVariableNames";
+            allUniqueNames={getAllFeelVariableUniqueNames}
             shouldCommitOnBlur={true}
             fontCssProperties={fontCssProperties}
           />
@@ -526,7 +526,7 @@ export const KnowledgeSourceNode = React.memo(
       [dmnEditorStoreApi, index]
     );
 
-    // const allFeelVariableUniqueNames = useDmnEditorStore((s) => s.computed(s).allFeelVariableUniqueNames);
+    const getAllFeelVariableUniqueNames = useCallback((s: State) => s.computed(s).getAllFeelVariableUniqueNames(), []);
 
     const { fontCssProperties, shapeStyle } = useNodeStyle({
       dmnStyle: shape["di:Style"],
@@ -558,8 +558,8 @@ export const KnowledgeSourceNode = React.memo(
           onDoubleClick={triggerEditing}
           onKeyDown={triggerEditingIfEnter}
         >
-          {/* {`render count: ${renderCount.current}`} */}
-          {/* <br /> */}
+          {`render count: ${renderCount.current}`}
+          <br />
           <InfoNodePanel isVisible={!isTargeted && shouldActLikeHovered} />
           <OutgoingStuffNodePanel
             isVisible={!isTargeted && shouldActLikeHovered}
@@ -575,7 +575,7 @@ export const KnowledgeSourceNode = React.memo(
             value={knowledgeSource["@_label"] ?? knowledgeSource["@_name"]}
             onChange={setName}
             skipValidation={true}
-            allUniqueNames={new Map()} // FIXME: Tiago --> This needs to be the "allUniqueFeelVariableNames";
+            allUniqueNames={getAllFeelVariableUniqueNames}
             shouldCommitOnBlur={true}
             fontCssProperties={fontCssProperties}
           />
@@ -636,7 +636,7 @@ export const TextAnnotationNode = React.memo(
       [dmnEditorStoreApi, index]
     );
 
-    // const allFeelVariableUniqueNames = useDmnEditorStore((s) => s.computed(s).allFeelVariableUniqueNames);
+    const getAllFeelVariableUniqueNames = useCallback((s: State) => s.computed(s).getAllFeelVariableUniqueNames(), []);
 
     const { fontCssProperties, shapeStyle } = useNodeStyle({
       dmnStyle: shape["di:Style"],
@@ -668,8 +668,8 @@ export const TextAnnotationNode = React.memo(
           onDoubleClick={triggerEditing}
           onKeyDown={triggerEditingIfEnter}
         >
-          {/* {`render count: ${renderCount.current}`} */}
-          {/* <br /> */}
+          {`render count: ${renderCount.current}`}
+          <br />
           <InfoNodePanel isVisible={!isTargeted && shouldActLikeHovered} />
           <OutgoingStuffNodePanel
             isVisible={!isTargeted && shouldActLikeHovered}
@@ -686,7 +686,7 @@ export const TextAnnotationNode = React.memo(
             value={textAnnotation["@_label"] ?? textAnnotation.text?.__$$text}
             onChange={setText}
             skipValidation={true}
-            allUniqueNames={new Map()} // FIXME: Tiago --> This needs to be the "allUniqueFeelVariableNames";
+            allUniqueNames={getAllFeelVariableUniqueNames}
             shouldCommitOnBlur={true}
             fontCssProperties={fontCssProperties}
           />
@@ -778,7 +778,7 @@ export const DecisionServiceNode = React.memo(
       [decisionService, dmnEditorStoreApi, index]
     );
 
-    // const allFeelVariableUniqueNames = useDmnEditorStore((s) => s.computed(s).allFeelVariableUniqueNames);
+    const getAllFeelVariableUniqueNames = useCallback((s: State) => s.computed(s).getAllFeelVariableUniqueNames(), []);
 
     const dividerLineRef = useRef<SVGPathElement>(null);
 
@@ -859,8 +859,8 @@ export const DecisionServiceNode = React.memo(
           onDoubleClick={triggerEditing}
           onKeyDown={triggerEditingIfEnter}
         >
-          {/* {`render count: ${renderCount.current}`} */}
-          {/* <br /> */}
+          {`render count: ${renderCount.current}`}
+          <br />
           <InfoNodePanel isVisible={!isTargeted && selected && !dragging} />
           <OutgoingStuffNodePanel
             isVisible={!isTargeted && selected && !dragging}
@@ -875,7 +875,7 @@ export const DecisionServiceNode = React.memo(
             setEditing={setEditingLabel}
             value={decisionService["@_label"] ?? decisionService["@_name"]}
             onChange={setName}
-            allUniqueNames={new Map()} // FIXME: Tiago --> This needs to be the "allUniqueFeelVariableNames";
+            allUniqueNames={getAllFeelVariableUniqueNames}
             shouldCommitOnBlur={true}
             fontCssProperties={fontCssProperties}
           />
@@ -968,8 +968,6 @@ export const GroupNode = React.memo(
       };
     }, [dmnEditorStoreApi, reactFlow, shape]);
 
-    // const allFeelVariableUniqueNames = useDmnEditorStore((s) => s.computed(s).allFeelVariableUniqueNames);
-
     const { fontCssProperties, shapeStyle } = useNodeStyle({
       dmnStyle: shape["di:Style"],
       nodeType: type as NodeType,
@@ -998,8 +996,8 @@ export const GroupNode = React.memo(
           onDoubleClick={triggerEditing}
           onKeyDown={triggerEditingIfEnter}
         >
-          {/* {`render count: ${renderCount.current}`} */}
-          {/* <br /> */}
+          {`render count: ${renderCount.current}`}
+          <br />
           <OutgoingStuffNodePanel
             isVisible={!isTargeted && selected && !dragging}
             nodeTypes={outgoingStructure[NODE_TYPES.group].nodes}
@@ -1015,7 +1013,7 @@ export const GroupNode = React.memo(
             value={group["@_label"] ?? group["@_name"]}
             onChange={setName}
             skipValidation={true}
-            allUniqueNames={new Map()} // FIXME: Tiago --> This needs to be the "allUniqueFeelVariableNames";
+            allUniqueNames={useCallback(() => new Map(), [])}
             shouldCommitOnBlur={true}
             fontCssProperties={fontCssProperties}
           />
@@ -1070,8 +1068,8 @@ export const UnknownNode = React.memo(
         <RF.Handle key={"unknown"} id={"unknown"} type={"source"} style={{ opacity: 0 }} position={RF.Position.Top} />
 
         <div ref={ref} className={`kie-dmn-editor--node kie-dmn-editor--unknown-node ${className}`} tabIndex={-1}>
-          {/* {`render count: ${renderCount.current}`} */}
-          {/* <br /> */}
+          {`render count: ${renderCount.current}`}
+          <br />
           <InfoNodePanel isVisible={!isTargeted && shouldActLikeHovered} />
 
           <EditableNodeLabel
@@ -1083,7 +1081,7 @@ export const UnknownNode = React.memo(
             value={`? `}
             onChange={() => {}}
             skipValidation={false}
-            allUniqueNames={new Map()}
+            allUniqueNames={useCallback(() => new Map(), [])}
             shouldCommitOnBlur={true}
           />
           {selected && !dragging && (

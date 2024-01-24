@@ -29,7 +29,7 @@ import { TextArea } from "@patternfly/react-core/dist/js/components/TextArea";
 import { DocumentationLinksFormGroup } from "./DocumentationLinksFormGroup";
 import { TypeRefSelector } from "../dataTypes/TypeRefSelector";
 import { useDmnEditorStore, useDmnEditorStoreApi } from "../store/StoreContext";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { buildXmlHref, parseXmlHref } from "../xml/xmlHrefs";
 import { DmnObjectListItem } from "../externalNodes/DmnObjectListItem";
 import { renameDrgElement } from "../mutations/renameNode";
@@ -59,9 +59,6 @@ export function DecisionServiceProperties({
   const { externalModelsByNamespace } = useExternalModels();
   const externalDmnsByNamespace = useDmnEditorStore(
     (s) => s.computed(s).getExternalModelTypesByNamespace(externalModelsByNamespace).dmns
-  );
-  const allFeelVariableUniqueNames = useDmnEditorStore((s) =>
-    s.computed(s).getAllFeelVariableUniqueNames(externalModelsByNamespace)
   );
 
   const allDrgElementsByHref = useMemo(() => {
@@ -113,7 +110,7 @@ export function DecisionServiceProperties({
               });
             });
           }}
-          allUniqueNames={allFeelVariableUniqueNames}
+          allUniqueNames={useCallback((s) => s.computed(s).getAllFeelVariableUniqueNames(), [])}
         />
       </FormGroup>
 
