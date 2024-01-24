@@ -57,10 +57,14 @@ export const ELK_OPTIONS = {
   "elk.nodePlacement.favorStraightEdges": "true",
   "elk.nodePlacement.bk.fixedAlignment": "LEFTDOWN",
   "elk.nodePlacement.bk.edgeStraightening": "IMPROVE_STRAIGHTNESS",
+  //
+  "considerModelOrder.strategy": "PREFER_NODES",
+  "crossingMinimization.forceNodeModelOrder": "true",
+  "layering.strategy": "LONGEST_PATH_SOURCE",
 };
 
 const PARENT_NODE_ELK_OPTIONS = {
-  "elk.padding": "[left=60, top=60, right=60, bottom=30]",
+  "elk.padding": "[left=60, top=60, right=80, bottom=60]",
   "elk.spacing.componentComponent": "60",
 };
 
@@ -241,8 +245,9 @@ export function AutolayoutButton() {
           bounds: node.data.shape["dc:Bounds"],
         }).decisionServiceSection;
 
+        // The only relationship that ELK will know about is the first matching container for this node.
         if (decisionServiceSection === "n/a") {
-          parents[0].elkNode.children?.push(elkNode); // The only relationship that ELK will know about is the first matching container for this node.
+          parents[0].elkNode.children?.push(elkNode);
         } else if (decisionServiceSection === "output") {
           parents[0].elkNode.children?.[0].children?.push(elkNode);
         } else if (decisionServiceSection === "encapsulated") {

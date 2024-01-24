@@ -562,7 +562,7 @@ export function computeDiagramData(
   // console.timeEnd("nodes");
 
   if (diagram.overlays.enableNodeHierarchyHighlight) {
-    assignClassesToHighlightedHierarchyNodes([...selectedNodesById.keys()], nodesById, edges);
+    assignClassesToHighlightedHierarchyNodes(diagram._selectedNodes, nodesById, edges);
   }
 
   return {
@@ -653,9 +653,13 @@ function buildDataTypesTree(
   return dataTypesTree;
 }
 
-function assignClassesToHighlightedHierarchyNodes(selected: string[], nodes: Map<string, RF.Node>, edges: RF.Edge[]) {
+function assignClassesToHighlightedHierarchyNodes(
+  selected: string[],
+  nodesById: Map<string, RF.Node>,
+  edges: RF.Edge[]
+) {
   const nodeVisitor: NodeVisitor = (nodeId, traversalDirection) => {
-    const node = nodes.get(nodeId);
+    const node = nodesById.get(nodeId);
     if (node) {
       node.className = `hierarchy ${traversalDirection}`;
     }

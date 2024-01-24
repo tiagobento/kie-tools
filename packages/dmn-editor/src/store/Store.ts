@@ -211,7 +211,7 @@ export const defaultStaticState = (): Omit<State, "dmn" | "dispatch" | "computed
     overlays: {
       enableNodeHierarchyHighlight: false,
       enableExecutionHitsHighlights: false,
-      enableCustomNodeStyles: false,
+      enableCustomNodeStyles: true,
       enableDataTypesToolbarOnNodes: true,
     },
     snapGrid: {
