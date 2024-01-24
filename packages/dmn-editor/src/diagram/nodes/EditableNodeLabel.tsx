@@ -21,7 +21,7 @@ import * as React from "react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { EmptyLabel } from "./Nodes";
 import { XmlQName } from "@kie-tools/xml-parser-ts/dist/qNames";
-import { useDmnEditorStore } from "../../store/StoreContext";
+import { useDmnEditorStore, useDmnEditorStoreApi } from "../../store/StoreContext";
 import { UniqueNameIndex } from "../../Dmn15Spec";
 import { buildFeelQNameFromXmlQName } from "../../feel/buildFeelQName";
 import { DMN15__tNamedElement } from "@kie-tools/dmn-marshaller/dist/schemas/dmn-1_5/ts-gen/types";
@@ -132,9 +132,11 @@ export function EditableNodeLabel({
       return true;
     }
 
-    const newLocal = allUniqueNames(s);
-    const ret = DMN15_SPEC.namedElement.isValidName(namedElement?.["@_id"] ?? generateUuid(), internalValue, newLocal);
-    return ret;
+    return DMN15_SPEC.namedElement.isValidName(
+      namedElement?.["@_id"] ?? generateUuid(),
+      internalValue,
+      allUniqueNames(s)
+    );
   });
 
   const onBlur = useCallback(() => {
@@ -250,8 +252,12 @@ export function EditableNodeLabel({
 }
 
 export function useEditableNodeLabel(id: string | undefined) {
-  const focusConsumableId = useDmnEditorStore((s) => s.focus.consumableId);
-  const [isEditingLabel, setEditingLabel] = useState(!!id && !!focusConsumableId && focusConsumableId === id);
+  const dmnEditorStoreApi = useDmnEditorStoreApi();
+
+  const [isEditingLabel, setEditingLabel] = useState(
+    !!id && !!dmnEditorStoreApi.getState().focus.consumableId && dmnEditorStoreApi.getState().focus.consumableId === id
+  );
+
   const triggerEditing = useCallback<React.EventHandler<React.SyntheticEvent>>((e) => {
     e.stopPropagation();
     e.preventDefault();
@@ -268,5 +274,8 @@ export function useEditableNodeLabel(id: string | undefined) {
     [triggerEditing]
   );
 
-  return { isEditingLabel, setEditingLabel, triggerEditing, triggerEditingIfEnter };
+  return useMemo(
+    () => ({ isEditingLabel, setEditingLabel, triggerEditing, triggerEditingIfEnter }),
+    [isEditingLabel, triggerEditing, triggerEditingIfEnter]
+  );
 }
