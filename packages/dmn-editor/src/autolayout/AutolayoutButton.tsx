@@ -17,12 +17,11 @@
  * under the License.
  */
 
-import * as React from "react";
 import { generateUuid } from "@kie-tools/boxed-expression-component/dist/api";
 import { DC__Bounds } from "@kie-tools/dmn-marshaller/dist/schemas/dmn-1_5/ts-gen/types";
 import OptimizeIcon from "@patternfly/react-icons/dist/js/icons/optimize-icon";
 import ELK, * as Elk from "elkjs/lib/elk.bundled.js";
-import { useCallback } from "react";
+import * as React from "react";
 import { PositionalNodeHandleId } from "../diagram/connections/PositionalNodeHandles";
 import { EdgeType, NodeType } from "../diagram/connections/graphStructure";
 import { getAdjMatrix, traverse } from "../diagram/graph/graph";
@@ -79,6 +78,8 @@ export interface AutolayoutParentNode {
   isDependencyOf: (otherNode: { id: string }) => boolean;
 }
 
+const FAKE_MARKER = "__$FAKE$__";
+
 export function AutolayoutButton() {
   const dmnEditorStoreApi = useDmnEditorStoreApi();
   const { externalModelsByNamespace } = useExternalModels();
@@ -112,17 +113,20 @@ export function AutolayoutButton() {
         const outputs = new Set([...(node.data.dmnObject.outputDecision ?? []).map((s) => s["@_href"])]);
         const encapsulated = new Set([...(node.data.dmnObject.encapsulatedDecision ?? []).map((s) => s["@_href"])]);
 
-        const dsSize = DEFAULT_NODE_SIZES[NODE_TYPES.decisionService](snapGrid);
+        const idOfFakeNodeForOutputSection = `${node.id}${FAKE_MARKER}dsOutput`;
+        const idOfFakeNodeForEncapsulatedSection = `${node.id}${FAKE_MARKER}dsEncapsulated`;
+
+        const dsSize = MIN_NODE_SIZES[NODE_TYPES.decisionService](snapGrid);
         parentNodesById.set(node.id, {
           elkNode: {
             id: node.id,
-            width: node.data.shape["dc:Bounds"]?.["@_width"] ?? dsSize["@_width"],
-            height: node.data.shape["dc:Bounds"]?.["@_width"] ?? dsSize["@_height"],
+            width: dsSize["@_width"],
+            height: dsSize["@_height"],
             children: [
               {
-                id: node.id + "__$$__dsOutput",
-                width: node.data.shape["dc:Bounds"]?.["@_width"] ?? dsSize["@_width"],
-                height: node.data.shape["dmndi:DMNDecisionServiceDividerLine"]?.["di:waypoint"]?.[0]["@_y"] ?? 0,
+                id: idOfFakeNodeForOutputSection,
+                width: dsSize["@_width"],
+                height: dsSize["@_height"] / 2,
                 children: [],
                 layoutOptions: {
                   ...ELK_OPTIONS,
@@ -130,11 +134,9 @@ export function AutolayoutButton() {
                 },
               },
               {
-                id: node.id + "__$$__dsEncapsulated",
-                width: node.data.shape["dc:Bounds"]?.["@_width"] ?? dsSize["@_width"],
-                height:
-                  (node.data.shape["dc:Bounds"]?.["@_height"] ?? dsSize["@_height"]) -
-                  (node.data.shape["dmndi:DMNDecisionServiceDividerLine"]?.["di:waypoint"]?.[0]["@_y"] ?? 0),
+                id: idOfFakeNodeForEncapsulatedSection,
+                width: dsSize["@_width"],
+                height: dsSize["@_height"] / 2,
                 children: [],
                 layoutOptions: {
                   ...ELK_OPTIONS,
@@ -168,9 +170,9 @@ export function AutolayoutButton() {
         });
 
         fakeEdgesForElk.add({
-          id: node.id + "__$$__fakeOutputEncapsulatedEdge",
-          sources: [node.id + "__$$__dsEncapsulated"],
-          targets: [node.id + "__$$__dsOutput"],
+          id: `${node.id}${FAKE_MARKER}fakeOutputEncapsulatedEdge`,
+          sources: [idOfFakeNodeForEncapsulatedSection],
+          targets: [idOfFakeNodeForOutputSection],
         });
       } else if (node.data?.dmnObject?.__$$element === "group") {
         const groupSize = DEFAULT_NODE_SIZES[NODE_TYPES.group](snapGrid);
@@ -283,14 +285,14 @@ export function AutolayoutButton() {
       const dependents = parentNodes.filter((p) => p.hasDependencyTo({ id: node.id }));
       for (const dependent of dependents) {
         fakeEdgesForElk.add({
-          id: generateUuid() + "__$$__fake",
+          id: `${generateUuid()}${FAKE_MARKER}__fake`,
           sources: [node.id],
           targets: [dependent.elkNode.id],
         });
 
         for (const p of nodeParentsById.get(node.id) ?? []) {
           fakeEdgesForElk.add({
-            id: generateUuid() + "__$$__fake",
+            id: `${generateUuid()}${FAKE_MARKER}__fake`,
             sources: [p],
             targets: [dependent.elkNode.id],
           });
@@ -300,14 +302,14 @@ export function AutolayoutButton() {
       const dependencies = parentNodes.filter((p) => p.isDependencyOf({ id: node.id }));
       for (const dependency of dependencies) {
         fakeEdgesForElk.add({
-          id: generateUuid() + "__$$__fake",
+          id: `${generateUuid()}${FAKE_MARKER}__fake`,
           sources: [dependency.elkNode.id],
           targets: [node.id],
         });
 
         for (const p of nodeParentsById.get(node.id) ?? []) {
           fakeEdgesForElk.add({
-            id: generateUuid() + "__$$__fake",
+            id: `${generateUuid()}${FAKE_MARKER}__fake`,
             sources: [dependency.elkNode.id],
             targets: [p],
           });
@@ -334,7 +336,7 @@ export function AutolayoutButton() {
 
       for (const topLevelElkNode of autolayouted.nodes ?? []) {
         visitNodeAndNested(topLevelElkNode, { x: 100, y: 100 }, (elkNode, positionOffset) => {
-          if (elkNode.id.includes("__$$__")) {
+          if (elkNode.id.includes(FAKE_MARKER)) {
             return;
           }
 
@@ -370,7 +372,7 @@ export function AutolayoutButton() {
       // 8. Resize all nodes using the sizes calculated by ELK.
       for (const topLevelElkNode of autolayouted.nodes ?? []) {
         visitNodeAndNested(topLevelElkNode, { x: 0, y: 0 }, (elkNode) => {
-          if (elkNode.id.includes("__$$__")) {
+          if (elkNode.id.includes(FAKE_MARKER)) {
             return;
           }
 
@@ -438,7 +440,7 @@ export function AutolayoutButton() {
 
       // 10. Update the edges. Edges always go from top to bottom, removing waypoints.
       for (const elkEdge of autolayouted.edges ?? []) {
-        if (elkEdge.id.includes("__$$__")) {
+        if (elkEdge.id.includes(FAKE_MARKER)) {
           continue;
         }
 
