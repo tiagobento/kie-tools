@@ -19,13 +19,13 @@
 
 export type TypeOrReturnType<T> = T extends (...args: any[]) => any ? ReturnType<T> : T;
 
-export type X<T> = {
+export type CacheEntry<T> = {
   value: TypeOrReturnType<T> | undefined;
   dependencies: readonly any[];
 };
 
 export type Cache<T> = {
-  [K in keyof T]: X<T[K]>;
+  [K in keyof T]: CacheEntry<T[K]>;
 };
 
 let r: number = 0;

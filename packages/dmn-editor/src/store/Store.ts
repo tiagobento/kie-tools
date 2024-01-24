@@ -365,20 +365,20 @@ export function createDmnEditorStore(model: State["dmn"]["model"], computedCache
           isDropTargetNodeValidForSelection: (externalModelsByNamespace: ExternalModelsIndex | undefined) =>
             computedCache.cached("isDropTargetNodeValidForSelection", computeIsDropTargetNodeValidForSelection, [
               s.diagram.dropTargetNode,
-              s.computed(this).getDiagramData(externalModelsByNamespace),
+              s.computed(s).getDiagramData(externalModelsByNamespace),
             ]),
 
           getDataTypes: (externalModelsByNamespace: ExternalModelsIndex | undefined) =>
             computedCache.cached("getDataTypes", computeDataTypes, [
               s.dmn.model.definitions["@_namespace"],
               s.dmn.model.definitions.itemDefinition,
-              s.computed(this).getExternalModelTypesByNamespace(externalModelsByNamespace),
-              s.computed(this).importsByNamespace(),
+              s.computed(s).getExternalModelTypesByNamespace(externalModelsByNamespace),
+              s.computed(s).importsByNamespace(),
             ]),
 
           getAllFeelVariableUniqueNames: (externalModelsByNamespace: ExternalModelsIndex | undefined) =>
             computedCache.cached("getAllFeelVariableUniqueNames", computeAllFeelVariableUniqueNames, [
-              s.computed(this).getDataTypes(externalModelsByNamespace),
+              s.computed(s).getDataTypes(externalModelsByNamespace),
             ]),
 
           getExternalModelTypesByNamespace: (externalModelsByNamespace: ExternalModelsIndex | undefined) =>
@@ -391,8 +391,8 @@ export function createDmnEditorStore(model: State["dmn"]["model"], computedCache
             computedCache.cached("getDiagramData", computeDiagramData, [
               s.diagram,
               s.dmn.model.definitions,
-              s.computed(this).getExternalModelTypesByNamespace(externalModelsByNamespace),
-              s.computed(this).indexes(),
+              s.computed(s).getExternalModelTypesByNamespace(externalModelsByNamespace),
+              s.computed(s).indexes(),
             ]),
         };
       },

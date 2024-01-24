@@ -19,22 +19,22 @@
 
 import * as React from "react";
 import { generateUuid } from "@kie-tools/boxed-expression-component/dist/api";
-import { DC__Bounds, DMNDI15__DMNShape } from "@kie-tools/dmn-marshaller/dist/schemas/dmn-1_5/ts-gen/types";
-import { XmlQName, parseXmlQName } from "@kie-tools/xml-parser-ts/dist/qNames";
-import { Button } from "@patternfly/react-core/dist/js/components/Button";
+import { DC__Bounds } from "@kie-tools/dmn-marshaller/dist/schemas/dmn-1_5/ts-gen/types";
+import OptimizeIcon from "@patternfly/react-icons/dist/js/icons/optimize-icon";
 import ELK, * as Elk from "elkjs/lib/elk.bundled.js";
 import { useCallback } from "react";
-import { KIE_DMN_UNKNOWN_NAMESPACE } from "../Dmn15Spec";
-import { NodeType } from "../diagram/connections/graphStructure";
+import { PositionalNodeHandleId } from "../diagram/connections/PositionalNodeHandles";
+import { EdgeType, NodeType } from "../diagram/connections/graphStructure";
 import { getAdjMatrix, traverse } from "../diagram/graph/graph";
 import { getContainmentRelationship } from "../diagram/maths/DmnMaths";
 import { DEFAULT_NODE_SIZES, MIN_NODE_SIZES } from "../diagram/nodes/DefaultSizes";
 import { NODE_TYPES } from "../diagram/nodes/NodeTypes";
+import { useExternalModels } from "../includedModels/DmnEditorDependenciesContext";
+import { addEdge } from "../mutations/addEdge";
 import { repositionNode } from "../mutations/repositionNode";
 import { resizeNode } from "../mutations/resizeNode";
+import { updateDecisionServiceDividerLine } from "../mutations/updateDecisionServiceDividerLine";
 import { useDmnEditorStoreApi } from "../store/StoreContext";
-import { buildXmlHref } from "../xml/xmlHrefs";
-import { useExternalModels } from "../includedModels/DmnEditorDependenciesContext";
 
 const elk = new ELK();
 
@@ -66,20 +66,24 @@ const PARENT_NODE_ELK_OPTIONS = {
 };
 
 export interface AutolayoutParentNode {
+  decisionServiceSection: "output" | "encapsulated" | "n/a";
   elkNode: Elk.ElkNode;
   contained: Set<string>;
   dependents: Set<string>;
   dependencies: Set<string>;
-  contains: (otherNode: { id: string; bounds: DC__Bounds | undefined }) => boolean;
+  contains: (otherNode: { id: string; bounds: DC__Bounds | undefined }) => {
+    isInside: boolean;
+    decisionServiceSection: AutolayoutParentNode["decisionServiceSection"];
+  };
   hasDependencyTo: (otherNode: { id: string }) => boolean;
   isDependencyOf: (otherNode: { id: string }) => boolean;
 }
 
-export function AutolayoutPanel() {
+export function AutolayoutButton() {
   const dmnEditorStoreApi = useDmnEditorStoreApi();
   const { externalModelsByNamespace } = useExternalModels();
 
-  const onApply = useCallback(async () => {
+  const onApply = React.useCallback(async () => {
     const parentNodesById = new Map<string, AutolayoutParentNode>();
     const nodeParentsById = new Map<string, Set<string>>();
 
@@ -99,40 +103,80 @@ export function AutolayoutPanel() {
 
     const adjMatrix = getAdjMatrix(edges);
 
-    // 1. First we populate the `parentNodesById` map so that we know exactly what parent nodes we're dealing with.
+    // 1. First we populate the `parentNodesById` map so that we know exactly what parent nodes we're dealing with. Decision Service nodes have two fake nodes to represent Output and Encapsulated sections.
     for (const node of nodes) {
       const dependencies = new Set<string>();
       const dependents = new Set<string>();
 
       if (node.data?.dmnObject?.__$$element === "decisionService") {
-        const contained = new Set([
-          ...(node.data.dmnObject.encapsulatedDecision ?? []).map((s) => s["@_href"]),
-          ...(node.data.dmnObject.outputDecision ?? []).map((s) => s["@_href"]),
-        ]);
+        const outputs = new Set([...(node.data.dmnObject.outputDecision ?? []).map((s) => s["@_href"])]);
+        const encapsulated = new Set([...(node.data.dmnObject.encapsulatedDecision ?? []).map((s) => s["@_href"])]);
 
         const dsSize = DEFAULT_NODE_SIZES[NODE_TYPES.decisionService](snapGrid);
         parentNodesById.set(node.id, {
           elkNode: {
             id: node.id,
             width: node.data.shape["dc:Bounds"]?.["@_width"] ?? dsSize["@_width"],
-            height: node.data.shape["dc:Bounds"]?.["@_height"] ?? dsSize["@_height"],
-            children: [],
+            height: node.data.shape["dc:Bounds"]?.["@_width"] ?? dsSize["@_height"],
+            children: [
+              {
+                id: node.id + "__$$__dsOutput",
+                width: node.data.shape["dc:Bounds"]?.["@_width"] ?? dsSize["@_width"],
+                height: node.data.shape["dmndi:DMNDecisionServiceDividerLine"]?.["di:waypoint"]?.[0]["@_y"] ?? 0,
+                children: [],
+                layoutOptions: {
+                  ...ELK_OPTIONS,
+                  ...PARENT_NODE_ELK_OPTIONS,
+                },
+              },
+              {
+                id: node.id + "__$$__dsEncapsulated",
+                width: node.data.shape["dc:Bounds"]?.["@_width"] ?? dsSize["@_width"],
+                height:
+                  (node.data.shape["dc:Bounds"]?.["@_height"] ?? dsSize["@_height"]) -
+                  (node.data.shape["dmndi:DMNDecisionServiceDividerLine"]?.["di:waypoint"]?.[0]["@_y"] ?? 0),
+                children: [],
+                layoutOptions: {
+                  ...ELK_OPTIONS,
+                  ...PARENT_NODE_ELK_OPTIONS,
+                },
+              },
+            ],
             layoutOptions: {
-              ...ELK_OPTIONS,
-              ...PARENT_NODE_ELK_OPTIONS,
+              "elk.algorithm": "layered",
+              "elk.direction": "UP",
+              "elk.aspectRatio": "9999999999",
+              "elk.partitioning.activate": "true",
+              "elk.spacing.nodeNode": "0",
+              "elk.spacing.componentComponent": "0",
+              "layered.spacing.edgeEdgeBetweenLayers": "0",
+              "layered.spacing.edgeNodeBetweenLayers": "0",
+              "layered.spacing.nodeNodeBetweenLayers": "0",
+              "elk.padding": "[left=0, top=0, right=0, bottom=0]",
             },
           },
+          decisionServiceSection: "output",
           dependencies,
           dependents,
-          contained,
-          contains: ({ id }) => contained.has(id),
+          contained: outputs,
+          contains: ({ id }) => ({
+            isInside: outputs.has(id) || encapsulated.has(id),
+            decisionServiceSection: outputs.has(id) ? "output" : encapsulated.has(id) ? "encapsulated" : "n/a",
+          }),
           isDependencyOf: ({ id }) => dependents.has(id),
           hasDependencyTo: ({ id }) => dependencies.has(id),
+        });
+
+        fakeEdgesForElk.add({
+          id: node.id + "__$$__fakeOutputEncapsulatedEdge",
+          sources: [node.id + "__$$__dsEncapsulated"],
+          targets: [node.id + "__$$__dsOutput"],
         });
       } else if (node.data?.dmnObject?.__$$element === "group") {
         const groupSize = DEFAULT_NODE_SIZES[NODE_TYPES.group](snapGrid);
         const groupBounds = node.data.shape["dc:Bounds"];
         parentNodesById.set(node.id, {
+          decisionServiceSection: "n/a",
           elkNode: {
             id: node.id,
             width: groupBounds?.["@_width"] ?? groupSize["@_width"],
@@ -146,14 +190,16 @@ export function AutolayoutPanel() {
           dependencies,
           dependents,
           contained: new Set(),
-          contains: ({ id, bounds }) =>
-            getContainmentRelationship({
+          contains: ({ id, bounds }) => ({
+            isInside: getContainmentRelationship({
               bounds: bounds!,
               container: groupBounds!,
               snapGrid,
               containerMinSizes: MIN_NODE_SIZES[NODE_TYPES.group],
               boundsMinSizes: MIN_NODE_SIZES[nodesById.get(id)?.type as NodeType],
             }).isInside,
+            decisionServiceSection: "n/a",
+          }),
           isDependencyOf: ({ id }) => dependents.has(id),
           hasDependencyTo: ({ id }) => dependencies.has(id),
         });
@@ -184,11 +230,25 @@ export function AutolayoutPanel() {
       };
 
       // FIXME: Tiago --> Improve performance here.
-      const parents = [...parentNodesById.values()].filter((p) =>
-        p.contains({ id: elkNode.id, bounds: node.data.shape["dc:Bounds"] })
+      const parents = [...parentNodesById.values()].filter(
+        (p) => p.contains({ id: elkNode.id, bounds: node.data.shape["dc:Bounds"] }).isInside
       );
       if (parents.length > 0) {
-        parents[0].elkNode.children?.push(elkNode); // The only relationship that ELK will know about is the first matching container for this node.
+        const decisionServiceSection = parents[0].contains({
+          id: elkNode.id,
+          bounds: node.data.shape["dc:Bounds"],
+        }).decisionServiceSection;
+
+        if (decisionServiceSection === "n/a") {
+          parents[0].elkNode.children?.push(elkNode); // The only relationship that ELK will know about is the first matching container for this node.
+        } else if (decisionServiceSection === "output") {
+          parents[0].elkNode.children?.[0].children?.push(elkNode);
+        } else if (decisionServiceSection === "encapsulated") {
+          parents[0].elkNode.children?.[1].children?.push(elkNode);
+        } else {
+          throw new Error(`Unknown decisionServiceSection ${decisionServiceSection}`);
+        }
+
         for (const p of parents) {
           p.contained?.add(elkNode.id); // We need to keep track of nodes that are contained by multiple groups, but ELK will only know about one of those containment relationships.
           nodeParentsById.set(node.id, new Set([...(nodeParentsById.get(node.id) ?? []), p.elkNode.id]));
@@ -223,14 +283,14 @@ export function AutolayoutPanel() {
       const dependents = parentNodes.filter((p) => p.hasDependencyTo({ id: node.id }));
       for (const dependent of dependents) {
         fakeEdgesForElk.add({
-          id: generateUuid(),
+          id: generateUuid() + "__$$__fake",
           sources: [node.id],
           targets: [dependent.elkNode.id],
         });
 
         for (const p of nodeParentsById.get(node.id) ?? []) {
           fakeEdgesForElk.add({
-            id: generateUuid(),
+            id: generateUuid() + "__$$__fake",
             sources: [p],
             targets: [dependent.elkNode.id],
           });
@@ -240,14 +300,14 @@ export function AutolayoutPanel() {
       const dependencies = parentNodes.filter((p) => p.isDependencyOf({ id: node.id }));
       for (const dependency of dependencies) {
         fakeEdgesForElk.add({
-          id: generateUuid(),
+          id: generateUuid() + "__$$__fake",
           sources: [dependency.elkNode.id],
           targets: [node.id],
         });
 
         for (const p of nodeParentsById.get(node.id) ?? []) {
           fakeEdgesForElk.add({
-            id: generateUuid(),
+            id: generateUuid() + "__$$__fake",
             sources: [dependency.elkNode.id],
             targets: [p],
           });
@@ -270,10 +330,18 @@ export function AutolayoutPanel() {
 
     // 7. Update all nodes positions skipping empty groups, which will be positioned manually after all nodes are done being repositioned.
     dmnEditorStoreApi.setState((s) => {
+      const autolayoutedElkNodesById = new Map<string, Elk.ElkNode>();
+
       for (const topLevelElkNode of autolayouted.nodes ?? []) {
         visitNodeAndNested(topLevelElkNode, { x: 100, y: 100 }, (elkNode, positionOffset) => {
+          if (elkNode.id.includes("__$$__")) {
+            return;
+          }
+
+          autolayoutedElkNodesById.set(elkNode.id, elkNode);
+
           const nodeId = elkNode.id;
-          const node = nodesById.get(nodeId)!;
+          const node = s.computed(s).getDiagramData(externalModelsByNamespace).nodesById.get(nodeId)!;
 
           repositionNode({
             definitions: s.dmn.model.definitions,
@@ -302,8 +370,13 @@ export function AutolayoutPanel() {
       // 8. Resize all nodes using the sizes calculated by ELK.
       for (const topLevelElkNode of autolayouted.nodes ?? []) {
         visitNodeAndNested(topLevelElkNode, { x: 0, y: 0 }, (elkNode) => {
+          if (elkNode.id.includes("__$$__")) {
+            return;
+          }
+
           const nodeId = elkNode.id;
-          const node = nodesById.get(nodeId)!;
+          const node = s.computed(s).getDiagramData(externalModelsByNamespace).nodesById.get(nodeId)!;
+
           resizeNode({
             definitions: s.dmn.model.definitions,
             drdIndex: s.diagram.drdIndex,
@@ -327,13 +400,89 @@ export function AutolayoutPanel() {
             },
           });
         });
-
-        // 9. After all nodes have been repositioned, it's time for the empty groups to be repositioned.
       }
+
+      // 9. Updating Decision Service divider lines after all nodes are repositioned and resized.
+      for (const [parentNodeId] of parentNodesById) {
+        const parentNode = s.computed(s).getDiagramData(externalModelsByNamespace).nodesById.get(parentNodeId);
+        if (parentNode?.type !== NODE_TYPES.decisionService) {
+          continue;
+        }
+
+        const elkNode = autolayoutedElkNodesById.get(parentNodeId);
+        if (!elkNode) {
+          throw new Error(`Couldn't find Decision Service with id ${parentNode.id} at the autolayouted nodes map`);
+        }
+
+        /**
+         * The second children of a Decision Service elkNode is a node representing the Encapsulated section.
+         * It's Y position will be exactly where the divider line should be.
+         */
+        const dividerLinerLocalYPosition = elkNode.children?.[1]?.y;
+        if (!dividerLinerLocalYPosition) {
+          throw new Error(
+            `Couldn't find second child (which represents the Encapuslated Decision section) of Decision Service with id ${parentNode.id} at the autolayouted nodes map`
+          );
+        }
+
+        updateDecisionServiceDividerLine({
+          definitions: s.dmn.model.definitions,
+          drdIndex: s.diagram.drdIndex,
+          dmnShapesByHref: s.computed(s).indexes().dmnShapesByHref,
+          drgElementIndex: parentNode.data.index,
+          shapeIndex: parentNode.data.shape.index,
+          snapGrid,
+          localYPosition: dividerLinerLocalYPosition,
+        });
+      }
+
+      // 10. Update the edges. Edges always go from top to bottom, removing waypoints.
+      for (const elkEdge of autolayouted.edges ?? []) {
+        if (elkEdge.id.includes("__$$__")) {
+          continue;
+        }
+
+        const edge = s.computed(s).getDiagramData(externalModelsByNamespace).edgesById.get(elkEdge.id)!;
+        const sourceNode = s.computed(s).getDiagramData(externalModelsByNamespace).nodesById.get(elkEdge.sources[0])!;
+        const targetNode = s.computed(s).getDiagramData(externalModelsByNamespace).nodesById.get(elkEdge.targets[0])!;
+
+        addEdge({
+          definitions: s.dmn.model.definitions,
+          drdIndex: s.diagram.drdIndex,
+          edge: {
+            autoPositionedEdgeMarker: undefined,
+            type: edge.type as EdgeType,
+            targetHandle: PositionalNodeHandleId.Bottom,
+            sourceHandle: PositionalNodeHandleId.Top,
+          },
+          sourceNode: {
+            type: sourceNode.type as NodeType,
+            href: sourceNode.id,
+            data: sourceNode.data,
+            bounds: sourceNode.data.shape["dc:Bounds"]!,
+            shapeId: sourceNode.data.shape["@_id"],
+          },
+          targetNode: {
+            type: targetNode.type as NodeType,
+            href: targetNode.id,
+            data: targetNode.data,
+            bounds: targetNode.data.shape["dc:Bounds"]!,
+            index: targetNode.data.index,
+            shapeId: targetNode.data.shape["@_id"],
+          },
+          keepWaypoints: false,
+        });
+      }
+
+      // 11. After all nodes have been repositioned, it's time for the empty groups to be repositioned.
     });
   }, [dmnEditorStoreApi, externalModelsByNamespace]);
 
-  return <Button onClick={onApply}>Apply 2</Button>;
+  return (
+    <button className={"kie-dmn-editor--autolayout-panel-toggle-button"} onClick={onApply}>
+      <OptimizeIcon />
+    </button>
+  );
 }
 
 //
@@ -352,16 +501,12 @@ export async function runElk(
     edges,
   };
 
-  try {
-    const layoutedGraph = await elk.layout(graph);
-    return {
-      isHorizontal,
-      nodes: layoutedGraph.children,
-      edges: layoutedGraph.edges as any[],
-    };
-  } catch (e) {
-    throw new Error("Error executing autolayout.", e);
-  }
+  const layoutedGraph = await elk.layout(graph);
+  return {
+    isHorizontal,
+    nodes: layoutedGraph.children,
+    edges: layoutedGraph.edges as any[],
+  };
 }
 
 function visitNodeAndNested(

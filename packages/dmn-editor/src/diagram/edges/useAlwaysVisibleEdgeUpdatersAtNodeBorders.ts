@@ -118,16 +118,14 @@ export function useAlwaysVisibleEdgeUpdatersAtNodeBorders(
     edgeUpdaterTarget.setAttribute("r", `${RADIUS}`);
   }, [
     interactionPathRef,
-    source,
-    target,
     snappedWaypoints,
+    sourceNodeHeight,
+    sourceNodeWidth,
     sourceNodeX,
     sourceNodeY,
-    sourceNodeWidth,
-    sourceNodeHeight,
+    targetNodeHeight,
+    targetNodeWidth,
     targetNodeX,
     targetNodeY,
-    targetNodeWidth,
-    targetNodeHeight,
   ]);
 }

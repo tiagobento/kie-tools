@@ -42,12 +42,11 @@ import { Bullseye } from "@patternfly/react-core/dist/js/layouts/Bullseye";
 import { BlueprintIcon } from "@patternfly/react-icons/dist/js/icons/blueprint-icon";
 import { InfoIcon } from "@patternfly/react-icons/dist/js/icons/info-icon";
 import { MousePointerIcon } from "@patternfly/react-icons/dist/js/icons/mouse-pointer-icon";
-import { OptimizeIcon } from "@patternfly/react-icons/dist/js/icons/optimize-icon";
 import { TableIcon } from "@patternfly/react-icons/dist/js/icons/table-icon";
 import { TimesIcon } from "@patternfly/react-icons/dist/js/icons/times-icon";
 import { VirtualMachineIcon } from "@patternfly/react-icons/dist/js/icons/virtual-machine-icon";
 import { useDmnEditor } from "../DmnEditorContext";
-import { AutolayoutPanel } from "../autolayout/AutolayoutPanel";
+import { AutolayoutButton } from "../autolayout/AutolayoutButton";
 import { getDefaultColumnWidth } from "../boxedExpressions/getDefaultColumnWidth";
 import { getDefaultExpressionDefinitionByLogicType } from "../boxedExpressions/getDefaultExpressionDefinitionByLogicType";
 import {
@@ -121,7 +120,6 @@ import {
   UnknownNode,
 } from "./nodes/Nodes";
 import { useExternalModels } from "../includedModels/DmnEditorDependenciesContext";
-import { startCase } from "lodash";
 
 const isFirefox = typeof (window as any).InstallTrigger !== "undefined"; // See https://stackoverflow.com/questions/9847580/how-to-detect-safari-chrome-ie-firefox-and-opera-browsers
 
@@ -194,17 +192,11 @@ export const Diagram = React.forwardRef<DiagramRef, { container: React.RefObject
     // Callbacks
 
     const onConnect = useCallback<RF.OnConnect>(
-      (connection) => {
-        console.debug("DMN DIAGRAM: `onConnect`: ", connection);
+      ({ source, target, sourceHandle, targetHandle }) => {
+        console.debug("DMN DIAGRAM: `onConnect`: ", { source, target, sourceHandle, targetHandle });
         dmnEditorStoreApi.setState((state) => {
-          const sourceNode = state
-            .computed(state)
-            .getDiagramData(externalModelsByNamespace)
-            .nodesById.get(connection.source!);
-          const targetNode = state
-            .computed(state)
-            .getDiagramData(externalModelsByNamespace)
-            .nodesById.get(connection.target!);
+          const sourceNode = state.computed(state).getDiagramData(externalModelsByNamespace).nodesById.get(source!);
+          const targetNode = state.computed(state).getDiagramData(externalModelsByNamespace).nodesById.get(target!);
           if (!sourceNode || !targetNode) {
             throw new Error("Cannot create connection without target and source nodes!");
           }
@@ -221,9 +213,10 @@ export const Diagram = React.forwardRef<DiagramRef, { container: React.RefObject
             definitions: state.dmn.model.definitions,
             drdIndex: state.diagram.drdIndex,
             edge: {
-              type: connection.sourceHandle as EdgeType,
-              targetHandle: connection.targetHandle as PositionalNodeHandleId,
+              type: sourceHandle as EdgeType,
+              targetHandle: targetHandle as PositionalNodeHandleId,
               sourceHandle: PositionalNodeHandleId.Center,
+              autoPositionedEdgeMarker: undefined,
             },
             sourceNode: {
               type: sourceNode.type as NodeType,
@@ -925,6 +918,7 @@ export const Diagram = React.forwardRef<DiagramRef, { container: React.RefObject
             definitions: state.dmn.model.definitions,
             drdIndex: state.diagram.drdIndex,
             edge: {
+              autoPositionedEdgeMarker: undefined,
               type: oldEdge.type as EdgeType,
               targetHandle: ((newConnection.targetHandle as PositionalNodeHandleId) ??
                 getHandlePosition({ shapeBounds: targetBounds, waypoint: lastWaypoint })
@@ -1304,6 +1298,7 @@ export function TopRightCornerPanels() {
     });
   }, [dmnEditorStoreApi]);
 
+  // FIXME: TIAGO: Remove this
   const toggleAutolayoutPanel = useCallback(() => {
     dmnEditorStoreApi.setState((state) => {
       state.diagram.autolayoutPanel.isOpen = !state.diagram.autolayoutPanel.isOpen;
@@ -1324,6 +1319,7 @@ export function TopRightCornerPanels() {
     });
   }, [dmnEditorStoreApi, diagram.propertiesPanel.isOpen]);
 
+  // FIXME: TIAGO: Remove this
   useLayoutEffect(() => {
     dmnEditorStoreApi.setState((state) => {
       if (state.diagram.autolayoutPanel.isOpen) {
@@ -1342,21 +1338,7 @@ export function TopRightCornerPanels() {
     <>
       <RF.Panel position={"top-right"} style={{ display: "flex" }}>
         <aside className={"kie-dmn-editor--autolayout-panel-toggle"}>
-          <Popover
-            className={"kie-dmn-editor--autolayout-panel-popover"}
-            key={`${diagram.autolayoutPanel.isOpen}`}
-            aria-label="autolayout Panel"
-            position={"left-start"}
-            flipBehavior={["left-start"]}
-            enableFlip={false}
-            hideOnOutsideClick={false}
-            isVisible={diagram.autolayoutPanel.isOpen}
-            bodyContent={<AutolayoutPanel />}
-          >
-            <button className={"kie-dmn-editor--autolayout-panel-toggle-button"} onClick={toggleAutolayoutPanel}>
-              <OptimizeIcon />
-            </button>
-          </Popover>
+          <AutolayoutButton />
         </aside>
         <aside className={"kie-dmn-editor--overlays-panel-toggle"}>
           <Popover
