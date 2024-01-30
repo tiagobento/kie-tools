@@ -23,12 +23,17 @@ import { KIE_DMN_UNKNOWN_NAMESPACE } from "../../Dmn15Spec";
 import { buildXmlHref } from "../../xml/xmlHrefs";
 import { State } from "../Store";
 
+export type IndexedDmnShape = DMNDI15__DMNShape & {
+  dmnElementRefQName: XmlQName;
+  index: number;
+};
+
 export function computeIndexes(
   definitions: State["dmn"]["model"]["definitions"],
   drdIndex: State["diagram"]["drdIndex"]
 ) {
   const dmnEdgesByDmnElementRef = new Map<string, DMNDI15__DMNEdge & { index: number }>();
-  const dmnShapesByHref = new Map<string, DMNDI15__DMNShape & { index: number; dmnElementRefQName: XmlQName }>();
+  const dmnShapesByHref = new Map<string, IndexedDmnShape>();
   const hrefsOfDmnElementRefsOfShapesPointingToExternalDmnObjects = new Set<string>();
 
   const diagramElements = definitions["dmndi:DMNDI"]?.["dmndi:DMNDiagram"]?.[drdIndex]["dmndi:DMNDiagramElement"] ?? [];

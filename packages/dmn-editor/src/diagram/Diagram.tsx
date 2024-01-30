@@ -605,6 +605,9 @@ export const Diagram = React.forwardRef<DiagramRef, { container: React.RefObject
                 state.dispatch(state).diagram.setNodeStatus(change.item.id, { selected: true });
                 break;
               case "dimensions":
+                if (state.diagram.viewDrgWithAutomaticLayout) {
+                  break;
+                }
                 console.debug(`DMN DIAGRAM: 'onNodesChange' --> dimensions '${change.id}'`);
                 state.dispatch(state).diagram.setNodeStatus(change.id, { resizing: change.resizing });
                 if (change.dimensions) {
@@ -654,6 +657,9 @@ export const Diagram = React.forwardRef<DiagramRef, { container: React.RefObject
                 }
                 break;
               case "position":
+                if (state.diagram.viewDrgWithAutomaticLayout) {
+                  break;
+                }
                 console.debug(`DMN DIAGRAM: 'onNodesChange' --> position '${change.id}'`);
                 state.dispatch(state).diagram.setNodeStatus(change.id, { dragging: change.dragging });
                 if (change.positionAbsolute) {
@@ -1106,14 +1112,18 @@ export const Diagram = React.forwardRef<DiagramRef, { container: React.RefObject
 
     const nodes = useDmnEditorStore((s) => s.computed(s).getDiagramData(externalModelsByNamespace).nodes);
     const edges = useDmnEditorStore((s) => s.computed(s).getDiagramData(externalModelsByNamespace).edges);
-    const drgElementsWithoutVisualRepresentationOnCurrentDrdLength = useDmnEditorStore(
+    const viewDrgWithAutomaticLayout = useDmnEditorStore((s) => s.diagram.viewDrgWithAutomaticLayout);
+    const countOfDrgElementsWithoutVisualRepresentationOnCurrentDrd = useDmnEditorStore(
       (s) =>
         s.computed(s).getDiagramData(externalModelsByNamespace).drgElementsWithoutVisualRepresentationOnCurrentDrd
           .length
     );
 
     const isEmptyStateShowing =
-      showEmptyState && nodes.length === 0 && drgElementsWithoutVisualRepresentationOnCurrentDrdLength === 0;
+      showEmptyState &&
+      nodes.length === 0 &&
+      countOfDrgElementsWithoutVisualRepresentationOnCurrentDrd === 0 &&
+      !viewDrgWithAutomaticLayout;
 
     return (
       <>

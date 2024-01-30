@@ -37,7 +37,16 @@ export function DrdSelectorPanel() {
 
   return (
     <>
-      <Button variant={ButtonVariant.tertiary} style={{ width: "100%" }}>
+      <Button
+        variant={ButtonVariant.tertiary}
+        style={{ width: "100%" }}
+        onClick={() => {
+          dmnEditorStoreApi.setState((s) => {
+            s.diagram.viewDrgWithAutomaticLayout = true;
+            s.diagram.drdSelector.isOpen = false;
+          });
+        }}
+      >
         <Flex justifyContent={{ default: "justifyContentSpaceBetween" }} alignItems={{ default: "alignItemsCenter" }}>
           <FlexItem style={{ width: "20px" }} />
           <FlexItem>

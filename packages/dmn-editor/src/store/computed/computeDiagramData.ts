@@ -17,8 +17,8 @@
  * under the License.
  */
 
-import { DMN15__tDefinitions } from "@kie-tools/dmn-marshaller/dist/schemas/dmn-1_5/ts-gen/types";
-import { XmlQName } from "@kie-tools/xml-parser-ts/dist/qNames";
+import { DMN15__tDefinitions, DMNDI15__DMNShape } from "@kie-tools/dmn-marshaller/dist/schemas/dmn-1_5/ts-gen/types";
+import { XmlQName, buildXmlQName, parseXmlQName } from "@kie-tools/xml-parser-ts/dist/qNames";
 import * as RF from "reactflow";
 import { KIE_DMN_UNKNOWN_NAMESPACE } from "../../Dmn15Spec";
 import { snapShapeDimensions, snapShapePosition } from "../../diagram/SnapGrid";
@@ -27,14 +27,21 @@ import { EDGE_TYPES } from "../../diagram/edges/EdgeTypes";
 import { DmnDiagramEdgeData } from "../../diagram/edges/Edges";
 import { DrgEdge, EdgeVisitor, NodeVisitor, getAdjMatrix, traverse } from "../../diagram/graph/graph";
 import { getNodeTypeFromDmnObject } from "../../diagram/maths/DmnMaths";
-import { DECISION_SERVICE_COLLAPSED_DIMENSIONS, MIN_NODE_SIZES } from "../../diagram/nodes/DefaultSizes";
+import {
+  DECISION_SERVICE_COLLAPSED_DIMENSIONS,
+  DEFAULT_NODE_SIZES,
+  MIN_NODE_SIZES,
+} from "../../diagram/nodes/DefaultSizes";
 import { ___NASTY_HACK_FOR_SAFARI_to_force_redrawing_svgs_and_avoid_repaint_glitches } from "../../diagram/nodes/NodeSvgs";
 import { NODE_TYPES } from "../../diagram/nodes/NodeTypes";
 import { DmnDiagramNodeData, NodeDmnObjects } from "../../diagram/nodes/Nodes";
 import { Unpacked } from "../../tsExt/tsExt";
 import { buildXmlHref, parseXmlHref } from "../../xml/xmlHrefs";
 import { TypeOrReturnType } from "../ComputedStateCache";
-import { Computed, State } from "../Store";
+import { Computed, SnapGrid, State } from "../Store";
+import { generateUuid } from "@kie-tools/boxed-expression-component/dist/api";
+import { IndexedDmnShape } from "./computeIndexes";
+import { getXmlNamespaceDeclarationName } from "../../xml/xmlNamespaceDeclarations";
 
 export const NODE_LAYERS = {
   GROUP_NODE: 0,
@@ -43,7 +50,7 @@ export const NODE_LAYERS = {
   NESTED_NODES: 4000,
 };
 
-type AckEdge = (args: {
+export type AckEdge = (args: {
   id: string;
   dmnObject: DmnDiagramEdgeData["dmnObject"];
   type: EdgeType;
@@ -51,7 +58,7 @@ type AckEdge = (args: {
   target: string;
 }) => RF.Edge<DmnDiagramEdgeData>;
 
-type AckNode = (
+export type AckNode = (
   dmnObjectQName: XmlQName,
   dmnObject: NodeDmnObjects,
   index: number
@@ -89,20 +96,18 @@ export function computeDiagramData(
   const drgEdges: DrgEdge[] = [];
 
   const ackEdge: AckEdge = ({ id, type, dmnObject, source, target }) => {
-    const data = {
-      dmnObject,
-      dmnEdge: id ? indexes.dmnEdgesByDmnElementRef.get(id) : undefined,
-      dmnShapeSource: indexes.dmnShapesByHref.get(source),
-      dmnShapeTarget: indexes.dmnShapesByHref.get(target),
-    };
-
     const edge: RF.Edge<DmnDiagramEdgeData> = {
-      data,
       id,
       type,
       source,
       target,
       selected: selectedEdges.has(id),
+      data: {
+        dmnObject,
+        dmnEdge: id ? indexes.dmnEdgesByDmnElementRef.get(id) : undefined,
+        dmnShapeSource: indexes.dmnShapesByHref.get(source),
+        dmnShapeTarget: indexes.dmnShapesByHref.get(target),
+      },
     };
 
     edgesById.set(edge.id, edge);
@@ -156,7 +161,10 @@ export function computeDiagramData(
 
     const id = buildXmlHref({ namespace: dmnObjectNamespace, id: dmnObjectQName.localPart });
 
-    const _shape = indexes.dmnShapesByHref.get(id);
+    const _shape: IndexedDmnShape | undefined = diagram.viewDrgWithAutomaticLayout
+      ? getDefaultShapeForDrgDiagramWithAutomaticLayout(id, dmnObjectQName, type, diagram.snapGrid)
+      : indexes.dmnShapesByHref.get(id);
+
     if (!_shape) {
       drgElementsWithoutVisualRepresentationOnCurrentDrd.push(id);
       return undefined;
@@ -209,7 +217,7 @@ export function computeDiagramData(
   const localNodes: RF.Node<DmnDiagramNodeData>[] = [
     ...(definitions.drgElement ?? []).flatMap((dmnObject, index) => {
       const newNode = ackNode({ type: "xml-qname", localPart: dmnObject["@_id"]! }, dmnObject, index);
-      return newNode ? [newNode] : [];
+      return newNode ?? [];
     }),
     ...(definitions.artifact ?? []).flatMap((dmnObject, index) => {
       if (dmnObject.__$$element === "association") {
@@ -217,7 +225,7 @@ export function computeDiagramData(
       }
 
       const newNode = ackNode({ type: "xml-qname", localPart: dmnObject["@_id"]! }, dmnObject, index);
-      return newNode ? [newNode] : [];
+      return newNode ?? [];
     }),
   ];
 
@@ -260,7 +268,46 @@ export function computeDiagramData(
     new Map<string, Map<string, { index: number; element: Unpacked<DMN15__tDefinitions["drgElement"]> }>>()
   );
 
-  const externalNodes = [...indexes.dmnShapesByHref.entries()].flatMap(([href, shape]) => {
+  const externalNodes = (
+    diagram.viewDrgWithAutomaticLayout
+      ? [
+          ...drgEdges
+            .reduce<Map<string, IndexedDmnShape>>((acc, e) => {
+              const href = parseXmlHref(e.sourceId);
+              if (!href.namespace) {
+                return acc;
+              }
+
+              // FIXME: TIAGO --> NOT GOOD
+              indexes.hrefsOfDmnElementRefsOfShapesPointingToExternalDmnObjects.add(e.sourceId);
+
+              const qNamePrefix = getXmlNamespaceDeclarationName({ model: definitions, namespace: href.namespace });
+              if (!qNamePrefix) {
+                return acc;
+              }
+              const dmnElementRefQName = parseXmlQName(
+                buildXmlQName({ type: "xml-qname", prefix: qNamePrefix, localPart: href.id })
+              );
+
+              //
+
+              const drgElement = externalDrgElementsByIdByNamespace.get(href.namespace)?.get(href.id);
+              if (!drgElement) {
+                return acc;
+              }
+              const type = getNodeTypeFromDmnObject(drgElement.element);
+              if (!type) {
+                return acc;
+              }
+              return acc.set(
+                e.sourceId,
+                getDefaultShapeForDrgDiagramWithAutomaticLayout(e.sourceId, dmnElementRefQName, type, diagram.snapGrid)
+              );
+            }, new Map())
+            .entries(),
+        ]
+      : [...indexes.dmnShapesByHref.entries()]
+  ).flatMap(([href, shape]) => {
     if (nodesById.get(href)) {
       return [];
     }
@@ -269,7 +316,7 @@ export function computeDiagramData(
       // Unknown local node.
       console.warn(`DMN DIAGRAM: Found a shape that references a local DRG element that doesn't exist.`, shape);
       const newNode = ackNode(shape.dmnElementRefQName, null, -1);
-      return newNode ? [newNode] : [];
+      return newNode ?? [];
     }
 
     const namespace = definitions[`@_xmlns:${shape.dmnElementRefQName.prefix}`];
@@ -279,7 +326,7 @@ export function computeDiagramData(
         shape
       );
       const newNode = ackNode(shape.dmnElementRefQName, null, -1);
-      return newNode ? [newNode] : [];
+      return newNode ?? [];
     }
 
     const externalDrgElementsById = externalDrgElementsByIdByNamespace.get(namespace);
@@ -289,18 +336,18 @@ export function computeDiagramData(
         shape
       );
       const newNode = ackNode(shape.dmnElementRefQName, null, -1);
-      return newNode ? [newNode] : [];
+      return newNode ?? [];
     }
 
     const externalDrgElement = externalDrgElementsById.get(shape.dmnElementRefQName.localPart);
     if (!externalDrgElement) {
       console.warn(`DMN DIAGRAM: Found a shape that references a non-existent node from an external DMN.`, shape);
       const newNode = ackNode(shape.dmnElementRefQName, null, -1);
-      return newNode ? [newNode] : [];
+      return newNode ?? [];
     }
 
     const newNode = ackNode(shape.dmnElementRefQName, externalDrgElement.element, externalDrgElement.index);
-    return newNode ? [newNode] : [];
+    return newNode ?? [];
   });
 
   // Groups are always at the back. Decision Services after groups, then everything else.
@@ -318,6 +365,10 @@ export function computeDiagramData(
     assignClassesToHighlightedHierarchyNodes(diagram._selectedNodes, nodesById, edgesById, drgEdges);
   }
 
+  if (diagram.viewDrgWithAutomaticLayout) {
+    //
+  }
+
   return {
     drgEdges,
     nodes: sortedNodes,
@@ -328,6 +379,28 @@ export function computeDiagramData(
     selectedNodesById,
     selectedEdgesById,
     drgElementsWithoutVisualRepresentationOnCurrentDrd,
+  };
+}
+
+function getDefaultShapeForDrgDiagramWithAutomaticLayout(
+  id: string,
+  dmnObjectQName: XmlQName,
+  type: NodeType,
+  snapGrid: SnapGrid
+): IndexedDmnShape {
+  return {
+    dmnElementRefQName: dmnObjectQName,
+    index: -1, // On purpose!
+    "@_dmnElementRef": id,
+    "@_id": generateUuid(),
+    "@_isCollapsed": false,
+    "@_isListedInputData": false,
+    "dc:Bounds": {
+      "@_width": DEFAULT_NODE_SIZES[type](snapGrid)["@_width"],
+      "@_height": DEFAULT_NODE_SIZES[type](snapGrid)["@_height"],
+      "@_x": Math.round(Math.random() * 400), // On purpose. Will be updated by ELK later.
+      "@_y": Math.round(Math.random() * 400), // On purpose. Will be updated by ELK later.
+    },
   };
 }
 

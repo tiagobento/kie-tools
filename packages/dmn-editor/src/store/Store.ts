@@ -86,6 +86,7 @@ export interface State {
     tab: DmnEditorTab;
   };
   diagram: {
+    viewDrgWithAutomaticLayout: boolean;
     drdIndex: number;
     edgeIdBeingUpdated: string | undefined;
     dropTargetNode: DropTargetNode;
@@ -183,6 +184,7 @@ export const defaultStaticState = (): Omit<State, "dmn" | "dispatch" | "computed
     expandedItemComponentIds: [],
   },
   diagram: {
+    viewDrgWithAutomaticLayout: false,
     drdIndex: 0,
     edgeIdBeingUpdated: undefined,
     dropTargetNode: undefined,

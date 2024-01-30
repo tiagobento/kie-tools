@@ -100,31 +100,34 @@ export function AutolayoutButton() {
 
     const state = dmnEditorStoreApi.getState();
 
+    const { nodesById, edgesById, nodes, edges, drgEdges } = state
+      .computed(state)
+      .getDiagramData(externalModelsByNamespace);
+
     const snapGrid = state.diagram.snapGrid;
-    const nodesById = state.computed(state).getDiagramData(externalModelsByNamespace).nodesById;
-    const edgesById = state.computed(state).getDiagramData(externalModelsByNamespace).edgesById;
-    const nodes = state.computed(state).getDiagramData(externalModelsByNamespace).nodes;
-    const edges = state.computed(state).getDiagramData(externalModelsByNamespace).edges;
-    const drgEdges = state.computed(state).getDiagramData(externalModelsByNamespace).drgEdges;
 
     const adjMatrix = getAdjMatrix(drgEdges);
 
     // 1. First we populate the `parentNodesById` map so that we know exactly what parent nodes we're dealing with. Decision Service nodes have two fake nodes to represent Output and Encapsulated sections.
     for (const node of nodes) {
+      const nodeId = node.id;
+      const dmnObject = node.data.dmnObject;
+      const nodeBounds = node.data.shape["dc:Bounds"];
+
       const dependencies = new Set<string>();
       const dependents = new Set<string>();
 
-      if (node.data?.dmnObject?.__$$element === "decisionService") {
-        const outputs = new Set([...(node.data.dmnObject.outputDecision ?? []).map((s) => s["@_href"])]);
-        const encapsulated = new Set([...(node.data.dmnObject.encapsulatedDecision ?? []).map((s) => s["@_href"])]);
+      if (dmnObject?.__$$element === "decisionService") {
+        const outputs = new Set([...(dmnObject.outputDecision ?? []).map((s) => s["@_href"])]);
+        const encapsulated = new Set([...(dmnObject.encapsulatedDecision ?? []).map((s) => s["@_href"])]);
 
-        const idOfFakeNodeForOutputSection = `${node.id}${FAKE_MARKER}dsOutput`;
-        const idOfFakeNodeForEncapsulatedSection = `${node.id}${FAKE_MARKER}dsEncapsulated`;
+        const idOfFakeNodeForOutputSection = `${nodeId}${FAKE_MARKER}dsOutput`;
+        const idOfFakeNodeForEncapsulatedSection = `${nodeId}${FAKE_MARKER}dsEncapsulated`;
 
         const dsSize = MIN_NODE_SIZES[NODE_TYPES.decisionService](snapGrid);
-        parentNodesById.set(node.id, {
+        parentNodesById.set(nodeId, {
           elkNode: {
-            id: node.id,
+            id: nodeId,
             width: dsSize["@_width"],
             height: dsSize["@_height"],
             children: [
@@ -175,19 +178,18 @@ export function AutolayoutButton() {
         });
 
         fakeEdgesForElk.add({
-          id: `${node.id}${FAKE_MARKER}fakeOutputEncapsulatedEdge`,
+          id: `${nodeId}${FAKE_MARKER}fakeOutputEncapsulatedEdge`,
           sources: [idOfFakeNodeForEncapsulatedSection],
           targets: [idOfFakeNodeForOutputSection],
         });
-      } else if (node.data?.dmnObject?.__$$element === "group") {
+      } else if (dmnObject?.__$$element === "group") {
         const groupSize = DEFAULT_NODE_SIZES[NODE_TYPES.group](snapGrid);
-        const groupBounds = node.data.shape["dc:Bounds"];
-        parentNodesById.set(node.id, {
+        parentNodesById.set(nodeId, {
           decisionServiceSection: "n/a",
           elkNode: {
-            id: node.id,
-            width: groupBounds?.["@_width"] ?? groupSize["@_width"],
-            height: groupBounds?.["@_height"] ?? groupSize["@_height"],
+            id: nodeId,
+            width: nodeBounds?.["@_width"] ?? groupSize["@_width"],
+            height: nodeBounds?.["@_height"] ?? groupSize["@_height"],
             children: [],
             layoutOptions: {
               ...ELK_OPTIONS,
@@ -200,7 +202,7 @@ export function AutolayoutButton() {
           contains: ({ id, bounds }) => ({
             isInside: getContainmentRelationship({
               bounds: bounds!,
-              container: groupBounds!,
+              container: nodeBounds!,
               snapGrid,
               containerMinSizes: MIN_NODE_SIZES[NODE_TYPES.group],
               boundsMinSizes: MIN_NODE_SIZES[nodesById.get(id)?.type as NodeType],
@@ -215,22 +217,26 @@ export function AutolayoutButton() {
 
     // 2. Then we map all the nodes to elkNodes, including the parents. We mutate parents on the fly when iterating over the nodes list.
     const elkNodes = nodes.flatMap((node) => {
-      const parent = parentNodesById.get(node.id);
+      const nodeId = node.id;
+      const nodeBounds = node.data.shape["dc:Bounds"];
+      const nodeType = node.type;
+
+      const parent = parentNodesById.get(nodeId);
       if (parent) {
         return [];
       }
 
       const defaultSize = DEFAULT_NODE_SIZES[node.type as NodeType](snapGrid);
       const elkNode: Elk.ElkNode = {
-        id: node.id,
-        width: node.data.shape["dc:Bounds"]?.["@_width"] ?? defaultSize["@_width"],
-        height: node.data.shape["dc:Bounds"]?.["@_height"] ?? defaultSize["@_height"],
+        id: nodeId,
+        width: nodeBounds?.["@_width"] ?? defaultSize["@_width"],
+        height: nodeBounds?.["@_height"] ?? defaultSize["@_height"],
         children: [],
         layoutOptions: {
           "partitioning.partition":
             // Since textAnnotations and knowledgeSources are not related to the logic, we leave them at the bottom.
-            (node.type as NodeType) === NODE_TYPES.textAnnotation ||
-            (node.type as NodeType) === NODE_TYPES.knowledgeSource
+            (nodeType as NodeType) === NODE_TYPES.textAnnotation ||
+            (nodeType as NodeType) === NODE_TYPES.knowledgeSource
               ? "0"
               : "1",
         },
@@ -243,7 +249,7 @@ export function AutolayoutButton() {
       if (parents.length > 0) {
         const decisionServiceSection = parents[0].contains({
           id: elkNode.id,
-          bounds: node.data.shape["dc:Bounds"],
+          bounds: nodeBounds,
         }).decisionServiceSection;
 
         // The only relationship that ELK will know about is the first matching container for this node.
@@ -259,7 +265,7 @@ export function AutolayoutButton() {
 
         for (const p of parents) {
           p.contained?.add(elkNode.id); // We need to keep track of nodes that are contained by multiple groups, but ELK will only know about one of those containment relationships.
-          nodeParentsById.set(node.id, new Set([...(nodeParentsById.get(node.id) ?? []), p.elkNode.id]));
+          nodeParentsById.set(nodeId, new Set([...(nodeParentsById.get(nodeId) ?? []), p.elkNode.id]));
         }
         return [];
       }
@@ -286,20 +292,22 @@ export function AutolayoutButton() {
 
     // 4. After we have all containment and hierarchical relationships defined, we can add the fake edges so that ELK creates the structure correctly.
     for (const node of nodes) {
+      const nodeId = node.id;
+
       const parentNodes = [...parentNodesById.values()];
 
-      const dependents = parentNodes.filter((p) => p.hasDependencyTo({ id: node.id }));
+      const dependents = parentNodes.filter((p) => p.hasDependencyTo({ id: nodeId }));
       for (const dependent of dependents) {
         // Not all nodes are present in all DRD
-        if (nodesById.has(node.id) && nodesById.has(dependent.elkNode.id)) {
+        if (nodesById.has(nodeId) && nodesById.has(dependent.elkNode.id)) {
           fakeEdgesForElk.add({
             id: `${generateUuid()}${FAKE_MARKER}__fake`,
-            sources: [node.id],
+            sources: [nodeId],
             targets: [dependent.elkNode.id],
           });
         }
 
-        for (const p of nodeParentsById.get(node.id) ?? []) {
+        for (const p of nodeParentsById.get(nodeId) ?? []) {
           // Not all nodes are present in all DRD
           if (nodesById.has(p) && nodesById.has(dependent.elkNode.id)) {
             fakeEdgesForElk.add({
@@ -311,18 +319,18 @@ export function AutolayoutButton() {
         }
       }
 
-      const dependencies = parentNodes.filter((p) => p.isDependencyOf({ id: node.id }));
+      const dependencies = parentNodes.filter((p) => p.isDependencyOf({ id: nodeId }));
       for (const dependency of dependencies) {
         // Not all nodes are present in all DRD
-        if (nodesById.has(node.id) && nodesById.has(dependency.elkNode.id)) {
+        if (nodesById.has(nodeId) && nodesById.has(dependency.elkNode.id)) {
           fakeEdgesForElk.add({
             id: `${generateUuid()}${FAKE_MARKER}__fake`,
             sources: [dependency.elkNode.id],
-            targets: [node.id],
+            targets: [nodeId],
           });
         }
 
-        for (const p of nodeParentsById.get(node.id) ?? []) {
+        for (const p of nodeParentsById.get(nodeId) ?? []) {
           // Not all nodes are present in all DRD
           if (nodesById.has(p) && nodesById.has(dependency.elkNode.id)) {
             fakeEdgesForElk.add({
@@ -339,7 +347,7 @@ export function AutolayoutButton() {
     const elkEdges = [
       ...fakeEdgesForElk,
       ...[...edgesById.values()].flatMap((e) => {
-        // Not all nodes are present in all DRD
+        // Not all nodes are present in all DRDs
         if (nodesById.has(e.source) && nodesById.has(e.target)) {
           return {
             id: e.id,
