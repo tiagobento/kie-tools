@@ -26,7 +26,7 @@ import { Button, ButtonVariant } from "@patternfly/react-core/dist/js/components
 import { PlusCircleIcon } from "@patternfly/react-icons/dist/js/icons/plus-circle-icon";
 import { Divider } from "@patternfly/react-core/dist/js/components/Divider";
 import { ArrowRightIcon } from "@patternfly/react-icons/dist/js/icons/arrow-right-icon";
-import { DiagramNodesPanel } from "../store/Store";
+import { DiagramLhsPanel } from "../store/Store";
 import { getDrdId } from "./drd/drdId";
 
 export function DrdSelectorPanel() {
@@ -54,8 +54,7 @@ export function DrdSelectorPanel() {
               });
 
               state.diagram.drdIndex = newIndex;
-              state.diagram.drdSelector.isOpen = false;
-              state.diagram.openNodesPanel = DiagramNodesPanel.DRG_NODES;
+              state.diagram.openLhsPanel = DiagramLhsPanel.DRG_NODES;
               state.focus.consumableId = getDrdId({ drdIndex: newIndex });
             });
           }}
@@ -72,7 +71,7 @@ export function DrdSelectorPanel() {
               onClick={() => {
                 dmnEditorStoreApi.setState((state) => {
                   state.diagram.drdIndex = i;
-                  state.diagram.drdSelector.isOpen = false;
+                  state.diagram.openLhsPanel = DiagramLhsPanel.NONE;
                 });
               }}
             >
