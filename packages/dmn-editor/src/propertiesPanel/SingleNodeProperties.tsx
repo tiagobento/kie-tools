@@ -99,6 +99,7 @@ export function SingleNodeProperties({ nodeId }: { nodeId: string }) {
             })()}
             action={
               <Button
+                title={"Close"}
                 variant={ButtonVariant.plain}
                 onClick={() => {
                   dmnEditorStoreApi.setState((state) => {

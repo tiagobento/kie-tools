@@ -134,7 +134,7 @@ export function Palette({ pulse }: { pulse: boolean }) {
             bodyContent={<DrdSelectorPanel />}
           />
           <button
-            title="DRD selector"
+            title={"Select or edit DRD"}
             onClick={() => {
               dmnEditorStoreApi.setState((state) => {
                 state.diagram.openLhsPanel =
@@ -152,7 +152,7 @@ export function Palette({ pulse }: { pulse: boolean }) {
         <div ref={nodesPalletePopoverRef} style={{ position: "absolute", left: 0, height: 0, zIndex: -1 }} />
         <aside className={`kie-dmn-editor--palette ${pulse ? "pulse" : ""}`}>
           <div
-            title="Input Data"
+            title={"Input Data"}
             className={"kie-dmn-editor--palette-button dndnode input-data"}
             onDragStart={(event) => onDragStart(event, NODE_TYPES.inputData)}
             draggable={true}
@@ -160,7 +160,7 @@ export function Palette({ pulse }: { pulse: boolean }) {
             <InputDataIcon />
           </div>
           <div
-            title="Decision"
+            title={"Decision"}
             className={"kie-dmn-editor--palette-button dndnode decision"}
             onDragStart={(event) => onDragStart(event, NODE_TYPES.decision)}
             draggable={true}
@@ -168,7 +168,7 @@ export function Palette({ pulse }: { pulse: boolean }) {
             <DecisionIcon />
           </div>
           <div
-            title="Business Knowledge Model"
+            title={"Business Knowledge Model"}
             className={"kie-dmn-editor--palette-button dndnode bkm"}
             onDragStart={(event) => onDragStart(event, NODE_TYPES.bkm)}
             draggable={true}
@@ -176,7 +176,7 @@ export function Palette({ pulse }: { pulse: boolean }) {
             <BkmIcon />
           </div>
           <div
-            title="Knowledge Source"
+            title={"Knowledge Source"}
             className={"kie-dmn-editor--palette-button dndnode knowledge-source"}
             onDragStart={(event) => onDragStart(event, NODE_TYPES.knowledgeSource)}
             draggable={true}
@@ -184,7 +184,7 @@ export function Palette({ pulse }: { pulse: boolean }) {
             <KnowledgeSourceIcon />
           </div>
           <div
-            title="Decision Service"
+            title={"Decision Service"}
             className={"kie-dmn-editor--palette-button dndnode decision-service"}
             onDragStart={(event) => onDragStart(event, NODE_TYPES.decisionService)}
             draggable={true}
@@ -195,7 +195,7 @@ export function Palette({ pulse }: { pulse: boolean }) {
         <br />
         <aside className={`kie-dmn-editor--palette ${pulse ? "pulse" : ""}`}>
           <div
-            title="Group"
+            title={"Group"}
             className={"kie-dmn-editor--palette-button dndnode group"}
             onDragStart={(event) => onDragStart(event, NODE_TYPES.group)}
             draggable={true}
@@ -204,7 +204,7 @@ export function Palette({ pulse }: { pulse: boolean }) {
             <GroupIcon />
           </div>
           <div
-            title="Text Annotation"
+            title={"Text Annotation"}
             className={"kie-dmn-editor--palette-button dndnode text-annotation"}
             onDragStart={(event) => onDragStart(event, NODE_TYPES.textAnnotation)}
             draggable={true}
@@ -220,7 +220,7 @@ export function Palette({ pulse }: { pulse: boolean }) {
             </div>
           )}
           <button
-            title="DRG nodes"
+            title={"DRG nodes"}
             className={`kie-dmn-editor--drg-panel-toggle-button ${
               diagram.openLhsPanel === DiagramLhsPanel.DRG_NODES ? "active" : ""
             }`}
@@ -245,7 +245,7 @@ export function Palette({ pulse }: { pulse: boolean }) {
           )}
 
           <button
-            title="External nodes"
+            title={"External nodes"}
             className={`kie-dmn-editor--external-nodes-panel-toggle-button ${
               diagram.openLhsPanel === DiagramLhsPanel.EXTERNAL_NODES ? "active" : ""
             }`}

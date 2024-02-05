@@ -42,6 +42,7 @@ export function DrdSelectorPanel() {
           <Text component="h3">DRDs</Text>
         </TextContent>
         <Button
+          title={"New DRD"}
           variant={ButtonVariant.link}
           onClick={() => {
             dmnEditorStoreApi.setState((state) => {
