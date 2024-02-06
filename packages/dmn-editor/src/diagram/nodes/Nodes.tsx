@@ -824,8 +824,7 @@ export const DecisionServiceNode = React.memo(
 
     const dividerLineRef = useRef<SVGPathElement>(null);
 
-    // External Decision Service nodes are always collapsed.
-    const isCollapsed = isExternal || shape["@_isCollapsed"];
+    const isCollapsed = shape["@_isCollapsed"] ?? false;
 
     const onCreateDataType = useDataTypeCreationCallbackForNodes(index, decisionService["@_name"]);
 
@@ -846,7 +845,7 @@ export const DecisionServiceNode = React.memo(
             updateDecisionServiceDividerLine({
               definitions: state.dmn.model.definitions,
               drdIndex: state.diagram.drdIndex,
-              dmnShapesByHref: state.computed(state).indexes().dmnShapesByHref,
+              dmnShapesByHref: state.computed(state).indexedDrd().dmnShapesByHref,
               drgElementIndex: index,
               shapeIndex: shape.index,
               localYPosition: e.y,
@@ -1195,7 +1194,7 @@ function useNodeDimensions(
   shape: DMNDI15__DMNShape,
   isExternal: boolean
 ): RF.Dimensions {
-  if (type === NODE_TYPES.decisionService && (isExternal || shape["@_isCollapsed"])) {
+  if (type === NODE_TYPES.decisionService && shape["@_isCollapsed"]) {
     return DECISION_SERVICE_COLLAPSED_DIMENSIONS;
   }
 

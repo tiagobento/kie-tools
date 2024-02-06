@@ -35,6 +35,7 @@ import { Unpacked } from "../../tsExt/tsExt";
 import { buildXmlHref, parseXmlHref } from "../../xml/xmlHrefs";
 import { TypeOrReturnType } from "../ComputedStateCache";
 import { Computed, State } from "../Store";
+import { getDecisionServicePropertiesRelativeToThisDmn } from "../../mutations/addExistingDecisionServiceToDrd";
 
 export const NODE_LAYERS = {
   GROUP_NODE: 0,
@@ -61,7 +62,7 @@ export function computeDiagramData(
   diagram: State["diagram"],
   definitions: State["dmn"]["model"]["definitions"],
   externalModelTypesByNamespace: TypeOrReturnType<Computed["getExternalModelTypesByNamespace"]>,
-  indexes: TypeOrReturnType<Computed["indexes"]>
+  indexes: TypeOrReturnType<Computed["indexedDrd"]>
 ) {
   // console.time("nodes");
   ___NASTY_HACK_FOR_SAFARI_to_force_redrawing_svgs_and_avoid_repaint_glitches.flag =
@@ -186,11 +187,17 @@ export function computeDiagramData(
     };
 
     if (dmnObject?.__$$element === "decisionService") {
-      const containedDecisions = [...(dmnObject.outputDecision ?? []), ...(dmnObject.encapsulatedDecision ?? [])];
-      for (let i = 0; i < containedDecisions.length; i++) {
-        parentIdsById.set(containedDecisions[i]["@_href"], data);
+      const { containedDecisionHrefsRelativeToThisDmn } = getDecisionServicePropertiesRelativeToThisDmn({
+        thisDmnsNamespace: definitions["@_namespace"],
+        decisionServiceNamespace: dmnObjectNamespace ?? definitions["@_namespace"],
+        decisionService: dmnObject,
+      });
+
+      for (let i = 0; i < containedDecisionHrefsRelativeToThisDmn.length; i++) {
+        parentIdsById.set(containedDecisionHrefsRelativeToThisDmn[i], data);
       }
-      if (shape["@_isCollapsed"] || !!dmnObjectNamespace) {
+
+      if (shape["@_isCollapsed"]) {
         newNode.style = {
           ...newNode.style,
           ...DECISION_SERVICE_COLLAPSED_DIMENSIONS,
@@ -220,24 +227,6 @@ export function computeDiagramData(
       return newNode ? [newNode] : [];
     }),
   ];
-
-  // Assign parents & z-index to NODES
-  for (let i = 0; i < localNodes.length; i++) {
-    const parent = parentIdsById.get(localNodes[i].id);
-    if (parent) {
-      localNodes[i].data.parentRfNode = nodesById.get(
-        buildXmlHref({ namespace: parent.dmnObjectNamespace, id: parent.dmnObjectQName.localPart })
-      );
-      localNodes[i].extent = undefined; // Allows the node to be dragged freely outside of parent's bounds.
-      localNodes[i].zIndex = NODE_LAYERS.NESTED_NODES;
-    }
-
-    if (localNodes[i].type === NODE_TYPES.group) {
-      localNodes[i].zIndex = NODE_LAYERS.GROUP_NODE;
-    } else if (localNodes[i].type === NODE_TYPES.decisionService) {
-      localNodes[i].zIndex = NODE_LAYERS.DECISION_SERVICE_NODE;
-    }
-  }
 
   const externalDrgElementsByIdByNamespace = [...externalModelTypesByNamespace.dmns.entries()].reduce(
     (acc, [namespace, externalDmn]) => {
@@ -316,6 +305,24 @@ export function computeDiagramData(
   // console.timeEnd("nodes");
   if (diagram.overlays.enableNodeHierarchyHighlight) {
     assignClassesToHighlightedHierarchyNodes(diagram._selectedNodes, nodesById, edgesById, drgEdges);
+  }
+
+  // Assign parents & z-index to NODES
+  for (let i = 0; i < sortedNodes.length; i++) {
+    const parentNodeData = parentIdsById.get(sortedNodes[i].id);
+    if (parentNodeData) {
+      sortedNodes[i].data.parentRfNode = nodesById.get(
+        buildXmlHref({ namespace: parentNodeData.dmnObjectNamespace, id: parentNodeData.dmnObjectQName.localPart })
+      );
+      sortedNodes[i].extent = undefined; // Allows the node to be dragged freely outside of parent's bounds.
+      sortedNodes[i].zIndex = NODE_LAYERS.NESTED_NODES;
+    }
+
+    if (sortedNodes[i].type === NODE_TYPES.group) {
+      sortedNodes[i].zIndex = NODE_LAYERS.GROUP_NODE;
+    } else if (sortedNodes[i].type === NODE_TYPES.decisionService) {
+      sortedNodes[i].zIndex = NODE_LAYERS.DECISION_SERVICE_NODE;
+    }
   }
 
   return {

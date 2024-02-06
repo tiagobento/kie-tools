@@ -405,7 +405,7 @@ export function AutolayoutButton() {
           resizeNode({
             definitions: s.dmn.model.definitions,
             drdIndex: s.diagram.drdIndex,
-            dmnShapesByHref: s.computed(s).indexes().dmnShapesByHref,
+            dmnShapesByHref: s.computed(s).indexedDrd().dmnShapesByHref,
             snapGrid,
             change: {
               index: node.data.index,
@@ -453,7 +453,7 @@ export function AutolayoutButton() {
         updateDecisionServiceDividerLine({
           definitions: s.dmn.model.definitions,
           drdIndex: s.diagram.drdIndex,
-          dmnShapesByHref: s.computed(s).indexes().dmnShapesByHref,
+          dmnShapesByHref: s.computed(s).indexedDrd().dmnShapesByHref,
           drgElementIndex: parentNode.data.index,
           shapeIndex: parentNode.data.shape.index,
           snapGrid,
