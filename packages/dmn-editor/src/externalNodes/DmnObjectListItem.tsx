@@ -29,8 +29,6 @@ import { DmnBuiltInDataType, generateUuid } from "@kie-tools/boxed-expression-co
 import { useDmnEditorStore } from "../store/StoreContext";
 import { useExternalModels } from "../includedModels/DmnEditorDependenciesContext";
 import { DMN15_SPEC } from "../Dmn15Spec";
-import { useCallback } from "react";
-import { State } from "../store/Store";
 
 export function DmnObjectListItem({
   dmnObject,
