@@ -105,6 +105,8 @@ export function addExistingDecisionServiceToDrd({
         },
       },
     });
+
+    // TODO: Tiago --> Delete from the DRD all Decisions contained by the Decision Service being added, except for those that are contained by another Decision Service in expanded form.
     return;
   }
 
@@ -131,7 +133,7 @@ export function addExistingDecisionServiceToDrd({
 
   if (!indexedDrd) {
     // There's no DRD which inclues a complete expanded depiction of the Decision Service. Let's proceed with auto-layout.
-    // TODO: Tiago
+    // TODO: Tiago --> Use Auto-layout to position the contained Decisions inside the Decision Service.
   } else {
     // Let's copy the expanded depiction of the Decision Service from `drd`.
     // Adding or moving nodes that already exist in the current DRD to inside the Decision Service.

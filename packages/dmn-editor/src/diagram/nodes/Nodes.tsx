@@ -70,6 +70,8 @@ import { OutgoingStuffNodePanel } from "./OutgoingStuffNodePanel";
 import { propsHaveSameValuesDeep } from "../memoization/memoization";
 import { useExternalModels } from "../../includedModels/DmnEditorDependenciesContext";
 import { NODE_LAYERS } from "../../store/computed/computeDiagramData";
+import { canExpandDecisionService, expandDecisionService } from "../../mutations/expandDecisionService";
+import { getDecisionServicePropertiesRelativeToThisDmn } from "../../mutations/addExistingDecisionServiceToDrd";
 
 export type ElementFilter<E extends { __$$element: string }, Filter extends string> = E extends any
   ? E["__$$element"] extends Filter
@@ -794,10 +796,14 @@ export const DecisionServiceNode = React.memo(
     useEffect(() => {
       const onDoubleClick = () => {
         dmnEditorStoreApi.setState((state) => {
+          const { containedDecisionHrefsRelativeToThisDmn } = getDecisionServicePropertiesRelativeToThisDmn({
+            thisDmnsNamespace: state.dmn.model.definitions["@_namespace"],
+            decisionService,
+            decisionServiceNamespace: dmnObjectNamespace ?? state.dmn.model.definitions["@_namespace"],
+          });
           state.diagram._selectedNodes = [
             id, // Include the Decision Service itself.
-            ...(decisionService.outputDecision ?? []).map((od) => od["@_href"]),
-            ...(decisionService.encapsulatedDecision ?? []).map((ed) => ed["@_href"]),
+            ...containedDecisionHrefsRelativeToThisDmn,
           ];
         });
       };
@@ -807,7 +813,7 @@ export const DecisionServiceNode = React.memo(
       return () => {
         r?.removeEventListener("dblclick", onDoubleClick);
       };
-    }, [decisionService.encapsulatedDecision, decisionService.outputDecision, dmnEditorStoreApi, id]);
+    }, [decisionService, dmnEditorStoreApi, dmnObjectNamespace, id]);
 
     const onTypeRefChange = useCallback<OnTypeRefChange>(
       (newTypeRef) => {
@@ -873,6 +879,16 @@ export const DecisionServiceNode = React.memo(
 
     const additionalClasses = `${className} ${dmnObjectQName.prefix ? "external" : ""}`;
 
+    const canExpand = useDmnEditorStore((s) => {
+      return canExpandDecisionService();
+    });
+
+    const expand = useCallback(() => {
+      dmnEditorStoreApi.setState((state) => {
+        expandDecisionService({ definitions: state.dmn.model.definitions });
+      });
+    }, [dmnEditorStoreApi]);
+
     return (
       <>
         <svg className={`kie-dmn-editor--node-shape ${additionalClasses}`}>
@@ -902,6 +918,19 @@ export const DecisionServiceNode = React.memo(
         >
           {/* {`render count: ${renderCount.current}`}
           <br /> */}
+          {isCollapsed && canExpand && (
+            <div
+              className={"kie-dmn-editor--decision-service-collapsed-button"}
+              onDoubleClickCapture={(e) => e.stopPropagation()} // Prevent other node actions from happening
+              onMouseDownCapture={(e) => e.stopPropagation()} // Prevent other node actions from happening
+              onClick={(e) => {
+                e.stopPropagation();
+                expand();
+              }}
+            >
+              +
+            </div>
+          )}
           <InfoNodePanel isVisible={!isTargeted && selected && !dragging} />
           <OutgoingStuffNodePanel
             isVisible={!isTargeted && selected && !dragging}
@@ -929,7 +958,7 @@ export const DecisionServiceNode = React.memo(
               nodeShapeIndex={shape.index}
             />
           )}
-          {isCollapsed && <div className={"kie-dmn-editor--decision-service-collapsed-button"}>+</div>}
+
           <DataTypeNodePanel
             isVisible={!isTargeted && selected && !dragging}
             variable={decisionService.variable}
@@ -1194,7 +1223,7 @@ function useNodeDimensions(
   shape: DMNDI15__DMNShape,
   isExternal: boolean
 ): RF.Dimensions {
-  if (type === NODE_TYPES.decisionService && shape["@_isCollapsed"]) {
+  if (type === NODE_TYPES.decisionService && (shape["@_isCollapsed"] ?? false)) {
     return DECISION_SERVICE_COLLAPSED_DIMENSIONS;
   }
 

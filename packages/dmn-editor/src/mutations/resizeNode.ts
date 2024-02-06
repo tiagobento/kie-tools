@@ -73,8 +73,8 @@ export function resizeNode({
       shape["dmndi:DMNDecisionServiceDividerLine"]?.["di:waypoint"]?.[0]?.["@_y"] ?? shapeBounds["@_y"];
     limit.y = dividerLineY + DECISION_SERVICE_DIVIDER_LINE_PADDING;
 
-    // We ignore handling the contents of the Decision Service when it is external
-    if (!change.isExternal) {
+    // We ignore handling the contents of the Decision Service when it is external or when it's collapsed.
+    if (!change.isExternal && !(shape["@_isCollapsed"] ?? false)) {
       ds.encapsulatedDecision?.forEach((ed) => {
         const edShape = dmnShapesByHref.get(ed["@_href"])!;
         const dim = snapShapeDimensions(snapGrid, edShape, MIN_NODE_SIZES[NODE_TYPES.decision](snapGrid));

@@ -676,11 +676,19 @@ export const Diagram = React.forwardRef<DiagramRef, { container: React.RefObject
 
                     for (let i = 0; i < containedDecisionHrefsRelativeToThisDmn.length; i++) {
                       const diagramData = state.computed(state).getDiagramData(externalModelsByNamespace);
-                      const nestedNode = diagramData.nodesById.get(containedDecisionHrefsRelativeToThisDmn[i])!;
+                      const nestedNode = diagramData.nodesById.get(containedDecisionHrefsRelativeToThisDmn[i]);
+                      if (!nestedNode) {
+                        console.warn(
+                          `Can't move contained Decision that is not included in the current DRD. HREF = ${containedDecisionHrefsRelativeToThisDmn[i]}`
+                        );
+                        continue;
+                      }
+
                       const snappedNestedNodeShapeWithAppliedDelta = snapShapePosition(
                         state.diagram.snapGrid,
                         offsetShapePosition(nestedNode.data.shape, delta)
                       );
+
                       repositionNode({
                         definitions: state.dmn.model.definitions,
                         drdIndex: state.diagram.drdIndex,

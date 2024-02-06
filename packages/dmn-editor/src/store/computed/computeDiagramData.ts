@@ -197,7 +197,7 @@ export function computeDiagramData(
         parentIdsById.set(containedDecisionHrefsRelativeToThisDmn[i], data);
       }
 
-      if (shape["@_isCollapsed"]) {
+      if (shape["@_isCollapsed"] ?? false) {
         newNode.style = {
           ...newNode.style,
           ...DECISION_SERVICE_COLLAPSED_DIMENSIONS,
