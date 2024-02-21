@@ -35,7 +35,7 @@ import { Unpacked } from "../../tsExt/tsExt";
 import { buildXmlHref, parseXmlHref } from "../../xml/xmlHrefs";
 import { TypeOrReturnType } from "../ComputedStateCache";
 import { Computed, State } from "../Store";
-import { getDecisionServicePropertiesRelativeToThisDmn } from "../../mutations/addExistingDecisionServiceToDrd";
+import { getDecisionServicePropertiesRelativeToThisDmn } from "../../mutations/addOrExpandExistingDecisionServiceToDrd";
 
 export const NODE_LAYERS = {
   GROUP_NODE: 0,

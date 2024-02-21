@@ -92,7 +92,7 @@ export function getCentralizedDecisionServiceDividerLine(bounds: DC__Bounds): DM
     "di:waypoint": [
       { "@_x": bounds["@_x"], "@_y": bounds["@_y"] + bounds["@_height"] / 2 },
       {
-        "@_x": bounds["@_x"] + bounds["@_height"],
+        "@_x": bounds["@_x"] + bounds["@_width"],
         "@_y": bounds["@_y"] + bounds["@_height"] / 2,
       },
     ],

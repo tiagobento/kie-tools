@@ -17,7 +17,7 @@
  * under the License.
  */
 
-import { getDecisionServicePropertiesRelativeToThisDmn } from "../../mutations/addExistingDecisionServiceToDrd";
+import { getDecisionServicePropertiesRelativeToThisDmn } from "../../mutations/addOrExpandExistingDecisionServiceToDrd";
 import { buildXmlHref } from "../../xml/xmlHrefs";
 import { State } from "../Store";
 

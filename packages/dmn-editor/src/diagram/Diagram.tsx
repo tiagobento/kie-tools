@@ -122,9 +122,9 @@ import {
 import { useExternalModels } from "../includedModels/DmnEditorDependenciesContext";
 import { xmlHrefToQName } from "../xml/xmlHrefToQName";
 import {
-  addExistingDecisionServiceToDrd,
+  addOrExpandExistingDecisionServiceToDrd,
   getDecisionServicePropertiesRelativeToThisDmn,
-} from "../mutations/addExistingDecisionServiceToDrd";
+} from "../mutations/addOrExpandExistingDecisionServiceToDrd";
 
 const isFirefox = typeof (window as any).InstallTrigger !== "undefined"; // See https://stackoverflow.com/questions/9847580/how-to-detect-safari-chrome-ie-firefox-and-opera-browsers
 
@@ -355,7 +355,7 @@ export const Diagram = React.forwardRef<DiagramRef, { container: React.RefObject
             });
 
             if (externalDrgElement.__$$element === "decisionService") {
-              addExistingDecisionServiceToDrd({
+              addOrExpandExistingDecisionServiceToDrd({
                 decisionService: externalDrgElement,
                 decisionServiceNamespace: externalNodeDmn.model.definitions["@_namespace"],
                 drdIndex: state.diagram.drdIndex,
@@ -394,7 +394,7 @@ export const Diagram = React.forwardRef<DiagramRef, { container: React.RefObject
 
           dmnEditorStoreApi.setState((state) => {
             if (drgElement.__$$element === "decisionService") {
-              addExistingDecisionServiceToDrd({
+              addOrExpandExistingDecisionServiceToDrd({
                 decisionService: drgElement,
                 decisionServiceNamespace: state.dmn.model.definitions["@_namespace"],
                 drdIndex: state.diagram.drdIndex,

@@ -71,7 +71,7 @@ import { propsHaveSameValuesDeep } from "../memoization/memoization";
 import { useExternalModels } from "../../includedModels/DmnEditorDependenciesContext";
 import { NODE_LAYERS } from "../../store/computed/computeDiagramData";
 import { canExpandDecisionService, expandDecisionService } from "../../mutations/expandDecisionService";
-import { getDecisionServicePropertiesRelativeToThisDmn } from "../../mutations/addExistingDecisionServiceToDrd";
+import { getDecisionServicePropertiesRelativeToThisDmn } from "../../mutations/addOrExpandExistingDecisionServiceToDrd";
 
 export type ElementFilter<E extends { __$$element: string }, Filter extends string> = E extends any
   ? E["__$$element"] extends Filter
@@ -879,15 +879,32 @@ export const DecisionServiceNode = React.memo(
 
     const additionalClasses = `${className} ${dmnObjectQName.prefix ? "external" : ""}`;
 
-    const canExpand = useDmnEditorStore((s) => {
-      return canExpandDecisionService();
-    });
+    const { externalModelsByNamespace } = useExternalModels();
+
+    const canExpand = useDmnEditorStore((state) =>
+      canExpandDecisionService({
+        decisionService,
+        decisionServiceNamespace: state.dmn.model.definitions["@_namespace"],
+        externalDmnsIndex: state.computed(state).getExternalModelTypesByNamespace(externalModelsByNamespace).dmns,
+        thisDmnsDefinitions: state.dmn.model.definitions,
+        thisDmnsIndexedDrd: state.computed(state).indexedDrd(),
+        thisDmnsNamespace: state.dmn.model.definitions["@_namespace"],
+      })
+    );
 
     const expand = useCallback(() => {
       dmnEditorStoreApi.setState((state) => {
-        expandDecisionService({ definitions: state.dmn.model.definitions });
+        expandDecisionService({
+          decisionService,
+          decisionServiceNamespace: dmnObjectNamespace ?? state.dmn.model.definitions["@_namespace"],
+          drdIndex: state.diagram.drdIndex,
+          externalDmnsIndex: state.computed(state).getExternalModelTypesByNamespace(externalModelsByNamespace).dmns,
+          thisDmnsDefinitions: state.dmn.model.definitions,
+          thisDmnsIndexedDrd: state.computed(state).indexedDrd(),
+          thisDmnsNamespace: state.dmn.model.definitions["@_namespace"],
+        });
       });
-    }, [dmnEditorStoreApi]);
+    }, [decisionService, dmnEditorStoreApi, dmnObjectNamespace, externalModelsByNamespace]);
 
     return (
       <>

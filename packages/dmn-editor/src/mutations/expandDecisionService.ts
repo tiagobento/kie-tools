@@ -17,13 +17,75 @@
  * under the License.
  */
 
-import { State } from "../store/Store";
+import {
+  DMN15__tDecisionService,
+  DMN15__tDefinitions,
+} from "@kie-tools/dmn-marshaller/dist/schemas/dmn-1_5/ts-gen/types";
+import { Computed } from "../store/Store";
+import {
+  addOrExpandExistingDecisionServiceToDrd,
+  doesThisDrdHaveConflictingDecisionService,
+} from "./addOrExpandExistingDecisionServiceToDrd";
 
-export function expandDecisionService({ definitions }: { definitions: State["dmn"]["model"]["definitions"] }) {
-  // TODO: Tiago
+export function expandDecisionService({
+  decisionServiceNamespace,
+  decisionService,
+  externalDmnsIndex,
+  thisDmnsNamespace,
+  thisDmnsDefinitions,
+  thisDmnsIndexedDrd,
+  drdIndex,
+}: {
+  decisionServiceNamespace: string;
+  decisionService: DMN15__tDecisionService;
+  externalDmnsIndex: ReturnType<Computed["getExternalModelTypesByNamespace"]>["dmns"];
+  thisDmnsNamespace: string;
+  thisDmnsDefinitions: DMN15__tDefinitions;
+  thisDmnsIndexedDrd: ReturnType<Computed["indexedDrd"]>;
+  drdIndex: number;
+}) {
+  addOrExpandExistingDecisionServiceToDrd({
+    decisionServiceNamespace,
+    decisionService,
+    externalDmnsIndex,
+    thisDmnsNamespace,
+    thisDmnsDefinitions,
+    thisDmnsIndexedDrd,
+    drdIndex,
+    dropPoint: undefined,
+  });
 }
 
-export function canExpandDecisionService() {
-  // TODO: Tiago
-  return true;
+export function canExpandDecisionService({
+  decisionServiceNamespace,
+  decisionService,
+  externalDmnsIndex,
+  thisDmnsNamespace,
+  thisDmnsDefinitions,
+  thisDmnsIndexedDrd,
+}: {
+  decisionServiceNamespace: string;
+  decisionService: DMN15__tDecisionService;
+  externalDmnsIndex: ReturnType<Computed["getExternalModelTypesByNamespace"]>["dmns"];
+  thisDmnsNamespace: string;
+  thisDmnsDefinitions: DMN15__tDefinitions;
+  thisDmnsIndexedDrd: ReturnType<Computed["indexedDrd"]>;
+}) {
+  const decisionServiceDmnDefinitions =
+    !decisionServiceNamespace || decisionServiceNamespace === thisDmnsNamespace
+      ? thisDmnsDefinitions
+      : externalDmnsIndex.get(decisionServiceNamespace)?.model.definitions;
+
+  if (!decisionServiceDmnDefinitions) {
+    throw new Error(`DMN MUTATION: Can't find definitions for model with namespace ${decisionServiceNamespace}`);
+  }
+
+  return !doesThisDrdHaveConflictingDecisionService({
+    decisionServiceNamespace,
+    decisionService,
+    decisionServiceDmnDefinitions,
+    thisDmnsNamespace,
+    thisDmnsDefinitions,
+    thisDmnsIndexedDrd,
+  });
 }
