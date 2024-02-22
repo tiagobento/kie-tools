@@ -672,7 +672,7 @@ export const Diagram = React.forwardRef<DiagramRef, { container: React.RefObject
                       thisDmnsNamespace: state.dmn.model.definitions["@_namespace"],
                       decisionService,
                       decisionServiceNamespace:
-                        node.data.dmnObjectNamespace ?? state.dmn.model.definitions["@_namespace"],
+                        node.data.dmnObjectNamespace || state.dmn.model.definitions["@_namespace"],
                     });
 
                     for (let i = 0; i < containedDecisionHrefsRelativeToThisDmn.length; i++) {
@@ -1756,6 +1756,7 @@ export function KeyboardShortcuts(props: {}) {
           decisionService,
           shapeIndex: dsNode.data.shape.index,
           thisDmnsNamespace: state.dmn.model.definitions["@_namespace"],
+          decisionServiceNamespace: dsNode.data.dmnObjectNamespace || state.dmn.model.definitions["@_namespace"],
           externalDmnsIndex: state.computed(state).getExternalModelTypesByNamespace(externalModelsByNamespace).dmns,
           drgEdges: state.computed(state).getDiagramData(externalModelsByNamespace).drgEdges,
         });

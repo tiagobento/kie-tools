@@ -22,7 +22,7 @@ import { parseXmlQName } from "@kie-tools/xml-parser-ts/dist/qNames";
 import { DrgEdge } from "../diagram/graph/graph";
 import { Computed, State } from "../store/Store";
 import { xmlHrefToQName } from "../xml/xmlHrefToQName";
-import { parseXmlHref } from "../xml/xmlHrefs";
+import { buildXmlHref, parseXmlHref } from "../xml/xmlHrefs";
 import { NodeNature } from "./NodeNature";
 import { addOrGetDrd } from "./addOrGetDrd";
 import { NodeDeletionMode, deleteNode } from "./deleteNode";
@@ -32,6 +32,7 @@ export function collapseDecisionService({
   drdIndex,
   decisionService,
   thisDmnsNamespace,
+  decisionServiceNamespace,
   shapeIndex,
   drgEdges,
   externalDmnsIndex,
@@ -40,6 +41,7 @@ export function collapseDecisionService({
   drdIndex: number;
   decisionService: DMN15__tDecisionService;
   thisDmnsNamespace: string;
+  decisionServiceNamespace: string;
   shapeIndex: number;
   externalDmnsIndex: ReturnType<Computed["getExternalModelTypesByNamespace"]>["dmns"];
   drgEdges: DrgEdge[];
@@ -55,14 +57,22 @@ export function collapseDecisionService({
   shape["@_isCollapsed"] = true;
 
   for (const d of [...(decisionService.encapsulatedDecision ?? []), ...(decisionService.outputDecision ?? [])]) {
-    const parsedDecisionHref = parseXmlHref(d["@_href"]);
+    const hrefRelativeToTheDs = parseXmlHref(d["@_href"]); // Local to the DS.
+    const decisionNamespaceRelativeToThisDmn =
+      hrefRelativeToTheDs.namespace || decisionServiceNamespace || thisDmnsNamespace;
+
+    const hrefRelativeToThisDmn = buildXmlHref({
+      namespace: decisionNamespaceRelativeToThisDmn,
+      id: hrefRelativeToTheDs.id,
+    });
+
     deleteNode({
       drgEdges,
       externalDmnsIndex,
       definitions,
-      dmnObjectId: parsedDecisionHref.id,
-      dmnObjectNamespace: parsedDecisionHref.namespace ?? thisDmnsNamespace,
-      dmnObjectQName: parseXmlQName(xmlHrefToQName(d["@_href"], definitions)),
+      dmnObjectId: hrefRelativeToTheDs.id,
+      dmnObjectNamespace: decisionNamespaceRelativeToThisDmn,
+      dmnObjectQName: parseXmlQName(xmlHrefToQName(hrefRelativeToThisDmn, definitions)),
       drdIndex,
       nodeNature: NodeNature.DRG_ELEMENT,
       mode: NodeDeletionMode.FROM_CURRENT_DRD_ONLY,

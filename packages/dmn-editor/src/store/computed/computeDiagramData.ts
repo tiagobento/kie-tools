@@ -189,7 +189,7 @@ export function computeDiagramData(
     if (dmnObject?.__$$element === "decisionService") {
       const { containedDecisionHrefsRelativeToThisDmn } = getDecisionServicePropertiesRelativeToThisDmn({
         thisDmnsNamespace: definitions["@_namespace"],
-        decisionServiceNamespace: dmnObjectNamespace ?? definitions["@_namespace"],
+        decisionServiceNamespace: dmnObjectNamespace || definitions["@_namespace"],
         decisionService: dmnObject,
       });
 

@@ -799,7 +799,7 @@ export const DecisionServiceNode = React.memo(
           const { containedDecisionHrefsRelativeToThisDmn } = getDecisionServicePropertiesRelativeToThisDmn({
             thisDmnsNamespace: state.dmn.model.definitions["@_namespace"],
             decisionService,
-            decisionServiceNamespace: dmnObjectNamespace ?? state.dmn.model.definitions["@_namespace"],
+            decisionServiceNamespace: dmnObjectNamespace || state.dmn.model.definitions["@_namespace"],
           });
           state.diagram._selectedNodes = [
             id, // Include the Decision Service itself.
@@ -884,7 +884,7 @@ export const DecisionServiceNode = React.memo(
     const canExpand = useDmnEditorStore((state) =>
       canExpandDecisionService({
         decisionService,
-        decisionServiceNamespace: state.dmn.model.definitions["@_namespace"],
+        decisionServiceNamespace: dmnObjectNamespace || state.dmn.model.definitions["@_namespace"],
         externalDmnsIndex: state.computed(state).getExternalModelTypesByNamespace(externalModelsByNamespace).dmns,
         thisDmnsDefinitions: state.dmn.model.definitions,
         thisDmnsIndexedDrd: state.computed(state).indexedDrd(),
@@ -896,7 +896,7 @@ export const DecisionServiceNode = React.memo(
       dmnEditorStoreApi.setState((state) => {
         expandDecisionService({
           decisionService,
-          decisionServiceNamespace: dmnObjectNamespace ?? state.dmn.model.definitions["@_namespace"],
+          decisionServiceNamespace: dmnObjectNamespace || state.dmn.model.definitions["@_namespace"],
           drdIndex: state.diagram.drdIndex,
           externalDmnsIndex: state.computed(state).getExternalModelTypesByNamespace(externalModelsByNamespace).dmns,
           thisDmnsDefinitions: state.dmn.model.definitions,
@@ -935,8 +935,9 @@ export const DecisionServiceNode = React.memo(
         >
           {/* {`render count: ${renderCount.current}`}
           <br /> */}
-          {isCollapsed && canExpand && (
-            <div
+          {isCollapsed && (
+            <button
+              disabled={!canExpand}
               className={"kie-dmn-editor--decision-service-collapsed-button"}
               onDoubleClickCapture={(e) => e.stopPropagation()} // Prevent other node actions from happening
               onMouseDownCapture={(e) => e.stopPropagation()} // Prevent other node actions from happening
@@ -946,7 +947,7 @@ export const DecisionServiceNode = React.memo(
               }}
             >
               +
-            </div>
+            </button>
           )}
           <InfoNodePanel isVisible={!isTargeted && selected && !dragging} />
           <OutgoingStuffNodePanel
