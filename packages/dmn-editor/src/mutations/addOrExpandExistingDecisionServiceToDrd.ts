@@ -20,6 +20,7 @@
 import {
   DMN15__tDecisionService,
   DMN15__tDefinitions,
+  DMNDI15__DMNShape,
 } from "@kie-tools/dmn-marshaller/dist/schemas/dmn-1_5/ts-gen/types";
 import { ExternalDmnsIndex } from "../DmnEditor";
 import { DECISION_SERVICE_COLLAPSED_DIMENSIONS } from "../diagram/nodes/DefaultSizes";
@@ -32,6 +33,7 @@ import { buildXmlHref, parseXmlHref } from "../xml/xmlHrefs";
 import { addShape } from "./addShape";
 import { repositionNode } from "./repositionNode";
 import { addOrGetDrd } from "./addOrGetDrd";
+import { generateUuid } from "@kie-tools/boxed-expression-component/dist/api";
 
 /**
  * When adding a Decision Service to a DRD, we need to bring all its encapsulated and output Decisions with it,
@@ -122,13 +124,18 @@ export function addOrExpandExistingDecisionServiceToDrd({
     containedDecisionHrefsRelativeToThisDmn,
   });
 
+  // There's no DRD which inclues a complete expanded depiction of the Decision Service. Let's proceed with auto-layout.
   if (!indexedDrd) {
-    // There's no DRD which inclues a complete expanded depiction of the Decision Service. Let's proceed with auto-layout.
+    console.debug(
+      "DMN MUTATION: Using auto-layout because there is no complete expanded depiction of this Decision Service in any DRD."
+    );
+
     // TODO: Tiago --> Use Auto-layout to position the contained Decisions inside the Decision Service.
-  } else {
-    // Let's copy the expanded depiction of the Decision Service from `drd`.
-    // Adding or moving nodes that already exist in the current DRD to inside the Decision Service.
-    // The positions need all be relative to the Decision Service node, of course.
+  }
+  // Let's copy the expanded depiction of the Decision Service from `drd`.
+  // Adding or moving nodes that already exist in the current DRD to inside the Decision Service.
+  // The positions need all be relative to the Decision Service node, of course.
+  else {
     const dsShapeOnOtherDrd = indexedDrd.dmnShapesByHref.get(decisionServiceHrefRelativeToThisDmn);
     if (
       dsShapeOnOtherDrd?.["dc:Bounds"]?.["@_x"] === undefined ||
@@ -161,10 +168,7 @@ export function addOrExpandExistingDecisionServiceToDrd({
       }
 
       shape["@_isCollapsed"] = false;
-      shape["@_sharedStyle"] = dsShapeOnOtherDrd["@_sharedStyle"];
-      shape["di:Style"] = dsShapeOnOtherDrd["di:Style"];
       shape["di:extension"] = dsShapeOnOtherDrd["di:extension"];
-      shape["dmndi:DMNLabel"] = dsShapeOnOtherDrd["dmndi:DMNLabel"];
 
       shape["dc:Bounds"] = {
         "@_height": dsShapeOnOtherDrd["dc:Bounds"]["@_height"],
@@ -173,20 +177,13 @@ export function addOrExpandExistingDecisionServiceToDrd({
         "@_y": shape["dc:Bounds"]["@_y"],
       };
 
-      const dividerLineWaypoints = dsShapeOnOtherDrd["dmndi:DMNDecisionServiceDividerLine"]?.["di:waypoint"] ?? [];
-      const dividerLineY =
-        shape["dc:Bounds"]["@_y"] +
-        ((dividerLineWaypoints[0]["@_y"] ?? 0) - (dsShapeOnOtherDrd["dc:Bounds"]?.["@_y"] ?? 0));
-
-      shape["dmndi:DMNDecisionServiceDividerLine"] = {
-        "@_sharedStyle": dsShapeOnOtherDrd["dmndi:DMNDecisionServiceDividerLine"]?.["@_sharedStyle"],
-        "di:Style": dsShapeOnOtherDrd["dmndi:DMNDecisionServiceDividerLine"]?.["di:Style"],
-        "di:extension": dsShapeOnOtherDrd["dmndi:DMNDecisionServiceDividerLine"]?.["di:extension"],
-        "di:waypoint": [
-          { "@_x": shape["dc:Bounds"]["@_x"], "@_y": dividerLineY },
-          { "@_x": shape["dc:Bounds"]["@_x"] + shape["dc:Bounds"]["@_width"], "@_y": dividerLineY },
-        ],
-      };
+      shape["dmndi:DMNDecisionServiceDividerLine"] = copyDividerLineFromOtherDrd({
+        dsShapeOnOtherDrd,
+        dsPositionOnThisDrd: {
+          x: shape["dc:Bounds"]["@_x"],
+          y: shape["dc:Bounds"]["@_y"],
+        },
+      });
 
       containedDecisionsOffset = {
         x: dsShapeOnOtherDrd["dc:Bounds"]["@_x"] - shape["dc:Bounds"]["@_x"],
@@ -203,12 +200,21 @@ export function addOrExpandExistingDecisionServiceToDrd({
         nodeType: NODE_TYPES.decisionService,
         shape: {
           "@_dmnElementRef": xmlHrefToQName(decisionServiceHrefRelativeToThisDmn, thisDmnsDefinitions),
+          "@_isCollapsed": false,
+          "di:extension": dsShapeOnOtherDrd["di:extension"],
           "dc:Bounds": {
             "@_x": dropPoint.x,
             "@_y": dropPoint.y,
             "@_width": dsShapeOnOtherDrd["dc:Bounds"]["@_width"],
             "@_height": dsShapeOnOtherDrd["dc:Bounds"]["@_height"],
           },
+          "dmndi:DMNDecisionServiceDividerLine": copyDividerLineFromOtherDrd({
+            dsShapeOnOtherDrd,
+            dsPositionOnThisDrd: {
+              x: dropPoint.x,
+              y: dropPoint.y,
+            },
+          }),
         },
       });
       containedDecisionsOffset = {
@@ -230,6 +236,26 @@ export function addOrExpandExistingDecisionServiceToDrd({
       decisionServiceNamespace,
     });
   }
+}
+
+export function copyDividerLineFromOtherDrd({
+  dsShapeOnOtherDrd,
+  dsPositionOnThisDrd,
+}: {
+  dsShapeOnOtherDrd: DMNDI15__DMNShape;
+  dsPositionOnThisDrd: { x: number; y: number };
+}): DMNDI15__DMNShape["dmndi:DMNDecisionServiceDividerLine"] {
+  const dividerLineWaypoints = dsShapeOnOtherDrd["dmndi:DMNDecisionServiceDividerLine"]?.["di:waypoint"] ?? [];
+  const dividerLineY =
+    dsPositionOnThisDrd.y + ((dividerLineWaypoints[0]["@_y"] ?? 0) - (dsShapeOnOtherDrd["dc:Bounds"]?.["@_y"] ?? 0));
+
+  return {
+    "di:extension": dsShapeOnOtherDrd["dmndi:DMNDecisionServiceDividerLine"]?.["di:extension"],
+    "di:waypoint": [
+      { "@_x": dsPositionOnThisDrd.x, "@_y": dividerLineY },
+      { "@_x": dsPositionOnThisDrd.x + dsShapeOnOtherDrd["dc:Bounds"]!["@_width"], "@_y": dividerLineY },
+    ],
+  };
 }
 
 export function addOrMoveShapesOfContainedDecisionsOfDecisionService({

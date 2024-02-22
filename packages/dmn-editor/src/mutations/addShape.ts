@@ -33,7 +33,7 @@ export function addShape({
   definitions: DMN15__tDefinitions;
   drdIndex: number;
   nodeType: NodeType;
-  shape: WithoutIdXmlAttributes<DMNDI15__DMNShape>;
+  shape: DMNDI15__DMNShape;
 }) {
   const { diagramElements } = addOrGetDrd({ definitions, drdIndex });
   diagramElements.push({
@@ -45,5 +45,3 @@ export function addShape({
     ...shape,
   });
 }
-
-export type WithoutIdXmlAttributes<T> = { [K in keyof T]: K extends "@_id" ? never : WithoutIdXmlAttributes<T[K]> };

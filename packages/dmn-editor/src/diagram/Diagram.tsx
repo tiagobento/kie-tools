@@ -125,6 +125,7 @@ import {
   addOrExpandExistingDecisionServiceToDrd,
   getDecisionServicePropertiesRelativeToThisDmn,
 } from "../mutations/addOrExpandExistingDecisionServiceToDrd";
+import { collapseDecisionService } from "../mutations/collapseDecisionService";
 
 const isFirefox = typeof (window as any).InstallTrigger !== "undefined"; // See https://stackoverflow.com/questions/9847580/how-to-detect-safari-chrome-ie-firefox-and-opera-browsers
 
@@ -1731,6 +1732,36 @@ export function KeyboardShortcuts(props: {}) {
       state.diagram.propertiesPanel.isOpen = !state.diagram.propertiesPanel.isOpen;
     });
   }, [i, dmnEditorStoreApi]);
+
+  // Collapse Decision Services
+  const c = RF.useKeyPress(["c"]);
+  useEffect(() => {
+    if (!c) {
+      return;
+    }
+
+    const decisionServiceNodes = rf.getNodes();
+
+    for (const dsNode of decisionServiceNodes) {
+      if (!dsNode.selected || dsNode.data.dmnObject?.__$$element !== "decisionService") {
+        continue;
+      }
+
+      const decisionService = dsNode.data.dmnObject;
+
+      dmnEditorStoreApi.setState((state) => {
+        collapseDecisionService({
+          definitions: state.dmn.model.definitions,
+          drdIndex: state.diagram.drdIndex,
+          decisionService,
+          shapeIndex: dsNode.data.shape.index,
+          thisDmnsNamespace: state.dmn.model.definitions["@_namespace"],
+          externalDmnsIndex: state.computed(state).getExternalModelTypesByNamespace(externalModelsByNamespace).dmns,
+          drgEdges: state.computed(state).getDiagramData(externalModelsByNamespace).drgEdges,
+        });
+      });
+    }
+  }, [dmnEditorStoreApi, rf, c, externalModelsByNamespace]);
 
   // Hide from DRD
   const x = RF.useKeyPress(["x"]);

@@ -17,8 +17,55 @@
  * under the License.
  */
 
-import { State } from "../store/Store";
+import { DMN15__tDecisionService } from "@kie-tools/dmn-marshaller/dist/schemas/dmn-1_5/ts-gen/types";
+import { parseXmlQName } from "@kie-tools/xml-parser-ts/dist/qNames";
+import { DrgEdge } from "../diagram/graph/graph";
+import { Computed, State } from "../store/Store";
+import { xmlHrefToQName } from "../xml/xmlHrefToQName";
+import { parseXmlHref } from "../xml/xmlHrefs";
+import { NodeNature } from "./NodeNature";
+import { addOrGetDrd } from "./addOrGetDrd";
+import { NodeDeletionMode, deleteNode } from "./deleteNode";
 
-export function collapseDecisionService({ definitions }: { definitions: State["dmn"]["model"]["definitions"] }) {
-  // TODO: Tiago
+export function collapseDecisionService({
+  definitions,
+  drdIndex,
+  decisionService,
+  thisDmnsNamespace,
+  shapeIndex,
+  drgEdges,
+  externalDmnsIndex,
+}: {
+  definitions: State["dmn"]["model"]["definitions"];
+  drdIndex: number;
+  decisionService: DMN15__tDecisionService;
+  thisDmnsNamespace: string;
+  shapeIndex: number;
+  externalDmnsIndex: ReturnType<Computed["getExternalModelTypesByNamespace"]>["dmns"];
+  drgEdges: DrgEdge[];
+}) {
+  const { diagramElements } = addOrGetDrd({ definitions, drdIndex });
+  const shape = diagramElements[shapeIndex];
+  if (shape.__$$element !== "dmndi:DMNShape") {
+    throw new Error(
+      `DMN MUTATION: Can't collapse Decision Service because element with index ${shapeIndex} is not a DMNShape.`
+    );
+  }
+
+  shape["@_isCollapsed"] = true;
+
+  for (const d of [...(decisionService.encapsulatedDecision ?? []), ...(decisionService.outputDecision ?? [])]) {
+    const parsedDecisionHref = parseXmlHref(d["@_href"]);
+    deleteNode({
+      drgEdges,
+      externalDmnsIndex,
+      definitions,
+      dmnObjectId: parsedDecisionHref.id,
+      dmnObjectNamespace: parsedDecisionHref.namespace ?? thisDmnsNamespace,
+      dmnObjectQName: parseXmlQName(xmlHrefToQName(d["@_href"], definitions)),
+      drdIndex,
+      nodeNature: NodeNature.DRG_ELEMENT,
+      mode: NodeDeletionMode.FROM_CURRENT_DRD_ONLY,
+    });
+  }
 }

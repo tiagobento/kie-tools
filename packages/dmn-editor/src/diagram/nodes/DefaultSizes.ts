@@ -150,13 +150,13 @@ export const DEFAULT_NODE_SIZES: Record<NodeType, (snapGrid: SnapGrid) => DC__Di
   },
 };
 
-export const DECISION_SERVICE_COLLAPSED_DIMENSIONS = {
-  width: 300,
-  height: 100,
-};
-
 export const NODE_MIN_WIDTH = 160;
 export const NODE_MIN_HEIGHT = 80;
+
+export const DECISION_SERVICE_COLLAPSED_DIMENSIONS = {
+  width: NODE_MIN_WIDTH * 2,
+  height: 100,
+};
 
 const MIN_SIZE_FOR_NODES = (grid: SnapGrid, width = NODE_MIN_WIDTH, height = NODE_MIN_HEIGHT) => {
   const snapped = snapPoint(grid, { "@_x": width, "@_y": height }, "ceil");
