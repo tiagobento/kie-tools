@@ -28,25 +28,23 @@ import { addOrGetDrd } from "./addOrGetDrd";
 import { NodeDeletionMode, deleteNode } from "./deleteNode";
 
 export function collapseDecisionService({
-  definitions,
+  thisDmnsDefinitions,
   drdIndex,
   decisionService,
-  thisDmnsNamespace,
   decisionServiceNamespace,
   shapeIndex,
   drgEdges,
   externalDmnsIndex,
 }: {
-  definitions: State["dmn"]["model"]["definitions"];
+  thisDmnsDefinitions: State["dmn"]["model"]["definitions"];
   drdIndex: number;
   decisionService: DMN15__tDecisionService;
-  thisDmnsNamespace: string;
   decisionServiceNamespace: string;
   shapeIndex: number;
   externalDmnsIndex: ReturnType<Computed["getExternalModelTypesByNamespace"]>["dmns"];
   drgEdges: DrgEdge[];
 }) {
-  const { diagramElements } = addOrGetDrd({ definitions, drdIndex });
+  const { diagramElements } = addOrGetDrd({ definitions: thisDmnsDefinitions, drdIndex });
   const shape = diagramElements[shapeIndex];
   if (shape.__$$element !== "dmndi:DMNShape") {
     throw new Error(
@@ -57,22 +55,24 @@ export function collapseDecisionService({
   shape["@_isCollapsed"] = true;
 
   for (const d of [...(decisionService.encapsulatedDecision ?? []), ...(decisionService.outputDecision ?? [])]) {
-    const hrefRelativeToTheDs = parseXmlHref(d["@_href"]); // Local to the DS.
-    const decisionNamespaceRelativeToThisDmn =
-      hrefRelativeToTheDs.namespace || decisionServiceNamespace || thisDmnsNamespace;
-
-    const hrefRelativeToThisDmn = buildXmlHref({
-      namespace: decisionNamespaceRelativeToThisDmn,
-      id: hrefRelativeToTheDs.id,
-    });
+    const hrefRelativeToDs = parseXmlHref({ href: d["@_href"], relativeToNamespace: decisionServiceNamespace });
 
     deleteNode({
       drgEdges,
       externalDmnsIndex,
-      definitions,
-      dmnObjectId: hrefRelativeToTheDs.id,
-      dmnObjectNamespace: decisionNamespaceRelativeToThisDmn,
-      dmnObjectQName: parseXmlQName(xmlHrefToQName(hrefRelativeToThisDmn, definitions)),
+      thisDmnsDefinitions,
+      dmnObjectId: hrefRelativeToDs.id,
+      dmnObjectNamespace: hrefRelativeToDs.namespace,
+      dmnObjectQName: parseXmlQName(
+        xmlHrefToQName({
+          hrefString: buildXmlHref({
+            ...hrefRelativeToDs,
+            relativeToNamespace: thisDmnsDefinitions["@_namespace"],
+          }),
+          rootElement: thisDmnsDefinitions,
+          relativeToNamespace: thisDmnsDefinitions["@_namespace"],
+        })
+      ),
       drdIndex,
       nodeNature: NodeNature.DRG_ELEMENT,
       mode: NodeDeletionMode.FROM_CURRENT_DRD_ONLY,

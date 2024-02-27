@@ -43,7 +43,6 @@ export function addOrExpandExistingDecisionServiceToDrd({
   decisionServiceNamespace,
   decisionService,
   externalDmnsIndex,
-  thisDmnsNamespace,
   thisDmnsDefinitions,
   thisDmnsIndexedDrd,
   drdIndex,
@@ -52,14 +51,13 @@ export function addOrExpandExistingDecisionServiceToDrd({
   decisionServiceNamespace: string;
   decisionService: DMN15__tDecisionService;
   externalDmnsIndex: ReturnType<Computed["getExternalModelTypesByNamespace"]>["dmns"];
-  thisDmnsNamespace: string;
   thisDmnsDefinitions: DMN15__tDefinitions;
   thisDmnsIndexedDrd: ReturnType<Computed["indexedDrd"]>;
   drdIndex: number;
   dropPoint: { x: number; y: number } | undefined;
 }) {
   const decisionServiceDmnDefinitions =
-    !decisionServiceNamespace || decisionServiceNamespace === thisDmnsNamespace
+    decisionServiceNamespace === thisDmnsDefinitions["@_namespace"]
       ? thisDmnsDefinitions
       : externalDmnsIndex.get(decisionServiceNamespace)?.model.definitions;
 
@@ -67,16 +65,16 @@ export function addOrExpandExistingDecisionServiceToDrd({
     throw new Error(`DMN MUTATION: Can't find definitions for model with namespace ${decisionServiceNamespace}`);
   }
 
-  const { decisionServiceNamespaceForHref, containedDecisionHrefsRelativeToThisDmn } =
-    getDecisionServicePropertiesRelativeToThisDmn({
-      thisDmnsNamespace,
-      decisionServiceNamespace,
-      decisionService,
-    });
+  const { containedDecisionHrefsRelativeToThisDmn } = getDecisionServicePropertiesRelativeToThisDmn({
+    thisDmnsNamespace: thisDmnsDefinitions["@_namespace"],
+    decisionServiceNamespace,
+    decisionService,
+  });
 
   const decisionServiceHrefRelativeToThisDmn = buildXmlHref({
-    namespace: decisionServiceNamespaceForHref,
     id: decisionService["@_id"]!,
+    namespace: decisionServiceNamespace,
+    relativeToNamespace: thisDmnsDefinitions["@_namespace"],
   });
 
   if (
@@ -84,7 +82,7 @@ export function addOrExpandExistingDecisionServiceToDrd({
       decisionServiceNamespace,
       decisionService,
       decisionServiceDmnDefinitions,
-      thisDmnsNamespace,
+      thisDmnsNamespace: thisDmnsDefinitions["@_namespace"],
       thisDmnsDefinitions,
       thisDmnsIndexedDrd,
     })
@@ -100,7 +98,11 @@ export function addOrExpandExistingDecisionServiceToDrd({
       drdIndex,
       nodeType: NODE_TYPES.decisionService,
       shape: {
-        "@_dmnElementRef": xmlHrefToQName(decisionServiceHrefRelativeToThisDmn, thisDmnsDefinitions),
+        "@_dmnElementRef": xmlHrefToQName({
+          hrefString: decisionServiceHrefRelativeToThisDmn,
+          rootElement: thisDmnsDefinitions,
+          relativeToNamespace: thisDmnsDefinitions["@_namespace"],
+        }),
         "@_isCollapsed": true,
         "dc:Bounds": {
           "@_x": dropPoint.x,
@@ -117,7 +119,7 @@ export function addOrExpandExistingDecisionServiceToDrd({
 
   const indexedDrd = getIndexedDrdOfDrdWithCompleteExpandedDepictionOfDecisionService({
     decisionServiceDmnDefinitions,
-    thisDmnsNamespace,
+    thisDmnsNamespace: thisDmnsDefinitions["@_namespace"],
     decisionServiceNamespace,
     drdIndex,
     decisionServiceHrefRelativeToThisDmn,
@@ -150,9 +152,11 @@ export function addOrExpandExistingDecisionServiceToDrd({
     let containedDecisionsOffset: { x: number; y: number };
 
     // Add the Decision Service shape
-    const existingShapeForDs = computeIndexedDrd(thisDmnsNamespace, thisDmnsDefinitions, drdIndex).dmnShapesByHref.get(
-      decisionServiceHrefRelativeToThisDmn
-    );
+    const existingShapeForDs = computeIndexedDrd(
+      thisDmnsDefinitions["@_namespace"],
+      thisDmnsDefinitions,
+      drdIndex
+    ).dmnShapesByHref.get(decisionServiceHrefRelativeToThisDmn);
     if (existingShapeForDs) {
       const { diagramElements } = addOrGetDrd({ definitions: thisDmnsDefinitions, drdIndex });
       const shape = diagramElements[existingShapeForDs.index];
@@ -199,7 +203,11 @@ export function addOrExpandExistingDecisionServiceToDrd({
         drdIndex,
         nodeType: NODE_TYPES.decisionService,
         shape: {
-          "@_dmnElementRef": xmlHrefToQName(decisionServiceHrefRelativeToThisDmn, thisDmnsDefinitions),
+          "@_dmnElementRef": xmlHrefToQName({
+            hrefString: decisionServiceHrefRelativeToThisDmn,
+            rootElement: thisDmnsDefinitions,
+            relativeToNamespace: thisDmnsDefinitions["@_namespace"],
+          }),
           "@_isCollapsed": false,
           "di:extension": dsShapeOnOtherDrd["di:extension"],
           "dc:Bounds": {
@@ -231,7 +239,6 @@ export function addOrExpandExistingDecisionServiceToDrd({
       thisDmnsIndexedDrd,
       thisDmnsDefinitions,
       drdIndex,
-      thisDmnsNamespace,
       externalDmnsIndex,
       decisionServiceNamespace,
     });
@@ -265,7 +272,6 @@ export function addOrMoveShapesOfContainedDecisionsOfDecisionService({
   thisDmnsIndexedDrd,
   thisDmnsDefinitions,
   drdIndex,
-  thisDmnsNamespace,
   externalDmnsIndex,
   decisionServiceNamespace,
 }: {
@@ -275,7 +281,6 @@ export function addOrMoveShapesOfContainedDecisionsOfDecisionService({
   thisDmnsIndexedDrd: ReturnType<Computed["indexedDrd"]>;
   thisDmnsDefinitions: DMN15__tDefinitions;
   drdIndex: number;
-  thisDmnsNamespace: string;
   externalDmnsIndex: ExternalDmnsIndex;
   decisionServiceNamespace: string;
 }) {
@@ -312,9 +317,12 @@ export function addOrMoveShapesOfContainedDecisionsOfDecisionService({
         },
       });
     } else {
-      const decisionNs = parseXmlHref(decisionHref).namespace;
+      const decisionNs = parseXmlHref({
+        href: decisionHref,
+        relativeToNamespace: thisDmnsDefinitions["@_namespace"],
+      }).namespace;
       const decisionDmnDefinitions =
-        !decisionNs || decisionNs === thisDmnsNamespace
+        !decisionNs || decisionNs === thisDmnsDefinitions["@_namespace"]
           ? thisDmnsDefinitions
           : externalDmnsIndex.get(decisionNs)?.model.definitions;
       if (!decisionDmnDefinitions) {
@@ -326,7 +334,11 @@ export function addOrMoveShapesOfContainedDecisionsOfDecisionService({
         drdIndex,
         nodeType: NODE_TYPES.decision,
         shape: {
-          "@_dmnElementRef": xmlHrefToQName(decisionHref, thisDmnsDefinitions),
+          "@_dmnElementRef": xmlHrefToQName({
+            hrefString: decisionHref,
+            rootElement: thisDmnsDefinitions,
+            relativeToNamespace: thisDmnsDefinitions["@_namespace"],
+          }),
           "dc:Bounds": {
             "@_x": x,
             "@_y": y,
@@ -386,21 +398,17 @@ export function getDecisionServicePropertiesRelativeToThisDmn({
   decisionServiceNamespace: string;
   decisionService: DMN15__tDecisionService;
 }) {
-  const decisionServiceNamespaceForHref =
-    decisionServiceNamespace === thisDmnsNamespace ? "" : decisionServiceNamespace;
-
   const containedDecisionHrefsRelativeToThisDmn = [
     ...(decisionService.outputDecision ?? []),
     ...(decisionService.encapsulatedDecision ?? []),
-  ].map((d) => {
-    const parsedHref = parseXmlHref(d["@_href"]);
-    return buildXmlHref({
-      namespace: !parsedHref.namespace ? decisionServiceNamespaceForHref : parsedHref.namespace,
-      id: parsedHref.id,
-    });
-  });
+  ].map((d) =>
+    buildXmlHref({
+      ...parseXmlHref({ href: d["@_href"], relativeToNamespace: decisionServiceNamespace }),
+      relativeToNamespace: thisDmnsNamespace,
+    })
+  );
 
-  return { decisionServiceNamespaceForHref, containedDecisionHrefsRelativeToThisDmn };
+  return { containedDecisionHrefsRelativeToThisDmn };
 }
 
 export function doesThisDrdHaveConflictingDecisionService({
@@ -430,12 +438,10 @@ export function doesThisDrdHaveConflictingDecisionService({
       drgElements: decisionServiceDmnDefinitions.drgElement,
     });
 
-  const decisionServiceNamespaceForHref =
-    decisionServiceNamespace === thisDmnsNamespace ? "" : decisionServiceNamespace;
-
   const decisionServiceHref = buildXmlHref({
-    namespace: decisionServiceNamespaceForHref,
     id: decisionService["@_id"]!,
+    namespace: decisionServiceNamespace,
+    relativeToNamespace: thisDmnsNamespace,
   });
 
   return containedDecisionHrefsRelativeToThisDmn.some((decisionHref) =>

@@ -22,14 +22,14 @@ import { useExternalModels } from "../includedModels/DmnEditorDependenciesContex
 import { useDmnEditorStore } from "../store/StoreContext";
 import { resolveTypeRef } from "./resolveTypeRef";
 
-export function useResolvedTypeRef(typeRef: string | undefined, relativeToNamespace: string | undefined) {
+export function useResolvedTypeRef(typeRef: string | undefined, relativeToNamespace: string) {
   const { externalModelsByNamespace } = useExternalModels();
 
   return useDmnEditorStore((s) => {
     const thisDmnsNamespace = s.dmn.model.definitions["@_namespace"];
     return resolveTypeRef({
       typeRef: typeRef || DmnBuiltInDataType.Undefined,
-      namespace: relativeToNamespace || thisDmnsNamespace,
+      namespace: relativeToNamespace,
       allTopLevelDataTypesByFeelName: s.computed(s).getDataTypes(externalModelsByNamespace)
         .allTopLevelDataTypesByFeelName,
       externalModelsByNamespace,

@@ -52,6 +52,7 @@ export const MIME_TYPE_FOR_DMN_EDITOR_EXTERNAL_NODES_FROM_INCLUDED_MODELS =
 export function ExternalNodesPanel() {
   const dmnEditorStoreApi = useDmnEditorStoreApi();
   const importsByNamespace = useDmnEditorStore((s) => s.computed(s).importsByNamespace());
+  const thisDmnsNamespace = useDmnEditorStore((s) => s.dmn.model.definitions["@_namespace"]);
   const { externalModelsByNamespace } = useExternalModels();
   const externalDmnsByNamespace = useDmnEditorStore(
     (s) => s.computed(s).getExternalModelTypesByNamespace(externalModelsByNamespace).dmns
@@ -144,7 +145,11 @@ export function ExternalNodesPanel() {
               const nodes = externalDmnDefinitions.drgElement
                 ?.filter((drgElement) => drgElement["@_name"].toLowerCase().includes(filter.toLowerCase()))
                 .map((drgElement) => {
-                  const dmnObjectHref = buildXmlHref({ namespace, id: drgElement["@_id"]! });
+                  const dmnObjectHref = buildXmlHref({
+                    id: drgElement["@_id"]!,
+                    namespace,
+                    relativeToNamespace: thisDmnsNamespace,
+                  });
                   const isAlreadyIncluded = dmnShapesByHref.has(dmnObjectHref);
 
                   return (
@@ -168,7 +173,7 @@ export function ExternalNodesPanel() {
                         <DmnObjectListItem
                           dmnObjectHref={dmnObjectHref}
                           dmnObject={drgElement}
-                          namespace={namespace}
+                          dmnObjectNamespace={namespace}
                           relativeToNamespace={namespace}
                         />
                       </Flex>

@@ -20,6 +20,7 @@
 import { DMN15__tImport } from "@kie-tools/dmn-marshaller/dist/schemas/dmn-1_5/ts-gen/types";
 import { buildXmlHref } from "../xml/xmlHrefs";
 import * as __path from "path";
+import { KIE_DMN_UNKNOWN_NAMESPACE } from "../Dmn15Spec";
 
 export const KIE_PMML_NAMESPACE = "https://kie.org/pmml";
 
@@ -53,7 +54,11 @@ export function getPmmlNamespace({
 }: {
   normalizedPosixPathRelativeToTheOpenFile: string;
 }) {
-  return buildXmlHref({ namespace: KIE_PMML_NAMESPACE, id: normalizedPosixPathRelativeToTheOpenFile });
+  return buildXmlHref({
+    id: normalizedPosixPathRelativeToTheOpenFile,
+    namespace: KIE_PMML_NAMESPACE,
+    relativeToNamespace: KIE_DMN_UNKNOWN_NAMESPACE, // Any namespace different than `KIE_PMML_NAMESPACE` would do.
+  });
 }
 
 export function getPmmlNamespaceFromDmnImport({ dmnImport }: { dmnImport: DMN15__tImport }) {

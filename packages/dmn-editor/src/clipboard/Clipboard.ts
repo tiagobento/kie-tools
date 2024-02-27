@@ -154,7 +154,12 @@ export function buildClipboardFromDiagram(rfState: RF.ReactFlowState, dmnEditorS
           ...(_node.data.dmnObject.outputDecision ?? []),
           ...(_node.data.dmnObject.encapsulatedDecision ?? []),
         ]) {
-          if (parseXmlHref(decision["@_href"]).namespace) {
+          if (
+            parseXmlHref({
+              href: decision["@_href"],
+              relativeToNamespace: _node.data.dmnObjectNamespace,
+            }).namespace !== dmnEditorState.dmn.model.definitions["@_namespace"]
+          ) {
             continue; // External decision relative to this DMN. Will not go in the Clipboard.
           }
 

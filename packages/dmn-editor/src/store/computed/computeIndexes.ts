@@ -49,13 +49,17 @@ export function computeIndexedDrd(
       // Do not skip adding it to the regular `dmnShapesByHref`, as nodes will query this.
       const dmnElementRefQName = parseXmlQName(e["@_dmnElementRef"]);
       if (dmnElementRefQName.prefix) {
-        const namespace = definitions[`@_xmlns:${dmnElementRefQName.prefix}`] ?? KIE_DMN_UNKNOWN_NAMESPACE;
-        href = buildXmlHref({ namespace, id: dmnElementRefQName.localPart });
+        href = buildXmlHref({
+          id: dmnElementRefQName.localPart,
+          namespace: definitions[`@_xmlns:${dmnElementRefQName.prefix}`] ?? KIE_DMN_UNKNOWN_NAMESPACE,
+          relativeToNamespace: thisDmnsNamespace,
+        });
         hrefsOfDmnElementRefsOfShapesPointingToExternalDmnObjects.add(href);
       } else {
         href = buildXmlHref({
-          namespace: definitions["@_namespace"] === thisDmnsNamespace ? "" : definitions["@_namespace"],
           id: dmnElementRefQName.localPart,
+          namespace: definitions["@_namespace"],
+          relativeToNamespace: thisDmnsNamespace,
         });
       }
 

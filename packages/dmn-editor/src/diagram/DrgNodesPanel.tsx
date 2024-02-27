@@ -44,8 +44,6 @@ export function DrgNodesPanel() {
 
   const [filter, setFilter] = useState("");
 
-  const namespaceForHref = ""; // That's the default namespace.
-
   const onDragStart = useCallback((event: React.DragEvent, drgElement: Unpacked<DMN15__tDefinitions["drgElement"]>) => {
     event.dataTransfer.setData(MIME_TYPE_FOR_DMN_EDITOR_DRG_NODE, JSON.stringify(drgElement));
     event.dataTransfer.effectAllowed = "move";
@@ -64,7 +62,11 @@ export function DrgNodesPanel() {
   const nodes = thisDmnsDrgElements
     .filter((drgElement) => drgElement["@_name"].toLowerCase().includes(filter.toLowerCase()))
     .map((drgElement) => {
-      const dmnObjectHref = buildXmlHref({ namespace: namespaceForHref, id: drgElement["@_id"]! });
+      const dmnObjectHref = buildXmlHref({
+        id: drgElement["@_id"]!,
+        namespace: thisDmnsNamespace,
+        relativeToNamespace: thisDmnsNamespace,
+      });
       const canBeIncluded =
         !dmnShapesByHref.has(dmnObjectHref) &&
         (containingDecisionServiceHrefsByDecisionHrefsRelativeToThisDmn.get(dmnObjectHref) ?? []).every(
@@ -90,8 +92,8 @@ export function DrgNodesPanel() {
             <DmnObjectListItem
               dmnObjectHref={dmnObjectHref}
               dmnObject={drgElement}
-              namespace={namespaceForHref}
-              relativeToNamespace={namespaceForHref}
+              dmnObjectNamespace={thisDmnsNamespace}
+              relativeToNamespace={thisDmnsNamespace}
             />
           </Flex>
         </div>

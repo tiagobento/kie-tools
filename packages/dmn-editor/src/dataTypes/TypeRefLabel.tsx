@@ -34,7 +34,7 @@ export function TypeRefLabel({
 }: {
   isCollection: boolean | undefined;
   typeRef: string | undefined;
-  relativeToNamespace?: string;
+  relativeToNamespace: string;
 }) {
   const importsByNamespace = useDmnEditorStore((s) => s.computed(s).importsByNamespace());
   const thisDmn = useDmnEditorStore((s) => s.dmn);
@@ -53,7 +53,7 @@ export function TypeRefLabel({
 
     const xmlNamespaceName = getXmlNamespaceDeclarationName({
       rootElement: thisDmn.model.definitions,
-      namespace: relativeToNamespace ?? "",
+      namespace: relativeToNamespace,
     });
 
     // DMN typeRefs are *NOT* XML QNames, but we use them to make it easier to build the FEEL QName.

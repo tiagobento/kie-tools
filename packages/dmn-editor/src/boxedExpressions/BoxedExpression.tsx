@@ -90,6 +90,7 @@ import { useDmnEditorStore, useDmnEditorStoreApi } from "../store/StoreContext";
 import { dmnToBee, getUndefinedExpressionDefinition } from "./dmnToBee";
 import { getDefaultColumnWidth } from "./getDefaultColumnWidth";
 import { getDefaultExpressionDefinitionByLogicType } from "./getDefaultExpressionDefinitionByLogicType";
+import { buildXmlHref, parseXmlHref } from "../xml/xmlHrefs";
 
 export function BoxedExpression({ container }: { container: React.RefObject<HTMLElement> }) {
   const { externalModelsByNamespace } = useExternalModels();
@@ -155,12 +156,18 @@ export function BoxedExpression({ container }: { container: React.RefObject<HTML
   }, [diagram.drdIndex, thisDmn.model.definitions]);
 
   const expression = useMemo(() => {
-    if (!boxedExpressionEditor.activeDrgElementId) {
+    if (!boxedExpressionEditor.activeDrgElementHref) {
       return undefined;
     }
 
     const drgElementIndex = (thisDmn.model.definitions.drgElement ?? []).findIndex(
-      (e) => e["@_id"] === boxedExpressionEditor.activeDrgElementId
+      (e) =>
+        boxedExpressionEditor.activeDrgElementHref ===
+        buildXmlHref({
+          id: e["@_id"]!,
+          namespace: thisDmn.model.definitions["@_namespace"],
+          relativeToNamespace: thisDmn.model.definitions["@_namespace"],
+        })
     );
     if (drgElementIndex < 0) {
       return undefined;
@@ -177,7 +184,7 @@ export function BoxedExpression({ container }: { container: React.RefObject<HTML
       drgElement,
       drgElementType: drgElement.__$$element,
     };
-  }, [boxedExpressionEditor.activeDrgElementId, thisDmn.model.definitions.drgElement, widthsById]);
+  }, [boxedExpressionEditor.activeDrgElementHref, thisDmn.model.definitions, widthsById]);
 
   const setExpression: React.Dispatch<React.SetStateAction<ExpressionDefinition>> = useCallback(
     (expressionAction) => {
@@ -340,7 +347,7 @@ export function BoxedExpression({ container }: { container: React.RefObject<HTML
             <EmptyState>
               <EmptyStateIcon icon={ErrorCircleOIcon} />
               <Title size="lg" headingLevel="h4">
-                {`Expression with ID '${boxedExpressionEditor.activeDrgElementId}' doesn't exist.`}
+                {`DRG element with href '${boxedExpressionEditor.activeDrgElementHref}' doesn't exist.`}
               </Title>
               <EmptyStateBody>
                 This happens when the DMN file is modified externally while the expression was open here.
@@ -366,7 +373,12 @@ export function BoxedExpression({ container }: { container: React.RefObject<HTML
               beeGwtService={beeGwtService}
               pmmlParams={pmmlParams}
               isResetSupportedOnRootExpression={isResetSupportedOnRootExpression}
-              decisionNodeId={boxedExpressionEditor.activeDrgElementId!}
+              decisionNodeId={
+                parseXmlHref({
+                  href: boxedExpressionEditor.activeDrgElementHref!,
+                  relativeToNamespace: thisDmn.model.definitions["@_namespace"],
+                }).id
+              }
               expressionDefinition={expression.beeExpression}
               setExpressionDefinition={setExpression}
               dataTypes={dataTypes}

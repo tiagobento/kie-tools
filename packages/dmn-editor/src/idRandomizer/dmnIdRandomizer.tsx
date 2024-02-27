@@ -25,6 +25,11 @@ import {
 import { XmlParserTsIdRandomizer, XmlParserTsIdRandomizerMatcher } from "@kie-tools/xml-parser-ts/dist/idRandomizer";
 import { buildXmlHref, parseXmlHref } from "../xml/xmlHrefs";
 
+/**
+ * Used to keep the original namespaces of HREFs processed by XmlParserTsIdRandomizer.
+ */
+export const ID_RANDOMIZER_NAMESPACE = "https://kie.org/dmn/xml-id-randomizer";
+
 export function getNewDmnIdRandomizer() {
   return new XmlParserTsIdRandomizer({
     meta: dmn15meta,
@@ -40,7 +45,7 @@ export const tDmnElementReferenceIdRandomizerMatcher: XmlParserTsIdRandomizerMat
   attr,
 }) => {
   if (metaTypeName === "DMN15__tDMNElementReference" && attr === "@_href") {
-    const href = parseXmlHref(parentJson[attr]);
+    const href = parseXmlHref({ href: parentJson[attr], relativeToNamespace: ID_RANDOMIZER_NAMESPACE });
     return [
       href.id,
       ({ newId }) => {
@@ -49,7 +54,7 @@ export const tDmnElementReferenceIdRandomizerMatcher: XmlParserTsIdRandomizerMat
             attr
           )}: ${parentJson[attr]})`
         );
-        parentJson[attr] = buildXmlHref({ ...href, id: newId });
+        parentJson[attr] = buildXmlHref({ ...href, id: newId, relativeToNamespace: ID_RANDOMIZER_NAMESPACE });
       },
     ];
   }

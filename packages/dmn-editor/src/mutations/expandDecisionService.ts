@@ -31,7 +31,6 @@ export function expandDecisionService({
   decisionServiceNamespace,
   decisionService,
   externalDmnsIndex,
-  thisDmnsNamespace,
   thisDmnsDefinitions,
   thisDmnsIndexedDrd,
   drdIndex,
@@ -48,7 +47,6 @@ export function expandDecisionService({
     decisionServiceNamespace,
     decisionService,
     externalDmnsIndex,
-    thisDmnsNamespace,
     thisDmnsDefinitions,
     thisDmnsIndexedDrd,
     drdIndex,
@@ -72,7 +70,7 @@ export function canExpandDecisionService({
   thisDmnsIndexedDrd: ReturnType<Computed["indexedDrd"]>;
 }) {
   const decisionServiceDmnDefinitions =
-    !decisionServiceNamespace || decisionServiceNamespace === thisDmnsNamespace
+    decisionServiceNamespace === thisDmnsNamespace
       ? thisDmnsDefinitions
       : externalDmnsIndex.get(decisionServiceNamespace)?.model.definitions;
 

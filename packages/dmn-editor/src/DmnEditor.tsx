@@ -156,7 +156,9 @@ export const DmnEditorInternal = ({
   onModelChange,
   forwardRef,
 }: DmnEditorProps & { forwardRef?: React.Ref<DmnEditorRef> }) => {
-  const boxedExpressionEditorActiveDrgElementId = useDmnEditorStore((s) => s.boxedExpressionEditor.activeDrgElementId);
+  const boxedExpressionEditorActiveDrgElementHref = useDmnEditorStore(
+    (s) => s.boxedExpressionEditor.activeDrgElementHref
+  );
   const isBeePropertiesPanelOpen = useDmnEditorStore((s) => s.boxedExpressionEditor.propertiesPanel.isOpen);
   const isDiagramPropertiesPanelOpen = useDmnEditorStore((s) => s.diagram.propertiesPanel.isOpen);
   const navigationTab = useDmnEditorStore((s) => s.navigation.tab);
@@ -322,7 +324,7 @@ export const DmnEditorInternal = ({
         <Tab eventKey={DmnEditorTab.EDITOR} title={tabTitle.editor}>
           {navigationTab === DmnEditorTab.EDITOR && (
             <>
-              {!boxedExpressionEditorActiveDrgElementId && (
+              {!boxedExpressionEditorActiveDrgElementHref && (
                 <Drawer isExpanded={isDiagramPropertiesPanelOpen} isInline={true} position={"right"}>
                   <DrawerContent panelContent={diagramPropertiesPanel}>
                     <DrawerContentBody>
@@ -334,7 +336,7 @@ export const DmnEditorInternal = ({
                   </DrawerContent>
                 </Drawer>
               )}
-              {boxedExpressionEditorActiveDrgElementId && (
+              {boxedExpressionEditorActiveDrgElementHref && (
                 <Drawer isExpanded={isBeePropertiesPanelOpen} isInline={true} position={"right"}>
                   <DrawerContent panelContent={beePropertiesPanel}>
                     <DrawerContentBody>

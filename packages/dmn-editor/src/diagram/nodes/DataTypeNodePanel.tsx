@@ -39,9 +39,10 @@ export function DataTypeNodePanel(props: {
   onChange: OnTypeRefChange;
   onCreate?: OnCreateDataType;
   onToggle?: OnToggle;
-  dmnObjectNamespace: string | undefined;
+  dmnObjectNamespace: string;
 }) {
   const enableDataTypesToolbarOnNodes = useDmnEditorStore((s) => s.diagram.overlays.enableDataTypesToolbarOnNodes);
+  const thisDmnsNamespace = useDmnEditorStore((s) => s.dmn.model.definitions["@_namespace"]);
 
   const { dmnEditorRootElementRef } = useDmnEditor();
 
@@ -50,7 +51,7 @@ export function DataTypeNodePanel(props: {
     props.dmnObjectNamespace
   );
 
-  const isExternalNode = !!props.dmnObjectNamespace;
+  const isExternalNode = props.dmnObjectNamespace !== thisDmnsNamespace;
 
   return (
     <>

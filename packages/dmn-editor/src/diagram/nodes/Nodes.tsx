@@ -85,7 +85,7 @@ export type NodeDmnObjects =
   | ElementFilter<Unpacked<DMN15__tDefinitions["artifact"]>, "textAnnotation" | "group">;
 
 export type DmnDiagramNodeData<T extends NodeDmnObjects = NodeDmnObjects> = {
-  dmnObjectNamespace: string | undefined;
+  dmnObjectNamespace: string;
   dmnObjectQName: XmlQName;
   dmnObject: T;
   shape: DMNDI15__DMNShape & { index: number };
@@ -347,9 +347,7 @@ export const DecisionNode = React.memo(
           {/* {`render count: ${renderCount.current}`}
           <br /> */}
           <InfoNodePanel isVisible={!isTargeted && shouldActLikeHovered} />
-          {!isExternal && (
-            <EditExpressionNodePanel isVisible={!isTargeted && shouldActLikeHovered} id={decision["@_id"]!} />
-          )}
+          {!isExternal && <EditExpressionNodePanel isVisible={!isTargeted && shouldActLikeHovered} href={id} />}
           <OutgoingStuffNodePanel
             isVisible={!isTargeted && shouldActLikeHovered}
             nodeTypes={outgoingStructure[NODE_TYPES.decision].nodes}
@@ -482,7 +480,7 @@ export const BkmNode = React.memo(
           {/* {`render count: ${renderCount.current}`}
           <br /> */}
           <InfoNodePanel isVisible={!isTargeted && shouldActLikeHovered} />
-          {!isExternal && <EditExpressionNodePanel isVisible={!isTargeted && shouldActLikeHovered} id={bkm["@_id"]!} />}
+          {!isExternal && <EditExpressionNodePanel isVisible={!isTargeted && shouldActLikeHovered} href={id} />}
           <OutgoingStuffNodePanel
             isVisible={!isTargeted && shouldActLikeHovered}
             nodeTypes={outgoingStructure[NODE_TYPES.bkm].nodes}
@@ -799,7 +797,7 @@ export const DecisionServiceNode = React.memo(
           const { containedDecisionHrefsRelativeToThisDmn } = getDecisionServicePropertiesRelativeToThisDmn({
             thisDmnsNamespace: state.dmn.model.definitions["@_namespace"],
             decisionService,
-            decisionServiceNamespace: dmnObjectNamespace || state.dmn.model.definitions["@_namespace"],
+            decisionServiceNamespace: dmnObjectNamespace,
           });
           state.diagram._selectedNodes = [
             id, // Include the Decision Service itself.
@@ -884,7 +882,7 @@ export const DecisionServiceNode = React.memo(
     const canExpand = useDmnEditorStore((state) =>
       canExpandDecisionService({
         decisionService,
-        decisionServiceNamespace: dmnObjectNamespace || state.dmn.model.definitions["@_namespace"],
+        decisionServiceNamespace: dmnObjectNamespace,
         externalDmnsIndex: state.computed(state).getExternalModelTypesByNamespace(externalModelsByNamespace).dmns,
         thisDmnsDefinitions: state.dmn.model.definitions,
         thisDmnsIndexedDrd: state.computed(state).indexedDrd(),
@@ -896,7 +894,7 @@ export const DecisionServiceNode = React.memo(
       dmnEditorStoreApi.setState((state) => {
         expandDecisionService({
           decisionService,
-          decisionServiceNamespace: dmnObjectNamespace || state.dmn.model.definitions["@_namespace"],
+          decisionServiceNamespace: dmnObjectNamespace,
           drdIndex: state.diagram.drdIndex,
           externalDmnsIndex: state.computed(state).getExternalModelTypesByNamespace(externalModelsByNamespace).dmns,
           thisDmnsDefinitions: state.dmn.model.definitions,

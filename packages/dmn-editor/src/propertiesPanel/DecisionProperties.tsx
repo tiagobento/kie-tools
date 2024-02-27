@@ -37,7 +37,7 @@ export function DecisionProperties({
   index,
 }: {
   decision: DMN15__tDecision;
-  namespace: string | undefined;
+  namespace: string;
   index: number;
 }) {
   const { setState } = useDmnEditorStoreApi();

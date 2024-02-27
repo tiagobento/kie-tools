@@ -351,8 +351,9 @@ export const Diagram = React.forwardRef<DiagramRef, { container: React.RefObject
             }
 
             const externalNodeHref = buildXmlHref({
-              namespace: externalNode.externalDrgElementNamespace,
               id: externalNode.externalDrgElementId,
+              namespace: externalNode.externalDrgElementNamespace,
+              relativeToNamespace: state.dmn.model.definitions["@_namespace"],
             });
 
             if (externalDrgElement.__$$element === "decisionService") {
@@ -364,7 +365,6 @@ export const Diagram = React.forwardRef<DiagramRef, { container: React.RefObject
                 externalDmnsIndex,
                 thisDmnsDefinitions: state.dmn.model.definitions,
                 thisDmnsIndexedDrd: state.computed(state).indexedDrd(),
-                thisDmnsNamespace: state.dmn.model.definitions["@_namespace"],
               });
             } else {
               const externalNodeType = getNodeTypeFromDmnObject(externalDrgElement)!;
@@ -374,7 +374,11 @@ export const Diagram = React.forwardRef<DiagramRef, { container: React.RefObject
                 drdIndex: state.diagram.drdIndex,
                 nodeType: externalNodeType,
                 shape: {
-                  "@_dmnElementRef": xmlHrefToQName(externalNodeHref, state.dmn.model.definitions),
+                  "@_dmnElementRef": xmlHrefToQName({
+                    hrefString: externalNodeHref,
+                    rootElement: state.dmn.model.definitions,
+                    relativeToNamespace: state.dmn.model.definitions["@_namespace"],
+                  }),
                   "dc:Bounds": {
                     "@_x": dropPoint.x,
                     "@_y": dropPoint.y,
@@ -404,7 +408,6 @@ export const Diagram = React.forwardRef<DiagramRef, { container: React.RefObject
                   .dmns,
                 thisDmnsDefinitions: state.dmn.model.definitions,
                 thisDmnsIndexedDrd: state.computed(state).indexedDrd(),
-                thisDmnsNamespace: state.dmn.model.definitions["@_namespace"],
               });
             } else {
               const nodeType = getNodeTypeFromDmnObject(drgElement)!;
@@ -671,8 +674,7 @@ export const Diagram = React.forwardRef<DiagramRef, { container: React.RefObject
                     const { containedDecisionHrefsRelativeToThisDmn } = getDecisionServicePropertiesRelativeToThisDmn({
                       thisDmnsNamespace: state.dmn.model.definitions["@_namespace"],
                       decisionService,
-                      decisionServiceNamespace:
-                        node.data.dmnObjectNamespace || state.dmn.model.definitions["@_namespace"],
+                      decisionServiceNamespace: node.data.dmnObjectNamespace,
                     });
 
                     for (let i = 0; i < containedDecisionHrefsRelativeToThisDmn.length; i++) {
@@ -717,9 +719,9 @@ export const Diagram = React.forwardRef<DiagramRef, { container: React.RefObject
                 const node = state.computed(state).getDiagramData(externalModelsByNamespace).nodesById.get(change.id)!;
                 deleteNode({
                   drgEdges: state.computed(state).getDiagramData(externalModelsByNamespace).drgEdges,
-                  definitions: state.dmn.model.definitions,
+                  thisDmnsDefinitions: state.dmn.model.definitions,
                   drdIndex: state.diagram.drdIndex,
-                  dmnObjectNamespace: node.data.dmnObjectNamespace ?? state.dmn.model.definitions["@_namespace"],
+                  dmnObjectNamespace: node.data.dmnObjectNamespace,
                   dmnObjectQName: node.data.dmnObjectQName,
                   dmnObjectId: node.data.dmnObject?.["@_id"],
                   nodeNature: nodeNatures[node.type as NodeType],
@@ -1237,7 +1239,7 @@ function DmnDiagramEmptyState({
                     }),
                   });
 
-                  state.dispatch(state).boxedExpressionEditor.open(parseXmlHref(decisionNodeHref).id);
+                  state.dispatch(state).boxedExpressionEditor.open(decisionNodeHref);
                 });
               }}
             >
@@ -1537,9 +1539,9 @@ export function KeyboardShortcuts(props: {}) {
             if (copiedNodesById.has(node.id)) {
               deleteNode({
                 drgEdges: state.computed(state).getDiagramData(externalModelsByNamespace).drgEdges,
-                definitions: state.dmn.model.definitions,
+                thisDmnsDefinitions: state.dmn.model.definitions,
                 drdIndex: state.diagram.drdIndex,
-                dmnObjectNamespace: node.data.dmnObjectNamespace ?? state.dmn.model.definitions["@_namespace"],
+                dmnObjectNamespace: node.data.dmnObjectNamespace,
                 dmnObjectQName: node.data.dmnObjectQName,
                 dmnObjectId: node.data.dmnObject?.["@_id"],
                 nodeNature: nodeNatures[node.type as NodeType],
@@ -1635,11 +1637,18 @@ export function KeyboardShortcuts(props: {}) {
         repopulateInputDataAndDecisionsOnAllDecisionServices({ definitions: state.dmn.model.definitions });
 
         state.diagram._selectedNodes = [...clipboard.drgElements, ...clipboard.artifacts].map((s) =>
-          buildXmlHref({ id: s["@_id"]! })
+          buildXmlHref({
+            namespace: state.dmn.model.definitions["@_namespace"],
+            id: s["@_id"]!,
+            relativeToNamespace: state.dmn.model.definitions["@_namespace"],
+          })
         );
 
         if (state.diagram._selectedNodes.length === 1) {
-          state.focus.consumableId = parseXmlHref(state.diagram._selectedNodes[0]).id;
+          state.focus.consumableId = parseXmlHref({
+            href: state.diagram._selectedNodes[0],
+            relativeToNamespace: state.dmn.model.definitions["@_namespace"],
+          }).id;
         }
       });
     });
@@ -1751,12 +1760,11 @@ export function KeyboardShortcuts(props: {}) {
 
       dmnEditorStoreApi.setState((state) => {
         collapseDecisionService({
-          definitions: state.dmn.model.definitions,
+          thisDmnsDefinitions: state.dmn.model.definitions,
           drdIndex: state.diagram.drdIndex,
           decisionService,
+          decisionServiceNamespace: dsNode.data.dmnObjectNamespace,
           shapeIndex: dsNode.data.shape.index,
-          thisDmnsNamespace: state.dmn.model.definitions["@_namespace"],
-          decisionServiceNamespace: dsNode.data.dmnObjectNamespace || state.dmn.model.definitions["@_namespace"],
           externalDmnsIndex: state.computed(state).getExternalModelTypesByNamespace(externalModelsByNamespace).dmns,
           drgEdges: state.computed(state).getDiagramData(externalModelsByNamespace).drgEdges,
         });
@@ -1782,19 +1790,17 @@ export function KeyboardShortcuts(props: {}) {
           (selectedNodeIds.has(edge.source) &&
             canRemoveNodeFromDrdOnly({
               externalDmnsIndex: state.computed(state).getExternalModelTypesByNamespace(externalModelsByNamespace).dmns,
-              definitions: state.dmn.model.definitions,
+              thisDmnsDefinitions: state.dmn.model.definitions,
               drdIndex: state.diagram.drdIndex,
-              dmnObjectNamespace:
-                nodesById.get(edge.source)!.data.dmnObjectNamespace ?? state.dmn.model.definitions["@_namespace"],
+              dmnObjectNamespace: nodesById.get(edge.source)!.data.dmnObjectNamespace,
               dmnObjectId: nodesById.get(edge.source)!.data.dmnObject?.["@_id"],
             })) ||
           (selectedNodeIds.has(edge.target) &&
             canRemoveNodeFromDrdOnly({
               externalDmnsIndex: state.computed(state).getExternalModelTypesByNamespace(externalModelsByNamespace).dmns,
-              definitions: state.dmn.model.definitions,
+              thisDmnsDefinitions: state.dmn.model.definitions,
               drdIndex: state.diagram.drdIndex,
-              dmnObjectNamespace:
-                nodesById.get(edge.target)!.data.dmnObjectNamespace ?? state.dmn.model.definitions["@_namespace"],
+              dmnObjectNamespace: nodesById.get(edge.target)!.data.dmnObjectNamespace,
               dmnObjectId: nodesById.get(edge.target)!.data.dmnObject?.["@_id"],
             }))
         ) {
@@ -1811,10 +1817,10 @@ export function KeyboardShortcuts(props: {}) {
       for (const node of rf.getNodes().filter((s) => s.selected)) {
         const { deletedDmnShapeOnCurrentDrd: deletedShape } = deleteNode({
           drgEdges: [], // Deleting from DRD only.
-          definitions: state.dmn.model.definitions,
+          thisDmnsDefinitions: state.dmn.model.definitions,
           externalDmnsIndex: state.computed(state).getExternalModelTypesByNamespace(externalModelsByNamespace).dmns,
           drdIndex: state.diagram.drdIndex,
-          dmnObjectNamespace: node.data.dmnObjectNamespace ?? state.dmn.model.definitions["@_namespace"],
+          dmnObjectNamespace: node.data.dmnObjectNamespace,
           dmnObjectQName: node.data.dmnObjectQName,
           dmnObjectId: node.data.dmnObject?.["@_id"],
           nodeNature: nodeNatures[node.type as NodeType],

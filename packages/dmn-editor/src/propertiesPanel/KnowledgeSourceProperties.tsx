@@ -35,7 +35,7 @@ export function KnowledgeSourceProperties({
   index,
 }: {
   knowledgeSource: DMN15__tKnowledgeSource;
-  namespace: string | undefined;
+  namespace: string;
   index: number;
 }) {
   const { setState } = useDmnEditorStoreApi();

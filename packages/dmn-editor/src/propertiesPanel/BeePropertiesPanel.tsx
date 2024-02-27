@@ -32,20 +32,17 @@ import { useExternalModels } from "../includedModels/DmnEditorDependenciesContex
 
 export function BeePropertiesPanel() {
   const dmnEditorStoreApi = useDmnEditorStoreApi();
-  const { selectedObjectId, activeDrgElementId } = useDmnEditorStore((s) => s.boxedExpressionEditor);
+  const { selectedObjectId, activeDrgElementHref } = useDmnEditorStore((s) => s.boxedExpressionEditor);
   const { externalModelsByNamespace } = useExternalModels();
   const node = useDmnEditorStore((s) =>
-    activeDrgElementId
-      ? s
-          .computed(s)
-          .getDiagramData(externalModelsByNamespace)
-          .nodesById.get(buildXmlHref({ id: activeDrgElementId }))
+    activeDrgElementHref
+      ? s.computed(s).getDiagramData(externalModelsByNamespace).nodesById.get(activeDrgElementHref)
       : undefined
   );
 
   const shouldDisplayDecisionOrBkmProps = useMemo(
-    () => selectedObjectId === undefined || (selectedObjectId && selectedObjectId === activeDrgElementId),
-    [activeDrgElementId, selectedObjectId]
+    () => selectedObjectId === undefined || (selectedObjectId && selectedObjectId === activeDrgElementHref),
+    [activeDrgElementHref, selectedObjectId]
   );
 
   return (

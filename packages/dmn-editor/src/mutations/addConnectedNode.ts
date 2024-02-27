@@ -52,7 +52,11 @@ export function addConnectedNode({
   edgeType: EdgeType;
 }) {
   const newDmnObjectId = generateUuid();
-  const newDmnObjectHref = buildXmlHref({ id: newDmnObjectId });
+  const newDmnObjectHref = buildXmlHref({
+    id: newDmnObjectId,
+    namespace: definitions["@_namespace"],
+    relativeToNamespace: definitions["@_namespace"]!,
+  });
   const newEdgeId = generateUuid();
   const nature = nodeNatures[newNode.type];
 

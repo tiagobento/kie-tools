@@ -35,8 +35,9 @@ export function computeContainingDecisionServiceHrefsByDecisionHrefs({
 
   for (const drgElement of drgElements) {
     const drgElementHref = buildXmlHref({
-      namespace: drgElementsNamespace === thisDmnsNamespace ? "" : drgElementsNamespace,
       id: drgElement["@_id"]!,
+      namespace: drgElementsNamespace,
+      relativeToNamespace: thisDmnsNamespace,
     });
 
     // Decision

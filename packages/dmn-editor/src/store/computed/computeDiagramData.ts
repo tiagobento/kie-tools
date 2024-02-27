@@ -60,7 +60,7 @@ type AckNode = (
 
 export function computeDiagramData(
   diagram: State["diagram"],
-  definitions: State["dmn"]["model"]["definitions"],
+  thisDmnsDefinitions: State["dmn"]["model"]["definitions"],
   externalModelTypesByNamespace: TypeOrReturnType<Computed["getExternalModelTypesByNamespace"]>,
   indexes: TypeOrReturnType<Computed["indexedDrd"]>
 ) {
@@ -119,10 +119,15 @@ export function computeDiagramData(
   };
 
   // requirements
-  ackRequirementEdges(definitions["@_namespace"], definitions["@_namespace"], definitions.drgElement, ackEdge);
+  ackRequirementEdges(
+    thisDmnsDefinitions["@_namespace"],
+    thisDmnsDefinitions["@_namespace"],
+    thisDmnsDefinitions.drgElement,
+    ackEdge
+  );
 
   // associations
-  (definitions.artifact ?? []).forEach((dmnObject, index) => {
+  (thisDmnsDefinitions.artifact ?? []).forEach((dmnObject, index) => {
     if (dmnObject.__$$element !== "association") {
       return;
     }
@@ -130,7 +135,7 @@ export function computeDiagramData(
     ackEdge({
       id: dmnObject["@_id"]!,
       dmnObject: {
-        namespace: definitions["@_namespace"],
+        namespace: thisDmnsDefinitions["@_namespace"],
         type: dmnObject.__$$element,
         id: dmnObject["@_id"]!,
         requirementType: "association",
@@ -150,12 +155,16 @@ export function computeDiagramData(
     }
 
     // If the QName is composite, we try and get the namespace from the XML namespace declarations. If it's not found, we use `UNKNOWN_DMN_NAMESPACE`
-    // If the QName is simple, we simply say that the namespace is undefined, which is the same as the default namespace.
+    // If the QName is simple, we simply use this DMN's namespace.
     const dmnObjectNamespace = dmnObjectQName.prefix
-      ? definitions[`@_xmlns:${dmnObjectQName.prefix}`] ?? KIE_DMN_UNKNOWN_NAMESPACE
-      : undefined;
+      ? thisDmnsDefinitions[`@_xmlns:${dmnObjectQName.prefix}`] ?? KIE_DMN_UNKNOWN_NAMESPACE
+      : thisDmnsDefinitions["@_namespace"];
 
-    const id = buildXmlHref({ namespace: dmnObjectNamespace, id: dmnObjectQName.localPart });
+    const id = buildXmlHref({
+      id: dmnObjectQName.localPart,
+      namespace: dmnObjectNamespace,
+      relativeToNamespace: thisDmnsDefinitions["@_namespace"],
+    });
 
     const _shape = indexes.dmnShapesByHref.get(id);
     if (!_shape) {
@@ -188,8 +197,8 @@ export function computeDiagramData(
 
     if (dmnObject?.__$$element === "decisionService") {
       const { containedDecisionHrefsRelativeToThisDmn } = getDecisionServicePropertiesRelativeToThisDmn({
-        thisDmnsNamespace: definitions["@_namespace"],
-        decisionServiceNamespace: dmnObjectNamespace || definitions["@_namespace"],
+        thisDmnsNamespace: thisDmnsDefinitions["@_namespace"],
+        decisionServiceNamespace: dmnObjectNamespace,
         decisionService: dmnObject,
       });
 
@@ -214,11 +223,11 @@ export function computeDiagramData(
   };
 
   const localNodes: RF.Node<DmnDiagramNodeData>[] = [
-    ...(definitions.drgElement ?? []).flatMap((dmnObject, index) => {
+    ...(thisDmnsDefinitions.drgElement ?? []).flatMap((dmnObject, index) => {
       const newNode = ackNode({ type: "xml-qname", localPart: dmnObject["@_id"]! }, dmnObject, index);
       return newNode ? [newNode] : [];
     }),
-    ...(definitions.artifact ?? []).flatMap((dmnObject, index) => {
+    ...(thisDmnsDefinitions.artifact ?? []).flatMap((dmnObject, index) => {
       if (dmnObject.__$$element === "association") {
         return [];
       }
@@ -232,7 +241,7 @@ export function computeDiagramData(
     (acc, [namespace, externalDmn]) => {
       // Taking advantage of the loop to add the edges here...
       ackRequirementEdges(
-        definitions["@_namespace"],
+        thisDmnsDefinitions["@_namespace"],
         externalDmn.model.definitions["@_namespace"],
         externalDmn.model.definitions.drgElement,
         ackEdge
@@ -261,7 +270,7 @@ export function computeDiagramData(
       return newNode ? [newNode] : [];
     }
 
-    const namespace = definitions[`@_xmlns:${shape.dmnElementRefQName.prefix}`];
+    const namespace = thisDmnsDefinitions[`@_xmlns:${shape.dmnElementRefQName.prefix}`];
     if (!namespace) {
       console.warn(
         `DMN DIAGRAM: Found a shape that references an external node with a namespace that is not declared at this DMN.`,
@@ -312,7 +321,11 @@ export function computeDiagramData(
     const parentNodeData = parentIdsById.get(sortedNodes[i].id);
     if (parentNodeData) {
       sortedNodes[i].data.parentRfNode = nodesById.get(
-        buildXmlHref({ namespace: parentNodeData.dmnObjectNamespace, id: parentNodeData.dmnObjectQName.localPart })
+        buildXmlHref({
+          id: parentNodeData.dmnObjectQName.localPart,
+          namespace: parentNodeData.dmnObjectNamespace,
+          relativeToNamespace: thisDmnsDefinitions["@_namespace"],
+        })
       );
       sortedNodes[i].extent = undefined; // Allows the node to be dragged freely outside of parent's bounds.
       sortedNodes[i].zIndex = NODE_LAYERS.NESTED_NODES;
@@ -344,67 +357,98 @@ function ackRequirementEdges(
   drgElements: DMN15__tDefinitions["drgElement"],
   ackEdge: AckEdge
 ) {
-  const namespace = drgElementsNamespace === thisDmnsNamespace ? "" : drgElementsNamespace;
-
-  for (const dmnObject of drgElements ?? []) {
+  for (const drgElement of drgElements ?? []) {
     // information requirements
-    if (dmnObject.__$$element === "decision") {
-      (dmnObject.informationRequirement ?? []).forEach((ir, index) => {
-        const irHref = parseXmlHref((ir.requiredDecision ?? ir.requiredInput)!["@_href"]);
+    if (drgElement.__$$element === "decision") {
+      (drgElement.informationRequirement ?? []).forEach((ir, index) => {
+        const irHref = parseXmlHref({
+          href: (ir.requiredDecision ?? ir.requiredInput)!["@_href"],
+          relativeToNamespace: drgElementsNamespace,
+        });
         ackEdge({
           id: ir["@_id"]!,
           dmnObject: {
             namespace: drgElementsNamespace,
-            type: dmnObject.__$$element,
-            id: dmnObject["@_id"]!,
+            type: drgElement.__$$element,
+            id: drgElement["@_id"]!,
             requirementType: "informationRequirement",
             index,
           },
           type: EDGE_TYPES.informationRequirement,
-          source: buildXmlHref({ namespace: irHref.namespace ?? namespace, id: irHref.id }),
-          target: buildXmlHref({ namespace, id: dmnObject["@_id"]! }),
+          source: buildXmlHref({
+            id: irHref.id,
+            namespace: irHref.namespace,
+            relativeToNamespace: thisDmnsNamespace,
+          }),
+          target: buildXmlHref({
+            id: drgElement["@_id"]!,
+            namespace: drgElementsNamespace,
+            relativeToNamespace: thisDmnsNamespace,
+          }),
         });
       });
     }
     // knowledge requirements
-    if (dmnObject.__$$element === "decision" || dmnObject.__$$element === "businessKnowledgeModel") {
-      (dmnObject.knowledgeRequirement ?? []).forEach((kr, index) => {
-        const krHref = parseXmlHref(kr.requiredKnowledge["@_href"]);
+    if (drgElement.__$$element === "decision" || drgElement.__$$element === "businessKnowledgeModel") {
+      (drgElement.knowledgeRequirement ?? []).forEach((kr, index) => {
+        const krHref = parseXmlHref({
+          href: kr.requiredKnowledge["@_href"],
+          relativeToNamespace: drgElementsNamespace,
+        });
         ackEdge({
           id: kr["@_id"]!,
           dmnObject: {
             namespace: drgElementsNamespace,
-            type: dmnObject.__$$element,
-            id: dmnObject["@_id"]!,
+            type: drgElement.__$$element,
+            id: drgElement["@_id"]!,
             requirementType: "knowledgeRequirement",
             index,
           },
           type: EDGE_TYPES.knowledgeRequirement,
-          source: buildXmlHref({ namespace: krHref.namespace ?? namespace, id: krHref.id }),
-          target: buildXmlHref({ namespace, id: dmnObject["@_id"]! }),
+          source: buildXmlHref({
+            id: krHref.id,
+            namespace: krHref.namespace,
+            relativeToNamespace: thisDmnsNamespace,
+          }),
+          target: buildXmlHref({
+            id: drgElement["@_id"]!,
+            namespace: drgElementsNamespace,
+            relativeToNamespace: thisDmnsNamespace,
+          }),
         });
       });
     }
     // authority requirements
     if (
-      dmnObject.__$$element === "decision" ||
-      dmnObject.__$$element === "businessKnowledgeModel" ||
-      dmnObject.__$$element === "knowledgeSource"
+      drgElement.__$$element === "decision" ||
+      drgElement.__$$element === "businessKnowledgeModel" ||
+      drgElement.__$$element === "knowledgeSource"
     ) {
-      (dmnObject.authorityRequirement ?? []).forEach((ar, index) => {
-        const arHref = parseXmlHref((ar.requiredInput ?? ar.requiredDecision ?? ar.requiredAuthority)!["@_href"]);
+      (drgElement.authorityRequirement ?? []).forEach((ar, index) => {
+        const arHref = parseXmlHref({
+          href: (ar.requiredInput ?? ar.requiredDecision ?? ar.requiredAuthority)!["@_href"],
+          relativeToNamespace: drgElementsNamespace,
+        });
         ackEdge({
           id: ar["@_id"]!,
           dmnObject: {
             namespace: drgElementsNamespace,
-            type: dmnObject.__$$element,
-            id: dmnObject["@_id"]!,
+            type: drgElement.__$$element,
+            id: drgElement["@_id"]!,
             requirementType: "authorityRequirement",
             index,
           },
           type: EDGE_TYPES.authorityRequirement,
-          source: buildXmlHref({ namespace: arHref.namespace ?? namespace, id: arHref.id }),
-          target: buildXmlHref({ namespace, id: dmnObject["@_id"]! }),
+          source: buildXmlHref({
+            id: arHref.id,
+            namespace: arHref.namespace,
+            relativeToNamespace: thisDmnsNamespace,
+          }),
+          target: buildXmlHref({
+            id: drgElement["@_id"]!,
+            namespace: drgElementsNamespace,
+            relativeToNamespace: thisDmnsNamespace,
+          }),
         });
       });
     }

@@ -73,7 +73,7 @@ export interface State {
     consumableId: string | undefined;
   };
   boxedExpressionEditor: {
-    activeDrgElementId: string | undefined;
+    activeDrgElementHref: string | undefined;
     selectedObjectId: string | undefined;
     propertiesPanel: {
       isOpen: boolean;
@@ -143,7 +143,7 @@ export type Dispatch = {
     reset: (model: State["dmn"]["model"]) => void;
   };
   boxedExpressionEditor: {
-    open: (id: string) => void;
+    open: (href: string) => void;
     close: () => void;
   };
   diagram: {
@@ -161,7 +161,7 @@ export enum DmnEditorTab {
 
 export const defaultStaticState = (): Omit<State, "dmn" | "dispatch" | "computed"> => ({
   boxedExpressionEditor: {
-    activeDrgElementId: undefined,
+    activeDrgElementHref: undefined,
     selectedObjectId: undefined,
     propertiesPanel: {
       isOpen: false,
@@ -226,19 +226,19 @@ export function createDmnEditorStore(model: State["dmn"]["model"], computedCache
               s.diagram.draggingNodes = [];
               s.diagram.resizingNodes = [];
               s.navigation.tab = DmnEditorTab.EDITOR;
-              s.boxedExpressionEditor.activeDrgElementId = undefined;
+              s.boxedExpressionEditor.activeDrgElementHref = undefined;
               s.boxedExpressionEditor.selectedObjectId = undefined;
             },
           },
           boxedExpressionEditor: {
-            open: (id) => {
-              s.boxedExpressionEditor.activeDrgElementId = id;
+            open: (href) => {
+              s.boxedExpressionEditor.activeDrgElementHref = href;
               s.boxedExpressionEditor.selectedObjectId = undefined;
               s.boxedExpressionEditor.propertiesPanel.isOpen = s.diagram.propertiesPanel.isOpen;
             },
             close: () => {
               s.diagram.propertiesPanel.isOpen = s.boxedExpressionEditor.propertiesPanel.isOpen;
-              s.boxedExpressionEditor.activeDrgElementId = undefined;
+              s.boxedExpressionEditor.activeDrgElementHref = undefined;
               s.boxedExpressionEditor.selectedObjectId = undefined;
             },
           },

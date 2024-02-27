@@ -37,7 +37,7 @@ export enum NodeDeletionMode {
 }
 
 export function deleteNode({
-  definitions,
+  thisDmnsDefinitions,
   drgEdges,
   drdIndex,
   nodeNature,
@@ -47,7 +47,7 @@ export function deleteNode({
   externalDmnsIndex,
   mode,
 }: {
-  definitions: DMN15__tDefinitions;
+  thisDmnsDefinitions: DMN15__tDefinitions;
   drgEdges: DrgEdge[];
   drdIndex: number;
   nodeNature: NodeNature;
@@ -63,7 +63,7 @@ export function deleteNode({
   if (
     mode === NodeDeletionMode.FROM_CURRENT_DRD_ONLY &&
     !canRemoveNodeFromDrdOnly({
-      definitions,
+      thisDmnsDefinitions: thisDmnsDefinitions,
       drdIndex,
       dmnObjectNamespace,
       dmnObjectId,
@@ -77,13 +77,17 @@ export function deleteNode({
   if (mode === NodeDeletionMode.FROM_DRG_AND_ALL_DRDS) {
     // Delete Edges
     // A DRD doesn't necessarily renders all edges of the DRG, so we need to look for what DRG edges to delete when deleting a node from any DRD.
-    const nodeId = buildXmlHref({ namespace: dmnObjectNamespace, id: dmnObjectId! });
+    const nodeId = buildXmlHref({
+      id: dmnObjectId!,
+      namespace: dmnObjectNamespace,
+      relativeToNamespace: thisDmnsDefinitions["@_namespace"],
+    });
     for (let i = 0; i < drgEdges.length; i++) {
       const drgEdge = drgEdges[i];
       // Only delete edges that end at or start from the node being deleted.
       if (drgEdge.sourceId === nodeId || drgEdge.targetId === nodeId) {
         deleteEdge({
-          definitions,
+          definitions: thisDmnsDefinitions,
           drdIndex,
           mode: EdgeDeletionMode.FROM_DRG_AND_ALL_DRDS,
           edge: {
@@ -95,7 +99,7 @@ export function deleteNode({
     }
 
     // Delete from containing Decision Services
-    const drgElements = definitions.drgElement ?? [];
+    const drgElements = thisDmnsDefinitions.drgElement ?? [];
     for (let i = 0; i < drgElements.length; i++) {
       const drgElement = drgElements[i];
       if (drgElement.__$$element !== "decisionService") {
@@ -114,15 +118,15 @@ export function deleteNode({
     // Delete the dmnObject itself
     if (nodeNature === NodeNature.ARTIFACT) {
       if (mode === NodeDeletionMode.FROM_DRG_AND_ALL_DRDS) {
-        const nodeIndex = (definitions.artifact ?? []).findIndex((a) => a["@_id"] === dmnObjectId);
-        dmnObject = definitions.artifact?.splice(nodeIndex, 1)?.[0];
+        const nodeIndex = (thisDmnsDefinitions.artifact ?? []).findIndex((a) => a["@_id"] === dmnObjectId);
+        dmnObject = thisDmnsDefinitions.artifact?.splice(nodeIndex, 1)?.[0];
       }
     } else if (nodeNature === NodeNature.DRG_ELEMENT) {
-      const nodeIndex = (definitions.drgElement ?? []).findIndex((d) => d["@_id"] === dmnObjectId);
+      const nodeIndex = (thisDmnsDefinitions.drgElement ?? []).findIndex((d) => d["@_id"] === dmnObjectId);
       dmnObject =
         mode === NodeDeletionMode.FROM_DRG_AND_ALL_DRDS
-          ? definitions.drgElement?.splice(nodeIndex, 1)?.[0]
-          : definitions.drgElement?.[nodeIndex];
+          ? thisDmnsDefinitions.drgElement?.splice(nodeIndex, 1)?.[0]
+          : thisDmnsDefinitions.drgElement?.[nodeIndex];
     } else if (nodeNature === NodeNature.UNKNOWN) {
       // Ignore. There's no dmnObject here.
     } else {
@@ -145,13 +149,13 @@ export function deleteNode({
         .getOriginalIds()
     : new Set<string>();
 
-  const drdCount = (definitions["dmndi:DMNDI"]?.["dmndi:DMNDiagram"] ?? []).length;
+  const drdCount = (thisDmnsDefinitions["dmndi:DMNDI"]?.["dmndi:DMNDiagram"] ?? []).length;
   for (let i = 0; i < drdCount; i++) {
     if (mode === NodeDeletionMode.FROM_CURRENT_DRD_ONLY && i !== drdIndex) {
       continue;
     }
 
-    const { diagramElements, widthsExtension } = addOrGetDrd({ definitions, drdIndex: i });
+    const { diagramElements, widthsExtension } = addOrGetDrd({ definitions: thisDmnsDefinitions, drdIndex: i });
     const dmnShapeIndex = (diagramElements ?? []).findIndex((d) => d["@_dmnElementRef"] === shapeDmnElementRef);
     if (dmnShapeIndex >= 0) {
       if (i === drdIndex) {
@@ -167,7 +171,7 @@ export function deleteNode({
     );
   }
 
-  repopulateInputDataAndDecisionsOnAllDecisionServices({ definitions });
+  repopulateInputDataAndDecisionsOnAllDecisionServices({ definitions: thisDmnsDefinitions });
 
   return {
     deletedDmnObject: mode === NodeDeletionMode.FROM_DRG_AND_ALL_DRDS ? dmnObject : undefined,
@@ -176,7 +180,7 @@ export function deleteNode({
 }
 
 export function canRemoveNodeFromDrdOnly({
-  definitions,
+  thisDmnsDefinitions,
   drdIndex,
   dmnObjectNamespace,
   dmnObjectId,
@@ -184,25 +188,26 @@ export function canRemoveNodeFromDrdOnly({
 }: {
   dmnObjectNamespace: string;
   dmnObjectId: string | undefined;
-  definitions: DMN15__tDefinitions;
+  thisDmnsDefinitions: DMN15__tDefinitions;
   drdIndex: number;
   externalDmnsIndex: ReturnType<Computed["getExternalModelTypesByNamespace"]>["dmns"];
 }) {
-  const { diagramElements } = addOrGetDrd({ definitions, drdIndex });
+  const { diagramElements } = addOrGetDrd({ definitions: thisDmnsDefinitions, drdIndex });
 
   const dmnObjectHref = buildXmlHref({
-    namespace: dmnObjectNamespace === definitions["@_namespace"] ? "" : dmnObjectNamespace,
     id: dmnObjectId!,
+    namespace: dmnObjectNamespace,
+    relativeToNamespace: thisDmnsDefinitions["@_namespace"],
   });
 
   const drgElements =
-    definitions["@_namespace"] === dmnObjectNamespace
-      ? definitions.drgElement ?? []
+    thisDmnsDefinitions["@_namespace"] === dmnObjectNamespace
+      ? thisDmnsDefinitions.drgElement ?? []
       : externalDmnsIndex.get(dmnObjectNamespace)?.model.definitions.drgElement ?? [];
 
   const containingDecisionServiceHrefsByDecisionHrefsRelativeToThisDmn =
     computeContainingDecisionServiceHrefsByDecisionHrefs({
-      thisDmnsNamespace: definitions["@_namespace"],
+      thisDmnsNamespace: thisDmnsDefinitions["@_namespace"],
       drgElementsNamespace: dmnObjectNamespace,
       drgElements,
     });
@@ -216,7 +221,12 @@ export function canRemoveNodeFromDrdOnly({
     diagramElements.some(
       (e) =>
         e.__$$element === "dmndi:DMNShape" &&
-        e["@_dmnElementRef"] === xmlHrefToQName(dsHref, definitions) &&
+        e["@_dmnElementRef"] ===
+          xmlHrefToQName({
+            hrefString: dsHref,
+            rootElement: thisDmnsDefinitions,
+            relativeToNamespace: thisDmnsDefinitions["@_namespace"],
+          }) &&
         !(e["@_isCollapsed"] ?? false)
     )
   );

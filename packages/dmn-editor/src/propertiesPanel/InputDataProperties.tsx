@@ -37,7 +37,7 @@ export function InputDataProperties({
   index,
 }: {
   inputData: DMN15__tInputData;
-  namespace: string | undefined;
+  namespace: string;
   index: number;
 }) {
   const { setState } = useDmnEditorStoreApi();

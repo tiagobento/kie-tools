@@ -37,7 +37,7 @@ export function BkmProperties({
   index,
 }: {
   bkm: DMN15__tBusinessKnowledgeModel;
-  namespace: string | undefined;
+  namespace: string;
   index: number;
 }) {
   const { setState } = useDmnEditorStoreApi();

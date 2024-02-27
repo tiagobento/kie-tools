@@ -22,14 +22,23 @@ import { parseXmlHref } from "./xmlHrefs";
 import { getXmlNamespaceDeclarationName } from "./xmlNamespaceDeclarations";
 import { XmlParserTsRootElementBaseType } from "@kie-tools/xml-parser-ts";
 
-export function xmlHrefToQName(hrefString: string, rootElement: XmlParserTsRootElementBaseType | undefined) {
-  const href = parseXmlHref(hrefString);
+export function xmlHrefToQName({
+  hrefString,
+  rootElement,
+  relativeToNamespace,
+}: {
+  hrefString: string;
+  rootElement: XmlParserTsRootElementBaseType | undefined;
+  relativeToNamespace: string;
+}) {
+  const href = parseXmlHref({ href: hrefString, relativeToNamespace });
 
-  const qNamePrefix = href.namespace
-    ? getXmlNamespaceDeclarationName({ rootElement, namespace: href.namespace })
-    : undefined;
+  const qNamePrefix =
+    href.namespace !== relativeToNamespace
+      ? getXmlNamespaceDeclarationName({ rootElement, namespace: href.namespace })
+      : undefined;
 
-  if (href.namespace && !qNamePrefix) {
+  if (href.namespace !== relativeToNamespace && !qNamePrefix) {
     throw new Error(`Can't find namespace declaration for namespace '${href.namespace}'`);
   }
 

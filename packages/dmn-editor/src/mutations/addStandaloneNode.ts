@@ -136,5 +136,13 @@ export function addStandaloneNode({
 
   repopulateInputDataAndDecisionsOnAllDecisionServices({ definitions });
 
-  return { id: newNodeId, href: buildXmlHref({ id: newNodeId }), shapeId };
+  return {
+    id: newNodeId,
+    href: buildXmlHref({
+      id: newNodeId,
+      namespace: definitions["@_namespace"],
+      relativeToNamespace: definitions["@_namespace"],
+    }),
+    shapeId,
+  };
 }

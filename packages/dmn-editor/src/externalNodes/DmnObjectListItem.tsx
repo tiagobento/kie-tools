@@ -33,12 +33,12 @@ import { DMN15_SPEC } from "../Dmn15Spec";
 export function DmnObjectListItem({
   dmnObject,
   dmnObjectHref,
-  namespace,
+  dmnObjectNamespace,
   relativeToNamespace,
 }: {
   dmnObject: Unpacked<DMN15__tDefinitions["drgElement"]> | undefined;
   dmnObjectHref: string;
-  namespace: string;
+  dmnObjectNamespace: string;
   relativeToNamespace: string;
 }) {
   const importsByNamespace = useDmnEditorStore((s) => s.computed(s).importsByNamespace());
@@ -51,7 +51,7 @@ export function DmnObjectListItem({
     ? buildFeelQNameFromNamespace({
         namedElement: dmnObject,
         importsByNamespace,
-        namespace,
+        namespace: dmnObjectNamespace,
         relativeToNamespace,
       }).full
     : dmnObjectHref;
@@ -84,7 +84,7 @@ export function DmnObjectListItem({
             &nbsp;
             <TypeRefLabel
               typeRef={dmnObject.variable?.["@_typeRef"]}
-              relativeToNamespace={namespace}
+              relativeToNamespace={dmnObjectNamespace}
               isCollection={
                 allTopLevelDataTypesByFeelName.get(dmnObject.variable?.["@_typeRef"] ?? DmnBuiltInDataType.Undefined)
                   ?.itemDefinition["@_isCollection"]

@@ -122,7 +122,7 @@
 .kie-dmn-editor--decision-service-node {
   position: relative;
 }
-.react-flow__node-node_decisionService.selected .kie-dmn-editor--decision-service-collapsed-button {
+.react-flow__node-node_decisionService.selected .kie-dmn-editor--decision-service-collapsed-button[disabled="false"] {
   border-color: #006ba4 !important;
 }
 .kie-dmn-editor--decision-service-node .kie-dmn-editor--decision-service-collapsed-button {
@@ -140,11 +140,16 @@
   pointer-events: all;
   cursor: pointer;
   background: white;
+  padding: 0;
 }
-.kie-dmn-editor--decision-service-node .kie-dmn-editor--decision-service-collapsed-button:hover {
+.kie-dmn-editor--decision-service-node .kie-dmn-editor--decision-service-collapsed-button[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.kie-dmn-editor--decision-service-node .kie-dmn-editor--decision-service-collapsed-button:hover[disabled="false"] {
   filter: brightness(95%);
 }
-.kie-dmn-editor--decision-service-node .kie-dmn-editor--decision-service-collapsed-button:active {
+.kie-dmn-editor--decision-service-node .kie-dmn-editor--decision-service-collapsed-button:active[disabled="false"] {
   filter: brightness(90%);
 }
 .react-flow__node-node_decisionService .kie-dmn-editor--node-shape .kie-dmn-editor--decision-service-label {

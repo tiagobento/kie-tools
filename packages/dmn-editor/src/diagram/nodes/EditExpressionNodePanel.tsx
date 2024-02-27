@@ -21,7 +21,7 @@ import * as React from "react";
 import { Label } from "@patternfly/react-core/dist/js/components/Label";
 import { useDmnEditorStoreApi } from "../../store/StoreContext";
 
-export function EditExpressionNodePanel(props: { isVisible: boolean; id: string }) {
+export function EditExpressionNodePanel(props: { isVisible: boolean; href: string }) {
   const dmnEditorStoreApi = useDmnEditorStoreApi();
 
   return (
@@ -30,7 +30,7 @@ export function EditExpressionNodePanel(props: { isVisible: boolean; id: string 
         <Label
           onClick={() =>
             dmnEditorStoreApi.setState((state) => {
-              state.dispatch(state).boxedExpressionEditor.open(props.id);
+              state.dispatch(state).boxedExpressionEditor.open(props.href);
             })
           }
           className={"kie-dmn-editor--edit-expression-node-panel"}

@@ -50,7 +50,7 @@ export function DecisionServiceProperties({
   index,
 }: {
   decisionService: DMN15__tDecisionService;
-  namespace: string | undefined;
+  namespace: string;
   index: number;
 }) {
   const { setState } = useDmnEditorStoreApi();
@@ -67,15 +67,22 @@ export function DecisionServiceProperties({
     const allDmns = [{ model: thisDmn.model }, ...externalDmnsByNamespace.values()];
 
     for (let i = 0; i < allDmns.length; i++) {
-      const anyDmn = allDmns[i]!;
+      const someDmn = allDmns[i]!;
 
-      const namespace = anyDmn.model.definitions["@_namespace"];
+      const namespace = someDmn.model.definitions["@_namespace"];
 
-      const drgElements = anyDmn.model.definitions.drgElement ?? [];
+      const drgElements = someDmn.model.definitions.drgElement ?? [];
       for (let i = 0; i < drgElements.length; i++) {
         const element = drgElements[i];
         if (element.__$$element === "decision" || element.__$$element === "inputData") {
-          ret.set(buildXmlHref({ namespace, id: element["@_id"]! }), element);
+          ret.set(
+            buildXmlHref({
+              id: element["@_id"]!,
+              namespace,
+              relativeToNamespace: thisDmn.model.definitions["@_namespace"],
+            }),
+            element
+          );
         }
       }
     }
@@ -84,7 +91,8 @@ export function DecisionServiceProperties({
   }, [externalDmnsByNamespace, thisDmn]);
 
   const thisDmnsNamespace = useDmnEditorStore((s) => s.dmn.model.definitions["@_namespace"]);
-  const isReadonly = !!namespace && namespace !== thisDmnsNamespace;
+
+  const isReadonly = namespace !== thisDmnsNamespace;
 
   const { dmnEditorRootElementRef } = useDmnEditor();
 
@@ -205,7 +213,7 @@ export function DecisionServiceElementList({
   elements,
   allDrgElementsByHref,
 }: {
-  decisionServiceNamespace: string | undefined;
+  decisionServiceNamespace: string;
   elements: DMN15__tDecisionService["outputDecision"];
   allDrgElementsByHref: AllKnownDrgElementsByHref;
 }) {
@@ -221,19 +229,9 @@ export function DecisionServiceElementList({
         </li>
       )}
       {(elements ?? []).map((e) => {
-        const localHref = parseXmlHref(e["@_href"]);
-
-        // If the localHref has a namespace, then that's the one to use, as it can be that an external node is pointing to another external node in their perspective
-        // E.g., (This DMN) --includes--> (DMN A) --includes--> (DMN B)
-        // In this case, localHref will have DMN B's namespace, and we need to respect it. It `DMN B` in included in `This DMN`, then
-        // we can resolve it, otherwise, the dmnObject referenced by localHref won't be present on `dmnObjectsByHref`, and we'll only show the href.
-        // Now, if the localHref doesn't have a namespace, then it is local to the model where the Decision Service is declared, so we use `decisionServiceNamespace`.
-        // If none of that is true, then it means that the Decision Service is local to "This DMN", so the namespace is simply "".
-        const resolvedNamespace = localHref.namespace ?? decisionServiceNamespace ?? thisDmnsNamespace;
-
         const potentialExternalHref = buildXmlHref({
-          namespace: resolvedNamespace,
-          id: localHref.id,
+          ...parseXmlHref({ href: e["@_href"], relativeToNamespace: decisionServiceNamespace }),
+          relativeToNamespace: thisDmnsNamespace,
         });
 
         return (
@@ -242,7 +240,7 @@ export function DecisionServiceElementList({
               dmnObjectHref={potentialExternalHref}
               dmnObject={allDrgElementsByHref.get(potentialExternalHref)}
               relativeToNamespace={thisDmnsNamespace}
-              namespace={resolvedNamespace}
+              dmnObjectNamespace={decisionServiceNamespace}
             />
           </li>
         );
