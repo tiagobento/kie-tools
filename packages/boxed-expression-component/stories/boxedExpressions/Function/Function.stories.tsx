@@ -17,18 +17,11 @@
  * under the License.
  */
 
-import * as React from "react";
 import type { Meta, StoryObj } from "@storybook/react";
 import { BoxedExpressionEditor, BoxedExpressionEditorProps } from "../../../src/expressions";
 import { BoxedExpressionEditorWrapper } from "../../boxedExpressionStoriesWrapper";
 import { Base as EmptyExpression } from "../../misc/Empty/EmptyExpression.stories";
-import {
-  DmnBuiltInDataType,
-  ExpressionDefinitionLogicType,
-  FunctionExpressionDefinitionKind,
-  generateUuid,
-} from "../../../src/api";
-import { CONTEXT_ENTRY_INFO_MIN_WIDTH } from "../../../src/resizing/WidthConstants";
+import { DmnBuiltInDataType, FunctionExpressionDefinitionKind, generateUuid } from "../../../src/api";
 
 // More on how to set up stories at: https://storybook.js.org/docs/react/writing-stories/introduction#default-export
 const meta: Meta<BoxedExpressionEditorProps> = {
@@ -46,17 +39,10 @@ export const Base: Story = {
   args: {
     ...EmptyExpression.args,
     expressionDefinition: {
-      id: generateUuid(),
-      name: "Expression Name",
-      dataType: DmnBuiltInDataType.Undefined,
-      logicType: ExpressionDefinitionLogicType.Function,
-      functionKind: FunctionExpressionDefinitionKind.Feel,
-      formalParameters: [],
-      expression: {
-        id: generateUuid(),
-        logicType: ExpressionDefinitionLogicType.Undefined,
-        dataType: DmnBuiltInDataType.Undefined,
-      },
+      __$$element: "functionDefinition",
+      "@_id": generateUuid(),
+      "@_label": "Expression Name",
+      "@_kind": FunctionExpressionDefinitionKind.Feel,
     },
     isResetSupportedOnRootExpression: false,
   },
@@ -68,34 +54,32 @@ export const InstallmentCalculation: Story = {
   args: {
     ...EmptyExpression.args,
     expressionDefinition: {
-      id: generateUuid(),
-      name: "Installment calculation",
-      dataType: DmnBuiltInDataType.Number,
-      logicType: ExpressionDefinitionLogicType.Function,
-      functionKind: FunctionExpressionDefinitionKind.Feel,
-      formalParameters: [
+      __$$element: "functionDefinition",
+      "@_id": generateUuid(),
+      "@_label": "Installment calculation",
+      "@_typeRef": DmnBuiltInDataType.Number,
+      "@_kind": FunctionExpressionDefinitionKind.Feel,
+      formalParameter: [
         {
-          id: generateUuid(),
-          name: "Amount",
-          dataType: DmnBuiltInDataType.Number,
+          "@_id": generateUuid(),
+          "@_name": "Amount",
+          "@_typeRef": DmnBuiltInDataType.Number,
         },
         {
-          id: generateUuid(),
-          name: "Rate",
-          dataType: DmnBuiltInDataType.Number,
+          "@_id": generateUuid(),
+          "@_name": "Rate",
+          "@_typeRef": DmnBuiltInDataType.Number,
         },
         {
-          id: generateUuid(),
-          name: "Term",
-          dataType: DmnBuiltInDataType.Number,
+          "@_id": generateUuid(),
+          "@_name": "Term",
+          "@_typeRef": DmnBuiltInDataType.Number,
         },
       ],
       expression: {
-        id: generateUuid(),
-        logicType: ExpressionDefinitionLogicType.Literal,
-        dataType: DmnBuiltInDataType.Undefined,
-        content: `(Amount*Rate/12) /\n(1-(1+Rate/12)**-Term)`,
-        width: 300,
+        __$$element: "literalExpression",
+        "@_id": generateUuid(),
+        text: { __$$text: `(Amount*Rate/12) /\n(1-(1+Rate/12)**-Term)` },
       },
     },
     isResetSupportedOnRootExpression: false,
@@ -109,35 +93,21 @@ export const Nested: Story = {
   args: {
     ...EmptyExpression.args,
     expressionDefinition: {
-      id: generateUuid(),
-      name: "Expression Name",
-      dataType: DmnBuiltInDataType.Undefined,
-      logicType: ExpressionDefinitionLogicType.Context,
-      entryInfoWidth: CONTEXT_ENTRY_INFO_MIN_WIDTH,
-      result: {
-        logicType: ExpressionDefinitionLogicType.Undefined,
-        dataType: DmnBuiltInDataType.Undefined,
-        id: generateUuid(),
-      },
-      contextEntries: [
+      __$$element: "context",
+      "@_id": generateUuid(),
+      "@_label": "Expression Name",
+      contextEntry: [
         {
-          entryInfo: {
-            id: generateUuid(),
-            name: "ContextEntry-1",
-            dataType: DmnBuiltInDataType.Undefined,
+          variable: {
+            "@_id": generateUuid(),
+            "@_name": "ContextEntry-1",
           },
-          entryExpression: {
-            id: generateUuid(),
-            name: "Expression Name",
-            dataType: DmnBuiltInDataType.Undefined,
-            logicType: ExpressionDefinitionLogicType.Function,
-            functionKind: FunctionExpressionDefinitionKind.Feel,
-            formalParameters: [],
-            expression: {
-              id: generateUuid(),
-              logicType: ExpressionDefinitionLogicType.Undefined,
-              dataType: DmnBuiltInDataType.Undefined,
-            },
+          expression: {
+            __$$element: "functionDefinition",
+            "@_id": generateUuid(),
+            "@_label": "Expression Name",
+            "@_kind": FunctionExpressionDefinitionKind.Feel,
+            formalParameter: [],
           },
         },
       ],

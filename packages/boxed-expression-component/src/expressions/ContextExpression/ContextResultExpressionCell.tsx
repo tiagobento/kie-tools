@@ -18,11 +18,11 @@
  */
 
 import * as React from "react";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { ContextExpressionDefinition } from "../../api";
 import {
-  useBoxedExpressionEditorDispatch,
   NestedExpressionDispatchContextProvider,
+  useBoxedExpressionEditorDispatch,
 } from "../BoxedExpressionEditor/BoxedExpressionEditorContext";
 import { ExpressionContainer } from "../ExpressionDefinitionRoot/ExpressionContainer";
 
@@ -30,31 +30,48 @@ export function ContextResultExpressionCell(props: {
   contextExpression: ContextExpressionDefinition;
   rowIndex: number;
   columnIndex: number;
+  widthsById: Map<string, number[]>;
 }) {
   const { setExpression } = useBoxedExpressionEditorDispatch();
 
   const onSetExpression = useCallback(
     ({ getNewExpression }) => {
-      setExpression((prev: ContextExpressionDefinition) => ({
-        ...prev,
-        result: getNewExpression(prev.result),
-      }));
+      setExpression((prev: ContextExpressionDefinition) => {
+        const entries = [...(prev.contextEntry ?? [])];
+        const result = entries.find((e) => !e.variable);
+        const index = entries.findIndex((value) => !value.variable);
+
+        entries.splice(index, 1, {
+          ...result,
+          expression: getNewExpression(result?.expression),
+        });
+
+        return {
+          ...prev,
+          contextEntry: entries,
+        };
+      });
     },
     [setExpression]
   );
 
   // It is not possible to have a ContextExpression without any entry (props.contextExpression.contextEntries.length === 0)
-  const lastEntry = props.contextExpression.contextEntries[props.contextExpression.contextEntries.length - 1];
+  const lastEntry = props.contextExpression.contextEntry?.[props.contextExpression.contextEntry.length - 1];
+
+  const resultExpression = useMemo(() => {
+    return props.contextExpression.contextEntry?.find((e) => !e.variable)?.expression;
+  }, [props.contextExpression.contextEntry]);
 
   return (
     <NestedExpressionDispatchContextProvider onSetExpression={onSetExpression}>
       <ExpressionContainer
-        expression={props.contextExpression.result}
+        expression={resultExpression!}
         isResetSupported={true}
         isNested={true}
         rowIndex={props.rowIndex}
         columnIndex={props.columnIndex}
-        parentElementId={lastEntry.entryInfo.id}
+        parentElementId={lastEntry?.variable?.["@_id"]}
+        widthsById={props.widthsById}
       />
     </NestedExpressionDispatchContextProvider>
   );

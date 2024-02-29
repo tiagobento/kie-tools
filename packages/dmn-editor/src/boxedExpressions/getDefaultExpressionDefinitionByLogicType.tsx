@@ -20,8 +20,6 @@
 import {
   ContextExpressionDefinition,
   DecisionTableExpressionDefinition,
-  DecisionTableExpressionDefinitionBuiltInAggregation,
-  DecisionTableExpressionDefinitionHitPolicy,
   DmnBuiltInDataType,
   ExpressionDefinition,
   ExpressionDefinitionLogicType,
@@ -53,6 +51,7 @@ import {
 import { RELATION_EXPRESSION_DEFAULT_VALUE } from "@kie-tools/boxed-expression-component/dist/expressions/RelationExpression";
 import { DataTypeIndex } from "../dataTypes/DataTypes";
 import { isStruct } from "../dataTypes/DataTypeSpec";
+import { DMN15__tContextEntry } from "@kie-tools/dmn-marshaller/src/schemas/dmn-1_5/ts-gen/types";
 
 export function getDefaultExpressionDefinitionByLogicType({
   logicType,
@@ -73,25 +72,23 @@ export function getDefaultExpressionDefinitionByLogicType({
 
   if (logicType === ExpressionDefinitionLogicType.Literal) {
     const literalExpression: LiteralExpressionDefinition = {
-      id: generateUuid(),
-      dataType: typeRef as DmnBuiltInDataType,
-      logicType,
-      width: LITERAL_EXPRESSION_MIN_WIDTH,
+      __$$element: "literalExpression",
+      "@_id": generateUuid(),
+      "@_typeRef": typeRef,
+      // width: LITERAL_EXPRESSION_MIN_WIDTH,
     };
     return literalExpression;
   }
   //
   else if (logicType === ExpressionDefinitionLogicType.Function) {
     const functionExpression: FunctionExpressionDefinition = {
-      id: generateUuid(),
-      dataType: typeRef as DmnBuiltInDataType,
-      logicType,
-      functionKind: FunctionExpressionDefinitionKind.Feel,
-      formalParameters: [],
+      __$$element: "functionDefinition",
+      "@_id": generateUuid(),
+      "@_typeRef": typeRef,
+      "@_kind": FunctionExpressionDefinitionKind.Feel,
       expression: {
-        id: generateUuid(),
-        logicType: ExpressionDefinitionLogicType.Undefined,
-        dataType: DmnBuiltInDataType.Undefined,
+        __$$element: "literalExpression",
+        "@_id": generateUuid(),
       },
     };
     return functionExpression;
@@ -100,120 +97,131 @@ export function getDefaultExpressionDefinitionByLogicType({
   else if (logicType === ExpressionDefinitionLogicType.Context) {
     let maxWidthBasedOnEntryNames = CONTEXT_ENTRY_INFO_MIN_WIDTH;
 
-    const contextEntries: ContextExpressionDefinition["contextEntries"] =
-      !dataType || !isStruct(dataType.itemDefinition)
-        ? [
-            {
-              entryInfo: {
-                id: generateUuid(),
-                name: "ContextEntry-1",
-                dataType: DmnBuiltInDataType.Undefined,
-              },
-              entryExpression: {
-                id: generateUuid(),
-                name: "ContextEntry-1",
-                dataType: DmnBuiltInDataType.Undefined,
-                logicType: ExpressionDefinitionLogicType.Undefined,
-              },
-            },
-          ]
-        : (dataType.itemDefinition.itemComponent ?? []).map((ic) => {
-            const name = ic["@_name"];
-            const typeRef = isStruct(ic)
-              ? DmnBuiltInDataType.Any
-              : (ic.typeRef?.__$$text as DmnBuiltInDataType) ?? DmnBuiltInDataType.Undefined;
-            maxWidthBasedOnEntryNames = Math.max(
-              maxWidthBasedOnEntryNames,
-              getDefaultColumnWidth?.({ name, typeRef }) ?? CONTEXT_ENTRY_INFO_MIN_WIDTH
-            );
-            return {
-              entryInfo: {
-                id: generateUuid(),
-                name,
-                dataType: typeRef,
-              },
-              entryExpression: {
-                id: generateUuid(),
-                name,
-                dataType: typeRef,
-                logicType: ExpressionDefinitionLogicType.Undefined,
-              },
-            };
-          });
+    let contextEntries: DMN15__tContextEntry[];
+    if (!dataType || !isStruct(dataType.itemDefinition)) {
+      contextEntries = [
+        {
+          variable: {
+            "@_id": generateUuid(),
+            "@_name": "ContextEntry-1",
+            "@_typeRef": DmnBuiltInDataType.Undefined,
+          },
+          expression: {
+            __$$element: "literalExpression",
+            "@_id": generateUuid(),
+            "@_label": "ContextEntry-1",
+          },
+        },
+      ];
+    } else {
+      contextEntries = (dataType.itemDefinition.itemComponent ?? []).map((ic) => {
+        const name = ic["@_name"];
+        const typeRef = isStruct(ic)
+          ? DmnBuiltInDataType.Any
+          : (ic.typeRef?.__$$text as DmnBuiltInDataType) ?? DmnBuiltInDataType.Undefined;
+        maxWidthBasedOnEntryNames = Math.max(
+          maxWidthBasedOnEntryNames,
+          getDefaultColumnWidth?.({ name, typeRef }) ?? CONTEXT_ENTRY_INFO_MIN_WIDTH
+        );
+        return {
+          variable: {
+            "@_id": generateUuid(),
+            "@_name": name,
+            "@_typeRef": typeRef as string,
+          },
+          expression: {
+            __$$element: "literalExpression",
+            "@_id": generateUuid(),
+            "@_label": name,
+            "@_typeRef": typeRef as string,
+          },
+        };
+      });
+    }
+
+    contextEntries.push({
+      "@_id": generateUuid(),
+      expression: {
+        __$$element: "literalExpression",
+        "@_id": generateUuid(),
+        "@_typeRef": typeRef as string,
+      },
+    });
 
     const contextExpression: ContextExpressionDefinition = {
-      id: generateUuid(),
-      dataType: typeRef as DmnBuiltInDataType,
-      logicType,
-      entryInfoWidth: maxWidthBasedOnEntryNames,
-      result: {
-        logicType: ExpressionDefinitionLogicType.Undefined,
-        dataType: DmnBuiltInDataType.Undefined,
-        id: generateUuid(),
-      },
-      contextEntries,
+      __$$element: "context",
+      "@_id": generateUuid(),
+      "@_typeRef": typeRef,
+      //  entryInfoWidth: maxWidthBasedOnEntryNames,
+      contextEntry: contextEntries,
     };
     return contextExpression;
   } else if (logicType === ExpressionDefinitionLogicType.List) {
     const listExpression: ListExpressionDefinition = {
-      id: generateUuid(),
-      dataType: typeRef as DmnBuiltInDataType,
-      logicType,
-      items: [
+      __$$element: "list",
+      "@_id": generateUuid(),
+      "@_typeRef": typeRef,
+      expression: [
         {
-          id: generateUuid(),
-          logicType: ExpressionDefinitionLogicType.Undefined,
-          dataType: DmnBuiltInDataType.Undefined,
+          __$$element: "literalExpression",
+          "@_id": generateUuid(),
         },
       ],
     };
     return listExpression;
   } else if (logicType === ExpressionDefinitionLogicType.Invocation) {
     const invocationExpression: InvocationExpressionDefinition = {
-      id: generateUuid(),
-      dataType: typeRef as DmnBuiltInDataType,
-      logicType,
-      entryInfoWidth: CONTEXT_ENTRY_INFO_MIN_WIDTH,
-      bindingEntries: [
+      __$$element: "invocation",
+      "@_id": generateUuid(),
+      "@_typeRef": typeRef,
+      // entryInfoWidth: CONTEXT_ENTRY_INFO_MIN_WIDTH,
+      binding: [
         {
-          entryInfo: {
-            id: generateUuid(),
-            name: INVOCATION_EXPRESSION_DEFAULT_PARAMETER_NAME,
-            dataType: INVOCATION_EXPRESSION_DEFAULT_PARAMETER_DATA_TYPE,
+          parameter: {
+            "@_id": generateUuid(),
+            "@_name": INVOCATION_EXPRESSION_DEFAULT_PARAMETER_NAME,
+            "@_typeRef": INVOCATION_EXPRESSION_DEFAULT_PARAMETER_DATA_TYPE,
           },
-          entryExpression: {
-            id: generateUuid(),
-            name: INVOCATION_EXPRESSION_DEFAULT_PARAMETER_NAME,
-            dataType: INVOCATION_EXPRESSION_DEFAULT_PARAMETER_DATA_TYPE,
-            logicType: INVOCATION_EXPRESSION_DEFAULT_PARAMETER_LOGIC_TYPE,
+          expression: {
+            __$$element: "literalExpression",
+            "@_id": generateUuid(),
+            "@_label": INVOCATION_EXPRESSION_DEFAULT_PARAMETER_NAME,
+            "@_typeRef": INVOCATION_EXPRESSION_DEFAULT_PARAMETER_DATA_TYPE,
           },
         },
       ],
-      invokedFunction: {
-        id: generateUuid(),
-        name: "FUNCTION NAME",
+      expression: {
+        __$$element: "literalExpression",
+        "@_id": generateUuid(),
+        text: { __$$text: "FUNCTION NAME" },
       },
     };
     return invocationExpression;
   } else if (logicType === ExpressionDefinitionLogicType.Relation) {
     const relationExpression: RelationExpressionDefinition = {
-      id: generateUuid(),
-      dataType: typeRef as DmnBuiltInDataType,
-      logicType,
-      rows: [
+      __$$element: "relation",
+      "@_id": generateUuid(),
+      "@_typeRef": typeRef,
+      row: [
         {
-          id: generateUuid(),
-          cells: [{ id: generateUuid(), content: RELATION_EXPRESSION_DEFAULT_VALUE }],
+          "@_id": generateUuid(),
+          expression: [
+            {
+              __$$element: "literalExpression",
+              "@_id": generateUuid(),
+              text: { __$$text: RELATION_EXPRESSION_DEFAULT_VALUE },
+            },
+          ],
         },
       ],
-      columns:
+      column:
         !dataType || !isStruct(dataType.itemDefinition)
           ? [
               {
-                id: generateUuid(),
-                name: dataType?.itemDefinition["@_name"] ?? "column-1",
-                dataType: (dataType?.feelName as DmnBuiltInDataType) ?? DmnBuiltInDataType.Undefined,
-                width: RELATION_EXPRESSION_COLUMN_DEFAULT_WIDTH,
+                "@_id": generateUuid(),
+                "@_name": dataType?.itemDefinition["@_name"] ?? "column-1",
+                "@_typeRef": (dataType?.feelName as DmnBuiltInDataType) ?? DmnBuiltInDataType.Undefined,
+                // width: RELATION_EXPRESSION_COLUMN_DEFAULT_WIDTH,
               },
             ]
           : (dataType.itemDefinition.itemComponent ?? []).map((ic) => {
@@ -222,10 +230,10 @@ export function getDefaultExpressionDefinitionByLogicType({
                 ? DmnBuiltInDataType.Any
                 : (ic.typeRef?.__$$text as DmnBuiltInDataType) ?? DmnBuiltInDataType.Undefined;
               return {
-                id: generateUuid(),
-                name,
-                dataType: typeRef,
-                width: getDefaultColumnWidth?.({ name, typeRef }) ?? RELATION_EXPRESSION_COLUMN_DEFAULT_WIDTH,
+                "@_id": generateUuid(),
+                "@_name": name,
+                "@_typeRef": typeRef,
+                //   width: getDefaultColumnWidth?.({ name, typeRef }) ?? RELATION_EXPRESSION_COLUMN_DEFAULT_WIDTH,
               };
             }),
     };
@@ -236,25 +244,29 @@ export function getDefaultExpressionDefinitionByLogicType({
       typeRef: (dataType?.feelName as DmnBuiltInDataType) ?? DmnBuiltInDataType.Undefined,
     };
     const singleInputColumn = {
-      name: "Input 1",
+      name: "InputSSSSSSsss 1",
       typeRef: DmnBuiltInDataType.Undefined,
     };
 
     const input = getInputs?.()?.map((input) => {
       return {
-        id: generateUuid(),
-        idLiteralExpression: generateUuid(),
-        name: input.name, // This is actually a FEEL expression! Will be addressed as part of https://github.com/apache/incubator-kie-issues/issues/455
-        dataType: (input.typeRef as DmnBuiltInDataType) ?? DmnBuiltInDataType.Undefined,
-        width: getDefaultColumnWidth?.(input) ?? DECISION_TABLE_INPUT_DEFAULT_WIDTH,
+        "@_id": generateUuid(),
+        inputExpression: {
+          "@_id": generateUuid(),
+          text: { __$$text: input.name },
+          "@_typeRef": input.typeRef ?? DmnBuiltInDataType.Undefined,
+        },
+        // width: getDefaultColumnWidth?.(input) ?? DECISION_TABLE_INPUT_DEFAULT_WIDTH,
       };
     }) ?? [
       {
-        id: generateUuid(),
-        idLiteralExpression: generateUuid(),
-        name: singleInputColumn.name,
-        dataType: singleInputColumn.typeRef,
-        width: getDefaultColumnWidth?.(singleInputColumn) ?? DECISION_TABLE_INPUT_DEFAULT_WIDTH,
+        "@_id": generateUuid(),
+        inputExpression: {
+          "@_id": generateUuid(),
+          text: { __$$text: singleInputColumn.name },
+          "@_typeRef": singleInputColumn.typeRef ?? DmnBuiltInDataType.Undefined,
+        },
+        //   width: getDefaultColumnWidth?.(singleInputColumn) ?? DECISION_TABLE_INPUT_DEFAULT_WIDTH,
       },
     ];
 
@@ -262,10 +274,10 @@ export function getDefaultExpressionDefinitionByLogicType({
       !dataType || !isStruct(dataType.itemDefinition)
         ? [
             {
-              id: generateUuid(),
-              name: singleOutputColumn.name,
-              dataType: singleOutputColumn.typeRef,
-              width: getDefaultColumnWidth?.(singleOutputColumn) ?? DECISION_TABLE_OUTPUT_DEFAULT_WIDTH,
+              "@_id": generateUuid(),
+              "@_label": singleOutputColumn.name,
+              "@_typeRef": singleOutputColumn.typeRef,
+              // width: getDefaultColumnWidth?.(singleOutputColumn) ?? DECISION_TABLE_OUTPUT_DEFAULT_WIDTH,
             },
           ]
         : (dataType.itemDefinition.itemComponent ?? []).map((ic) => {
@@ -274,33 +286,39 @@ export function getDefaultExpressionDefinitionByLogicType({
               ? DmnBuiltInDataType.Any
               : (ic.typeRef?.__$$text as DmnBuiltInDataType) ?? DmnBuiltInDataType.Undefined;
             return {
-              id: generateUuid(),
-              name,
-              dataType: typeRef,
-              width: getDefaultColumnWidth?.({ name, typeRef }) ?? DECISION_TABLE_OUTPUT_DEFAULT_WIDTH,
+              "@_id": generateUuid(),
+              "@_label": name,
+              "@_typeRef": typeRef,
+              // width: getDefaultColumnWidth?.({ name, typeRef }) ?? DECISION_TABLE_OUTPUT_DEFAULT_WIDTH,
             };
           });
 
     const decisionTableExpression: DecisionTableExpressionDefinition = {
-      id: generateUuid(),
-      dataType: typeRef as DmnBuiltInDataType,
-      logicType,
-      hitPolicy: DecisionTableExpressionDefinitionHitPolicy.Unique,
-      aggregation: DecisionTableExpressionDefinitionBuiltInAggregation["<None>"],
+      __$$element: "decisionTable",
+      "@_id": generateUuid(),
+      "@_typeRef": typeRef,
+      "@_hitPolicy": "UNIQUE",
       input,
       output,
-      annotations: [
+      annotation: [
         {
-          name: "Annotations",
-          width: DECISION_TABLE_ANNOTATION_DEFAULT_WIDTH,
+          "@_name": "Annotations",
+          //  width: DECISION_TABLE_ANNOTATION_DEFAULT_WIDTH,
         },
       ],
-      rules: [
+      rule: [
         {
-          id: generateUuid(),
-          inputEntries: input.map(() => ({ id: generateUuid(), content: DECISION_TABLE_INPUT_DEFAULT_VALUE })),
-          outputEntries: output.map(() => ({ id: generateUuid(), content: DECISION_TABLE_OUTPUT_DEFAULT_VALUE })),
-          annotationEntries: ["// Your annotations here"],
+          "@_id": generateUuid(),
+          inputEntry: input.map(() => ({
+            "@_id": generateUuid(),
+            text: { __$$text: DECISION_TABLE_INPUT_DEFAULT_VALUE },
+          })),
+          outputEntry: output.map(() => ({
+            __$$element: "literalExpression",
+            "@_id": generateUuid(),
+            text: { __$$text: DECISION_TABLE_OUTPUT_DEFAULT_VALUE },
+          })),
+          annotationEntry: [{ text: { __$$text: "// Your annotations here" } }],
         },
       ],
     };

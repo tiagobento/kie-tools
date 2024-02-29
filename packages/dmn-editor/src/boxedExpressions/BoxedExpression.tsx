@@ -23,8 +23,8 @@ import {
   DmnDataType,
   ExpressionDefinition,
   ExpressionDefinitionLogicType,
-  PmmlParam,
   generateUuid,
+  PmmlParam,
 } from "@kie-tools/boxed-expression-component/dist/api";
 import { BoxedExpressionEditor } from "@kie-tools/boxed-expression-component/dist/expressions";
 import { FeelVariables } from "@kie-tools/dmn-feel-antlr4-parser";
@@ -87,7 +87,6 @@ import { useExternalModels } from "../includedModels/DmnEditorDependenciesContex
 import { updateExpression } from "../mutations/updateExpression";
 import { DmnEditorTab } from "../store/Store";
 import { useDmnEditorStore, useDmnEditorStoreApi } from "../store/StoreContext";
-import { dmnToBee, getUndefinedExpressionDefinition } from "./dmnToBee";
 import { getDefaultColumnWidth } from "./getDefaultColumnWidth";
 import { getDefaultExpressionDefinitionByLogicType } from "./getDefaultExpressionDefinitionByLogicType";
 
@@ -143,20 +142,31 @@ export function BoxedExpression({ container }: { container: React.RefObject<HTML
     }, new Map<string, number[]>());
   }, [diagram.drdIndex, thisDmn.model.definitions]);
 
-  const expression = useMemo(() => {
+  const drgElementIndex = useMemo(() => {
     if (!boxedExpressionEditor.activeDrgElementId) {
       return undefined;
     }
 
-    const drgElementIndex = (thisDmn.model.definitions.drgElement ?? []).findIndex(
+    return (thisDmn.model.definitions.drgElement ?? []).findIndex(
       (e) => e["@_id"] === boxedExpressionEditor.activeDrgElementId
     );
-    if (drgElementIndex < 0) {
+  }, [boxedExpressionEditor.activeDrgElementId, thisDmn.model.definitions.drgElement]);
+
+  const drgElement = useMemo(() => {
+    if (drgElementIndex === undefined) {
       return undefined;
     }
 
     const drgElement = thisDmn.model.definitions.drgElement![drgElementIndex];
     if (!(drgElement.__$$element === "decision" || drgElement.__$$element === "businessKnowledgeModel")) {
+      return undefined;
+    }
+
+    return drgElement;
+  }, [drgElementIndex, thisDmn.model.definitions.drgElement]);
+
+  const expression = useMemo(() => {
+    if (!drgElement) {
       return undefined;
     }
 
@@ -166,14 +176,18 @@ export function BoxedExpression({ container }: { container: React.RefObject<HTML
       drgElement,
       drgElementType: drgElement.__$$element,
     };
-  }, [boxedExpressionEditor.activeDrgElementId, thisDmn.model.definitions.drgElement, widthsById]);
+  }, [drgElement, drgElementIndex, widthsById]);
+
+  const expressionName = useMemo(() => {
+    return drgElement?.["@_name"];
+  }, [drgElement]);
 
   const setExpression: React.Dispatch<React.SetStateAction<ExpressionDefinition>> = useCallback(
     (expressionAction) => {
       dmnEditorStoreApi.setState((state) => {
         const newExpression =
           typeof expressionAction === "function"
-            ? expressionAction(expression?.beeExpression ?? getUndefinedExpressionDefinition())
+            ? expressionAction(expression?.beeExpression ?? { __$$element: "literalExpression" })
             : expressionAction;
 
         updateExpression({
@@ -181,10 +195,11 @@ export function BoxedExpression({ container }: { container: React.RefObject<HTML
           drdIndex: diagram.drdIndex,
           expression: newExpression,
           drgElementIndex: expression?.drgElementIndex ?? 0,
+          widthsById: widthsById,
         });
       });
     },
-    [diagram.drdIndex, dmnEditorStoreApi, expression?.beeExpression, expression?.drgElementIndex]
+    [diagram.drdIndex, dmnEditorStoreApi, expression?.beeExpression, expression?.drgElementIndex, widthsById]
   );
 
   const isResetSupportedOnRootExpression = useMemo(() => {
@@ -216,9 +231,9 @@ export function BoxedExpression({ container }: { container: React.RefObject<HTML
         modelsFromDocument: documentData.models.map((m) => ({
           model: m.modelName,
           parametersFromModel: m.fields.map((f) => ({
-            id: generateUuid(),
-            name: f.fieldName,
-            dataType: undefined as any,
+            "@_id": generateUuid(),
+            "@_name": f.fieldName,
+            description: { __$$text: f.fieldName },
           })),
         })),
       };
@@ -263,15 +278,15 @@ export function BoxedExpression({ container }: { container: React.RefObject<HTML
   ////
 
   const Icon = useMemo(() => {
-    if (expression?.drgElement === undefined) {
+    if (!drgElement) {
       throw new Error("A node Icon must exist for all types of node");
     }
-    const nodeType = getNodeTypeFromDmnObject(expression.drgElement);
+    const nodeType = getNodeTypeFromDmnObject(drgElement);
     if (nodeType === undefined) {
       throw new Error("Can't determine node icon with undefined node type");
     }
     return NodeIcon({ nodeType, isAlternativeInputDataShape });
-  }, [expression?.drgElement, isAlternativeInputDataShape]);
+  }, [drgElement, isAlternativeInputDataShape]);
 
   return (
     <>
@@ -333,46 +348,21 @@ export function BoxedExpression({ container }: { container: React.RefObject<HTML
             </button>
           </aside>
         </Flex>
-        {!expression && (
-          <>
-            <EmptyState>
-              <EmptyStateIcon icon={ErrorCircleOIcon} />
-              <Title size="lg" headingLevel="h4">
-                {`Expression with ID '${boxedExpressionEditor.activeDrgElementId}' doesn't exist.`}
-              </Title>
-              <EmptyStateBody>
-                This happens when the DMN file is modified externally while the expression was open here.
-              </EmptyStateBody>
-              <EmptyStatePrimary>
-                <Button
-                  variant="link"
-                  onClick={() => {
-                    dmnEditorStoreApi.setState((state) => {
-                      state.dispatch(state).boxedExpressionEditor.close();
-                    });
-                  }}
-                >
-                  Go back to the Diagram
-                </Button>
-              </EmptyStatePrimary>
-            </EmptyState>
-          </>
-        )}
-        {expression && (
-          <div style={{ flexGrow: 1 }}>
-            <BoxedExpressionEditor
-              beeGwtService={beeGwtService}
-              pmmlParams={pmmlParams}
-              isResetSupportedOnRootExpression={isResetSupportedOnRootExpression}
-              decisionNodeId={boxedExpressionEditor.activeDrgElementId!}
-              expressionDefinition={expression.beeExpression}
-              setExpressionDefinition={setExpression}
-              dataTypes={dataTypes}
-              scrollableParentRef={container}
-              variables={feelVariables}
-            />
-          </div>
-        )}
+        <div style={{ flexGrow: 1 }}>
+          <BoxedExpressionEditor
+            beeGwtService={beeGwtService}
+            pmmlParams={pmmlParams}
+            isResetSupportedOnRootExpression={isResetSupportedOnRootExpression}
+            decisionNodeId={boxedExpressionEditor.activeDrgElementId!}
+            expressionDefinition={expression?.beeExpression}
+            setExpressionDefinition={setExpression}
+            dataTypes={dataTypes}
+            scrollableParentRef={container}
+            variables={feelVariables}
+            widthsById={widthsById}
+            expressionName={expressionName}
+          />
+        </div>
       </>
     </>
   );
@@ -386,25 +376,11 @@ function drgElementToBoxedExpression(
 ): ExpressionDefinition {
   if (expressionHolder.__$$element === "businessKnowledgeModel") {
     return {
-      ...dmnToBee(widthsById, {
-        expression: {
-          __$$element: "functionDefinition",
-          ...expressionHolder.encapsulatedLogic,
-        },
-      }),
-      dataType: (expressionHolder.variable?.["@_typeRef"] ??
-        expressionHolder.encapsulatedLogic?.["@_typeRef"] ??
-        DmnBuiltInDataType.Undefined) as unknown as DmnBuiltInDataType,
-      name: expressionHolder["@_name"],
+      __$$element: "functionDefinition",
+      ...expressionHolder.encapsulatedLogic,
     };
   } else if (expressionHolder.__$$element === "decision") {
-    return {
-      ...dmnToBee(widthsById, expressionHolder),
-      dataType: (expressionHolder.variable?.["@_typeRef"] ??
-        expressionHolder.expression?.["@_typeRef"] ??
-        DmnBuiltInDataType.Undefined) as unknown as DmnBuiltInDataType,
-      name: expressionHolder["@_name"],
-    };
+    return expressionHolder.expression!;
   } else {
     throw new Error(
       `Unknown __$$element of expressionHolder that has an expression '${(expressionHolder as any).__$$element}'.`
@@ -449,6 +425,7 @@ function determineInputsForDecision(
     return undefined;
   }
 }
+
 function flattenComponents(
   itemDefinition: DMN15__tItemDefinition,
   acc: string

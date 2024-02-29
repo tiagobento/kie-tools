@@ -32,7 +32,6 @@ import { BoxedExpressionEditorWrapper } from "../boxedExpressionStoriesWrapper";
 import { BoxedExpressionEditorProps } from "../../src/expressions";
 import { Title } from "@patternfly/react-core/dist/js/components/Title";
 import { Button, Flex, FlexItem, Tooltip } from "@patternfly/react-core/dist/js";
-import { emptyExpressionDefinition } from "../misc/Empty/EmptyExpression.stories";
 import { canDriveExpressionDefinition } from "../useCases/CanDrive/CanDrive.stories";
 import { findEmployeesByKnowledgeExpression } from "../useCases/FindEmployees/FindEmployees.stories";
 import { postBureauAffordabilityExpression } from "../useCases/LoanOriginations/RoutingDecisionService/PostBureauAffordability/PostBureauAffordability.stories";
@@ -59,7 +58,10 @@ const pmmlParams = [
   {
     document: "document",
     modelsFromDocument: [
-      { model: "model", parametersFromModel: [{ id: "p1", name: "p-1", dataType: DmnBuiltInDataType.Number }] },
+      {
+        model: "model",
+        parametersFromModel: [{ "@_id": "p1", "@_name": "p-1", "@_typeRef": DmnBuiltInDataType.Number }],
+      },
     ],
   },
   {
@@ -68,9 +70,9 @@ const pmmlParams = [
       {
         model: "MiningModelSum",
         parametersFromModel: [
-          { id: "i1", name: "input1", dataType: DmnBuiltInDataType.Any },
-          { id: "i2", name: "input2", dataType: DmnBuiltInDataType.Any },
-          { id: "i3", name: "input3", dataType: DmnBuiltInDataType.Any },
+          { "@_id": "i1", "@_name": "input1", "@_typeRef": DmnBuiltInDataType.Any },
+          { "@_id": "i2", "@_name": "input2", "@_typeRef": DmnBuiltInDataType.Any },
+          { "@_id": "i3", "@_name": "input3", "@_typeRef": DmnBuiltInDataType.Any },
         ],
       },
     ],
@@ -81,29 +83,20 @@ const pmmlParams = [
       {
         model: "RegressionLinear",
         parametersFromModel: [
-          { id: "i1", name: "i1", dataType: DmnBuiltInDataType.Number },
-          { id: "i2", name: "i2", dataType: DmnBuiltInDataType.Number },
+          { "@_id": "i1", "@_name": "i1", "@_typeRef": DmnBuiltInDataType.Number },
+          { "@_id": "i2", "@_name": "i2", "@_typeRef": DmnBuiltInDataType.Number },
         ],
       },
     ],
   },
 ];
 
-const INITIAL_EXPRESSION: ExpressionDefinition = {
-  id: generateUuid(),
-  name: "Expression Name",
-  logicType: ExpressionDefinitionLogicType.Undefined,
-  dataType: DmnBuiltInDataType.Undefined,
-};
+const INITIAL_EXPRESSION: ExpressionDefinition = undefined!;
 
 //Defining global function that will be available in the Window namespace and used by the BoxedExpressionEditor component
 const beeGwtService: BeeGwtService = {
   getDefaultExpressionDefinition(logicType: string, dataType: string): ExpressionDefinition {
-    return getDefaultExpressionDefinitionByLogicType(
-      logicType as ExpressionDefinitionLogicType,
-      { dataType: dataType } as ExpressionDefinition,
-      0
-    );
+    return getDefaultExpressionDefinitionByLogicType(logicType as ExpressionDefinitionLogicType, dataType, 0);
   },
   openDataTypePage(): void {},
   selectObject(): void {},
@@ -127,7 +120,7 @@ function App(args: BoxedExpressionEditorProps) {
         <FlexItem>
           <Flex style={{ width: "96vw" }}>
             <FlexItem>
-              <Button onClick={() => setSample(emptyExpressionDefinition)}>Empty</Button>
+              <Button onClick={() => setSample(undefined!)}>Empty</Button>
             </FlexItem>
             <FlexItem>
               <Button onClick={() => setSample(canDriveExpressionDefinition)}>Can Drive?</Button>
@@ -174,12 +167,7 @@ export const WebApp: Story = {
   render: (args) => App(args),
   args: {
     decisionNodeId: "_00000000-0000-0000-0000-000000000000",
-    expressionDefinition: {
-      id: generateUuid(),
-      name: "Expression Name",
-      dataType: DmnBuiltInDataType.Undefined,
-      logicType: ExpressionDefinitionLogicType.Undefined,
-    },
+    expressionDefinition: undefined!,
     dataTypes: dataTypes,
     beeGwtService: beeGwtService,
     pmmlParams: pmmlParams,

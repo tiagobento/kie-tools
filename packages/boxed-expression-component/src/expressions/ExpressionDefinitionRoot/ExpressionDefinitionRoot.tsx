@@ -25,25 +25,31 @@ import "./ExpressionDefinitionRoot.css";
 
 export interface ExpressionDefinitionRootProps {
   decisionNodeId: string;
-  expression: ExpressionDefinition;
+  expression?: ExpressionDefinition;
   isResetSupported: boolean | undefined;
+  widthsById: Map<string, number[]>;
+  expressionName?: string;
 }
 
 export function ExpressionDefinitionRoot({
   decisionNodeId,
   expression,
   isResetSupported = true,
+  widthsById,
+  expressionName,
 }: ExpressionDefinitionRootProps) {
   return (
     <ResizingWidthsContextProvider>
       <div className={`expression-container ${decisionNodeId}`}>
         <ExpressionContainer
+          widthsById={widthsById}
           expression={expression}
           isResetSupported={isResetSupported}
           isNested={false}
           rowIndex={0}
           columnIndex={0}
           parentElementId={decisionNodeId}
+          expressionName={expressionName}
         />
       </div>
     </ResizingWidthsContextProvider>

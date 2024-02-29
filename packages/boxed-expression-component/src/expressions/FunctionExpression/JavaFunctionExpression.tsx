@@ -29,17 +29,15 @@ import {
   BeeTableOperation,
   BeeTableOperationConfig,
   BeeTableProps,
-  DmnBuiltInDataType,
-  ExpressionDefinitionLogicType,
   FunctionExpressionDefinitionKind,
   generateUuid,
-  JavaFunctionExpressionDefinition,
 } from "../../api";
 import { useBoxedExpressionEditorI18n } from "../../i18n";
 import { usePublishedBeeTableResizableColumns } from "../../resizing/BeeTableResizableColumnsContext";
 import { useApportionedColumnWidthsIfNestedTable } from "../../resizing/Hooks";
 import { ResizerStopBehavior } from "../../resizing/ResizingWidthsContext";
 import {
+  BEE_TABLE_ROW_INDEX_COLUMN_WIDTH,
   JAVA_FUNCTION_EXPRESSION_EXTRA_WIDTH,
   JAVA_FUNCTION_EXPRESSION_LABEL_MIN_WIDTH,
   JAVA_FUNCTION_EXPRESSION_VALUES_MIN_WIDTH,
@@ -53,10 +51,22 @@ import {
 import { DEFAULT_EXPRESSION_NAME } from "../ExpressionDefinitionHeaderMenu";
 import { useFunctionExpressionControllerCell, useFunctionExpressionParametersColumnHeader } from "./FunctionExpression";
 import "./JavaFunctionExpression.css";
+import {
+  DMN15__tContext,
+  DMN15__tFunctionDefinition,
+  DMN15__tLiteralExpression,
+} from "@kie-tools/dmn-marshaller/dist/schemas/dmn-1_5/ts-gen/types";
 
 export type JAVA_ROWTYPE = {
   value: string;
   label: string;
+};
+
+export type JavaFunctionExpressionDefinition = DMN15__tFunctionDefinition & {
+  "@_kind": "Java";
+  __$$element: "functionDefinition";
+  isNested: boolean;
+  parentElementId: string;
 };
 
 export function JavaFunctionExpression({
@@ -65,31 +75,54 @@ export function JavaFunctionExpression({
   functionExpression: JavaFunctionExpressionDefinition & { isNested: boolean };
 }) {
   const { i18n } = useBoxedExpressionEditorI18n();
-  const { decisionNodeId } = useBoxedExpressionEditor();
+  const { decisionNodeId, widthsById } = useBoxedExpressionEditor();
   const { setExpression } = useBoxedExpressionEditorDispatch();
+
+  const getClassContextEntry = useCallback((c: DMN15__tContext) => {
+    return c.contextEntry?.find(({ variable }) => variable?.["@_name"] === "class");
+  }, []);
+
+  const getVariableContextEntry = useCallback((c: DMN15__tContext) => {
+    return c.contextEntry?.find(({ variable }) => variable?.["@_name"] === "method signature");
+  }, []);
+
+  const getClassAndMethodNamesWidth = useCallback(
+    (id: string | undefined) => {
+      const widths = widthsById.get(id ?? "");
+      if (widths && widths.length > 0) {
+        return widths[1];
+      } else {
+        return JAVA_FUNCTION_EXPRESSION_VALUES_MIN_WIDTH;
+      }
+    },
+    [widthsById]
+  );
 
   const setClassAndMethodNamesWidth = useCallback(
     (newWidthAction: React.SetStateAction<number | undefined>) => {
-      setExpression((prev: JavaFunctionExpressionDefinition) => {
-        const newWidth =
-          typeof newWidthAction === "function" ? newWidthAction(prev.classAndMethodNamesWidth) : newWidthAction;
-        return {
-          ...prev,
-          classAndMethodNamesWidth: newWidth,
-        };
-      });
+      const newWidth =
+        typeof newWidthAction === "function"
+          ? newWidthAction(getClassAndMethodNamesWidth(functionExpression["@_id"]))
+          : newWidthAction;
+
+      const widths = widthsById.get(functionExpression["@_id"] ?? "") ?? [];
+      if (widths.length < 1) {
+        widths[0] = BEE_TABLE_ROW_INDEX_COLUMN_WIDTH;
+      }
+      widths[1] = newWidth ?? 0;
+      widthsById.set(functionExpression["@_id"] ?? "", widths);
     },
-    [setExpression]
+    [functionExpression, getClassAndMethodNamesWidth, widthsById]
   );
 
-  const parametersColumnHeader = useFunctionExpressionParametersColumnHeader(functionExpression.formalParameters);
+  const parametersColumnHeader = useFunctionExpressionParametersColumnHeader(functionExpression.formalParameter);
 
   const beeTableColumns = useMemo<ReactTable.Column<JAVA_ROWTYPE>[]>(() => {
     return [
       {
-        label: functionExpression.name ?? DEFAULT_EXPRESSION_NAME,
+        label: functionExpression["@_label"] ?? DEFAULT_EXPRESSION_NAME,
         accessor: decisionNodeId as any, // FIXME: https://github.com/kiegroup/kie-issues/issues/169
-        dataType: functionExpression.dataType,
+        dataType: functionExpression["@_typeRef"] ?? "<Undefined>",
         isRowIndexColumn: false,
         width: undefined,
         columns: [
@@ -116,7 +149,7 @@ export function JavaFunctionExpression({
                 accessor: "value" as any,
                 dataType: undefined as any,
                 isRowIndexColumn: false,
-                width: functionExpression.classAndMethodNamesWidth,
+                width: getClassAndMethodNamesWidth(functionExpression["@_id"]),
                 setWidth: setClassAndMethodNamesWidth,
                 minWidth: JAVA_FUNCTION_EXPRESSION_VALUES_MIN_WIDTH,
               },
@@ -127,9 +160,8 @@ export function JavaFunctionExpression({
     ];
   }, [
     decisionNodeId,
-    functionExpression.classAndMethodNamesWidth,
-    functionExpression.dataType,
-    functionExpression.name,
+    functionExpression,
+    getClassAndMethodNamesWidth,
     parametersColumnHeader,
     setClassAndMethodNamesWidth,
   ]);
@@ -144,12 +176,17 @@ export function JavaFunctionExpression({
     ([{ name, dataType }]: BeeTableColumnUpdate<JAVA_ROWTYPE>[]) => {
       setExpression((prev) => ({
         ...prev,
-        name,
-        dataType,
+        "@_label": name,
+        "@_typeRef": dataType,
       }));
     },
     [setExpression]
   );
+
+  // It is always a Context
+  const context = functionExpression.expression! as DMN15__tContext;
+  const clazz = getClassContextEntry(context);
+  const method = getVariableContextEntry(context);
 
   const beeTableOperationConfig = useMemo<BeeTableOperationConfig>(() => {
     return [
@@ -166,10 +203,16 @@ export function JavaFunctionExpression({
 
   const beeTableRows = useMemo<JAVA_ROWTYPE[]>(() => {
     return [
-      { label: "Class name", value: functionExpression.className ?? "" },
-      { label: "Method signature", value: functionExpression.methodName ?? "" },
+      {
+        label: "Class name",
+        value: (clazz?.expression as DMN15__tLiteralExpression | undefined)?.text?.__$$text ?? "",
+      },
+      {
+        label: "Method signature",
+        value: (method?.expression as DMN15__tLiteralExpression | undefined)?.text?.__$$text ?? "",
+      },
     ];
-  }, [functionExpression]);
+  }, [clazz?.expression, method?.expression]);
 
   const controllerCell = useFunctionExpressionControllerCell(FunctionExpressionDefinitionKind.Java);
 
@@ -181,11 +224,7 @@ export function JavaFunctionExpression({
     setExpression((prev) => {
       return {
         ...prev,
-        expression: {
-          id: generateUuid(),
-          logicType: ExpressionDefinitionLogicType.Undefined,
-          dataType: DmnBuiltInDataType.Undefined,
-        },
+        expression: undefined!,
       };
     });
   }, [setExpression]);
@@ -203,14 +242,14 @@ export function JavaFunctionExpression({
       },
       {
         minWidth: JAVA_FUNCTION_EXPRESSION_VALUES_MIN_WIDTH,
-        width: functionExpression.classAndMethodNamesWidth,
+        width: getClassAndMethodNamesWidth(functionExpression["@_id"]),
       },
     ],
-    [functionExpression.classAndMethodNamesWidth]
+    [functionExpression, getClassAndMethodNamesWidth]
   );
 
   const { onColumnResizingWidthChange, isPivoting, columnResizingWidths } = usePublishedBeeTableResizableColumns(
-    functionExpression.id,
+    functionExpression["@_id"] ?? "",
     columns.length,
     true
   );
@@ -245,26 +284,70 @@ export function JavaFunctionExpression({
   const onCellUpdates = useCallback(
     (cellUpdates: BeeTableCellUpdate<JAVA_ROWTYPE>[]) => {
       for (const u of cellUpdates) {
+        const context = functionExpression.expression! as DMN15__tContext;
         // Class
         if (u.rowIndex === 0) {
-          setExpression((prev: JavaFunctionExpressionDefinition) => ({
-            ...prev,
-            className: u.value,
-            classFieldId: prev.classFieldId ?? generateUuid(),
-          }));
-        }
+          setExpression((prev: JavaFunctionExpressionDefinition) => {
+            const clazz = getClassContextEntry(context) ?? {
+              expression: {
+                __$$element: "literalExpression",
+                "@_id": generateUuid(),
+              },
+              variable: {
+                "@_name": "class",
+              },
+            };
+            clazz.expression = {
+              ...clazz.expression,
+              __$$element: "literalExpression",
+              text: {
+                __$$text: u.value,
+              },
+            };
 
+            return {
+              ...prev,
+              expression: {
+                ...context,
+                __$$element: "context",
+              },
+            };
+          });
+        }
         // Method
         else if (u.rowIndex === 1) {
-          setExpression((prev: JavaFunctionExpressionDefinition) => ({
-            ...prev,
-            methodName: u.value,
-            methodFieldId: prev.methodFieldId ?? generateUuid(),
-          }));
+          setExpression((prev: JavaFunctionExpressionDefinition) => {
+            const method = getVariableContextEntry(context) ?? {
+              expression: {
+                __$$element: "literalExpression",
+                "@_id": generateUuid(),
+              },
+              variable: {
+                "@_name": "method signature",
+              },
+            };
+
+            method.expression = {
+              ...method.expression,
+              __$$element: "literalExpression",
+              "@_id": method.expression["@_id"] ?? generateUuid(),
+              text: {
+                __$$text: u.value,
+              },
+            };
+
+            return {
+              ...prev,
+              expression: {
+                ...context,
+                __$$element: "context",
+              },
+            };
+          });
         }
       }
     },
-    [setExpression]
+    [functionExpression.expression, getClassContextEntry, getVariableContextEntry, setExpression]
   );
 
   const allowedOperations = useCallback((conditions: BeeTableContextMenuAllowedOperationsConditions) => {
@@ -272,7 +355,7 @@ export function JavaFunctionExpression({
   }, []);
 
   return (
-    <div className={`function-expression ${functionExpression.id}`}>
+    <div className={`function-expression ${functionExpression["@_id"]}`}>
       <BeeTable<JAVA_ROWTYPE>
         forwardRef={beeTableRef}
         onColumnResizingWidthChange={onColumnResizingWidthChange}
@@ -293,6 +376,7 @@ export function JavaFunctionExpression({
         shouldRenderRowIndexColumn={true}
         shouldShowRowsInlineControls={false}
         shouldShowColumnsInlineControls={false}
+        widthsById={widthsById}
       />
     </div>
   );

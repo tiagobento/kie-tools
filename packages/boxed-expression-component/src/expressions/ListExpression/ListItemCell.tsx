@@ -32,17 +32,18 @@ export function ListItemCell({
   data: items,
   columnIndex,
   parentElementId,
+  widthsById,
 }: BeeTableCellProps<ROWTYPE> & { parentElementId: string }) {
   const { setExpression } = useBoxedExpressionEditorDispatch();
 
   const onSetExpression = useCallback(
     ({ getNewExpression }) => {
       setExpression((prev: ListExpressionDefinition) => {
-        const newItems = [...(prev.items ?? [])];
+        const newItems = [...(prev.expression ?? [])];
         newItems[rowIndex] = getNewExpression(
-          newItems[rowIndex] ?? { logicType: ExpressionDefinitionLogicType.Undefined }
+          newItems[rowIndex] ?? { "@_typeRef": ExpressionDefinitionLogicType.Undefined }
         );
-        return { ...prev, items: newItems };
+        return { ...prev, expression: newItems };
       });
     },
     [rowIndex, setExpression]
@@ -51,12 +52,13 @@ export function ListItemCell({
   return (
     <NestedExpressionDispatchContextProvider onSetExpression={onSetExpression}>
       <ExpressionContainer
-        expression={items[rowIndex]?.entryExpression}
+        expression={items[rowIndex]?.expression}
         isResetSupported={true}
         isNested={true}
         rowIndex={rowIndex}
         columnIndex={columnIndex}
         parentElementId={parentElementId}
+        widthsById={widthsById}
       />
     </NestedExpressionDispatchContextProvider>
   );

@@ -33,7 +33,7 @@ import * as React from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ExpressionDefinition, ExpressionDefinitionLogicType, generateUuid } from "../../../api";
 import { useCustomContextMenuHandler } from "../../../contextMenu";
-import { MenuItemWithHelp } from "../../../contextMenu/MenuWithHelp/MenuItemWithHelp";
+import { MenuItemWithHelp } from "../../../contextMenu/MenuWithHelp";
 import { PopoverMenu } from "../../../contextMenu/PopoverMenu";
 import { useBoxedExpressionEditorI18n } from "../../../i18n";
 import { useNestedExpressionContainer } from "../../../resizing/NestedExpressionContainerContext";
@@ -52,7 +52,7 @@ import "./ExpressionDefinitionLogicTypeSelector.css";
 
 export interface ExpressionDefinitionLogicTypeSelectorProps {
   /** Expression properties */
-  expression: ExpressionDefinition;
+  expression?: ExpressionDefinition;
   /** Function to be invoked when logic type changes */
   onLogicTypeSelected: (logicType: ExpressionDefinitionLogicType) => void;
   /** Function to be invoked when logic type is reset */
@@ -62,6 +62,7 @@ export interface ExpressionDefinitionLogicTypeSelectorProps {
   isResetSupported: boolean;
   isNested: boolean;
   parentElementId: string;
+  widthsById: Map<string, number[]>;
 }
 
 export function ExpressionDefinitionLogicTypeSelector({
@@ -72,12 +73,10 @@ export function ExpressionDefinitionLogicTypeSelector({
   isResetSupported,
   isNested,
   parentElementId,
+  widthsById,
 }: ExpressionDefinitionLogicTypeSelectorProps) {
   const nonSelectableLogicTypes = useMemo(
-    () =>
-      isNested
-        ? new Set([ExpressionDefinitionLogicType.Undefined])
-        : new Set([ExpressionDefinitionLogicType.Undefined, ExpressionDefinitionLogicType.Function]),
+    () => (isNested ? new Set(["<Undefined>"]) : new Set(["<Undefined>", "functionDefinition"])),
     [isNested]
   );
 
@@ -93,34 +92,43 @@ export function ExpressionDefinitionLogicTypeSelector({
 
   const { setCurrentlyOpenContextMenu, editorRef } = useBoxedExpressionEditor();
 
-  const isLogicTypeSelected = useMemo(
-    () => expression.logicType && expression.logicType !== ExpressionDefinitionLogicType.Undefined,
-    [expression.logicType]
-  );
-
   const renderExpression = useMemo(() => {
-    const logicType = expression.logicType;
+    const logicType = expression?.__$$element;
+    if (!logicType) {
+      return <></>;
+    }
     switch (logicType) {
-      case ExpressionDefinitionLogicType.Literal:
+      case "literalExpression":
         return <LiteralExpression {...expression} isNested={isNested} />;
-      case ExpressionDefinitionLogicType.Relation:
+
+      case "relation":
         return <RelationExpression {...expression} isNested={isNested} parentElementId={parentElementId} />;
-      case ExpressionDefinitionLogicType.Context:
+
+      case "context":
         return <ContextExpression {...expression} isNested={isNested} parentElementId={parentElementId} />;
-      case ExpressionDefinitionLogicType.DecisionTable:
+
+      case "decisionTable":
         return <DecisionTableExpression {...expression} isNested={isNested} parentElementId={parentElementId} />;
-      case ExpressionDefinitionLogicType.Invocation:
-        return <InvocationExpression {...expression} isNested={isNested} parentElementId={parentElementId} />;
-      case ExpressionDefinitionLogicType.List:
+
+      case "list":
         return <ListExpression {...expression} isNested={isNested} parentElementId={parentElementId} />;
-      case ExpressionDefinitionLogicType.Function:
+
+      case "invocation":
+        return <InvocationExpression {...expression} isNested={isNested} parentElementId={parentElementId} />;
+
+      case "functionDefinition":
         return <FunctionExpression {...expression} isNested={isNested} parentElementId={parentElementId} />;
-      case ExpressionDefinitionLogicType.Undefined:
+
+      case "for":
+      case "every":
+      case "some":
+      case "conditional":
+      case "filter":
         return <></>; // Shouldn't ever reach this point, though
       default:
         assertUnreachable(logicType);
     }
-  }, [expression, isNested, parentElementId]);
+  }, [expression, isNested, parentElementId, widthsById]);
 
   const getPopoverArrowPlacement = useCallback(() => {
     return getPlacementRef() as HTMLDivElement;
@@ -147,12 +155,12 @@ export function ExpressionDefinitionLogicTypeSelector({
   }, [onLogicTypeReset, setCurrentlyOpenContextMenu]);
 
   const cssClass = useMemo(() => {
-    if (isLogicTypeSelected) {
+    if (expression) {
       return `logic-type-selector logic-type-selected`;
     } else {
       return `logic-type-selector logic-type-not-present`;
     }
-  }, [isLogicTypeSelected]);
+  }, [expression]);
 
   const resetContextMenuContainerRef = React.useRef<HTMLDivElement>(null);
   const {
@@ -162,14 +170,14 @@ export function ExpressionDefinitionLogicTypeSelector({
   } = useCustomContextMenuHandler(resetContextMenuContainerRef);
 
   const shouldRenderResetContextMenu = useMemo(() => {
-    return isResetContextMenuOpen && isLogicTypeSelected && isResetSupported;
-  }, [isResetContextMenuOpen, isResetSupported, isLogicTypeSelected]);
+    return isResetContextMenuOpen && expression && isResetSupported;
+  }, [isResetContextMenuOpen, isResetSupported, expression]);
 
-  const logicTypeIcon = useCallback((logicType: ExpressionDefinitionLogicType) => {
+  const logicTypeIcon = useCallback((logicType: string) => {
     switch (logicType) {
-      case ExpressionDefinitionLogicType.Undefined:
+      case "<Undefined>":
         return ``;
-      case ExpressionDefinitionLogicType.Literal:
+      case "literalExpression":
         return (
           <span>
             <b>
@@ -177,7 +185,7 @@ export function ExpressionDefinitionLogicTypeSelector({
             </b>
           </span>
         );
-      case ExpressionDefinitionLogicType.Context:
+      case "context":
         return (
           <span>
             <b>
@@ -185,11 +193,11 @@ export function ExpressionDefinitionLogicTypeSelector({
             </b>
           </span>
         );
-      case ExpressionDefinitionLogicType.DecisionTable:
+      case "decisionTable":
         return <TableIcon />;
-      case ExpressionDefinitionLogicType.Relation:
+      case "relation":
         return <TableIcon />;
-      case ExpressionDefinitionLogicType.Function:
+      case "functionDefinition":
         return (
           <span>
             <b>
@@ -197,7 +205,7 @@ export function ExpressionDefinitionLogicTypeSelector({
             </b>
           </span>
         );
-      case ExpressionDefinitionLogicType.Invocation:
+      case "invocation":
         return (
           <span>
             <b>
@@ -205,10 +213,12 @@ export function ExpressionDefinitionLogicTypeSelector({
             </b>
           </span>
         );
-      case ExpressionDefinitionLogicType.List:
+      case "list":
         return <ListIcon />;
-      default:
-        assertUnreachable(logicType);
+
+      // FIXME: this, before PR
+      /* default:
+                                      assertUnreachable(logicType);*/
     }
   }, []);
 
@@ -261,15 +271,15 @@ export function ExpressionDefinitionLogicTypeSelector({
   }, []);
 
   const showExpressionHeader = useMemo(() => {
+    if (!expression) {
+      return false;
+    }
     if (!isNested) {
       return true;
     }
 
-    return (
-      expression.logicType !== ExpressionDefinitionLogicType.Literal &&
-      !nonSelectableLogicTypes.has(expression.logicType)
-    );
-  }, [expression.logicType, isNested, nonSelectableLogicTypes]);
+    return expression.__$$element !== "literalExpression" && !nonSelectableLogicTypes.has(expression.__$$element);
+  }, [expression, isNested, nonSelectableLogicTypes]);
 
   const logicTypeHelp = useCallback((logicType: ExpressionDefinitionLogicType) => {
     switch (logicType) {
@@ -372,18 +382,62 @@ export function ExpressionDefinitionLogicTypeSelector({
     setVisibleHelp((previousHelp) => (previousHelp !== help ? help : ""));
   }, []);
 
+  const elementUxLogicType = useMemo(() => {
+    if (!expression || !expression.__$$element) {
+      return "Undefined";
+    }
+
+    switch (expression.__$$element) {
+      case "context":
+        return "Context";
+
+      case "literalExpression":
+        return "Literal";
+
+      case "relation":
+        return "Relation";
+
+      case "decisionTable":
+        return "Decision table";
+
+      case "list":
+        return "List";
+
+      case "invocation":
+        return "Invocation";
+
+      case "functionDefinition":
+        return "Function";
+
+      case "for":
+        return "For";
+
+      case "every":
+        return "Every";
+
+      case "some":
+        return "Some";
+
+      case "conditional":
+        return "Conditional";
+
+      case "filter":
+        return "Filter";
+    }
+  }, [expression]);
+
   return (
     <>
       <div
         className={cssClass}
         ref={resetContextMenuContainerRef}
         style={
-          !isLogicTypeSelected && nestedExpressionContainer.resizingWidth
+          !expression && nestedExpressionContainer.resizingWidth
             ? { width: `${nestedExpressionContainer.resizingWidth?.value}px` }
             : {}
         }
       >
-        {isLogicTypeSelected ? (
+        {expression ? (
           <>
             {showExpressionHeader && (
               <div className={"logic-type-selected-header"}>
@@ -394,14 +448,13 @@ export function ExpressionDefinitionLogicTypeSelector({
                   toggle={
                     <DropdownToggle
                       data-testid={"logic-type-button-test-id"}
-                      icon={<>{logicTypeIcon(expression.logicType)}</>}
+                      icon={<>{logicTypeIcon(expression.__$$element)}</>}
                       style={{ padding: 0 }}
                       onToggle={setDropdownOpen}
                       tabIndex={-1}
                     >
-                      {expression.logicType}
-                      {expression.logicType === ExpressionDefinitionLogicType.Function &&
-                        ` (${expression.functionKind})`}
+                      {elementUxLogicType}
+                      {expression.__$$element === "functionDefinition" && ` (${expression["@_kind"]})`}
                     </DropdownToggle>
                   }
                 >
@@ -417,7 +470,7 @@ export function ExpressionDefinitionLogicTypeSelector({
           i18n.selectExpression
         )}
 
-        {!isLogicTypeSelected && (
+        {!expression && (
           <PopoverMenu
             onHide={() => {
               setPasteExpressionError("");
@@ -481,7 +534,7 @@ export function ExpressionDefinitionLogicTypeSelector({
           }}
         >
           <Menu className="table-context-menu">
-            <MenuGroup label={`${expression.logicType.toLocaleUpperCase()} EXPRESSION`}></MenuGroup>
+            <MenuGroup label={`${elementUxLogicType.toLocaleUpperCase()} EXPRESSION`}></MenuGroup>
             {contextMenuItems}
           </Menu>
         </div>

@@ -17,24 +17,11 @@
  * under the License.
  */
 
-import * as React from "react";
 import type { Meta, StoryObj } from "@storybook/react";
 import { BoxedExpressionEditor, BoxedExpressionEditorProps } from "../../../src/expressions";
 import { BoxedExpressionEditorWrapper } from "../../boxedExpressionStoriesWrapper";
 import { Base as EmptyExpression } from "../../misc/Empty/EmptyExpression.stories";
-import {
-  DecisionTableExpressionDefinitionBuiltInAggregation,
-  DecisionTableExpressionDefinitionHitPolicy,
-  DmnBuiltInDataType,
-  ExpressionDefinitionLogicType,
-  generateUuid,
-} from "../../../src/api";
-import {
-  CONTEXT_ENTRY_INFO_MIN_WIDTH,
-  DECISION_TABLE_ANNOTATION_DEFAULT_WIDTH,
-  DECISION_TABLE_INPUT_DEFAULT_WIDTH,
-  DECISION_TABLE_OUTPUT_DEFAULT_WIDTH,
-} from "../../../src/resizing/WidthConstants";
+import { DmnBuiltInDataType, generateUuid } from "../../../src/api";
 import {
   DECISION_TABLE_INPUT_DEFAULT_VALUE,
   DECISION_TABLE_OUTPUT_DEFAULT_VALUE,
@@ -56,46 +43,43 @@ export const Base: Story = {
   args: {
     ...EmptyExpression.args,
     expressionDefinition: {
-      id: generateUuid(),
-      name: "Expression Name",
-      dataType: DmnBuiltInDataType.Undefined,
-      logicType: ExpressionDefinitionLogicType.DecisionTable,
-      hitPolicy: DecisionTableExpressionDefinitionHitPolicy.Unique,
-      aggregation: DecisionTableExpressionDefinitionBuiltInAggregation["<None>"],
+      __$$element: "decisionTable",
+      "@_id": generateUuid(),
+      "@_label": "Expression Name",
+      "@_hitPolicy": "UNIQUE",
       input: [
         {
-          id: generateUuid(),
-          idLiteralExpression: generateUuid(),
-          name: "input-1",
-          dataType: DmnBuiltInDataType.Undefined,
-          width: DECISION_TABLE_INPUT_DEFAULT_WIDTH,
+          "@_id": generateUuid(),
+          inputExpression: {
+            "@_id": generateUuid(),
+            text: { __$$text: "input-1" },
+            "@_typeRef": DmnBuiltInDataType.Undefined,
+          },
         },
       ],
       output: [
         {
-          id: generateUuid(),
-          name: "output-1",
-          dataType: DmnBuiltInDataType.Undefined,
-          width: DECISION_TABLE_OUTPUT_DEFAULT_WIDTH,
+          "@_id": generateUuid(),
+          "@_label": "output-1",
+          "@_typeRef": DmnBuiltInDataType.Undefined,
         },
       ],
-      annotations: [
+      annotation: [
         {
-          name: "annotation-1",
-          width: DECISION_TABLE_ANNOTATION_DEFAULT_WIDTH,
+          "@_name": "annotation-1",
         },
       ],
-      rules: [
+      rule: [
         {
-          id: generateUuid(),
-          inputEntries: [{ id: generateUuid(), content: DECISION_TABLE_INPUT_DEFAULT_VALUE }],
-          outputEntries: [
+          "@_id": generateUuid(),
+          inputEntry: [{ "@_id": generateUuid(), text: { __$$text: DECISION_TABLE_INPUT_DEFAULT_VALUE } }],
+          outputEntry: [
             {
-              id: generateUuid(),
-              content: DECISION_TABLE_OUTPUT_DEFAULT_VALUE,
+              "@_id": generateUuid(),
+              text: { __$$text: DECISION_TABLE_OUTPUT_DEFAULT_VALUE },
             },
           ],
-          annotationEntries: ["// Your annotations here"],
+          annotationEntry: [{ text: { __$$text: "// Your annotations here" } }],
         },
       ],
     },
@@ -109,59 +93,57 @@ export const Discount: Story = {
   args: {
     ...EmptyExpression.args,
     expressionDefinition: {
-      id: generateUuid(),
-      name: "Discount",
-      dataType: DmnBuiltInDataType.Number,
-      logicType: ExpressionDefinitionLogicType.DecisionTable,
-      hitPolicy: DecisionTableExpressionDefinitionHitPolicy.Priority,
-      aggregation: DecisionTableExpressionDefinitionBuiltInAggregation["<None>"],
+      __$$element: "decisionTable",
+      "@_id": generateUuid(),
+      "@_label": "Discount",
+      "@_typeRef": DmnBuiltInDataType.Number,
+      "@_hitPolicy": "PRIORITY",
       input: [
         {
-          id: generateUuid(),
-          idLiteralExpression: generateUuid(),
-          name: "Customer.Category",
-          dataType: "tCategory" as DmnBuiltInDataType,
-          width: 120,
+          "@_id": generateUuid(),
+          inputExpression: {
+            text: { __$$text: "Customer.Category" },
+            "@_id": generateUuid(),
+            "@_typeRef": "tCategory",
+          },
         },
       ],
       output: [
         {
-          id: generateUuid(),
-          name: "Discount",
-          dataType: DmnBuiltInDataType.Number,
-          width: DECISION_TABLE_OUTPUT_DEFAULT_WIDTH,
+          "@_id": generateUuid(),
+          "@_label": "Discount",
+          "@_typeRef": DmnBuiltInDataType.Number,
         },
       ],
-      annotations: [
+      annotation: [
         {
-          name: "annotation-1",
-          width: DECISION_TABLE_ANNOTATION_DEFAULT_WIDTH,
+          "@_name": "annotation-1",
         },
       ],
-      rules: [
+      rule: [
         {
-          id: generateUuid(),
-          inputEntries: [{ id: generateUuid(), content: `"New Client"` }],
-          outputEntries: [{ id: generateUuid(), content: "0.15" }],
-          annotationEntries: [""],
+          "@_id": generateUuid(),
+          inputEntry: [{ "@_id": generateUuid(), text: { __$$text: `"New Client"` } }],
+          outputEntry: [{ "@_id": generateUuid(), text: { __$$text: "0.15" } }],
+          annotationEntry: [],
         },
         {
-          id: generateUuid(),
-          inputEntries: [{ id: generateUuid(), content: `"Promo"` }],
-          outputEntries: [{ id: generateUuid(), content: "0.25" }],
-          annotationEntries: [""],
+          "@_id": generateUuid(),
+          inputEntry: [{ "@_id": generateUuid(), text: { __$$text: `"Promo"` } }],
+          outputEntry: [{ "@_id": generateUuid(), text: { __$$text: "0.25" } }],
+          annotationEntry: [],
         },
         {
-          id: generateUuid(),
-          inputEntries: [{ id: generateUuid(), content: `"Student"` }],
-          outputEntries: [{ id: generateUuid(), content: "0.30" }],
-          annotationEntries: [""],
+          "@_id": generateUuid(),
+          inputEntry: [{ "@_id": generateUuid(), text: { __$$text: `"Student"` } }],
+          outputEntry: [{ "@_id": generateUuid(), text: { __$$text: "0.30" } }],
+          annotationEntry: [],
         },
         {
-          id: generateUuid(),
-          inputEntries: [{ id: generateUuid(), content: `"Default"` }],
-          outputEntries: [{ id: generateUuid(), content: "0" }],
-          annotationEntries: [""],
+          "@_id": generateUuid(),
+          inputEntry: [{ "@_id": generateUuid(), text: { __$$text: `"Default"` } }],
+          outputEntry: [{ "@_id": generateUuid(), text: { __$$text: "0" } }],
+          annotationEntry: [],
         },
       ],
     },
@@ -175,69 +157,57 @@ export const Nested: Story = {
   args: {
     ...EmptyExpression.args,
     expressionDefinition: {
-      id: generateUuid(),
-      name: "Expression Name",
-      dataType: DmnBuiltInDataType.Undefined,
-      logicType: ExpressionDefinitionLogicType.Context,
-      entryInfoWidth: CONTEXT_ENTRY_INFO_MIN_WIDTH,
-      result: {
-        logicType: ExpressionDefinitionLogicType.Undefined,
-        dataType: DmnBuiltInDataType.Undefined,
-        id: generateUuid(),
-      },
-      contextEntries: [
+      __$$element: "context",
+      "@_id": generateUuid(),
+      "@_label": "Expression Name",
+      contextEntry: [
         {
-          entryInfo: {
-            id: generateUuid(),
-            name: "ContextEntry-1",
-            dataType: DmnBuiltInDataType.Undefined,
+          variable: {
+            "@_id": generateUuid(),
+            "@_name": "ContextEntry-1",
+            description: { __$$text: "ContextEntry-1" },
           },
-          entryExpression: {
-            id: generateUuid(),
-            name: "Expression Name",
-            dataType: DmnBuiltInDataType.Undefined,
-            logicType: ExpressionDefinitionLogicType.DecisionTable,
-            hitPolicy: DecisionTableExpressionDefinitionHitPolicy.Unique,
-            aggregation: DecisionTableExpressionDefinitionBuiltInAggregation["<None>"],
+          expression: {
+            __$$element: "decisionTable",
+            "@_id": generateUuid(),
+            "@_label": "Expression Name",
+            "@_hitPolicy": "UNIQUE",
             input: [
               {
-                id: generateUuid(),
-                idLiteralExpression: generateUuid(),
-                name: "input-1",
-                dataType: DmnBuiltInDataType.Undefined,
-                width: DECISION_TABLE_INPUT_DEFAULT_WIDTH,
+                "@_id": generateUuid(),
+                inputExpression: {
+                  "@_id": generateUuid(),
+                  text: { __$$text: "input-1" },
+                },
               },
             ],
             output: [
               {
-                id: generateUuid(),
-                name: "output-1",
-                dataType: DmnBuiltInDataType.Undefined,
-                width: DECISION_TABLE_OUTPUT_DEFAULT_WIDTH,
+                "@_id": generateUuid(),
+                "@_label": "output-1",
               },
             ],
-            annotations: [
+            annotation: [
               {
-                name: "annotation-1",
-                width: DECISION_TABLE_ANNOTATION_DEFAULT_WIDTH,
+                "@_name": "annotation-1",
               },
             ],
-            rules: [
+            rule: [
               {
-                id: generateUuid(),
-                inputEntries: [
+                "@_id": generateUuid(),
+                inputEntry: [
                   {
-                    id: generateUuid(),
-                    content: DECISION_TABLE_INPUT_DEFAULT_VALUE,
+                    "@_id": generateUuid(),
+                    text: { __$$text: DECISION_TABLE_INPUT_DEFAULT_VALUE },
                   },
                 ],
-                outputEntries: [
+                outputEntry: [
                   {
-                    id: generateUuid(),
-                    content: DECISION_TABLE_OUTPUT_DEFAULT_VALUE,
+                    "@_id": generateUuid(),
+                    text: { __$$text: DECISION_TABLE_OUTPUT_DEFAULT_VALUE },
                   },
                 ],
-                annotationEntries: ["// Your annotations here"],
+                annotationEntry: [{ text: { __$$text: "// Your annotations here" } }],
               },
             ],
           },

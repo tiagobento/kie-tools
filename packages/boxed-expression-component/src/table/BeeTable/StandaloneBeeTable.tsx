@@ -49,11 +49,7 @@ export function StandaloneBeeTable<R extends object>(
   }, []);
 
   const expression = useMemo<ExpressionDefinition>(() => {
-    return {
-      id: generateUuid(),
-      dataType: DmnBuiltInDataType.Undefined,
-      logicType: ExpressionDefinitionLogicType.Undefined,
-    };
+    return undefined!;
   }, []);
 
   return (
@@ -72,6 +68,7 @@ export function StandaloneBeeTable<R extends object>(
               decisionNodeId={""}
               expressionDefinition={expression}
               setExpressionDefinition={setExpression}
+              widthsById={props.widthsById}
             >
               <ResizingWidthsContextProvider>
                 <BeeTable {...props} />

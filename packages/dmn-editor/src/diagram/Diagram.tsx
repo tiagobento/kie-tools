@@ -1247,6 +1247,7 @@ function DmnDiagramEmptyState({
                       typeRef: DmnBuiltInDataType.Undefined,
                       getDefaultColumnWidth,
                     }),
+                    widthsById: new Map<string, number[]>(),
                   });
 
                   state.dispatch(state).boxedExpressionEditor.open(parseXmlHref(decisionNodeHref).id);

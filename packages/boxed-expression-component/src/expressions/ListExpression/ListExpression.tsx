@@ -27,12 +27,7 @@ import {
   BeeTableOperation,
   BeeTableOperationConfig,
   BeeTableProps,
-  ContextExpressionDefinitionEntry,
-  DmnBuiltInDataType,
-  ExpressionDefinition,
-  ExpressionDefinitionLogicType,
   generateUuid,
-  InsertRowColumnsDirection,
   ListExpressionDefinition,
 } from "../../api";
 import { useBoxedExpressionEditorI18n } from "../../i18n";
@@ -48,8 +43,9 @@ import { DEFAULT_EXPRESSION_NAME } from "../ExpressionDefinitionHeaderMenu";
 import "./ListExpression.css";
 import { ListItemCell } from "./ListItemCell";
 import { ResizerStopBehavior } from "../../resizing/ResizingWidthsContext";
+import { DMN15__tContextEntry } from "@kie-tools/dmn-marshaller/dist/schemas/dmn-1_5/ts-gen/types";
 
-export type ROWTYPE = ContextExpressionDefinitionEntry;
+export type ROWTYPE = DMN15__tContextEntry;
 
 export function ListExpression(
   listExpression: ListExpressionDefinition & {
@@ -59,7 +55,7 @@ export function ListExpression(
 ) {
   const { i18n } = useBoxedExpressionEditorI18n();
   const { setExpression } = useBoxedExpressionEditorDispatch();
-  const { decisionNodeId, variables } = useBoxedExpressionEditor();
+  const { decisionNodeId, variables, widthsById } = useBoxedExpressionEditor();
 
   /// //////////////////////////////////////////////////////
   /// ///////////// RESIZING WIDTHS ////////////////////////
@@ -69,7 +65,7 @@ export function ListExpression(
     useNestedExpressionContainerWithNestedExpressions(
       useMemo(() => {
         return {
-          nestedExpressions: listExpression.items,
+          nestedExpressions: listExpression.expression ?? [],
           fixedColumnActualWidth: 0,
           fixedColumnResizingWidth: { value: 0, isPivoting: false },
           fixedColumnMinWidth: 0,
@@ -77,8 +73,9 @@ export function ListExpression(
           extraWidth: LIST_EXPRESSION_EXTRA_WIDTH,
           expression: listExpression,
           flexibleColumnIndex: 1,
+          widthsById: widthsById,
         };
-      }, [listExpression])
+      }, [listExpression, widthsById])
     );
 
   /// //////////////////////////////////////////////////////
@@ -109,28 +106,28 @@ export function ListExpression(
   );
 
   const beeTableRows = useMemo(() => {
-    return listExpression.items.map((item) => ({
-      entryInfo: undefined as any,
-      entryExpression: item,
+    return (listExpression.expression ?? []).map((item) => ({
+      variable: undefined as any,
+      expression: item,
     }));
-  }, [listExpression.items]);
+  }, [listExpression.expression]);
 
   const beeTableColumns = useMemo<ReactTable.Column<ROWTYPE>[]>(
     () => [
       {
-        accessor: decisionNodeId as any, // FIXME: https://github.com/kiegroup/kie-issues/issues/169
-        label: listExpression.name ?? DEFAULT_EXPRESSION_NAME,
-        dataType: listExpression.dataType,
+        accessor: decisionNodeId as any,
+        label: listExpression["@_label"] ?? DEFAULT_EXPRESSION_NAME,
+        dataType: listExpression["@_typeRef"] ?? "<Undefined>",
         isRowIndexColumn: false,
         minWidth: LIST_EXPRESSION_ITEM_MIN_WIDTH,
         width: undefined,
       },
     ],
-    [decisionNodeId, listExpression.dataType, listExpression.name]
+    [decisionNodeId, listExpression]
   );
 
   const getRowKey = useCallback((row: ReactTable.Row<ROWTYPE>) => {
-    return row.original.entryExpression.id;
+    return row.original.expression["@_id"] ?? "";
   }, []);
 
   const cellComponentByColumnAccessor: BeeTableProps<ROWTYPE>["cellComponentByColumnAccessor"] = useMemo(
@@ -140,35 +137,35 @@ export function ListExpression(
     [decisionNodeId, listExpression.parentElementId]
   );
 
-  const getDefaultListItem = useCallback((dataType: DmnBuiltInDataType): ExpressionDefinition => {
-    return {
-      id: generateUuid(),
-      logicType: ExpressionDefinitionLogicType.Undefined,
-      dataType: dataType,
+  const getDefaultListItem = useCallback(function (dataType: string) {
+    const defaultItem: {
+      "@_id": string;
+      "@_typeRef": string;
+      __$$element: "literalExpression";
+    } = {
+      "@_id": generateUuid(),
+      "@_typeRef": dataType,
+      __$$element: "literalExpression",
     };
+
+    return defaultItem;
   }, []);
 
   const onRowAdded = useCallback(
-    (args: { beforeIndex: number; rowsCount: number; insertDirection: InsertRowColumnsDirection }) => {
+    (args: { beforeIndex: number }) => {
       setExpression((prev: ListExpressionDefinition) => {
-        const newItems = [...prev.items];
-        const newListItems = [];
+        const newItems = [...(prev.expression ?? [])];
 
-        for (let i = 0; i < args.rowsCount; i++) {
-          const newItem = getDefaultListItem(prev.dataType);
-          newListItems.push(newItem);
-          variables?.repository.addVariableToContext(newItem.id, newItem.id, listExpression.parentElementId);
-        }
+        const newItem = getDefaultListItem(prev["@_typeRef"] ?? "<Undefined>");
 
-        for (const newEntry of newListItems) {
-          let index = args.beforeIndex;
-          newItems.splice(index, 0, newEntry);
-          if (args.insertDirection === InsertRowColumnsDirection.AboveOrRight) {
-            index++;
-          }
-        }
+        variables?.repository.addVariableToContext(
+          newItem["@_id"] ?? "",
+          newItem["@_id"] ?? "",
+          listExpression.parentElementId
+        );
 
-        return { ...prev, items: newItems };
+        newItems.splice(args.beforeIndex, 0, newItem);
+        return { ...prev, expression: newItems };
       });
     },
     [getDefaultListItem, listExpression.parentElementId, setExpression, variables?.repository]
@@ -177,11 +174,11 @@ export function ListExpression(
   const onRowDeleted = useCallback(
     (args: { rowIndex: number }) => {
       setExpression((prev: ListExpressionDefinition) => {
-        const newItems = [...(prev.items ?? [])];
+        const newItems = [...(prev.expression ?? [])];
         newItems.splice(args.rowIndex, 1);
         return {
           ...prev,
-          items: newItems,
+          expression: newItems,
         };
       });
     },
@@ -191,11 +188,11 @@ export function ListExpression(
   const onRowReset = useCallback(
     (args: { rowIndex: number }) => {
       setExpression((prev: ListExpressionDefinition) => {
-        const newItems = [...(prev.items ?? [])];
-        newItems.splice(args.rowIndex, 1, getDefaultListItem(prev.dataType));
+        const newItems = [...(prev.expression ?? [])];
+        newItems.splice(args.rowIndex, 1, getDefaultListItem(prev["@_typeRef"] ?? "<Undefined>"));
         return {
           ...prev,
-          items: newItems,
+          expression: newItems,
         };
       });
     },
@@ -210,8 +207,8 @@ export function ListExpression(
     ([{ name, dataType }]: BeeTableColumnUpdate<ROWTYPE>[]) => {
       setExpression((prev) => ({
         ...prev,
-        name,
-        dataType,
+        "@_label": name,
+        "@_typeRef": dataType,
       }));
     },
     [setExpression]
@@ -241,11 +238,11 @@ export function ListExpression(
 
   return (
     <NestedExpressionContainerContext.Provider value={nestedExpressionContainerValue}>
-      <div className={`${listExpression.id} list-expression`}>
+      <div className={`${listExpression["@_id"]} list-expression`}>
         <BeeTable<ROWTYPE>
           onColumnResizingWidthChange={onColumnResizingWidthChange}
           resizerStopBehavior={ResizerStopBehavior.SET_WIDTH_WHEN_SMALLER}
-          tableId={listExpression.id}
+          tableId={listExpression["@_id"]}
           headerVisibility={beeTableHeaderVisibility}
           cellComponentByColumnAccessor={cellComponentByColumnAccessor}
           columns={beeTableColumns}
@@ -260,6 +257,7 @@ export function ListExpression(
           shouldRenderRowIndexColumn={true}
           shouldShowRowsInlineControls={true}
           shouldShowColumnsInlineControls={false}
+          widthsById={widthsById}
         />
       </div>
     </NestedExpressionContainerContext.Provider>

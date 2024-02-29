@@ -44,17 +44,29 @@ type ROWTYPE = any;
 
 export function LiteralExpression(literalExpression: LiteralExpressionDefinition & { isNested: boolean }) {
   const { setExpression } = useBoxedExpressionEditorDispatch();
-  const { decisionNodeId, variables } = useBoxedExpressionEditor();
+  const { decisionNodeId, variables, widthsById } = useBoxedExpressionEditor();
 
   const getValue = useCallback(() => {
-    return literalExpression.content ?? "";
-  }, [literalExpression.content]);
+    return literalExpression.text?.__$$text ?? "";
+  }, [literalExpression.text]);
 
   const setValue = useCallback(
     (value: string) => {
-      setExpression((prev) => ({ ...prev, content: value }));
+      setExpression(() => ({ ...literalExpression, text: { __$$text: value } }));
     },
-    [setExpression]
+    [literalExpression, setExpression]
+  );
+
+  const getWidth = useCallback(
+    (id: string | undefined) => {
+      const widths = widthsById.get(id ?? "");
+      if (widths && widths.length > 0) {
+        return widths[0];
+      } else {
+        return undefined;
+      }
+    },
+    [widthsById]
   );
 
   const { containerCellCoordinates } = useBeeTableCoordinates();
@@ -67,19 +79,19 @@ export function LiteralExpression(literalExpression: LiteralExpressionDefinition
 
   const onColumnUpdates = useCallback(
     ([{ name, dataType }]: BeeTableColumnUpdate<ROWTYPE>[]) => {
-      setExpression((prev) => ({
-        ...prev,
-        name,
-        dataType,
+      setExpression(() => ({
+        ...literalExpression,
+        "@_label": name,
+        "@_typeRef": dataType,
       }));
     },
-    [setExpression]
+    [literalExpression, setExpression]
   );
 
   const setWidth = useCallback(
     (newWidthAction: React.SetStateAction<number | undefined>) => {
       setExpression((prev: LiteralExpressionDefinition) => {
-        const newWidth = typeof newWidthAction === "function" ? newWidthAction(prev.width) : newWidthAction;
+        const newWidth = typeof newWidthAction === "function" ? newWidthAction(getWidth(prev["@_id"])) : newWidthAction;
         return { ...prev, width: newWidth };
       });
     },
@@ -98,7 +110,7 @@ export function LiteralExpression(literalExpression: LiteralExpressionDefinition
   /// //////////////////////////////////////////////////////
 
   const { onColumnResizingWidthChange, isPivoting } = usePublishedBeeTableResizableColumns(
-    literalExpression.id,
+    literalExpression["@_id"] ?? "",
     1,
     false
   );
@@ -139,19 +151,19 @@ export function LiteralExpression(literalExpression: LiteralExpressionDefinition
     return [
       {
         accessor: decisionNodeId as any, // FIXME: https://github.com/kiegroup/kie-issues/issues/169
-        label: literalExpression.name ?? DEFAULT_EXPRESSION_NAME,
+        label: literalExpression["@_label"] ?? DEFAULT_EXPRESSION_NAME,
         isRowIndexColumn: false,
-        dataType: literalExpression.dataType,
+        dataType: literalExpression["@_typeRef"] ?? "<Undefined>",
         minWidth,
-        width: literalExpression.width ?? LITERAL_EXPRESSION_MIN_WIDTH,
+        width: getWidth(literalExpression["@_id"]) ?? LITERAL_EXPRESSION_MIN_WIDTH,
         setWidth,
       },
     ];
-  }, [decisionNodeId, literalExpression.dataType, literalExpression.name, literalExpression.width, minWidth, setWidth]);
+  }, [decisionNodeId, getWidth, literalExpression, minWidth, setWidth]);
 
   const beeTableRows = useMemo<ROWTYPE[]>(() => {
-    return [{ [decisionNodeId]: { content: literalExpression.content ?? "", id: literalExpression.id } }];
-  }, [decisionNodeId, literalExpression.content, literalExpression.id]);
+    return [{ [decisionNodeId]: { content: literalExpression.text?.__$$text ?? "", id: literalExpression["@_id"] } }];
+  }, [decisionNodeId, literalExpression.text]);
 
   const beeTableHeaderVisibility = useMemo(() => {
     return literalExpression.isNested ? BeeTableHeaderVisibility.None : BeeTableHeaderVisibility.AllLevels;
@@ -210,6 +222,7 @@ export function LiteralExpression(literalExpression: LiteralExpressionDefinition
           shouldShowRowsInlineControls={false}
           shouldShowColumnsInlineControls={false}
           variables={variables}
+          widthsById={widthsById}
         ></BeeTable>
       </div>
     </div>

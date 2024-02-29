@@ -38,7 +38,10 @@ export interface BoxedExpressionEditorProps {
   /** Identifier of the decision node, where the expression will be hold */
   decisionNodeId: string;
   /** All expression properties used to define it */
-  expressionDefinition: ExpressionDefinition;
+  expressionDefinition?: ExpressionDefinition;
+
+  widthsById: Map<string, number[]>;
+
   setExpressionDefinition: React.Dispatch<React.SetStateAction<ExpressionDefinition>>;
   /** A boolean used for making (or not) the reset button available on the root expression */
   isResetSupportedOnRootExpression?: boolean;
@@ -49,6 +52,7 @@ export interface BoxedExpressionEditorProps {
   //
   scrollableParentRef: React.RefObject<HTMLElement>;
   variables?: FeelVariables;
+  expressionName?: string;
 }
 
 export function BoxedExpressionEditor({
@@ -61,6 +65,8 @@ export function BoxedExpressionEditor({
   scrollableParentRef,
   pmmlParams,
   variables,
+  widthsById,
+  expressionName,
 }: BoxedExpressionEditorProps) {
   return (
     <I18nDictionariesProvider
@@ -78,11 +84,15 @@ export function BoxedExpressionEditor({
         dataTypes={dataTypes}
         pmmlParams={pmmlParams}
         variables={variables}
+        widthsById={widthsById}
+        expressionName={expressionName}
       >
         <ExpressionDefinitionRoot
           decisionNodeId={decisionNodeId}
           expression={expressionDefinition}
           isResetSupported={isResetSupportedOnRootExpression}
+          widthsById={widthsById}
+          expressionName={expressionName}
         />
       </BoxedExpressionEditorContextProvider>
     </I18nDictionariesProvider>

@@ -41,6 +41,8 @@ export interface BoxedExpressionEditorContextType {
   // State
   currentlyOpenContextMenu: string | undefined;
   setCurrentlyOpenContextMenu: React.Dispatch<React.SetStateAction<string | undefined>>;
+
+  widthsById: Map<string, number[]>;
 }
 
 export interface BoxedExpressionEditorDispatchContextType {
@@ -72,6 +74,7 @@ export function BoxedExpressionEditorContextProvider({
   pmmlParams,
   scrollableParentRef,
   variables,
+  widthsById,
 }: React.PropsWithChildren<BoxedExpressionEditorProps>) {
   const [currentlyOpenContextMenu, setCurrentlyOpenContextMenu] = useState<string | undefined>(undefined);
 
@@ -101,6 +104,7 @@ export function BoxedExpressionEditorContextProvider({
         //state // FIXME: Move to a separate context (https://github.com/kiegroup/kie-issues/issues/168)
         currentlyOpenContextMenu,
         setCurrentlyOpenContextMenu,
+        widthsById,
       }}
     >
       <BoxedExpressionEditorDispatchContext.Provider value={dispatch}>

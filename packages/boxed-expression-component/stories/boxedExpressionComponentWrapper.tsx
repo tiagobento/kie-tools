@@ -42,6 +42,7 @@ export function BoxedExpressionComponentWrapper(props: {
         beeGwtService={props.beeGwtService ?? beeGwtService}
         pmmlParams={props.pmmlParams ?? pmmlParams}
         isResetSupportedOnRootExpression={props.isResetSupportedOnRootExpression}
+        widthsById={new Map<string, number[]>()}
       />
     </div>
   );
