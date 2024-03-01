@@ -22,21 +22,16 @@ import {
   DMN15__tDefinitions,
   DMN15__tFunctionDefinition,
 } from "@kie-tools/dmn-marshaller/dist/schemas/dmn-1_5/ts-gen/types";
-import { addOrGetDrd } from "./addOrGetDrd";
 import { renameDrgElement } from "./renameNode";
 
 export function updateExpression({
   definitions,
-  drdIndex,
   expression,
   drgElementIndex,
-  widthsById,
 }: {
   definitions: DMN15__tDefinitions;
-  drdIndex: number;
   expression: ExpressionDefinition;
   drgElementIndex: number;
-  widthsById: Map<string, number[]>;
 }): void {
   const drgElement = definitions.drgElement?.[drgElementIndex];
   if (!drgElement) {
@@ -68,22 +63,4 @@ export function updateExpression({
   } else {
     throw new Error("DMN MUTATION: Can't update expression for drgElement that is not a Decision or a BKM.");
   }
-
-  const { widthsExtension, widths } = addOrGetDrd({ definitions, drdIndex });
-  const componentWidthsMap = widths.reduce(
-    (acc, e) =>
-      e["@_dmnElementRef"]
-        ? acc.set(
-            e["@_dmnElementRef"],
-            (e["kie:width"] ?? []).map((vv) => vv.__$$text)
-          )
-        : acc,
-    new Map<string, number[]>()
-  );
-
-  widthsById.forEach((v, k) => componentWidthsMap.set(k, v));
-  widthsExtension["kie:ComponentWidths"] = [...componentWidthsMap.entries()].map(([k, v]) => ({
-    "@_dmnElementRef": k,
-    "kie:width": v.map((vv) => ({ __$$text: vv })),
-  }));
 }

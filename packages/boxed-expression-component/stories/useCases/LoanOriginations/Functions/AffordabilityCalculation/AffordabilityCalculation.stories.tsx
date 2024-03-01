@@ -23,7 +23,7 @@ import {
   FunctionExpressionDefinitionKind,
 } from "../../../../../src/api";
 import type { Meta, StoryObj } from "@storybook/react";
-import { beeGwtService, BoxedExpressionEditorWrapper, pmmlParams } from "../../../../boxedExpressionStoriesWrapper";
+import { beeGwtService, BoxedExpressionEditorWrapper, pmmlDocuments } from "../../../../boxedExpressionStoriesWrapper";
 import { BoxedExpressionEditor, BoxedExpressionEditorProps } from "../../../../../src/expressions";
 import { loanOriginationsDataTypes } from "../../boxedExpressionEditorBase";
 
@@ -184,11 +184,11 @@ export const affordabilityCalculationExpression: FunctionExpressionDefinition = 
 export const Expression: Story = {
   render: (args) => BoxedExpressionEditorWrapper(),
   args: {
-    decisionNodeId: "_00000000-0000-0000-0000-000000000000",
-    expressionDefinition: affordabilityCalculationExpression,
+    expressionHolderId: "_00000000-0000-0000-0000-000000000000",
+    expression: affordabilityCalculationExpression,
     dataTypes: loanOriginationsDataTypes,
     beeGwtService,
-    pmmlParams,
+    pmmlDocuments,
     isResetSupportedOnRootExpression: false,
   },
 };

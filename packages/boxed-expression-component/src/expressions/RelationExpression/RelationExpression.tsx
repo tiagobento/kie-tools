@@ -47,8 +47,8 @@ import {
   useBoxedExpressionEditorDispatch,
 } from "../BoxedExpressionEditor/BoxedExpressionEditorContext";
 import { DEFAULT_EXPRESSION_NAME } from "../ExpressionDefinitionHeaderMenu";
-import "./RelationExpression.css";
 import { DMN15__tList, DMN15__tLiteralExpression } from "@kie-tools/dmn-marshaller/dist/schemas/dmn-1_5/ts-gen/types";
+import "./RelationExpression.css";
 
 type ROWTYPE = DMN15__tList;
 
@@ -61,7 +61,7 @@ export function RelationExpression(
   }
 ) {
   const { i18n } = useBoxedExpressionEditorI18n();
-  const { decisionNodeId, widthsById } = useBoxedExpressionEditor();
+  const { expressionHolderId, widthsById } = useBoxedExpressionEditor();
   const { setExpression } = useBoxedExpressionEditorDispatch();
   const { variables } = useBoxedExpressionEditor();
 

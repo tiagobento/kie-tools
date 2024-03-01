@@ -22,9 +22,8 @@ import {
   DmnBuiltInDataType,
   DmnDataType,
   ExpressionDefinition,
-  ExpressionDefinitionLogicType,
   generateUuid,
-  PmmlParam,
+  PmmlDocument,
 } from "@kie-tools/boxed-expression-component/dist/api";
 import { BoxedExpressionEditor } from "@kie-tools/boxed-expression-component/dist/expressions";
 import { FeelVariables } from "@kie-tools/dmn-feel-antlr4-parser";
@@ -89,6 +88,8 @@ import { DmnEditorTab } from "../store/Store";
 import { useDmnEditorStore, useDmnEditorStoreApi } from "../store/StoreContext";
 import { getDefaultColumnWidth } from "./getDefaultColumnWidth";
 import { getDefaultExpressionDefinitionByLogicType } from "./getDefaultExpressionDefinitionByLogicType";
+import { addOrGetDrd } from "../mutations/addOrGetDrd";
+import { updateExpressionWidths } from "../mutations/updateExpressionWidths";
 
 export function BoxedExpression({ container }: { container: React.RefObject<HTMLElement> }) {
   const { externalModelsByNamespace } = useExternalModels();
@@ -171,18 +172,31 @@ export function BoxedExpression({ container }: { container: React.RefObject<HTML
     }
 
     return {
-      beeExpression: drgElementToBoxedExpression(widthsById, drgElement),
+      beeExpression: drgElementToBoxedExpression(drgElement),
       drgElementIndex,
       drgElement,
       drgElementType: drgElement.__$$element,
     };
-  }, [drgElement, drgElementIndex, widthsById]);
+  }, [drgElement, drgElementIndex]);
 
   const expressionName = useMemo(() => {
     return drgElement?.["@_name"];
   }, [drgElement]);
 
-  const setExpression: React.Dispatch<React.SetStateAction<ExpressionDefinition>> = useCallback(
+  const onWidthsChange: React.Dispatch<Map<string, number[]>> = useCallback(
+    (newWidthsById) => {
+      dmnEditorStoreApi.setState((state) => {
+        updateExpressionWidths({
+          definitions: state.dmn.model.definitions,
+          drdIndex: state.diagram.drdIndex,
+          widthsById: newWidthsById,
+        });
+      });
+    },
+    [dmnEditorStoreApi]
+  );
+
+  const onExpressionChange: React.Dispatch<React.SetStateAction<ExpressionDefinition>> = useCallback(
     (expressionAction) => {
       dmnEditorStoreApi.setState((state) => {
         const newExpression =
@@ -192,14 +206,12 @@ export function BoxedExpression({ container }: { container: React.RefObject<HTML
 
         updateExpression({
           definitions: state.dmn.model.definitions,
-          drdIndex: diagram.drdIndex,
           expression: newExpression,
           drgElementIndex: expression?.drgElementIndex ?? 0,
-          widthsById: widthsById,
         });
       });
     },
-    [diagram.drdIndex, dmnEditorStoreApi, expression?.beeExpression, expression?.drgElementIndex, widthsById]
+    [dmnEditorStoreApi, expression?.beeExpression, expression?.drgElementIndex]
   );
 
   const isResetSupportedOnRootExpression = useMemo(() => {
@@ -218,7 +230,7 @@ export function BoxedExpression({ container }: { container: React.RefObject<HTML
     return [...builtInFeelTypes, ...customDataTypes];
   }, [dataTypesTree]);
 
-  const pmmlParams = useMemo<PmmlParam[]>(() => {
+  const pmmlDocuments = useMemo<PmmlDocument[]>(() => {
     return [...externalPmmlsByNamespace.entries()].flatMap(([namespace, pmml]) => {
       const documentData = getPmmlDocumentData(pmml.model);
       const _import = importsByNamespace.get(namespace);
@@ -242,25 +254,26 @@ export function BoxedExpression({ container }: { container: React.RefObject<HTML
 
   const beeGwtService = useMemo<BeeGwtService>(() => {
     return {
-      getDefaultExpressionDefinition(
-        logicType: string,
-        typeRef: string | undefined,
-        isRoot?: boolean
-      ): ExpressionDefinition {
-        return getDefaultExpressionDefinitionByLogicType({
-          logicType: logicType as ExpressionDefinitionLogicType,
-          typeRef: typeRef ?? DmnBuiltInDataType.Undefined,
-          expressionHolderName: expression?.drgElement?.["@_name"],
-          allTopLevelDataTypesByFeelName,
-          getDefaultColumnWidth,
-          getInputs: () => {
-            if (!isRoot || expression?.drgElement.__$$element !== "decision") {
-              return undefined;
-            } else {
-              return determineInputsForDecision(expression?.drgElement, allTopLevelDataTypesByFeelName, nodesById);
-            }
-          },
-        });
+      getDefaultExpressionDefinition(logicType, typeRef, isRoot) {
+        const widthsById = new Map<string, number[]>();
+        return {
+          expression: getDefaultExpressionDefinitionByLogicType({
+            logicType,
+            typeRef: typeRef ?? DmnBuiltInDataType.Undefined,
+            expressionHolderName: expression?.drgElement?.["@_name"],
+            allTopLevelDataTypesByFeelName,
+            widthsById,
+            getDefaultColumnWidth,
+            getInputs: () => {
+              if (!isRoot || expression?.drgElement.__$$element !== "decision") {
+                return undefined;
+              } else {
+                return determineInputsForDecision(expression?.drgElement, allTopLevelDataTypesByFeelName, nodesById);
+              }
+            },
+          }),
+          widthsById,
+        };
       },
       selectObject(uuid) {
         dmnEditorStoreApi.setState((state) => {
@@ -351,15 +364,16 @@ export function BoxedExpression({ container }: { container: React.RefObject<HTML
         <div style={{ flexGrow: 1 }}>
           <BoxedExpressionEditor
             beeGwtService={beeGwtService}
-            pmmlParams={pmmlParams}
+            pmmlDocuments={pmmlDocuments}
             isResetSupportedOnRootExpression={isResetSupportedOnRootExpression}
-            decisionNodeId={boxedExpressionEditor.activeDrgElementId!}
-            expressionDefinition={expression?.beeExpression}
-            setExpressionDefinition={setExpression}
+            expressionHolderId={boxedExpressionEditor.activeDrgElementId!}
+            expression={expression?.beeExpression}
+            onExpressionChange={onExpressionChange}
             dataTypes={dataTypes}
             scrollableParentRef={container}
             variables={feelVariables}
             widthsById={widthsById}
+            onWidthsChange={onWidthsChange}
             expressionName={expressionName}
           />
         </div>
@@ -369,7 +383,6 @@ export function BoxedExpression({ container }: { container: React.RefObject<HTML
 }
 
 function drgElementToBoxedExpression(
-  widthsById: Map<string, number[]>,
   expressionHolder:
     | (DMN15__tDecision & { __$$element: "decision" })
     | (DMN15__tBusinessKnowledgeModel & { __$$element: "businessKnowledgeModel" })

@@ -27,9 +27,7 @@ import {
   BeeTableOperation,
   BeeTableOperationConfig,
   BeeTableProps,
-  DmnBuiltInDataType,
   ExpressionDefinition,
-  ExpressionDefinitionLogicType,
   FunctionExpressionDefinition,
   FunctionExpressionDefinitionKind,
   generateUuid,
@@ -68,7 +66,7 @@ export function FeelFunctionExpression({
   functionExpression: FeelFunctionExpressionDefinition;
 }) {
   const { i18n } = useBoxedExpressionEditorI18n();
-  const { decisionNodeId, widthsById } = useBoxedExpressionEditor();
+  const { expressionHolderId, widthsById } = useBoxedExpressionEditor();
   const { setExpression } = useBoxedExpressionEditorDispatch();
 
   const parametersColumnHeader = useFunctionExpressionParametersColumnHeader(functionExpression.formalParameter);
@@ -77,7 +75,7 @@ export function FeelFunctionExpression({
     return [
       {
         label: functionExpression["@_label"] ?? DEFAULT_EXPRESSION_NAME,
-        accessor: decisionNodeId as any, // FIXME: https://github.com/kiegroup/kie-issues/issues/169
+        accessor: expressionHolderId as any, // FIXME: https://github.com/kiegroup/kie-issues/issues/169
         dataType: functionExpression["@_typeRef"] ?? "<Undefined>",
         isRowIndexColumn: false,
         width: undefined,
@@ -93,7 +91,7 @@ export function FeelFunctionExpression({
         ],
       },
     ];
-  }, [decisionNodeId, functionExpression, parametersColumnHeader]);
+  }, [expressionHolderId, functionExpression, parametersColumnHeader]);
 
   const headerVisibility = useMemo(() => {
     return functionExpression.isNested ? BeeTableHeaderVisibility.LastLevel : BeeTableHeaderVisibility.AllLevels;

@@ -55,7 +55,7 @@ export function ListExpression(
 ) {
   const { i18n } = useBoxedExpressionEditorI18n();
   const { setExpression } = useBoxedExpressionEditorDispatch();
-  const { decisionNodeId, variables, widthsById } = useBoxedExpressionEditor();
+  const { expressionHolderId, variables, widthsById } = useBoxedExpressionEditor();
 
   /// //////////////////////////////////////////////////////
   /// ///////////// RESIZING WIDTHS ////////////////////////
@@ -115,7 +115,7 @@ export function ListExpression(
   const beeTableColumns = useMemo<ReactTable.Column<ROWTYPE>[]>(
     () => [
       {
-        accessor: decisionNodeId as any,
+        accessor: expressionHolderId as any,
         label: listExpression["@_label"] ?? DEFAULT_EXPRESSION_NAME,
         dataType: listExpression["@_typeRef"] ?? "<Undefined>",
         isRowIndexColumn: false,
@@ -123,7 +123,7 @@ export function ListExpression(
         width: undefined,
       },
     ],
-    [decisionNodeId, listExpression]
+    [expressionHolderId, listExpression]
   );
 
   const getRowKey = useCallback((row: ReactTable.Row<ROWTYPE>) => {
@@ -132,9 +132,9 @@ export function ListExpression(
 
   const cellComponentByColumnAccessor: BeeTableProps<ROWTYPE>["cellComponentByColumnAccessor"] = useMemo(
     (): { [p: string]: ({ rowIndex, data, columnIndex }: BeeTableCellProps<ROWTYPE>) => JSX.Element } => ({
-      [decisionNodeId]: (props) => <ListItemCell parentElementId={listExpression.parentElementId} {...props} />,
+      [expressionHolderId]: (props) => <ListItemCell parentElementId={listExpression.parentElementId} {...props} />,
     }),
-    [decisionNodeId, listExpression.parentElementId]
+    [expressionHolderId, listExpression.parentElementId]
   );
 
   const getDefaultListItem = useCallback(function (dataType: string) {

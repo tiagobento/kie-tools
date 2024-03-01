@@ -19,7 +19,7 @@
 
 import "../ContextExpression/ContextEntryExpressionCell.css";
 import * as React from "react";
-import { ExpressionDefinition, ExpressionDefinitionLogicType, InvocationExpressionDefinition } from "../../api";
+import { DmnBuiltInDataType, ExpressionDefinition, InvocationExpressionDefinition } from "../../api";
 import {
   NestedExpressionDispatchContextProvider,
   useBoxedExpressionEditorDispatch,
@@ -57,7 +57,7 @@ export const ArgumentEntryExpressionCell: React.FunctionComponent<ArgumentEntryE
         argumentEntries[rowIndex] = {
           ...argumentEntries[rowIndex],
           expression: getNewExpression(
-            argumentEntries[rowIndex]?.expression ?? { logicType: ExpressionDefinitionLogicType.Undefined }
+            argumentEntries[rowIndex]?.expression ?? { "@_typeRef": DmnBuiltInDataType.Undefined }
           ),
         };
 

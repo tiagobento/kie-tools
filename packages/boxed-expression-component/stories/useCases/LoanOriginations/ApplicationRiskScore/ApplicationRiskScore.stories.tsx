@@ -20,7 +20,7 @@
 import { loanOriginationsDataTypes } from "../boxedExpressionEditorBase";
 import { ContextExpressionDefinition, DmnBuiltInDataType } from "../../../../src/api";
 import type { Meta, StoryObj } from "@storybook/react";
-import { beeGwtService, BoxedExpressionEditorWrapper, pmmlParams } from "../../../boxedExpressionStoriesWrapper";
+import { beeGwtService, BoxedExpressionEditorWrapper, pmmlDocuments } from "../../../boxedExpressionStoriesWrapper";
 import { BoxedExpressionEditor, BoxedExpressionEditorProps } from "../../../../src/expressions";
 
 // More on how to set up stories at: https://storybook.js.org/docs/react/writing-stories/introduction#default-export
@@ -245,11 +245,11 @@ export const applicationRiskScoreExpression: ContextExpressionDefinition = {
 export const Expression: Story = {
   render: (args) => BoxedExpressionEditorWrapper(),
   args: {
-    decisionNodeId: "_00000000-0000-0000-0000-000000000000",
-    expressionDefinition: applicationRiskScoreExpression,
+    expressionHolderId: "_00000000-0000-0000-0000-000000000000",
+    expression: applicationRiskScoreExpression,
     dataTypes: loanOriginationsDataTypes,
     beeGwtService,
-    pmmlParams,
+    pmmlDocuments,
     isResetSupportedOnRootExpression: false,
   },
 };

@@ -62,7 +62,7 @@ export const Discount: Story = {
   ...DecisionTable.Discount,
   args: {
     ...DecisionTable.Discount.args!,
-    expressionDefinition: {
+    expression: {
       ...(DecisionTable.Discount.args!.expressionDefinition as DecisionTableExpressionDefinition),
       rule: [
         {

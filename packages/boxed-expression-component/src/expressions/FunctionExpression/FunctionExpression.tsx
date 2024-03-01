@@ -22,7 +22,6 @@ import * as React from "react";
 import { useCallback, useMemo } from "react";
 import {
   DmnBuiltInDataType,
-  ExpressionDefinitionLogicType,
   FunctionExpressionDefinition,
   FunctionExpressionDefinitionKind,
   generateUuid,
@@ -41,7 +40,10 @@ import { FunctionKindSelector } from "./FunctionKindSelector";
 import { JavaFunctionExpression, JavaFunctionExpressionDefinition } from "./JavaFunctionExpression";
 import { ParametersPopover } from "./ParametersPopover";
 import { PmmlFunctionExpression, PmmlFunctionExpressionDefinition } from "./PmmlFunctionExpression";
-import { DMN15__tFunctionDefinition } from "@kie-tools/dmn-marshaller/dist/schemas/dmn-1_5/ts-gen/types";
+import {
+  DMN15__tFunctionDefinition,
+  DMN15__tFunctionKind,
+} from "@kie-tools/dmn-marshaller/dist/schemas/dmn-1_5/ts-gen/types";
 
 export const DEFAULT_FIRST_PARAM_NAME = "p-1";
 
@@ -64,11 +66,11 @@ export function FunctionExpression(
   }
 }
 
-export function useFunctionExpressionControllerCell(functionKind: FunctionExpressionDefinitionKind) {
+export function useFunctionExpressionControllerCell(functionKind: DMN15__tFunctionKind) {
   const { setExpression } = useBoxedExpressionEditorDispatch();
 
   const onFunctionKindSelect = useCallback(
-    (kind: string) => {
+    (kind: DMN15__tFunctionKind) => {
       setExpression((prev) => {
         if (kind === FunctionExpressionDefinitionKind.Feel) {
           return {
@@ -80,7 +82,6 @@ export function useFunctionExpressionControllerCell(functionKind: FunctionExpres
             expression: {
               __$$element: "literalExpression",
               id: generateUuid(),
-              logicType: ExpressionDefinitionLogicType.Undefined,
               dataType: DmnBuiltInDataType.Undefined,
             },
             formalParameter: [],
@@ -94,8 +95,6 @@ export function useFunctionExpressionControllerCell(functionKind: FunctionExpres
             expression: {
               __$$element: "context",
               id: generateUuid(),
-              logicType: ExpressionDefinitionLogicType.Undefined,
-              dataType: DmnBuiltInDataType.Undefined,
             },
             "@_kind": FunctionExpressionDefinitionKind.Java,
             "@_typeRef": DmnBuiltInDataType.Undefined,

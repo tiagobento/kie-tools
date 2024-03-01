@@ -21,7 +21,6 @@ import {
   ContextExpressionDefinition,
   DecisionTableExpressionDefinition,
   ExpressionDefinition,
-  ExpressionDefinitionLogicType,
   FunctionExpressionDefinition,
   FunctionExpressionDefinitionKind,
   generateUuid,
@@ -40,18 +39,18 @@ import {
 } from "../../src/expressions/DecisionTableExpression";
 
 export function getDefaultExpressionDefinitionByLogicType(
-  logicType: ExpressionDefinitionLogicType,
+  logicType: ExpressionDefinition["__$$element"] | undefined,
   dataType: string,
   containerWidth: number
 ): ExpressionDefinition {
-  if (logicType === ExpressionDefinitionLogicType.Literal) {
+  if (logicType === "literalExpression") {
     const literalExpression: LiteralExpressionDefinition = {
       __$$element: "literalExpression",
       "@_typeRef": dataType,
       "@_id": generateUuid(),
     };
     return literalExpression;
-  } else if (logicType === ExpressionDefinitionLogicType.Function) {
+  } else if (logicType === "functionDefinition") {
     const functionExpression: FunctionExpressionDefinition = {
       __$$element: "functionDefinition",
       "@_typeRef": dataType,
@@ -63,7 +62,7 @@ export function getDefaultExpressionDefinitionByLogicType(
       },
     };
     return functionExpression;
-  } else if (logicType === ExpressionDefinitionLogicType.Context) {
+  } else if (logicType === "context") {
     const contextExpression: ContextExpressionDefinition = {
       __$$element: "context",
       "@_typeRef": dataType,
@@ -93,14 +92,14 @@ export function getDefaultExpressionDefinitionByLogicType(
       ],
     };
     return contextExpression;
-  } else if (logicType === ExpressionDefinitionLogicType.List) {
+  } else if (logicType === "list") {
     const listExpression: ListExpressionDefinition = {
       __$$element: "list",
       "@_typeRef": dataType,
       expression: [undefined!, undefined!, undefined!],
     };
     return listExpression;
-  } else if (logicType === ExpressionDefinitionLogicType.Invocation) {
+  } else if (logicType === "invocation") {
     const invocationExpression: InvocationExpressionDefinition = {
       __$$element: "invocation",
       "@_typeRef": dataType,
@@ -120,7 +119,7 @@ export function getDefaultExpressionDefinitionByLogicType(
       },
     };
     return invocationExpression;
-  } else if (logicType === ExpressionDefinitionLogicType.Relation) {
+  } else if (logicType === "relation") {
     const relationExpression: RelationExpressionDefinition = {
       __$$element: "relation",
       "@_typeRef": dataType,
@@ -162,7 +161,7 @@ export function getDefaultExpressionDefinitionByLogicType(
       ],
     };
     return relationExpression;
-  } else if (logicType === ExpressionDefinitionLogicType.DecisionTable) {
+  } else if (logicType === "decisionTable") {
     const decisionTableExpression: DecisionTableExpressionDefinition = {
       __$$element: "decisionTable",
       "@_id": generateUuid(),

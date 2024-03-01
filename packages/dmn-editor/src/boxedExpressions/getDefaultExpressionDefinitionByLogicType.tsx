@@ -22,7 +22,6 @@ import {
   DecisionTableExpressionDefinition,
   DmnBuiltInDataType,
   ExpressionDefinition,
-  ExpressionDefinitionLogicType,
   FunctionExpressionDefinition,
   FunctionExpressionDefinitionKind,
   InvocationExpressionDefinition,
@@ -38,6 +37,7 @@ import {
   DECISION_TABLE_OUTPUT_DEFAULT_WIDTH,
   DECISION_TABLE_ANNOTATION_DEFAULT_WIDTH,
   RELATION_EXPRESSION_COLUMN_DEFAULT_WIDTH,
+  BEE_TABLE_ROW_INDEX_COLUMN_WIDTH,
 } from "@kie-tools/boxed-expression-component/dist/resizing/WidthConstants";
 import {
   DECISION_TABLE_INPUT_DEFAULT_VALUE,
@@ -46,7 +46,6 @@ import {
 import {
   INVOCATION_EXPRESSION_DEFAULT_PARAMETER_NAME,
   INVOCATION_EXPRESSION_DEFAULT_PARAMETER_DATA_TYPE,
-  INVOCATION_EXPRESSION_DEFAULT_PARAMETER_LOGIC_TYPE,
 } from "@kie-tools/boxed-expression-component/dist/expressions/InvocationExpression";
 import { RELATION_EXPRESSION_DEFAULT_VALUE } from "@kie-tools/boxed-expression-component/dist/expressions/RelationExpression";
 import { DataTypeIndex } from "../dataTypes/DataTypes";
@@ -58,29 +57,32 @@ export function getDefaultExpressionDefinitionByLogicType({
   typeRef,
   allTopLevelDataTypesByFeelName,
   expressionHolderName,
+  widthsById,
   getInputs,
   getDefaultColumnWidth,
 }: {
-  logicType: ExpressionDefinitionLogicType;
+  logicType: ExpressionDefinition["__$$element"] | undefined;
   typeRef: string;
   expressionHolderName?: string;
   allTopLevelDataTypesByFeelName: DataTypeIndex;
   getInputs?: () => { name: string; typeRef: string | undefined }[] | undefined;
   getDefaultColumnWidth?: (args: { name: string; typeRef: string | undefined }) => number | undefined;
+  widthsById: Map<string, number[]>;
 }): ExpressionDefinition {
   const dataType = allTopLevelDataTypesByFeelName.get(typeRef);
 
-  if (logicType === ExpressionDefinitionLogicType.Literal) {
+  if (logicType === "literalExpression") {
     const literalExpression: LiteralExpressionDefinition = {
       __$$element: "literalExpression",
       "@_id": generateUuid(),
       "@_typeRef": typeRef,
-      // width: LITERAL_EXPRESSION_MIN_WIDTH,
     };
+
+    widthsById.set(literalExpression["@_id"]!, [LITERAL_EXPRESSION_MIN_WIDTH]);
     return literalExpression;
   }
   //
-  else if (logicType === ExpressionDefinitionLogicType.Function) {
+  else if (logicType === "functionDefinition") {
     const functionExpression: FunctionExpressionDefinition = {
       __$$element: "functionDefinition",
       "@_id": generateUuid(),
@@ -94,7 +96,7 @@ export function getDefaultExpressionDefinitionByLogicType({
     return functionExpression;
   }
   //
-  else if (logicType === ExpressionDefinitionLogicType.Context) {
+  else if (logicType === "context") {
     let maxWidthBasedOnEntryNames = CONTEXT_ENTRY_INFO_MIN_WIDTH;
 
     let contextEntries: DMN15__tContextEntry[];
@@ -152,11 +154,12 @@ export function getDefaultExpressionDefinitionByLogicType({
       __$$element: "context",
       "@_id": generateUuid(),
       "@_typeRef": typeRef,
-      //  entryInfoWidth: maxWidthBasedOnEntryNames,
       contextEntry: contextEntries,
     };
+
+    widthsById.set(contextExpression["@_id"]!, [maxWidthBasedOnEntryNames]);
     return contextExpression;
-  } else if (logicType === ExpressionDefinitionLogicType.List) {
+  } else if (logicType === "list") {
     const listExpression: ListExpressionDefinition = {
       __$$element: "list",
       "@_id": generateUuid(),
@@ -169,12 +172,11 @@ export function getDefaultExpressionDefinitionByLogicType({
       ],
     };
     return listExpression;
-  } else if (logicType === ExpressionDefinitionLogicType.Invocation) {
+  } else if (logicType === "invocation") {
     const invocationExpression: InvocationExpressionDefinition = {
       __$$element: "invocation",
       "@_id": generateUuid(),
       "@_typeRef": typeRef,
-      // entryInfoWidth: CONTEXT_ENTRY_INFO_MIN_WIDTH,
       binding: [
         {
           parameter: {
@@ -196,8 +198,11 @@ export function getDefaultExpressionDefinitionByLogicType({
         text: { __$$text: "FUNCTION NAME" },
       },
     };
+    widthsById.set(invocationExpression["@_id"]!, [CONTEXT_ENTRY_INFO_MIN_WIDTH]);
     return invocationExpression;
-  } else if (logicType === ExpressionDefinitionLogicType.Relation) {
+  } else if (logicType === "relation") {
+    const isSimple = !dataType || !isStruct(dataType.itemDefinition);
+
     const relationExpression: RelationExpressionDefinition = {
       __$$element: "relation",
       "@_id": generateUuid(),
@@ -214,37 +219,45 @@ export function getDefaultExpressionDefinitionByLogicType({
           ],
         },
       ],
-      column:
-        !dataType || !isStruct(dataType.itemDefinition)
-          ? [
-              {
-                "@_id": generateUuid(),
-                "@_name": dataType?.itemDefinition["@_name"] ?? "column-1",
-                "@_typeRef": (dataType?.feelName as DmnBuiltInDataType) ?? DmnBuiltInDataType.Undefined,
-                // width: RELATION_EXPRESSION_COLUMN_DEFAULT_WIDTH,
-              },
-            ]
-          : (dataType.itemDefinition.itemComponent ?? []).map((ic) => {
-              const name = ic["@_name"];
-              const typeRef = isStruct(ic)
-                ? DmnBuiltInDataType.Any
-                : (ic.typeRef?.__$$text as DmnBuiltInDataType) ?? DmnBuiltInDataType.Undefined;
-              return {
-                "@_id": generateUuid(),
-                "@_name": name,
-                "@_typeRef": typeRef,
-                //   width: getDefaultColumnWidth?.({ name, typeRef }) ?? RELATION_EXPRESSION_COLUMN_DEFAULT_WIDTH,
-              };
-            }),
+      column: isSimple
+        ? [
+            {
+              "@_id": generateUuid(),
+              "@_name": dataType?.itemDefinition["@_name"] ?? "column-1",
+              "@_typeRef": (dataType?.feelName as DmnBuiltInDataType) ?? DmnBuiltInDataType.Undefined,
+            },
+          ]
+        : (dataType.itemDefinition.itemComponent ?? []).map((ic) => {
+            const name = ic["@_name"];
+            const typeRef = isStruct(ic)
+              ? DmnBuiltInDataType.Any
+              : (ic.typeRef?.__$$text as DmnBuiltInDataType) ?? DmnBuiltInDataType.Undefined;
+            return {
+              "@_id": generateUuid(),
+              "@_name": name,
+              "@_typeRef": typeRef,
+            };
+          }),
     };
+
+    widthsById.set(relationExpression["@_id"]!, [
+      BEE_TABLE_ROW_INDEX_COLUMN_WIDTH,
+      ...(relationExpression.column ?? []).map(
+        (c) =>
+          getDefaultColumnWidth?.({
+            name: c["@_name"],
+            typeRef: c["@_typeRef"],
+          }) ?? RELATION_EXPRESSION_COLUMN_DEFAULT_WIDTH
+      ),
+    ]);
     return relationExpression;
-  } else if (logicType === ExpressionDefinitionLogicType.DecisionTable) {
+  } else if (logicType === "decisionTable") {
     const singleOutputColumn = {
       name: expressionHolderName || "Output 1",
       typeRef: (dataType?.feelName as DmnBuiltInDataType) ?? DmnBuiltInDataType.Undefined,
     };
     const singleInputColumn = {
-      name: "InputSSSSSSsss 1",
+      name: "Input 1",
       typeRef: DmnBuiltInDataType.Undefined,
     };
 
@@ -256,7 +269,6 @@ export function getDefaultExpressionDefinitionByLogicType({
           text: { __$$text: input.name },
           "@_typeRef": input.typeRef ?? DmnBuiltInDataType.Undefined,
         },
-        // width: getDefaultColumnWidth?.(input) ?? DECISION_TABLE_INPUT_DEFAULT_WIDTH,
       };
     }) ?? [
       {
@@ -266,7 +278,6 @@ export function getDefaultExpressionDefinitionByLogicType({
           text: { __$$text: singleInputColumn.name },
           "@_typeRef": singleInputColumn.typeRef ?? DmnBuiltInDataType.Undefined,
         },
-        //   width: getDefaultColumnWidth?.(singleInputColumn) ?? DECISION_TABLE_INPUT_DEFAULT_WIDTH,
       },
     ];
 
@@ -277,7 +288,6 @@ export function getDefaultExpressionDefinitionByLogicType({
               "@_id": generateUuid(),
               "@_label": singleOutputColumn.name,
               "@_typeRef": singleOutputColumn.typeRef,
-              // width: getDefaultColumnWidth?.(singleOutputColumn) ?? DECISION_TABLE_OUTPUT_DEFAULT_WIDTH,
             },
           ]
         : (dataType.itemDefinition.itemComponent ?? []).map((ic) => {
@@ -289,7 +299,6 @@ export function getDefaultExpressionDefinitionByLogicType({
               "@_id": generateUuid(),
               "@_label": name,
               "@_typeRef": typeRef,
-              // width: getDefaultColumnWidth?.({ name, typeRef }) ?? DECISION_TABLE_OUTPUT_DEFAULT_WIDTH,
             };
           });
 
@@ -303,7 +312,6 @@ export function getDefaultExpressionDefinitionByLogicType({
       annotation: [
         {
           "@_name": "Annotations",
-          //  width: DECISION_TABLE_ANNOTATION_DEFAULT_WIDTH,
         },
       ],
       rule: [
@@ -322,8 +330,28 @@ export function getDefaultExpressionDefinitionByLogicType({
         },
       ],
     };
+
+    widthsById.set(decisionTableExpression["@_id"]!, [
+      BEE_TABLE_ROW_INDEX_COLUMN_WIDTH,
+      ...(decisionTableExpression.input ?? []).map(
+        (input) =>
+          getDefaultColumnWidth?.({
+            name: input["@_label"] ?? input.inputExpression["@_label"] ?? input.inputExpression.text?.__$$text ?? "",
+            typeRef: input.inputExpression["@_typeRef"],
+          }) ?? DECISION_TABLE_INPUT_DEFAULT_WIDTH
+      ),
+      ...(decisionTableExpression.output ?? []).map(
+        (output) =>
+          getDefaultColumnWidth?.({
+            name: output["@_label"] ?? output["@_name"] ?? "",
+            typeRef: output["@_typeRef"],
+          }) ?? DECISION_TABLE_OUTPUT_DEFAULT_WIDTH
+      ),
+      ...(decisionTableExpression.annotation ?? []).map(() => DECISION_TABLE_ANNOTATION_DEFAULT_WIDTH),
+    ]);
+
     return decisionTableExpression;
   } else {
-    throw new Error(`No default expression available for ${logicType}`);
+    throw new Error(`No default expression available for ${logicType}.`);
   }
 }

@@ -20,8 +20,8 @@
 import {
   ContextExpressionDefinition,
   DecisionTableExpressionDefinition,
+  DmnBuiltInDataType,
   ExpressionDefinition,
-  ExpressionDefinitionLogicType,
   FunctionExpressionDefinition,
   FunctionExpressionDefinitionKind,
   generateUuid,
@@ -62,7 +62,7 @@ export const ExpressionContainer: React.FunctionComponent<ExpressionContainerPro
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const { beeGwtService, variables, decisionNodeId } = useBoxedExpressionEditor();
+  const { beeGwtService, variables, expressionHolderId } = useBoxedExpressionEditor();
   const { setExpression } = useBoxedExpressionEditorDispatch();
   const { isActive } = useBeeTableSelectableCellRef(rowIndex, columnIndex, undefined);
 
@@ -174,13 +174,13 @@ export const ExpressionContainer: React.FunctionComponent<ExpressionContainerPro
   );
 
   const onLogicTypeSelected = useCallback(
-    (logicType: ExpressionDefinitionLogicType) => {
+    (logicType: ExpressionDefinition["__$$element"] | undefined) => {
       setExpression((prev) => {
         const defaultExpression = beeGwtService!.getDefaultExpressionDefinition(
           logicType,
-          prev?.["@_typeRef"] ?? "<Undefined>",
+          prev?.["@_typeRef"] ?? DmnBuiltInDataType.Undefined,
           !isNested
-        );
+        ).expression;
 
         const newExpression = {
           ...defaultExpression,
@@ -254,8 +254,7 @@ export const ExpressionContainer: React.FunctionComponent<ExpressionContainerPro
         getPlacementRef={getPlacementRef}
         isResetSupported={isResetSupported}
         isNested={isNested}
-        parentElementId={parentElementId ?? decisionNodeId}
-        widthsById={widthsById}
+        parentElementId={parentElementId ?? expressionHolderId}
       />
     </div>
   );

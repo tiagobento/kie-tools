@@ -99,8 +99,8 @@ export function DecisionTableExpression(
   }
 ) {
   const { i18n } = useBoxedExpressionEditorI18n();
-  const { decisionNodeId, widthsById } = useBoxedExpressionEditor();
-  const { setExpression } = useBoxedExpressionEditorDispatch();
+  const { expressionHolderId, widthsById } = useBoxedExpressionEditor();
+  const { setExpression, setWidth } = useBoxedExpressionEditorDispatch();
   const { variables } = useBoxedExpressionEditor();
 
   const widths = useMemo(() => {
@@ -109,11 +109,11 @@ export function DecisionTableExpression(
 
   const getInputWidth = useCallback(
     (inputIndex: number) => {
-      const index = inputIndex + 1;
+      const index = 1 + inputIndex;
       if (!widths || widths.length <= index) {
         return undefined;
       }
-      return widths[index];
+      return { index, width: widths[index] };
     },
     [widths]
   );
@@ -125,7 +125,7 @@ export function DecisionTableExpression(
         return undefined;
       }
 
-      return widths[index];
+      return { index, width: widths[index] };
     },
     [decisionTableExpression.input?.length, widths]
   );
@@ -141,7 +141,7 @@ export function DecisionTableExpression(
       if (!widths || widths.length <= index) {
         return undefined;
       }
-      return widths[index];
+      return { index, width: widths[index] };
     },
     [decisionTableExpression.input?.length, decisionTableExpression.output?.length, widths]
   );
@@ -196,50 +196,48 @@ export function DecisionTableExpression(
     return editColumnLabel;
   }, [i18n]);
 
+  const id = decisionTableExpression["@_id"]!;
+
   const setInputColumnWidth = useCallback(
     (inputIndex: number) => (newWidthAction: React.SetStateAction<number | undefined>) => {
-      setExpression((prev: DecisionTableExpressionDefinition) => {
-        const newInputs = [...(prev.input ?? [])];
-        const newWidth =
-          typeof newWidthAction === "function" ? newWidthAction(getInputWidth(inputIndex)) : newWidthAction;
+      const inputWidth = getInputWidth(inputIndex);
+      const newWidth = typeof newWidthAction === "function" ? newWidthAction(inputWidth?.width) : newWidthAction;
 
-        if (newWidth) {
-          widthsById.get(newInputs[inputIndex]["@_id"] ?? "")?.splice(0, 1, newWidth);
-        }
-        //newInputs[inputIndex].width = newWidth;
-        return { ...prev, input: newInputs };
-      });
+      if (newWidth && inputWidth) {
+        const values = [...widths];
+        values.splice(inputWidth.index, 1, newWidth);
+        setWidth({ id, values });
+      }
     },
-    [widthsById, getInputWidth, setExpression]
+    [id, getInputWidth, setWidth, widths]
   );
 
   const setOutputColumnWidth = useCallback(
     (outputIndex: number) => (newWidthAction: React.SetStateAction<number | undefined>) => {
-      setExpression((prev: DecisionTableExpressionDefinition) => {
-        const newOutputs = [...(prev.output ?? [])];
-        const newWidth =
-          typeof newWidthAction === "function" ? newWidthAction(getOutputWidth(outputIndex)) : newWidthAction;
+      const outputWidth = getOutputWidth(outputIndex);
+      const newWidth = typeof newWidthAction === "function" ? newWidthAction(outputWidth?.width) : newWidthAction;
 
-        if (newWidth) {
-          widthsById.get(newOutputs[outputIndex]["@_id"] ?? "")?.splice(0, 1, newWidth);
-        }
-        return { ...prev, output: newOutputs };
-      });
+      if (newWidth && outputWidth) {
+        const values = [...widths];
+        values.splice(outputWidth.index, 1, newWidth);
+        setWidth({ id, values });
+      }
     },
-    [widthsById, getOutputWidth, setExpression]
+    [id, getOutputWidth, setWidth, widths]
   );
 
   const setAnnotationColumnWidth = useCallback(
     (annotationIndex: number) => (newWidthAction: React.SetStateAction<number | undefined>) => {
-      setExpression((prev: DecisionTableExpressionDefinition) => {
-        const newAnnotations = [...(prev.annotation ?? [])];
-        const newWidth =
-          typeof newWidthAction === "function" ? newWidthAction(getAnnotationWidth(annotationIndex)) : newWidthAction;
-        // newAnnotations[annotationIndex].width = newWidth; // FIXME
-        return { ...prev, annotation: newAnnotations };
-      });
+      const annotationWidth = getAnnotationWidth(annotationIndex);
+      const newWidth = typeof newWidthAction === "function" ? newWidthAction(annotationWidth?.width) : newWidthAction;
+
+      if (newWidth && annotationWidth) {
+        const values = [...widths];
+        values.splice(annotationWidth.index, 1, newWidth);
+        setWidth({ id, values });
+      }
     },
-    [getAnnotationWidth, setExpression]
+    [id, getAnnotationWidth, setWidth, widths]
   );
 
   /// //////////////////////////////////////////////////////
@@ -251,19 +249,19 @@ export function DecisionTableExpression(
       ...(decisionTableExpression.input ?? []).map((value, index) => ({
         ...value,
         minWidth: DECISION_TABLE_INPUT_MIN_WIDTH,
-        width: getInputWidth(index),
+        width: getInputWidth(index)?.width,
         label: value.inputExpression.text?.__$$text,
       })),
       ...(decisionTableExpression.output ?? []).map((value, index) => ({
         ...value,
         minWidth: DECISION_TABLE_OUTPUT_MIN_WIDTH,
-        width: getOutputWidth(index),
+        width: getOutputWidth(index)?.width,
         label: value["@_name"],
       })),
       ...(decisionTableExpression.annotation ?? []).map((value, index) => ({
         ...value,
         minWidth: DECISION_TABLE_ANNOTATION_MIN_WIDTH,
-        width: getAnnotationWidth(index),
+        width: getAnnotationWidth(index)?.width,
         label: value["@_name"],
       })),
     ],
@@ -305,7 +303,7 @@ export function DecisionTableExpression(
         label: inputClause.inputExpression.text?.__$$text ?? "",
         id: inputClause["@_id"] ?? "",
         dataType: inputClause.inputExpression["@_typeRef"] ?? DmnBuiltInDataType.Undefined,
-        width: getInputWidth(inputIndex) ?? DECISION_TABLE_INPUT_MIN_WIDTH,
+        width: getInputWidth(inputIndex)?.width ?? DECISION_TABLE_INPUT_MIN_WIDTH,
         setWidth: setInputColumnWidth(inputIndex),
         minWidth: DECISION_TABLE_INPUT_MIN_WIDTH,
         groupType: DecisionTableColumnType.InputClause,
@@ -326,7 +324,7 @@ export function DecisionTableExpression(
           decisionTableExpression.output?.length == 1
             ? decisionTableExpression["@_typeRef"] ?? DmnBuiltInDataType.Undefined
             : outputClause["@_typeRef"] ?? DmnBuiltInDataType.Undefined,
-        width: getOutputWidth(outputIndex) ?? DECISION_TABLE_OUTPUT_MIN_WIDTH,
+        width: getOutputWidth(outputIndex)?.width ?? DECISION_TABLE_OUTPUT_MIN_WIDTH,
         setWidth: setOutputColumnWidth(outputIndex),
         minWidth: DECISION_TABLE_OUTPUT_MIN_WIDTH,
         groupType: DecisionTableColumnType.OutputClause,
@@ -337,7 +335,7 @@ export function DecisionTableExpression(
 
     const outputSection = {
       groupType: DecisionTableColumnType.OutputClause,
-      id: decisionNodeId as any, // FIXME: https://github.com/kiegroup/kie-issues/issues/169,
+      id: expressionHolderId as any, // FIXME: https://github.com/kiegroup/kie-issues/issues/169,
       accessor: "decision-table-expression" as any, // FIXME: https://github.com/kiegroup/kie-issues/issues/169
       label: decisionTableExpression["@_label"] ?? DEFAULT_EXPRESSION_NAME,
       dataType: decisionTableExpression["@_typeRef"] ?? DmnBuiltInDataType.Undefined,
@@ -354,7 +352,7 @@ export function DecisionTableExpression(
           accessor: annotationId,
           id: annotationId,
           label: annotation["@_name"] ?? "",
-          width: getAnnotationWidth(annotationIndex) ?? DECISION_TABLE_ANNOTATION_MIN_WIDTH,
+          width: getAnnotationWidth(annotationIndex)?.width ?? DECISION_TABLE_ANNOTATION_MIN_WIDTH,
           setWidth: setAnnotationColumnWidth(annotationIndex),
           minWidth: DECISION_TABLE_ANNOTATION_MIN_WIDTH,
           isInlineEditable: true,
@@ -372,7 +370,7 @@ export function DecisionTableExpression(
       return [...inputColumns, outputSection, ...annotationColumns];
     }
   }, [
-    decisionNodeId,
+    expressionHolderId,
     decisionTableExpression,
     getAnnotationWidth,
     getInputWidth,

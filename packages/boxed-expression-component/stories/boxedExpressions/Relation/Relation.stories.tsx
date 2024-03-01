@@ -22,9 +22,8 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { BoxedExpressionEditor, BoxedExpressionEditorProps } from "../../../src/expressions";
 import { BoxedExpressionEditorWrapper } from "../../boxedExpressionStoriesWrapper";
 import { Base as EmptyExpression } from "../../misc/Empty/EmptyExpression.stories";
-import { DmnBuiltInDataType, ExpressionDefinitionLogicType, generateUuid } from "../../../src/api";
+import { DmnBuiltInDataType, generateUuid } from "../../../src/api";
 import { RELATION_EXPRESSION_DEFAULT_VALUE } from "../../../src/expressions/RelationExpression";
-import { CONTEXT_ENTRY_INFO_MIN_WIDTH } from "../../../src/resizing/WidthConstants";
 
 // More on how to set up stories at: https://storybook.js.org/docs/react/writing-stories/introduction#default-export
 const meta: Meta<BoxedExpressionEditorProps> = {
@@ -38,10 +37,10 @@ type Story = StoryObj<BoxedExpressionEditorProps>;
 // More on writing stories with args: https://storybook.js.org/docs/react/writing-stories/args
 export const Base: Story = {
   render: (args) => BoxedExpressionEditorWrapper(),
-  parameters: { exclude: ["dataTypes", "beeGwtService", "pmmlParams"] },
+  parameters: { exclude: ["dataTypes", "beeGwtService", "pmmlDocuments"] },
   args: {
     ...EmptyExpression.args,
-    expressionDefinition: {
+    expression: {
       __$$element: "relation",
       "@_id": generateUuid(),
       "@_label": "Expression Name",
@@ -70,10 +69,10 @@ export const Base: Story = {
 
 export const People: Story = {
   render: (args) => BoxedExpressionEditorWrapper(),
-  parameters: { exclude: ["dataTypes", "beeGwtService", "pmmlParams"] },
+  parameters: { exclude: ["dataTypes", "beeGwtService", "pmmlDocuments"] },
   args: {
     ...Base.args,
-    expressionDefinition: {
+    expression: {
       __$$element: "relation",
       "@_id": generateUuid(),
       "@_label": "People",
@@ -143,10 +142,10 @@ export const People: Story = {
 
 export const Bigger: Story = {
   render: (args) => BoxedExpressionEditorWrapper(),
-  parameters: { exclude: ["dataTypes", "beeGwtService", "pmmlParams"] },
+  parameters: { exclude: ["dataTypes", "beeGwtService", "pmmlDocuments"] },
   args: {
     ...Base.args,
-    expressionDefinition: {
+    expression: {
       __$$element: "relation",
       "@_id": generateUuid(),
       "@_label": "Expression Name",
@@ -252,10 +251,10 @@ export const Bigger: Story = {
 // More on writing stories with args: https://storybook.js.org/docs/react/writing-stories/args
 export const Nested: Story = {
   render: (args) => BoxedExpressionEditorWrapper(),
-  parameters: { exclude: ["dataTypes", "beeGwtService", "pmmlParams"] },
+  parameters: { exclude: ["dataTypes", "beeGwtService", "pmmlDocuments"] },
   args: {
     ...EmptyExpression.args,
-    expressionDefinition: {
+    expression: {
       __$$element: "context",
       "@_id": generateUuid(),
       "@_label": "Expression Name",

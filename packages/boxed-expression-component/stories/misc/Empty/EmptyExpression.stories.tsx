@@ -23,7 +23,7 @@ import {
   beeGwtService,
   BoxedExpressionEditorWrapper,
   dataTypes,
-  pmmlParams,
+  pmmlDocuments,
 } from "../../boxedExpressionStoriesWrapper";
 
 // More on how to set up stories at: https://storybook.js.org/docs/react/writing-stories/introduction#default-export
@@ -39,10 +39,10 @@ type Story = StoryObj<BoxedExpressionEditorProps>;
 export const Base: Story = {
   render: (args) => BoxedExpressionEditorWrapper(),
   args: {
-    decisionNodeId: "_00000000-0000-0000-0000-000000000000",
-    expressionDefinition: undefined!,
+    expressionHolderId: "_00000000-0000-0000-0000-000000000000",
+    expression: undefined!,
     dataTypes,
     beeGwtService,
-    pmmlParams,
+    pmmlDocuments,
   },
 };

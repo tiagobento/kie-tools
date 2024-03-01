@@ -19,7 +19,7 @@
 
 import * as React from "react";
 import { useCallback } from "react";
-import { BeeTableCellProps, ListExpressionDefinition, ExpressionDefinitionLogicType } from "../../api";
+import { BeeTableCellProps, DmnBuiltInDataType, ListExpressionDefinition } from "../../api";
 import {
   useBoxedExpressionEditorDispatch,
   NestedExpressionDispatchContextProvider,
@@ -40,9 +40,7 @@ export function ListItemCell({
     ({ getNewExpression }) => {
       setExpression((prev: ListExpressionDefinition) => {
         const newItems = [...(prev.expression ?? [])];
-        newItems[rowIndex] = getNewExpression(
-          newItems[rowIndex] ?? { "@_typeRef": ExpressionDefinitionLogicType.Undefined }
-        );
+        newItems[rowIndex] = getNewExpression(newItems[rowIndex] ?? { "@_typeRef": DmnBuiltInDataType.Undefined });
         return { ...prev, expression: newItems };
       });
     },

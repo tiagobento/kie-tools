@@ -27,7 +27,6 @@ import {
   DecisionTableExpressionDefinition,
   DmnBuiltInDataType,
   ExpressionDefinition,
-  ExpressionDefinitionLogicType,
   FunctionExpressionDefinition,
   FunctionExpressionDefinitionKind,
   generateUuid,
@@ -46,18 +45,18 @@ import {
 } from "../src/expressions/InvocationExpression";
 
 function getDefaultExpressionDefinitionByLogicType(
-  logicType: ExpressionDefinitionLogicType,
+  logicType: ExpressionDefinition["__$$element"] | undefined,
   dataType: string,
   containerWidth: number
 ): ExpressionDefinition {
-  if (logicType === ExpressionDefinitionLogicType.Literal) {
+  if (logicType === "literalExpression") {
     const literalExpression: LiteralExpressionDefinition = {
       __$$element: "literalExpression",
       "@_typeRef": dataType,
       "@_id": generateUuid(),
     };
     return literalExpression;
-  } else if (logicType === ExpressionDefinitionLogicType.Function) {
+  } else if (logicType === "functionDefinition") {
     const functionExpression: FunctionExpressionDefinition = {
       __$$element: "functionDefinition",
       "@_typeRef": dataType,
@@ -65,7 +64,7 @@ function getDefaultExpressionDefinitionByLogicType(
       "@_kind": FunctionExpressionDefinitionKind.Feel,
     };
     return functionExpression;
-  } else if (logicType === ExpressionDefinitionLogicType.Context) {
+  } else if (logicType === "context") {
     const contextExpression: ContextExpressionDefinition = {
       __$$element: "context",
       "@_typeRef": dataType,
@@ -84,14 +83,14 @@ function getDefaultExpressionDefinitionByLogicType(
       ],
     };
     return contextExpression;
-  } else if (logicType === ExpressionDefinitionLogicType.List) {
+  } else if (logicType === "list") {
     const listExpression: ListExpressionDefinition = {
       __$$element: "list",
       "@_typeRef": dataType,
       expression: [],
     };
     return listExpression;
-  } else if (logicType === ExpressionDefinitionLogicType.Invocation) {
+  } else if (logicType === "invocation") {
     const invocationExpression: InvocationExpressionDefinition = {
       __$$element: "invocation",
       "@_typeRef": dataType,
@@ -111,7 +110,7 @@ function getDefaultExpressionDefinitionByLogicType(
       },
     };
     return invocationExpression;
-  } else if (logicType === ExpressionDefinitionLogicType.Relation) {
+  } else if (logicType === "relation") {
     const relationExpression: RelationExpressionDefinition = {
       __$$element: "relation",
       "@_typeRef": dataType,
@@ -128,7 +127,7 @@ function getDefaultExpressionDefinitionByLogicType(
       ],
     };
     return relationExpression;
-  } else if (logicType === ExpressionDefinitionLogicType.DecisionTable) {
+  } else if (logicType === "decisionTable") {
     const decisionTableExpression: DecisionTableExpressionDefinition = {
       __$$element: "decisionTable",
       "@_typeRef": dataType,
@@ -168,7 +167,7 @@ function getDefaultExpressionDefinitionByLogicType(
   }
 }
 
-export const pmmlParams = [
+export const pmmlDocuments = [
   {
     document: "document",
     modelsFromDocument: [
@@ -213,8 +212,11 @@ export const dataTypes = [
 ];
 
 export const beeGwtService: BeeGwtService = {
-  getDefaultExpressionDefinition(logicType: string, dataType: string): ExpressionDefinition {
-    return getDefaultExpressionDefinitionByLogicType(logicType as ExpressionDefinitionLogicType, dataType, 0);
+  getDefaultExpressionDefinition(logicType: ExpressionDefinition["__$$element"] | undefined, dataType: string) {
+    return {
+      expression: getDefaultExpressionDefinitionByLogicType(logicType, dataType, 0),
+      widthsById: new Map(), // FIXME: Tiago
+    };
   },
   openDataTypePage(): void {},
   selectObject(): void {},
@@ -224,40 +226,45 @@ export function BoxedExpressionEditorWrapper(props?: Partial<BoxedExpressionEdit
   const emptyRef = useRef<HTMLDivElement>(null);
   const [args, updateArgs] = useArgs<BoxedExpressionEditorProps>();
   const argsCopy = useRef(args);
-  const [expressionDefinition, setExpressionDefinition] = useState<ExpressionDefinition>(args.expressionDefinition);
+  const [expressionState, setExpressionState] = useState<ExpressionDefinition | undefined>(args.expression);
+  const [widthsByIdState, setWidthsByIdState] = useState<Map<string, number[]>>(args.widthsById);
 
-  const expression = useMemo(
-    () => props?.expressionDefinition ?? expressionDefinition,
-    [expressionDefinition, props?.expressionDefinition]
+  const expression = useMemo(() => props?.expression ?? expressionState, [expressionState, props?.expression]);
+  const widthsById = useMemo(() => props?.widthsById ?? widthsByIdState, [props?.widthsById, widthsByIdState]);
+
+  const onExpressionChange = useMemo(
+    () => (props?.onExpressionChange ? props.onExpressionChange : setExpressionState),
+    [props?.onExpressionChange]
   );
 
-  const setExpression = useMemo(
-    () => (props?.setExpressionDefinition ? props.setExpressionDefinition : setExpressionDefinition),
-    [props?.setExpressionDefinition]
+  const onWidthsChange = useMemo(
+    () => (props?.onWidthsChange ? props.onWidthsChange : setWidthsByIdState),
+    [props?.onWidthsChange]
   );
 
   useEffect(() => {
-    updateArgs({ ...argsCopy.current, expressionDefinition: expression });
-  }, [updateArgs, expression]);
+    updateArgs({ ...argsCopy.current, expression, widthsById });
+  }, [updateArgs, expression, widthsById]);
 
   useEffect(() => {
     if (args === argsCopy.current) {
       return;
     }
-    setExpression(args.expressionDefinition);
+    onExpressionChange(args.expression);
     argsCopy.current = args;
-  }, [args, setExpression]);
+  }, [args, onExpressionChange]);
 
   return (
     <div ref={emptyRef}>
       <BoxedExpressionEditor
-        decisionNodeId={props?.decisionNodeId ?? args.decisionNodeId}
-        expressionDefinition={expression}
-        setExpressionDefinition={setExpression}
+        expressionHolderId={props?.expressionHolderId ?? args.expressionHolderId}
+        expression={expression}
+        onExpressionChange={onExpressionChange}
+        onWidthsChange={onWidthsChange}
         dataTypes={props?.dataTypes ?? args.dataTypes}
         scrollableParentRef={props?.scrollableParentRef ?? emptyRef}
         beeGwtService={props?.beeGwtService ?? args.beeGwtService}
-        pmmlParams={props?.pmmlParams ?? args.pmmlParams}
+        pmmlDocuments={props?.pmmlDocuments ?? args.pmmlDocuments}
         isResetSupportedOnRootExpression={
           props?.isResetSupportedOnRootExpression ?? args.isResetSupportedOnRootExpression
         }

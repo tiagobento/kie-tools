@@ -28,7 +28,6 @@ import {
   BeeTableProps,
   DmnBuiltInDataType,
   ExpressionDefinition,
-  ExpressionDefinitionLogicType,
   generateUuid,
   getNextAvailablePrefixedName,
   InsertRowColumnsDirection,
@@ -60,7 +59,6 @@ type ROWTYPE = DMN15__tBinding;
 
 export const INVOCATION_EXPRESSION_DEFAULT_PARAMETER_NAME = "p-1";
 export const INVOCATION_EXPRESSION_DEFAULT_PARAMETER_DATA_TYPE = DmnBuiltInDataType.Undefined;
-export const INVOCATION_EXPRESSION_DEFAULT_PARAMETER_LOGIC_TYPE = ExpressionDefinitionLogicType.Undefined;
 
 export function InvocationExpression(
   invocationExpression: InvocationExpressionDefinition & {
@@ -69,7 +67,7 @@ export function InvocationExpression(
   }
 ) {
   const { i18n } = useBoxedExpressionEditorI18n();
-  const { decisionNodeId, variables, widthsById } = useBoxedExpressionEditor();
+  const { expressionHolderId, variables, widthsById } = useBoxedExpressionEditor();
   const { setExpression } = useBoxedExpressionEditorDispatch();
 
   const getWidth = useCallback(
@@ -154,13 +152,13 @@ export function InvocationExpression(
         };
       });
     },
-    [setExpression]
+    [getWidth, setExpression]
   );
 
   const beeTableColumns = useMemo<ReactTable.Column<ROWTYPE>[]>(
     () => [
       {
-        accessor: decisionNodeId as any, // FIXME: https://github.com/kiegroup/kie-issues/issues/169,
+        accessor: expressionHolderId as any, // FIXME: https://github.com/kiegroup/kie-issues/issues/169,
         label: invocationExpression["@_label"] ?? DEFAULT_EXPRESSION_NAME,
         dataType: invocationExpression["@_typeRef"] ?? "<Undefined>",
         isRowIndexColumn: false,
@@ -201,7 +199,7 @@ export function InvocationExpression(
         ],
       },
     ],
-    [decisionNodeId, parametersWidth, setParametersWidth]
+    [expressionHolderId, invocationExpression, parametersWidth, setParametersWidth]
   );
 
   const onColumnUpdates = useCallback(
@@ -270,7 +268,7 @@ export function InvocationExpression(
         />
       ),
     }),
-    [invocationExpression.parentElementId, updateEntry]
+    [invocationExpression.binding, invocationExpression.parentElementId, updateEntry]
   );
 
   const beeTableOperationConfig = useMemo<BeeTableOperationConfig>(() => {

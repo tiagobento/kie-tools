@@ -29,7 +29,7 @@ import {
   beeGwtService,
   BoxedExpressionEditorWrapper,
   dataTypes,
-  pmmlParams,
+  pmmlDocuments,
 } from "../../boxedExpressionStoriesWrapper";
 import { BoxedExpressionEditor, BoxedExpressionEditorProps } from "../../../src/expressions";
 
@@ -299,11 +299,11 @@ export const findEmployeesExpression: InvocationExpressionDefinition = {
 export const Employees: Story = {
   render: (args) => BoxedExpressionEditorWrapper(),
   args: {
-    decisionNodeId: "_00000000-0000-0000-0000-000000000000",
-    expressionDefinition: employeesExpression,
+    expressionHolderId: "_00000000-0000-0000-0000-000000000000",
+    expression: employeesExpression,
     dataTypes: findEmployeesDataTypes,
     beeGwtService,
-    pmmlParams,
+    pmmlDocuments,
     isResetSupportedOnRootExpression: false,
   },
 };
@@ -311,11 +311,11 @@ export const Employees: Story = {
 export const FindEmployeesByKnowledge: Story = {
   render: (args) => BoxedExpressionEditorWrapper(),
   args: {
-    decisionNodeId: "_00000000-0000-0000-0000-000000000000",
-    expressionDefinition: findEmployeesByKnowledgeExpression,
+    expressionHolderId: "_00000000-0000-0000-0000-000000000000",
+    expression: findEmployeesByKnowledgeExpression,
     dataTypes: findEmployeesDataTypes,
     beeGwtService,
-    pmmlParams,
+    pmmlDocuments,
     isResetSupportedOnRootExpression: false,
   },
 };
@@ -323,11 +323,11 @@ export const FindEmployeesByKnowledge: Story = {
 export const FindByEmployees: Story = {
   render: (args) => BoxedExpressionEditorWrapper(),
   args: {
-    decisionNodeId: "_00000000-0000-0000-0000-000000000000",
-    expressionDefinition: findEmployeesExpression,
+    expressionHolderId: "_00000000-0000-0000-0000-000000000000",
+    expression: findEmployeesExpression,
     dataTypes: findEmployeesDataTypes,
     beeGwtService,
-    pmmlParams,
+    pmmlDocuments,
     isResetSupportedOnRootExpression: false,
   },
 };

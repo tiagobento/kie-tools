@@ -75,7 +75,7 @@ export function JavaFunctionExpression({
   functionExpression: JavaFunctionExpressionDefinition & { isNested: boolean };
 }) {
   const { i18n } = useBoxedExpressionEditorI18n();
-  const { decisionNodeId, widthsById } = useBoxedExpressionEditor();
+  const { expressionHolderId, widthsById } = useBoxedExpressionEditor();
   const { setExpression } = useBoxedExpressionEditorDispatch();
 
   const getClassContextEntry = useCallback((c: DMN15__tContext) => {
@@ -121,7 +121,7 @@ export function JavaFunctionExpression({
     return [
       {
         label: functionExpression["@_label"] ?? DEFAULT_EXPRESSION_NAME,
-        accessor: decisionNodeId as any, // FIXME: https://github.com/kiegroup/kie-issues/issues/169
+        accessor: expressionHolderId as any, // FIXME: https://github.com/kiegroup/kie-issues/issues/169
         dataType: functionExpression["@_typeRef"] ?? "<Undefined>",
         isRowIndexColumn: false,
         width: undefined,
@@ -159,7 +159,7 @@ export function JavaFunctionExpression({
       },
     ];
   }, [
-    decisionNodeId,
+    expressionHolderId,
     functionExpression,
     getClassAndMethodNamesWidth,
     parametersColumnHeader,

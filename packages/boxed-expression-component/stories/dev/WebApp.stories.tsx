@@ -19,13 +19,7 @@
 
 import * as React from "react";
 import { useEffect, useState, useCallback } from "react";
-import {
-  BeeGwtService,
-  DmnBuiltInDataType,
-  ExpressionDefinitionLogicType,
-  ExpressionDefinition,
-  generateUuid,
-} from "../../src/api";
+import { BeeGwtService, DmnBuiltInDataType, ExpressionDefinition } from "../../src/api";
 import { getDefaultExpressionDefinitionByLogicType } from "./defaultExpression";
 import type { Meta, StoryObj } from "@storybook/react";
 import { BoxedExpressionEditorWrapper } from "../boxedExpressionStoriesWrapper";
@@ -54,7 +48,7 @@ const dataTypes = [
   { typeRef: "tPerson", name: "tPerson", isCustom: true },
 ];
 
-const pmmlParams = [
+const pmmlDocuments = [
   {
     document: "document",
     modelsFromDocument: [
@@ -95,8 +89,11 @@ const INITIAL_EXPRESSION: ExpressionDefinition = undefined!;
 
 //Defining global function that will be available in the Window namespace and used by the BoxedExpressionEditor component
 const beeGwtService: BeeGwtService = {
-  getDefaultExpressionDefinition(logicType: string, dataType: string): ExpressionDefinition {
-    return getDefaultExpressionDefinitionByLogicType(logicType as ExpressionDefinitionLogicType, dataType, 0);
+  getDefaultExpressionDefinition(logicType, dataType) {
+    return {
+      expression: getDefaultExpressionDefinitionByLogicType(logicType, dataType, 0),
+      widthsById: new Map(),
+    };
   },
   openDataTypePage(): void {},
   selectObject(): void {},
@@ -104,7 +101,9 @@ const beeGwtService: BeeGwtService = {
 
 function App(args: BoxedExpressionEditorProps) {
   const [version, setVersion] = useState(-1);
-  const [expressionDefinition, setExpressionDefinition] = useState<ExpressionDefinition>(INITIAL_EXPRESSION);
+  const [expressionDefinition, setExpressionDefinition] = useState<ExpressionDefinition | undefined>(
+    INITIAL_EXPRESSION
+  );
 
   useEffect(() => {
     setVersion((prev) => prev + 1);
@@ -141,12 +140,12 @@ function App(args: BoxedExpressionEditorProps) {
         <FlexItem>
           <div>
             {BoxedExpressionEditorWrapper({
-              decisionNodeId: "_00000000-0000-0000-0000-000000000000",
+              expressionHolderId: "_00000000-0000-0000-0000-000000000000",
               dataTypes: args.dataTypes,
               beeGwtService: args.beeGwtService,
-              pmmlParams: args.pmmlParams,
-              expressionDefinition: expressionDefinition,
-              setExpressionDefinition: setExpressionDefinition,
+              pmmlDocuments: args.pmmlDocuments,
+              expression: expressionDefinition,
+              onExpressionChange: setExpressionDefinition,
             })}
           </div>
         </FlexItem>
@@ -166,10 +165,10 @@ type Story = StoryObj<typeof App>;
 export const WebApp: Story = {
   render: (args) => App(args),
   args: {
-    decisionNodeId: "_00000000-0000-0000-0000-000000000000",
-    expressionDefinition: undefined!,
+    expressionHolderId: "_00000000-0000-0000-0000-000000000000",
+    expression: undefined!,
     dataTypes: dataTypes,
     beeGwtService: beeGwtService,
-    pmmlParams: pmmlParams,
+    pmmlDocuments: pmmlDocuments,
   },
 };

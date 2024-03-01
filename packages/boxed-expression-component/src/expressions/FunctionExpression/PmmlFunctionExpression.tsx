@@ -75,7 +75,7 @@ export function PmmlFunctionExpression({
   functionExpression: PmmlFunctionExpressionDefinition & { isNested: boolean };
 }) {
   const { i18n } = useBoxedExpressionEditorI18n();
-  const { decisionNodeId, widthsById } = useBoxedExpressionEditor();
+  const { expressionHolderId, widthsById } = useBoxedExpressionEditor();
   const { setExpression } = useBoxedExpressionEditorDispatch();
 
   const parametersColumnHeader = useFunctionExpressionParametersColumnHeader(functionExpression.formalParameter);
@@ -84,7 +84,7 @@ export function PmmlFunctionExpression({
     return [
       {
         label: functionExpression["@_label"] ?? DEFAULT_EXPRESSION_NAME,
-        accessor: decisionNodeId as any, // FIXME: https://github.com/kiegroup/kie-issues/issues/169
+        accessor: expressionHolderId as any, // FIXME: https://github.com/kiegroup/kie-issues/issues/169
         dataType: functionExpression["@_typeRef"] ?? "",
         isRowIndexColumn: false,
         width: undefined,
@@ -121,7 +121,7 @@ export function PmmlFunctionExpression({
         ],
       },
     ];
-  }, [decisionNodeId, functionExpression, parametersColumnHeader]);
+  }, [expressionHolderId, functionExpression, parametersColumnHeader]);
 
   const headerVisibility = useMemo(() => {
     return functionExpression.isNested
@@ -182,7 +182,7 @@ export function PmmlFunctionExpression({
         pmmlFunctionExpression: functionExpression,
       },
     ];
-  }, [functionExpression]);
+  }, [functionExpression, getDocument, getModel]);
 
   const controllerCell = useFunctionExpressionControllerCell(FunctionExpressionDefinitionKind.Pmml);
 
@@ -388,7 +388,7 @@ function PmmlFunctionExpressionDocumentCell(props: React.PropsWithChildren<BeeTa
     [props.data, props.rowIndex]
   );
 
-  const { pmmlParams, editorRef } = useBoxedExpressionEditor();
+  const { pmmlDocuments, editorRef } = useBoxedExpressionEditor();
   const { setExpression } = useBoxedExpressionEditorDispatch();
 
   const contextExpression = useMemo(() => {
@@ -438,7 +438,7 @@ function PmmlFunctionExpressionDocumentCell(props: React.PropsWithChildren<BeeTa
       isOpen={isSelectOpen}
       selections={[pmmlDocument]}
     >
-      {(pmmlParams ?? []).map(({ document }) => (
+      {(pmmlDocuments ?? []).map(({ document }) => (
         <SelectOption
           data-testid={`pmml-${document}`}
           key={document}
@@ -458,7 +458,7 @@ function PmmlFunctionExpressionModelCell(props: React.PropsWithChildren<BeeTable
     [props.data, props.rowIndex]
   );
 
-  const { pmmlParams, editorRef } = useBoxedExpressionEditor();
+  const { pmmlDocuments, editorRef } = useBoxedExpressionEditor();
 
   const { setExpression } = useBoxedExpressionEditorDispatch();
 
@@ -505,10 +505,10 @@ function PmmlFunctionExpressionModelCell(props: React.PropsWithChildren<BeeTable
 
   const models = useMemo(
     () =>
-      (pmmlParams ?? [])
+      (pmmlDocuments ?? [])
         .filter(({ document }) => document === pmmlDocument)
         .flatMap(({ modelsFromDocument }) => modelsFromDocument ?? []),
-    [pmmlDocument, pmmlParams]
+    [pmmlDocument, pmmlDocuments]
   );
 
   useBeeTableSelectableCellRef(

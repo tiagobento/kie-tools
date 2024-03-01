@@ -44,7 +44,7 @@ type ROWTYPE = any;
 
 export function LiteralExpression(literalExpression: LiteralExpressionDefinition & { isNested: boolean }) {
   const { setExpression } = useBoxedExpressionEditorDispatch();
-  const { decisionNodeId, variables, widthsById } = useBoxedExpressionEditor();
+  const { expressionHolderId, variables, widthsById } = useBoxedExpressionEditor();
 
   const getValue = useCallback(() => {
     return literalExpression.text?.__$$text ?? "";
@@ -150,7 +150,7 @@ export function LiteralExpression(literalExpression: LiteralExpressionDefinition
   const beeTableColumns = useMemo<ReactTable.Column<ROWTYPE>[]>(() => {
     return [
       {
-        accessor: decisionNodeId as any, // FIXME: https://github.com/kiegroup/kie-issues/issues/169
+        accessor: expressionHolderId as any, // FIXME: https://github.com/kiegroup/kie-issues/issues/169
         label: literalExpression["@_label"] ?? DEFAULT_EXPRESSION_NAME,
         isRowIndexColumn: false,
         dataType: literalExpression["@_typeRef"] ?? "<Undefined>",
@@ -159,11 +159,13 @@ export function LiteralExpression(literalExpression: LiteralExpressionDefinition
         setWidth,
       },
     ];
-  }, [decisionNodeId, getWidth, literalExpression, minWidth, setWidth]);
+  }, [expressionHolderId, getWidth, literalExpression, minWidth, setWidth]);
 
   const beeTableRows = useMemo<ROWTYPE[]>(() => {
-    return [{ [decisionNodeId]: { content: literalExpression.text?.__$$text ?? "", id: literalExpression["@_id"] } }];
-  }, [decisionNodeId, literalExpression.text]);
+    return [
+      { [expressionHolderId]: { content: literalExpression.text?.__$$text ?? "", id: literalExpression["@_id"] } },
+    ];
+  }, [expressionHolderId, literalExpression.text]);
 
   const beeTableHeaderVisibility = useMemo(() => {
     return literalExpression.isNested ? BeeTableHeaderVisibility.None : BeeTableHeaderVisibility.AllLevels;

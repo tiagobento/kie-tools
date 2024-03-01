@@ -35,10 +35,10 @@ type Story = StoryObj<BoxedExpressionEditorProps>;
 // More on writing stories with args: https://storybook.js.org/docs/react/writing-stories/args
 export const Base: Story = {
   render: (args) => BoxedExpressionEditorWrapper(),
-  parameters: { exclude: ["dataTypes", "beeGwtService", "pmmlParams"] },
+  parameters: { exclude: ["dataTypes", "beeGwtService", "pmmlDocuments"] },
   args: {
     ...EmptyExpression.args,
-    expressionDefinition: {
+    expression: {
       __$$element: "context",
       "@_id": generateUuid(),
       "@_label": "Expression Name",
@@ -60,10 +60,10 @@ export const Base: Story = {
 
 export const InstallmentCalculation: Story = {
   render: (args) => BoxedExpressionEditorWrapper(),
-  parameters: { exclude: ["dataTypes", "beeGwtService", "pmmlParams"] },
+  parameters: { exclude: ["dataTypes", "beeGwtService", "pmmlDocuments"] },
   args: {
     ...EmptyExpression.args,
-    expressionDefinition: {
+    expression: {
       __$$element: "context",
       "@_id": generateUuid(),
       "@_label": "Installment calculation",
@@ -115,10 +115,10 @@ export const InstallmentCalculation: Story = {
 
 export const Customer: Story = {
   render: (args) => BoxedExpressionEditorWrapper(),
-  parameters: { exclude: ["dataTypes", "beeGwtService", "pmmlParams"] },
+  parameters: { exclude: ["dataTypes", "beeGwtService", "pmmlDocuments"] },
   args: {
     ...EmptyExpression.args,
-    expressionDefinition: {
+    expression: {
       __$$element: "context",
       "@_id": generateUuid(),
       "@_label": "Customer",
@@ -160,10 +160,10 @@ export const Customer: Story = {
 
 export const Nested: Story = {
   render: (args) => BoxedExpressionEditorWrapper(),
-  parameters: { exclude: ["dataTypes", "beeGwtService", "pmmlParams"] },
+  parameters: { exclude: ["dataTypes", "beeGwtService", "pmmlDocuments"] },
   args: {
     ...EmptyExpression.args,
-    expressionDefinition: {
+    expression: {
       __$$element: "context",
       "@_id": generateUuid(),
       "@_label": "Expression Name",
