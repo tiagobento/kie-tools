@@ -28,6 +28,7 @@ import {
   BeeTableOperation,
   BeeTableOperationConfig,
   BeeTableProps,
+  DmnBuiltInDataType,
   FunctionExpressionDefinitionKind,
   generateUuid,
 } from "../../api";
@@ -85,7 +86,7 @@ export function PmmlFunctionExpression({
       {
         label: functionExpression["@_label"] ?? DEFAULT_EXPRESSION_NAME,
         accessor: expressionHolderId as any, // FIXME: https://github.com/kiegroup/kie-issues/issues/169
-        dataType: functionExpression["@_typeRef"] ?? "",
+        dataType: functionExpression["@_typeRef"] ?? DmnBuiltInDataType.Undefined,
         isRowIndexColumn: false,
         width: undefined,
         columns: [

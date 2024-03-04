@@ -155,7 +155,7 @@ export function InvocationExpression(
       {
         accessor: expressionHolderId as any, // FIXME: https://github.com/kiegroup/kie-issues/issues/169,
         label: invocationExpression["@_label"] ?? DEFAULT_EXPRESSION_NAME,
-        dataType: invocationExpression["@_typeRef"] ?? "<Undefined>",
+        dataType: invocationExpression["@_typeRef"] ?? DmnBuiltInDataType.Undefined,
         isRowIndexColumn: false,
         width: undefined,
         columns: [

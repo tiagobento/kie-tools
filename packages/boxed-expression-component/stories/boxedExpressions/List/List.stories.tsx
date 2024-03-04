@@ -42,6 +42,7 @@ export const Base: Story = {
       __$$element: "list",
       "@_id": generateUuid(),
       "@_label": "Expression Name",
+      expression: [undefined as any], // SPEC DISCREPANCY: undefined expression to allow users to select expression logic type.
     },
     isResetSupportedOnRootExpression: false,
   },

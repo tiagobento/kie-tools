@@ -46,7 +46,6 @@ export interface ExpressionContainerProps {
   rowIndex: number;
   columnIndex: number;
   parentElementId?: string;
-  widthsById: Map<string, number[]>;
   expressionName?: string;
 }
 
@@ -57,7 +56,6 @@ export const ExpressionContainer: React.FunctionComponent<ExpressionContainerPro
   rowIndex,
   columnIndex,
   parentElementId,
-  widthsById,
   expressionName,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);

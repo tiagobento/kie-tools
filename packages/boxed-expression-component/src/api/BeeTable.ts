@@ -29,7 +29,6 @@ export interface BeeTableCellProps<R extends object> {
   rowIndex: number;
   columnIndex: number;
   columnId: string;
-  widthsById: Map<string, number[]>;
 }
 
 export interface BeeTableProps<R extends object> {

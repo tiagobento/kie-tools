@@ -30,43 +30,40 @@ export function ContextResultExpressionCell(props: {
   contextExpression: ContextExpressionDefinition;
   rowIndex: number;
   columnIndex: number;
-  widthsById: Map<string, number[]>;
 }) {
   const { setExpression } = useBoxedExpressionEditorDispatch();
 
   const onSetExpression = useCallback(
     ({ getNewExpression }) => {
       setExpression((prev: ContextExpressionDefinition) => {
-        const entries = [...(prev.contextEntry ?? [])];
-        const index = entries.length - 1;
+        const newEntries = [...(prev.contextEntry ?? [])];
+        const index = newEntries.findIndex((e) => !e.variable);
 
-        entries.splice(index, 1, {
-          ...entries[index],
-          expression: getNewExpression(entries[index]?.expression),
+        newEntries.splice(index, 1, {
+          ...newEntries[index],
+          expression: getNewExpression(newEntries[index]?.expression),
         });
 
         return {
           ...prev,
-          contextEntry: entries,
+          contextEntry: newEntries,
         };
       });
     },
     [setExpression]
   );
 
-  // It is not possible to have a ContextExpression without any entry (props.contextExpression.contextEntries.length === 0)
-  const lastEntry = props.contextExpression.contextEntry?.[props.contextExpression.contextEntry.length - 1];
+  const resultEntry = props.contextExpression.contextEntry?.find((e) => !e.variable);
 
   return (
     <NestedExpressionDispatchContextProvider onSetExpression={onSetExpression}>
       <ExpressionContainer
-        expression={lastEntry?.expression}
+        expression={resultEntry?.expression}
         isResetSupported={true}
         isNested={true}
         rowIndex={props.rowIndex}
         columnIndex={props.columnIndex}
-        parentElementId={lastEntry?.variable?.["@_id"]}
-        widthsById={props.widthsById}
+        parentElementId={props.contextExpression["@_id"]!}
       />
     </NestedExpressionDispatchContextProvider>
   );

@@ -116,7 +116,7 @@ export function BoxedExpressionEditorContextProvider({
         //state // FIXME: Move to a separate context (https://github.com/kiegroup/kie-issues/issues/168)
         currentlyOpenContextMenu,
         setCurrentlyOpenContextMenu,
-        widthsById,
+        widthsById: widthsByIdRef.current!,
       }}
     >
       <BoxedExpressionEditorDispatchContext.Provider value={dispatch}>

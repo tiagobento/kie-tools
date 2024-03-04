@@ -57,13 +57,13 @@ export const ContextEntryInfoCell: React.FunctionComponent<ContextEntryInfoCellP
   const onContextEntryInfoUpdated = useCallback(
     ({
       "@_label": name = DEFAULT_EXPRESSION_NAME,
-      "@_typeRef": dataType = DmnBuiltInDataType.Undefined,
+      "@_typeRef": typeRef = DmnBuiltInDataType.Undefined,
     }: Pick<ExpressionDefinition, "@_label" | "@_typeRef">) => {
       onEntryUpdate(rowIndex, {
         ...entry,
         // entryExpression and entryInfo must always have the same `dataType` and `name`, as those are dictated by the entryInfo.
-        expression: { ...entryExpression, "@_label": name, "@_typeRef": dataType } as ExpressionDefinition,
-        variable: { ...entryInfo, "@_name": name, "@_typeRef": dataType },
+        expression: { ...entryExpression, "@_label": name, "@_typeRef": typeRef } as ExpressionDefinition,
+        variable: { ...entryInfo, "@_name": name, "@_typeRef": typeRef },
       });
     },
     [onEntryUpdate, rowIndex, entry, entryExpression, entryInfo]
@@ -137,7 +137,7 @@ export const ContextEntryInfoCell: React.FunctionComponent<ContextEntryInfoCellP
       <div className={`${entryInfo?.["@_id"]} entry-info`}>
         <ExpressionDefinitionHeaderMenu
           selectedExpressionName={entryInfo?.["@_name"] ?? ""}
-          selectedDataType={entryInfo?.["@_typeRef"] ?? "<Undefined>"}
+          selectedDataType={entryInfo?.["@_typeRef"] ?? DmnBuiltInDataType.Undefined}
           onExpressionHeaderUpdated={onContextEntryInfoUpdated}
         >
           {renderEntryDefinition({ additionalCssClass: "with-popover-menu" })}

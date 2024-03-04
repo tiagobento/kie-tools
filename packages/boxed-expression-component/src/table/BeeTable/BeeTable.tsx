@@ -104,7 +104,6 @@ export function BeeTableInternal<R extends object>({
   lastColumnMinWidth,
   rowWrapper,
   variables,
-  widthsById,
 }: BeeTableProps<R>) {
   const { resetSelectionAt, erase, copy, cut, paste, adaptSelection, mutateSelection, setCurrentDepth } =
     useBeeTableSelectionDispatch();
@@ -237,7 +236,6 @@ export function BeeTableInternal<R extends object>({
               rowIndex={cellProps.row.index}
               columnIndex={columnIndex}
               columnId={cellProps.column.id}
-              widthsById={widthsById}
             />
           );
         } else {
@@ -258,7 +256,6 @@ export function BeeTableInternal<R extends object>({
     }),
     [
       cellComponentByColumnAccessor,
-      widthsById,
       onCellUpdates,
       isReadOnly,
       _setEditing,

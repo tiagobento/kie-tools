@@ -27,6 +27,7 @@ import {
   BeeTableOperation,
   BeeTableOperationConfig,
   BeeTableProps,
+  DmnBuiltInDataType,
   ExpressionDefinition,
   FunctionExpressionDefinition,
   FunctionExpressionDefinitionKind,
@@ -76,7 +77,7 @@ export function FeelFunctionExpression({
       {
         label: functionExpression["@_label"] ?? DEFAULT_EXPRESSION_NAME,
         accessor: expressionHolderId as any, // FIXME: https://github.com/kiegroup/kie-issues/issues/169
-        dataType: functionExpression["@_typeRef"] ?? "<Undefined>",
+        dataType: functionExpression["@_typeRef"] ?? DmnBuiltInDataType.Undefined,
         isRowIndexColumn: false,
         width: undefined,
         columns: [
@@ -145,8 +146,7 @@ export function FeelFunctionExpression({
       return {
         ...prev,
         "@_id": generateUuid(),
-        "@_typeRef": "<Undefined>",
-        // __$$element: "<Undefined>",
+        "@_typeRef": DmnBuiltInDataType.Undefined,
       };
     });
   }, [setExpression]);
@@ -217,7 +217,6 @@ export function FeelFunctionImplementationCell({
   rowIndex,
   columnIndex,
   parentElementId,
-  widthsById,
 }: BeeTableCellProps<FEEL_ROWTYPE> & { parentElementId: string }) {
   const functionExpression = data[rowIndex].functionExpression; // as FeelFunctionExpressionDefinition;
 
@@ -242,7 +241,6 @@ export function FeelFunctionImplementationCell({
         rowIndex={rowIndex}
         columnIndex={columnIndex}
         parentElementId={parentElementId}
-        widthsById={widthsById}
       />
     </NestedExpressionDispatchContextProvider>
   );

@@ -205,11 +205,11 @@ export function ContextExpression(
 
         variables?.repository.updateVariableType(
           newEntry.variable?.["@_id"] ?? "",
-          newEntry.variable?.["@_typeRef"] ?? "<Undefined>"
+          newEntry.variable?.["@_typeRef"] ?? DmnBuiltInDataType.Undefined
         );
         variables?.repository.renameVariable(
           newEntry.variable?.["@_id"] ?? "",
-          newEntry.variable?.["@_name"] ?? "<Undefined>"
+          newEntry.variable?.["@_name"] ?? DmnBuiltInDataType.Undefined
         );
 
         contextEntries[rowIndex] = {
@@ -247,12 +247,11 @@ export function ContextExpression(
             data={props.data.map((e) => {
               return { variable: e.variable, expression: e.expression };
             })}
-            widthsById={widthsById}
           />
         );
       },
     };
-  }, [widthsById, updateEntry]);
+  }, [updateEntry]);
 
   const beeTableOperationConfig = useMemo<BeeTableOperationConfig>(() => {
     return [
@@ -290,10 +289,9 @@ export function ContextExpression(
         contextExpression={contextExpression}
         rowIndex={(contextExpression.contextEntry ?? []).length - 1}
         columnIndex={2}
-        widthsById={widthsById}
       />,
     ];
-  }, [contextExpression, widthsById]);
+  }, [contextExpression]);
 
   const getDefaultContextEntry = useCallback(
     (name?: string): DMN15__tContextEntry => {
@@ -461,6 +459,12 @@ export function ContextExpression(
     [contextExpression.contextEntry?.length]
   );
 
+  const beeTableRows = useMemo(
+    // A contextEntry without a varible is the result entry.
+    () => contextExpression.contextEntry?.filter((e) => !!e.variable) ?? [],
+    [contextExpression.contextEntry]
+  );
+
   return (
     <NestedExpressionContainerContext.Provider value={nestedExpressionContainerValue}>
       <div className={`context-expression ${id}`}>
@@ -471,7 +475,7 @@ export function ContextExpression(
           headerVisibility={headerVisibility}
           cellComponentByColumnAccessor={cellComponentByColumnAccessor}
           columns={beeTableColumns}
-          rows={contextExpression.contextEntry?.filter((e, i, { length }) => i < length - 1) ?? []}
+          rows={beeTableRows}
           onColumnUpdates={onColumnUpdates}
           operationConfig={beeTableOperationConfig}
           allowedOperations={allowedOperations}

@@ -24,6 +24,7 @@ import {
   BeeTableContextMenuAllowedOperationsConditions,
   BeeTableHeaderVisibility,
   BeeTableOperation,
+  DmnBuiltInDataType,
   LiteralExpressionDefinition,
 } from "../../api";
 import { useNestedExpressionContainer } from "../../resizing/NestedExpressionContainerContext";
@@ -141,7 +142,7 @@ export function LiteralExpression(literalExpression: LiteralExpressionDefinition
         accessor: expressionHolderId as any, // FIXME: https://github.com/kiegroup/kie-issues/issues/169
         label: literalExpression["@_label"] ?? DEFAULT_EXPRESSION_NAME,
         isRowIndexColumn: false,
-        dataType: literalExpression["@_typeRef"] ?? "<Undefined>",
+        dataType: literalExpression["@_typeRef"] ?? DmnBuiltInDataType.Undefined,
         minWidth,
         width,
         setWidth: setLiteralExpressionWidth,

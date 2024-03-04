@@ -27,6 +27,7 @@ import {
   BeeTableOperation,
   BeeTableOperationConfig,
   BeeTableProps,
+  DmnBuiltInDataType,
   generateUuid,
   ListExpressionDefinition,
 } from "../../api";
@@ -55,7 +56,7 @@ export function ListExpression(
 ) {
   const { i18n } = useBoxedExpressionEditorI18n();
   const { setExpression } = useBoxedExpressionEditorDispatch();
-  const { expressionHolderId, variables, widthsById } = useBoxedExpressionEditor();
+  const { expressionHolderId, widthsById } = useBoxedExpressionEditor();
 
   /// //////////////////////////////////////////////////////
   /// ///////////// RESIZING WIDTHS ////////////////////////
@@ -117,7 +118,7 @@ export function ListExpression(
       {
         accessor: expressionHolderId as any,
         label: listExpression["@_label"] ?? DEFAULT_EXPRESSION_NAME,
-        dataType: listExpression["@_typeRef"] ?? "<Undefined>",
+        dataType: listExpression["@_typeRef"] ?? DmnBuiltInDataType.Undefined,
         isRowIndexColumn: false,
         minWidth: LIST_EXPRESSION_ITEM_MIN_WIDTH,
         width: undefined,
