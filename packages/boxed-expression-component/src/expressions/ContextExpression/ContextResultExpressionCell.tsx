@@ -18,7 +18,7 @@
  */
 
 import * as React from "react";
-import { useCallback, useMemo } from "react";
+import { useCallback } from "react";
 import { ContextExpressionDefinition } from "../../api";
 import {
   NestedExpressionDispatchContextProvider,
@@ -38,12 +38,11 @@ export function ContextResultExpressionCell(props: {
     ({ getNewExpression }) => {
       setExpression((prev: ContextExpressionDefinition) => {
         const entries = [...(prev.contextEntry ?? [])];
-        const result = entries.find((e) => !e.variable);
-        const index = entries.findIndex((value) => !value.variable);
+        const index = entries.length - 1;
 
         entries.splice(index, 1, {
-          ...result,
-          expression: getNewExpression(result?.expression),
+          ...entries[index],
+          expression: getNewExpression(entries[index]?.expression),
         });
 
         return {
@@ -58,14 +57,10 @@ export function ContextResultExpressionCell(props: {
   // It is not possible to have a ContextExpression without any entry (props.contextExpression.contextEntries.length === 0)
   const lastEntry = props.contextExpression.contextEntry?.[props.contextExpression.contextEntry.length - 1];
 
-  const resultExpression = useMemo(() => {
-    return props.contextExpression.contextEntry?.find((e) => !e.variable)?.expression;
-  }, [props.contextExpression.contextEntry]);
-
   return (
     <NestedExpressionDispatchContextProvider onSetExpression={onSetExpression}>
       <ExpressionContainer
-        expression={resultExpression!}
+        expression={lastEntry?.expression}
         isResetSupported={true}
         isNested={true}
         rowIndex={props.rowIndex}

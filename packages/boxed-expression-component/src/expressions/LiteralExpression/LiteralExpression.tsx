@@ -43,8 +43,10 @@ import { useBoxedExpressionEditorI18n } from "../../i18n";
 type ROWTYPE = any;
 
 export function LiteralExpression(literalExpression: LiteralExpressionDefinition & { isNested: boolean }) {
-  const { setExpression } = useBoxedExpressionEditorDispatch();
+  const { setExpression, setWidth } = useBoxedExpressionEditorDispatch();
   const { expressionHolderId, variables, widthsById } = useBoxedExpressionEditor();
+
+  const id = literalExpression["@_id"]!;
 
   const getValue = useCallback(() => {
     return literalExpression.text?.__$$text ?? "";
@@ -57,17 +59,9 @@ export function LiteralExpression(literalExpression: LiteralExpressionDefinition
     [literalExpression, setExpression]
   );
 
-  const getWidth = useCallback(
-    (id: string | undefined) => {
-      const widths = widthsById.get(id ?? "");
-      if (widths && widths.length > 0) {
-        return widths[0];
-      } else {
-        return undefined;
-      }
-    },
-    [widthsById]
-  );
+  const width = useMemo(() => {
+    return widthsById.get(id)?.[0] ?? LITERAL_EXPRESSION_MIN_WIDTH;
+  }, [id, widthsById]);
 
   const { containerCellCoordinates } = useBeeTableCoordinates();
   useBeeTableSelectableCellRef(
@@ -88,14 +82,12 @@ export function LiteralExpression(literalExpression: LiteralExpressionDefinition
     [literalExpression, setExpression]
   );
 
-  const setWidth = useCallback(
+  const setLiteralExpressionWidth = useCallback(
     (newWidthAction: React.SetStateAction<number | undefined>) => {
-      setExpression((prev: LiteralExpressionDefinition) => {
-        const newWidth = typeof newWidthAction === "function" ? newWidthAction(getWidth(prev["@_id"])) : newWidthAction;
-        return { ...prev, width: newWidth };
-      });
+      const newWidth = typeof newWidthAction === "function" ? newWidthAction(width) : newWidthAction;
+      setWidth({ id, values: [newWidth ?? LITERAL_EXPRESSION_MIN_WIDTH] });
     },
-    [setExpression]
+    [id, setWidth, width]
   );
 
   const onCellUpdates = useCallback(
@@ -109,11 +101,7 @@ export function LiteralExpression(literalExpression: LiteralExpressionDefinition
   /// ///////////// RESIZING WIDTHS ////////////////////////
   /// //////////////////////////////////////////////////////
 
-  const { onColumnResizingWidthChange, isPivoting } = usePublishedBeeTableResizableColumns(
-    literalExpression["@_id"] ?? "",
-    1,
-    false
-  );
+  const { onColumnResizingWidthChange, isPivoting } = usePublishedBeeTableResizableColumns(id, 1, false);
 
   const nestedExpressionContainer = useNestedExpressionContainer();
 
@@ -155,17 +143,15 @@ export function LiteralExpression(literalExpression: LiteralExpressionDefinition
         isRowIndexColumn: false,
         dataType: literalExpression["@_typeRef"] ?? "<Undefined>",
         minWidth,
-        width: getWidth(literalExpression["@_id"]) ?? LITERAL_EXPRESSION_MIN_WIDTH,
-        setWidth,
+        width,
+        setWidth: setLiteralExpressionWidth,
       },
     ];
-  }, [expressionHolderId, getWidth, literalExpression, minWidth, setWidth]);
+  }, [expressionHolderId, literalExpression, minWidth, setLiteralExpressionWidth, width]);
 
   const beeTableRows = useMemo<ROWTYPE[]>(() => {
-    return [
-      { [expressionHolderId]: { content: literalExpression.text?.__$$text ?? "", id: literalExpression["@_id"] } },
-    ];
-  }, [expressionHolderId, literalExpression.text]);
+    return [{ [expressionHolderId]: { content: literalExpression.text?.__$$text ?? "", id } }];
+  }, [expressionHolderId, literalExpression.text, id]);
 
   const beeTableHeaderVisibility = useMemo(() => {
     return literalExpression.isNested ? BeeTableHeaderVisibility.None : BeeTableHeaderVisibility.AllLevels;

@@ -258,6 +258,7 @@ export function BeeTableInternal<R extends object>({
     }),
     [
       cellComponentByColumnAccessor,
+      widthsById,
       onCellUpdates,
       isReadOnly,
       _setEditing,

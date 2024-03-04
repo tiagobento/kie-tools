@@ -227,7 +227,7 @@ export function PmmlFunctionExpression({
   );
 
   const { onColumnResizingWidthChange, isPivoting, columnResizingWidths } = usePublishedBeeTableResizableColumns(
-    functionExpression["@_id"] ?? "",
+    functionExpression["@_id"]!,
     columns.length,
     true
   );

@@ -88,10 +88,7 @@ export function getDefaultExpressionDefinitionByLogicType({
       "@_id": generateUuid(),
       "@_typeRef": typeRef,
       "@_kind": FunctionExpressionDefinitionKind.Feel,
-      expression: {
-        __$$element: "literalExpression",
-        "@_id": generateUuid(),
-      },
+      expression: undefined as any, // SPEC DISCREPANCY: Starting without an expression gives users the ability to select the expression type.
     };
     return functionExpression;
   }
@@ -108,11 +105,7 @@ export function getDefaultExpressionDefinitionByLogicType({
             "@_name": "ContextEntry-1",
             "@_typeRef": DmnBuiltInDataType.Undefined,
           },
-          expression: {
-            __$$element: "literalExpression",
-            "@_id": generateUuid(),
-            "@_label": "ContextEntry-1",
-          },
+          expression: undefined as any, // SPEC DISCREPANCY: Starting without an expression gives users the ability to select the expression type.
         },
       ];
     } else {
@@ -131,23 +124,15 @@ export function getDefaultExpressionDefinitionByLogicType({
             "@_name": name,
             "@_typeRef": typeRef as string,
           },
-          expression: {
-            __$$element: "literalExpression",
-            "@_id": generateUuid(),
-            "@_label": name,
-            "@_typeRef": typeRef as string,
-          },
+          expression: undefined as any, // SPEC DISCREPANCY: Starting without an expression gives users the ability to select the expression type.
         };
       });
     }
 
+    // context <result> cell
     contextEntries.push({
       "@_id": generateUuid(),
-      expression: {
-        __$$element: "literalExpression",
-        "@_id": generateUuid(),
-        "@_typeRef": typeRef as string,
-      },
+      expression: undefined as any, // SPEC DISCREPANCY: Starting without an expression gives users the ability to select the expression type.
     });
 
     const contextExpression: ContextExpressionDefinition = {
@@ -165,10 +150,7 @@ export function getDefaultExpressionDefinitionByLogicType({
       "@_id": generateUuid(),
       "@_typeRef": typeRef,
       expression: [
-        {
-          __$$element: "literalExpression",
-          "@_id": generateUuid(),
-        },
+        undefined as any, // SPEC DISCREPANCY: Starting without an expression gives users the ability to select the expression type.
       ],
     };
     return listExpression;
@@ -184,12 +166,7 @@ export function getDefaultExpressionDefinitionByLogicType({
             "@_name": INVOCATION_EXPRESSION_DEFAULT_PARAMETER_NAME,
             "@_typeRef": INVOCATION_EXPRESSION_DEFAULT_PARAMETER_DATA_TYPE,
           },
-          expression: {
-            __$$element: "literalExpression",
-            "@_id": generateUuid(),
-            "@_label": INVOCATION_EXPRESSION_DEFAULT_PARAMETER_NAME,
-            "@_typeRef": INVOCATION_EXPRESSION_DEFAULT_PARAMETER_DATA_TYPE,
-          },
+          expression: undefined as any, // SPEC DISCREPANCY: Starting without an expression gives users the ability to select the expression type.
         },
       ],
       expression: {

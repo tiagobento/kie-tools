@@ -86,6 +86,7 @@ export function BoxedExpressionEditorContextProvider({
     () => ({
       setExpression: onExpressionChange,
       setWidth: ({ id, values }) => {
+        console.log("width" + id);
         const n = new Map(widthsById);
         n.set(id, values);
         onWidthsChange(n);

@@ -61,9 +61,10 @@ export function RelationExpression(
   }
 ) {
   const { i18n } = useBoxedExpressionEditorI18n();
-  const { expressionHolderId, widthsById } = useBoxedExpressionEditor();
-  const { setExpression } = useBoxedExpressionEditorDispatch();
-  const { variables } = useBoxedExpressionEditor();
+  const { widthsById, variables } = useBoxedExpressionEditor();
+  const { setExpression, setWidth } = useBoxedExpressionEditorDispatch();
+
+  const id = relationExpression["@_id"]!;
 
   const beeTableOperationConfig = useMemo<BeeTableOperationConfig>(
     () => [
@@ -99,19 +100,13 @@ export function RelationExpression(
     [i18n]
   );
 
-  const expressionWidths = useMemo(() => {
-    return widthsById.get(relationExpression["@_id"] ?? "") ?? [];
-  }, [relationExpression, widthsById]);
+  const widths = useMemo(() => widthsById.get(id) ?? [], [id, widthsById]);
 
   const getColumnWidth = useCallback(
     (column: number) => {
-      if (expressionWidths.length < column) {
-        return expressionWidths[column];
-      } else {
-        return RELATION_EXPRESSION_COLUMN_DEFAULT_WIDTH;
-      }
+      return widths[column] ?? RELATION_EXPRESSION_COLUMN_DEFAULT_WIDTH;
     },
-    [expressionWidths]
+    [widths]
   );
 
   const columns = useMemo(() => {
@@ -128,30 +123,24 @@ export function RelationExpression(
 
   const setColumnWidth = useCallback(
     (columnIndex: number) => (newWidthAction: React.SetStateAction<number | undefined>) => {
-      setExpression((prev: RelationExpressionDefinition) => {
-        const newColumns = [...(prev.column ?? [])];
+      const columnWidth = getColumnWidth(columnIndex);
+      const newWidth = typeof newWidthAction === "function" ? newWidthAction(columnWidth) : newWidthAction;
 
-        const currentWidth = getColumnWidth(columnIndex);
-
-        const newWidth = typeof newWidthAction === "function" ? newWidthAction(currentWidth) : newWidthAction;
-        if (newWidth) {
-          expressionWidths[columnIndex] = newWidth;
-          widthsById.set(relationExpression["@_id"] ?? "", expressionWidths);
-        }
-
-        return { ...prev, columns: newColumns };
-      });
+      if (newWidth && columnWidth) {
+        const values = [...widths];
+        values.splice(columnIndex, 1, newWidth);
+        setWidth({ id, values });
+      }
     },
-    [expressionWidths, getColumnWidth, relationExpression, setExpression, widthsById]
+    [getColumnWidth, widths, setWidth, id]
   );
-
   /// //////////////////////////////////////////////////////
   /// ///////////// RESIZING WIDTHS ////////////////////////
   /// //////////////////////////////////////////////////////
 
   const beeTableRef = useRef<BeeTableRef>(null);
   const { onColumnResizingWidthChange, columnResizingWidths, isPivoting } = usePublishedBeeTableResizableColumns(
-    relationExpression["@_id"] ?? "",
+    relationExpression["@_id"]!,
     columns.length,
     true
   );
@@ -177,10 +166,11 @@ export function RelationExpression(
         label: c["@_name"] ?? DEFAULT_EXPRESSION_NAME,
         dataType: c["@_typeRef"] ?? "<Undefined>",
         isRowIndexColumn: false,
+        setColumnWidth,
         width: undefined,
       };
     });
-  }, [columns]);
+  }, [columns, setColumnWidth]);
 
   const beeTableRows = useMemo<ROWTYPE[]>(
     () =>
@@ -189,8 +179,8 @@ export function RelationExpression(
           (tableRow, column, columnIndex) => {
             if (row.expression?.[columnIndex].__$$element === "literalExpression") {
               const value = (row.expression?.[columnIndex] as DMN15__tLiteralExpression).text?.__$$text ?? "";
-              (tableRow as any)[column["@_id"] ?? ""] = {
-                ...(tableRow as any)[column["@_id"] ?? ""],
+              (tableRow as any)[column["@_id"]!] = {
+                ...(tableRow as any)[column["@_id"]!],
                 content: value,
               };
             }
@@ -277,11 +267,7 @@ export function RelationExpression(
         __$$text: RELATION_EXPRESSION_DEFAULT_VALUE,
       },
     };
-    variables?.repository.addVariableToContext(
-      cell["@_id"] ?? "",
-      cell["@_id"] ?? "",
-      relationExpression.parentElementId
-    );
+    variables?.repository.addVariableToContext(cell["@_id"]!, cell["@_id"]!, relationExpression.parentElementId);
     return cell;
   }, [relationExpression.parentElementId, variables?.repository]);
 

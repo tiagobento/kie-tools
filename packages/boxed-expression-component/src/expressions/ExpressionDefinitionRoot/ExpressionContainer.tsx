@@ -77,9 +77,9 @@ export const ExpressionContainer: React.FunctionComponent<ExpressionContainerPro
       const contextEntries = contextExpressionDefinition.contextEntry ?? [];
       for (const contextEntry of contextEntries) {
         variables?.repository.addVariableToContext(
-          contextEntry["@_id"] ?? "",
+          contextEntry["@_id"]!,
           contextEntry["@_label"] ?? "<var>",
-          contextExpressionDefinition["@_id"] ?? ""
+          contextExpressionDefinition["@_id"]!
         );
       }
     },
@@ -94,9 +94,9 @@ export const ExpressionContainer: React.FunctionComponent<ExpressionContainerPro
           for (const cell of rowEntry.expression ?? []) {
             // The name is not relevant here because Relation does not declare variables, so we're reusing ID.
             variables?.repository.addVariableToContext(
-              cell["@_id"] ?? "",
-              cell["@_id"] ?? "",
-              relationExpressionDefinition["@_id"] ?? ""
+              cell["@_id"]!,
+              cell["@_id"]!,
+              relationExpressionDefinition["@_id"]!
             );
           }
         }
@@ -112,7 +112,7 @@ export const ExpressionContainer: React.FunctionComponent<ExpressionContainerPro
         variables?.repository.addVariableToContext(
           bindingEntry.expression?.["@_id"] ?? "",
           bindingEntry.expression?.["@_label"] ?? "",
-          newExpression["@_id"] ?? ""
+          newExpression["@_id"]!
         );
       }
     },
@@ -124,7 +124,7 @@ export const ExpressionContainer: React.FunctionComponent<ExpressionContainerPro
       const items = newExpression.expression ?? [];
       for (const item of items) {
         // The name is not relevant here because ListExpression does not declare variables, so we're reusing ID.
-        variables?.repository.addVariableToContext(item["@_id"] ?? "", item["@_id"] ?? "", newExpression["@_id"] ?? "");
+        variables?.repository.addVariableToContext(item["@_id"]!, item["@_id"]!, newExpression["@_id"]!);
       }
     },
     [variables?.repository]
@@ -137,9 +137,9 @@ export const ExpressionContainer: React.FunctionComponent<ExpressionContainerPro
           if (rule.inputEntry) {
             for (const inputEntry of rule.inputEntry) {
               variables?.repository.addVariableToContext(
-                inputEntry["@_id"] ?? "",
-                inputEntry["@_id"] ?? "",
-                decisionTable["@_id"] ?? ""
+                inputEntry["@_id"]!,
+                inputEntry["@_id"]!,
+                decisionTable["@_id"]!
               );
             }
           }
@@ -147,9 +147,9 @@ export const ExpressionContainer: React.FunctionComponent<ExpressionContainerPro
           if (rule.outputEntry) {
             for (const outputEntry of rule.outputEntry) {
               variables?.repository.addVariableToContext(
-                outputEntry["@_id"] ?? "",
-                outputEntry["@_id"] ?? "",
-                decisionTable["@_id"] ?? ""
+                outputEntry["@_id"]!,
+                outputEntry["@_id"]!,
+                decisionTable["@_id"]!
               );
             }
           }
@@ -164,9 +164,9 @@ export const ExpressionContainer: React.FunctionComponent<ExpressionContainerPro
       if (functionExpression["@_kind"] === FunctionExpressionDefinitionKind.Feel && functionExpression.expression) {
         const expression = functionExpression.expression;
         variables?.repository.addVariableToContext(
-          expression["@_id"] ?? "",
-          expression["@_label"] ?? expression["@_id"] ?? "",
-          functionExpression["@_id"] ?? ""
+          expression["@_id"]!,
+          expression["@_label"] ?? expression["@_id"]!,
+          functionExpression["@_id"]!
         );
       }
     },

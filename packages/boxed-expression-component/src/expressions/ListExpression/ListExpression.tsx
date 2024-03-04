@@ -127,7 +127,7 @@ export function ListExpression(
   );
 
   const getRowKey = useCallback((row: ReactTable.Row<ROWTYPE>) => {
-    return row.original.expression["@_id"] ?? "";
+    return row.id;
   }, []);
 
   const cellComponentByColumnAccessor: BeeTableProps<ROWTYPE>["cellComponentByColumnAccessor"] = useMemo(
@@ -137,38 +137,16 @@ export function ListExpression(
     [expressionHolderId, listExpression.parentElementId]
   );
 
-  const getDefaultListItem = useCallback(function (dataType: string) {
-    const defaultItem: {
-      "@_id": string;
-      "@_typeRef": string;
-      __$$element: "literalExpression";
-    } = {
-      "@_id": generateUuid(),
-      "@_typeRef": dataType,
-      __$$element: "literalExpression",
-    };
-
-    return defaultItem;
-  }, []);
-
   const onRowAdded = useCallback(
     (args: { beforeIndex: number }) => {
       setExpression((prev: ListExpressionDefinition) => {
         const newItems = [...(prev.expression ?? [])];
 
-        const newItem = getDefaultListItem(prev["@_typeRef"] ?? "<Undefined>");
-
-        variables?.repository.addVariableToContext(
-          newItem["@_id"] ?? "",
-          newItem["@_id"] ?? "",
-          listExpression.parentElementId
-        );
-
-        newItems.splice(args.beforeIndex, 0, newItem);
+        newItems.splice(args.beforeIndex, 0, undefined as any); // SPEC DISCREPANCY: Starting without an expression gives users the ability to select the expression type.
         return { ...prev, expression: newItems };
       });
     },
-    [getDefaultListItem, listExpression.parentElementId, setExpression, variables?.repository]
+    [setExpression]
   );
 
   const onRowDeleted = useCallback(
@@ -189,14 +167,14 @@ export function ListExpression(
     (args: { rowIndex: number }) => {
       setExpression((prev: ListExpressionDefinition) => {
         const newItems = [...(prev.expression ?? [])];
-        newItems.splice(args.rowIndex, 1, getDefaultListItem(prev["@_typeRef"] ?? "<Undefined>"));
+        newItems.splice(args.rowIndex, 1, undefined as any); // SPEC DISCREPANCY: Starting without an expression gives users the ability to select the expression type.
         return {
           ...prev,
           expression: newItems,
         };
       });
     },
-    [getDefaultListItem, setExpression]
+    [setExpression]
   );
 
   const beeTableHeaderVisibility = useMemo(() => {

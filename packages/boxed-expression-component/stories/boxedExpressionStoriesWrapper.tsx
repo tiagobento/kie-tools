@@ -74,11 +74,14 @@ function getDefaultExpressionDefinitionByLogicType(
             "@_id": generateUuid(),
             "@_name": "ContextEntry-1",
           },
-          expression: {
+          expression: undefined as any, // SPEC DISCREPANCY: Starting without an expression gives users the ability to select the expression type.
+        },
+        {
+          variable: {
             "@_id": generateUuid(),
-            __$$element: "literalExpression",
-            "@_label": "ContextEntry-1",
+            "@_name": "Result expression",
           },
+          expression: undefined as any, // SPEC DISCREPANCY: Starting without an expression gives users the ability to select the expression type.
         },
       ],
     };
@@ -87,7 +90,7 @@ function getDefaultExpressionDefinitionByLogicType(
     const listExpression: ListExpressionDefinition = {
       __$$element: "list",
       "@_typeRef": dataType,
-      expression: [],
+      expression: [undefined as any], // SPEC DISCREPANCY: Starting without an expression gives users the ability to select the expression type.
     };
     return listExpression;
   } else if (logicType === "invocation") {
@@ -101,6 +104,7 @@ function getDefaultExpressionDefinitionByLogicType(
             "@_name": INVOCATION_EXPRESSION_DEFAULT_PARAMETER_NAME,
             "@_typeRef": INVOCATION_EXPRESSION_DEFAULT_PARAMETER_DATA_TYPE,
           },
+          expression: undefined as any, // SPEC DISCREPANCY: Starting without an expression gives users the ability to select the expression type.
         },
       ],
       expression: {

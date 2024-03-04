@@ -183,7 +183,7 @@ export function getExpressionResizingWidth(
     return getExpressionMinWidth(expression);
   }
 
-  const resizingWidth = resizingWidths.get(expression["@_id"] ?? "")?.value;
+  const resizingWidth = resizingWidths.get(expression["@_id"]!)?.value;
 
   // Literal
   if (expression.__$$element === "literalExpression") {
@@ -197,7 +197,7 @@ export function getExpressionResizingWidth(
   else if (expression.__$$element === "relation") {
     const columns = expression.column ?? [];
 
-    const expressionWidth = widthsById.get(expression["@_id"] ?? "");
+    const expressionWidth = widthsById.get(expression["@_id"]!);
 
     return (
       resizingWidth ??
@@ -207,7 +207,7 @@ export function getExpressionResizingWidth(
     );
   } else if (expression.__$$element === "decisionTable") {
     const columns = [...(expression.input ?? []), ...(expression.output ?? []), ...(expression.annotation ?? [])];
-    const expressionWidth = widthsById.get(expression["@_id"] ?? "");
+    const expressionWidth = widthsById.get(expression["@_id"]!);
     return (
       resizingWidth ??
       columns.reduce((acc, c, currentIndex) => {
@@ -258,7 +258,9 @@ export function getExpressionResizingWidth(
       return (
         resizingWidth ??
         JAVA_FUNCTION_EXPRESSION_LABEL_MIN_WIDTH +
-          (getWidth(expression["@_id"], widthsById) ?? JAVA_FUNCTION_EXPRESSION_VALUES_MIN_WIDTH) + //expression.classAndMethodNamesWidth
+          (getWidth(expression["@_id"], widthsById) ?? JAVA_FUNCTION_EXPRESSION_VALUES_MIN_WIDTH) +
+          (getWidthAt(JAVA_FUNCTION_EXPRESSION_EXTRA_WIDTH, widthsById.get(expression["@_id"]!)) ??
+            JAVA_FUNCTION_EXPRESSION_VALUES_MIN_WIDTH) +
           JAVA_FUNCTION_EXPRESSION_EXTRA_WIDTH
       );
     } else if (expression["@_kind"] === FunctionExpressionDefinitionKind.Pmml) {

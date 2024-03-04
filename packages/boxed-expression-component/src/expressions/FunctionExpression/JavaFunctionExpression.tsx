@@ -69,6 +69,8 @@ export type JavaFunctionExpressionDefinition = DMN15__tFunctionDefinition & {
   parentElementId: string;
 };
 
+const JAVA_FUNCTION_CLASS_AND_METHOD_NAMES_WIDTH_INDEX = 2; // 0 is the rowIndex column, 1 is the label column.
+
 export function JavaFunctionExpression({
   functionExpression,
 }: {
@@ -76,7 +78,7 @@ export function JavaFunctionExpression({
 }) {
   const { i18n } = useBoxedExpressionEditorI18n();
   const { expressionHolderId, widthsById } = useBoxedExpressionEditor();
-  const { setExpression } = useBoxedExpressionEditorDispatch();
+  const { setExpression, setWidth } = useBoxedExpressionEditorDispatch();
 
   const getClassContextEntry = useCallback((c: DMN15__tContext) => {
     return c.contextEntry?.find(({ variable }) => variable?.["@_name"] === "class");
@@ -86,33 +88,26 @@ export function JavaFunctionExpression({
     return c.contextEntry?.find(({ variable }) => variable?.["@_name"] === "method signature");
   }, []);
 
-  const getClassAndMethodNamesWidth = useCallback(
-    (id: string | undefined) => {
-      const widths = widthsById.get(id ?? "");
-      if (widths && widths.length > 0) {
-        return widths[1];
-      } else {
-        return JAVA_FUNCTION_EXPRESSION_VALUES_MIN_WIDTH;
-      }
-    },
-    [widthsById]
+  const id = functionExpression["@_id"]!;
+
+  const widths = useMemo(() => widthsById.get(id) ?? [], [id, widthsById]);
+
+  const classAndMethodNamesWidth = useMemo(
+    () => widths[JAVA_FUNCTION_CLASS_AND_METHOD_NAMES_WIDTH_INDEX] ?? JAVA_FUNCTION_EXPRESSION_VALUES_MIN_WIDTH,
+    [widths]
   );
 
   const setClassAndMethodNamesWidth = useCallback(
     (newWidthAction: React.SetStateAction<number | undefined>) => {
-      const newWidth =
-        typeof newWidthAction === "function"
-          ? newWidthAction(getClassAndMethodNamesWidth(functionExpression["@_id"]))
-          : newWidthAction;
+      const newWidth = typeof newWidthAction === "function" ? newWidthAction(classAndMethodNamesWidth) : newWidthAction;
 
-      const widths = widthsById.get(functionExpression["@_id"] ?? "") ?? [];
-      if (widths.length < 1) {
-        widths[0] = BEE_TABLE_ROW_INDEX_COLUMN_WIDTH;
+      if (newWidth) {
+        const values = [...widths];
+        values.splice(JAVA_FUNCTION_CLASS_AND_METHOD_NAMES_WIDTH_INDEX, 1, newWidth);
+        setWidth({ id, values });
       }
-      widths[1] = newWidth ?? 0;
-      widthsById.set(functionExpression["@_id"] ?? "", widths);
     },
-    [functionExpression, getClassAndMethodNamesWidth, widthsById]
+    [classAndMethodNamesWidth, id, setWidth, widths]
   );
 
   const parametersColumnHeader = useFunctionExpressionParametersColumnHeader(functionExpression.formalParameter);
@@ -149,7 +144,7 @@ export function JavaFunctionExpression({
                 accessor: "value" as any,
                 dataType: undefined as any,
                 isRowIndexColumn: false,
-                width: getClassAndMethodNamesWidth(functionExpression["@_id"]),
+                width: classAndMethodNamesWidth,
                 setWidth: setClassAndMethodNamesWidth,
                 minWidth: JAVA_FUNCTION_EXPRESSION_VALUES_MIN_WIDTH,
               },
@@ -161,7 +156,7 @@ export function JavaFunctionExpression({
   }, [
     expressionHolderId,
     functionExpression,
-    getClassAndMethodNamesWidth,
+    classAndMethodNamesWidth,
     parametersColumnHeader,
     setClassAndMethodNamesWidth,
   ]);
@@ -242,14 +237,14 @@ export function JavaFunctionExpression({
       },
       {
         minWidth: JAVA_FUNCTION_EXPRESSION_VALUES_MIN_WIDTH,
-        width: getClassAndMethodNamesWidth(functionExpression["@_id"]),
+        width: classAndMethodNamesWidth,
       },
     ],
-    [functionExpression, getClassAndMethodNamesWidth]
+    [classAndMethodNamesWidth]
   );
 
   const { onColumnResizingWidthChange, isPivoting, columnResizingWidths } = usePublishedBeeTableResizableColumns(
-    functionExpression["@_id"] ?? "",
+    functionExpression["@_id"]!,
     columns.length,
     true
   );
@@ -284,19 +279,32 @@ export function JavaFunctionExpression({
   const onCellUpdates = useCallback(
     (cellUpdates: BeeTableCellUpdate<JAVA_ROWTYPE>[]) => {
       for (const u of cellUpdates) {
-        const context = functionExpression.expression! as DMN15__tContext;
+        const context: DMN15__tContext = functionExpression.expression!;
+
+        const clazz = getClassContextEntry(context) ?? {
+          expression: {
+            __$$element: "literalExpression",
+            "@_id": generateUuid(),
+            text: { __$$text: "" },
+          },
+          variable: {
+            "@_name": "class",
+          },
+        };
+        const method = getVariableContextEntry(context) ?? {
+          expression: {
+            __$$element: "literalExpression",
+            "@_id": generateUuid(),
+            text: { __$$text: "" },
+          },
+          variable: {
+            "@_name": "method signature",
+          },
+        };
+
         // Class
         if (u.rowIndex === 0) {
           setExpression((prev: JavaFunctionExpressionDefinition) => {
-            const clazz = getClassContextEntry(context) ?? {
-              expression: {
-                __$$element: "literalExpression",
-                "@_id": generateUuid(),
-              },
-              variable: {
-                "@_name": "class",
-              },
-            };
             clazz.expression = {
               ...clazz.expression,
               __$$element: "literalExpression",
@@ -308,8 +316,9 @@ export function JavaFunctionExpression({
             return {
               ...prev,
               expression: {
-                ...context,
                 __$$element: "context",
+                ...context,
+                contextEntry: [clazz, method],
               },
             };
           });
@@ -317,16 +326,6 @@ export function JavaFunctionExpression({
         // Method
         else if (u.rowIndex === 1) {
           setExpression((prev: JavaFunctionExpressionDefinition) => {
-            const method = getVariableContextEntry(context) ?? {
-              expression: {
-                __$$element: "literalExpression",
-                "@_id": generateUuid(),
-              },
-              variable: {
-                "@_name": "method signature",
-              },
-            };
-
             method.expression = {
               ...method.expression,
               __$$element: "literalExpression",
@@ -339,8 +338,9 @@ export function JavaFunctionExpression({
             return {
               ...prev,
               expression: {
-                ...context,
                 __$$element: "context",
+                ...context,
+                contextEntry: [clazz, method],
               },
             };
           });

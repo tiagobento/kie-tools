@@ -60,6 +60,8 @@ type ROWTYPE = DMN15__tBinding;
 export const INVOCATION_EXPRESSION_DEFAULT_PARAMETER_NAME = "p-1";
 export const INVOCATION_EXPRESSION_DEFAULT_PARAMETER_DATA_TYPE = DmnBuiltInDataType.Undefined;
 
+export const INVOCATION_PARAMETER_INFO_WIDTH_INDEX = 0;
+
 export function InvocationExpression(
   invocationExpression: InvocationExpressionDefinition & {
     isNested: boolean;
@@ -68,23 +70,29 @@ export function InvocationExpression(
 ) {
   const { i18n } = useBoxedExpressionEditorI18n();
   const { expressionHolderId, variables, widthsById } = useBoxedExpressionEditor();
-  const { setExpression } = useBoxedExpressionEditorDispatch();
+  const { setExpression, setWidth } = useBoxedExpressionEditorDispatch();
 
-  const getWidth = useCallback(
-    (id: string | undefined) => {
-      const widths = widthsById.get(id ?? "");
-      if (widths && widths.length > 0) {
-        return widths[0];
-      } else {
-        return undefined;
-      }
-    },
-    [widthsById]
+  const id = invocationExpression["@_id"]!;
+
+  const widths = useMemo(() => widthsById.get(id) ?? [], [id, widthsById]);
+
+  const parametersWidth = useMemo(
+    () => widths?.[INVOCATION_PARAMETER_INFO_WIDTH_INDEX] ?? INVOCATION_PARAMETER_MIN_WIDTH,
+    [widths]
   );
 
-  const parametersWidth = useMemo(() => {
-    return getWidth(invocationExpression["@_id"]) ?? CONTEXT_ENTRY_INFO_MIN_WIDTH;
-  }, [getWidth, invocationExpression]);
+  const setParametersWidth = useCallback(
+    (newWidthAction: React.SetStateAction<number | undefined>) => {
+      const newWidth = typeof newWidthAction === "function" ? newWidthAction(parametersWidth) : newWidthAction;
+
+      if (newWidth) {
+        const values = [...widths];
+        values.splice(INVOCATION_PARAMETER_INFO_WIDTH_INDEX, 1, newWidth);
+        setWidth({ id, values });
+      }
+    },
+    [id, parametersWidth, setWidth, widths]
+  );
 
   const [parametersResizingWidth, setParametersResizingWidth] = React.useState<ResizingWidth>({
     value: parametersWidth,
@@ -141,19 +149,6 @@ export function InvocationExpression(
   const beeTableRows: ROWTYPE[] = useMemo(() => {
     return invocationExpression.binding ?? [];
   }, [invocationExpression.binding]);
-
-  const setParametersWidth = useCallback(
-    (newWidthAction: React.SetStateAction<number | undefined>) => {
-      setExpression((prev: InvocationExpressionDefinition) => {
-        const newWidth = typeof newWidthAction === "function" ? newWidthAction(getWidth(prev["@_id"])) : newWidthAction;
-        return {
-          ...prev,
-          entryInfoWidth: newWidth,
-        };
-      });
-    },
-    [getWidth, setExpression]
-  );
 
   const beeTableColumns = useMemo<ReactTable.Column<ROWTYPE>[]>(
     () => [
@@ -232,7 +227,7 @@ export function InvocationExpression(
   );
 
   const getRowKey = useCallback((row: ReactTable.Row<ROWTYPE>) => {
-    return row.original.expression?.["@_id"] ?? ""; // FIXME: expression or parameter?
+    return row.id;
   }, []);
 
   const updateEntry = useCallback(
@@ -308,11 +303,7 @@ export function InvocationExpression(
               "p"
             ),
         },
-        expression: {
-          "@_id": generateUuid(),
-          "@_typeRef": DmnBuiltInDataType.Undefined,
-          __$$element: "literalExpression",
-        },
+        expression: undefined as any, // SPEC DISCREPANCY: Starting without an expression gives users the ability to select the expression type.,
       };
     },
     [invocationExpression.binding]
@@ -403,10 +394,10 @@ export function InvocationExpression(
 
   return (
     <NestedExpressionContainerContext.Provider value={nestedExpressionContainerValue}>
-      <div className={`invocation-expression ${invocationExpression["@_id"]}`}>
+      <div className={`invocation-expression ${id}`}>
         <BeeTable<ROWTYPE>
           resizerStopBehavior={ResizerStopBehavior.SET_WIDTH_WHEN_SMALLER}
-          tableId={invocationExpression["@_id"]}
+          tableId={id}
           headerLevelCountForAppendingRowIndexColumn={2}
           headerVisibility={headerVisibility}
           skipLastHeaderGroup={true}

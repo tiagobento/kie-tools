@@ -81,6 +81,7 @@ export function useNestedExpressionResizingWidthValue(
     extraWidth,
     nestedExpressionMinWidth,
     resizingWidths,
+    widthsById,
     fixedColumnMinWidth,
   ]);
 
@@ -125,7 +126,14 @@ export function useNestedExpressionActualWidth(
         .filter((e) => !(resizingWidths.get(e?.["@_id"] ?? "")?.isPivoting ?? false))
         .map((expression) => getExpressionResizingWidth(expression, new Map(), widthsById))
     );
-  }, [fixedColumnActualWidth, extraWidth, nestedExpressionContainer.actualWidth, nestedExpressions, resizingWidths]);
+  }, [
+    nestedExpressionContainer.actualWidth,
+    fixedColumnActualWidth,
+    extraWidth,
+    nestedExpressions,
+    resizingWidths,
+    widthsById,
+  ]);
 }
 
 export function useNestedExpressionContainerWithNestedExpressions({

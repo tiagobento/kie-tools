@@ -99,20 +99,16 @@ export function DecisionTableExpression(
   }
 ) {
   const { i18n } = useBoxedExpressionEditorI18n();
-  const { expressionHolderId, widthsById } = useBoxedExpressionEditor();
+  const { expressionHolderId, widthsById, variables } = useBoxedExpressionEditor();
   const { setExpression, setWidth } = useBoxedExpressionEditorDispatch();
-  const { variables } = useBoxedExpressionEditor();
 
   const widths = useMemo(() => {
-    return widthsById.get(decisionTableExpression["@_id"] ?? "") ?? [];
+    return widthsById.get(decisionTableExpression["@_id"]!) ?? [];
   }, [decisionTableExpression, widthsById]);
 
   const getInputWidth = useCallback(
     (inputIndex: number) => {
       const index = 1 + inputIndex;
-      if (!widths || widths.length <= index) {
-        return undefined;
-      }
       return { index, width: widths[index] };
     },
     [widths]
@@ -121,10 +117,6 @@ export function DecisionTableExpression(
   const getOutputWidth = useCallback(
     (outputIndex: number) => {
       const index = 1 + (decisionTableExpression.input?.length ?? 0) + outputIndex;
-      if (!widths || widths.length <= index) {
-        return undefined;
-      }
-
       return { index, width: widths[index] };
     },
     [decisionTableExpression.input?.length, widths]
@@ -137,10 +129,6 @@ export function DecisionTableExpression(
         (decisionTableExpression.input?.length ?? 0) +
         (decisionTableExpression.output?.length ?? 0) +
         annotationIndex;
-
-      if (!widths || widths.length <= index) {
-        return undefined;
-      }
       return { index, width: widths[index] };
     },
     [decisionTableExpression.input?.length, decisionTableExpression.output?.length, widths]
@@ -277,7 +265,7 @@ export function DecisionTableExpression(
 
   const beeTableRef = useRef<BeeTableRef>(null);
   const { onColumnResizingWidthChange, columnResizingWidths, isPivoting } = usePublishedBeeTableResizableColumns(
-    decisionTableExpression["@_id"] ?? "",
+    decisionTableExpression["@_id"]!,
     columns.length,
     true
   );
@@ -301,7 +289,7 @@ export function DecisionTableExpression(
       (inputClause, inputIndex) => ({
         accessor: inputClause["@_id"] ?? generateUuid(),
         label: inputClause.inputExpression.text?.__$$text ?? "",
-        id: inputClause["@_id"] ?? "",
+        id: inputClause["@_id"]!,
         dataType: inputClause.inputExpression["@_typeRef"] ?? DmnBuiltInDataType.Undefined,
         width: getInputWidth(inputIndex)?.width ?? DECISION_TABLE_INPUT_MIN_WIDTH,
         setWidth: setInputColumnWidth(inputIndex),
@@ -574,8 +562,8 @@ export function DecisionTableExpression(
         if (rule.inputEntry) {
           for (const inputEntry of rule.inputEntry) {
             variables?.repository.addVariableToContext(
-              inputEntry["@_id"] ?? "",
-              inputEntry["@_id"] ?? "",
+              inputEntry["@_id"]!,
+              inputEntry["@_id"]!,
               decisionTableExpression.parentElementId
             );
           }
@@ -584,8 +572,8 @@ export function DecisionTableExpression(
         if (rule.outputEntry) {
           for (const outputEntry of rule.outputEntry) {
             variables?.repository.addVariableToContext(
-              outputEntry["@_id"] ?? "",
-              outputEntry["@_id"] ?? "",
+              outputEntry["@_id"]!,
+              outputEntry["@_id"]!,
               decisionTableExpression.parentElementId
             );
           }
@@ -709,8 +697,8 @@ export function DecisionTableExpression(
               for (let j = 0; j < args.columnsCount; j++) {
                 const inputEntry = createInputEntry();
                 variables?.repository.addVariableToContext(
-                  inputEntry["@_id"] ?? "",
-                  inputEntry["@_id"] ?? "",
+                  inputEntry["@_id"]!,
+                  inputEntry["@_id"]!,
                   decisionTableExpression.parentElementId
                 );
 

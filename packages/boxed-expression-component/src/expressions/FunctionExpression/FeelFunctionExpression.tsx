@@ -136,7 +136,7 @@ export function FeelFunctionExpression({
   }, [functionExpression.parentElementId]);
 
   const getRowKey = useCallback((r: ReactTable.Row<FEEL_ROWTYPE>) => {
-    return r.original.functionExpression["@_id"] ?? "";
+    return r.id;
   }, []);
 
   const onRowReset = useCallback(() => {

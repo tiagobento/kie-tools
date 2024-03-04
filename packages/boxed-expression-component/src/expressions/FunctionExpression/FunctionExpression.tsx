@@ -82,7 +82,7 @@ export function useFunctionExpressionControllerCell(functionKind: DMN15__tFuncti
             expression: {
               __$$element: "literalExpression",
               id: generateUuid(),
-              dataType: DmnBuiltInDataType.Undefined,
+              "@_typeRef": DmnBuiltInDataType.Undefined,
             },
             formalParameter: [],
           };
@@ -98,7 +98,6 @@ export function useFunctionExpressionControllerCell(functionKind: DMN15__tFuncti
             },
             "@_kind": FunctionExpressionDefinitionKind.Java,
             "@_typeRef": DmnBuiltInDataType.Undefined,
-            classAndMethodNamesWidth: JAVA_FUNCTION_EXPRESSION_VALUES_MIN_WIDTH,
             formalParameter: [],
           };
         } else if (kind === FunctionExpressionDefinitionKind.Pmml) {

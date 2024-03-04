@@ -53,10 +53,11 @@ import { ContextEntryExpressionCell } from "./ContextEntryExpressionCell";
 import { ContextEntryInfoCell, Entry } from "./ContextEntryInfoCell";
 import "./ContextExpression.css";
 import { ContextResultExpressionCell } from "./ContextResultExpressionCell";
-import { getExpressionTotalMinWidth } from "../../resizing/WidthMaths";
+import { getExpressionTotalMinWidth, getWidth } from "../../resizing/WidthMaths";
 import { DMN15__tContextEntry } from "@kie-tools/dmn-marshaller/dist/schemas/dmn-1_5/ts-gen/types";
 
 const CONTEXT_ENTRY_DEFAULT_DATA_TYPE = DmnBuiltInDataType.Undefined;
+const CONTEXT_ENTRY_INFO_WIDTH_INDEX = 0;
 
 type ROWTYPE = DMN15__tContextEntry;
 
@@ -67,36 +68,29 @@ export function ContextExpression(
   }
 ) {
   const { i18n } = useBoxedExpressionEditorI18n();
-  const { setExpression } = useBoxedExpressionEditorDispatch();
+  const { setExpression, setWidth } = useBoxedExpressionEditorDispatch();
   const { variables, widthsById } = useBoxedExpressionEditor();
 
-  const getWidth = useCallback(
-    (id: string | undefined) => {
-      const widths = widthsById.get(id ?? "");
-      if (widths && widths.length > 0) {
-        return widths[0];
-      } else {
-        return undefined;
-      }
-    },
-    [widthsById]
-  );
+  const id = contextExpression["@_id"]!;
 
-  const entryInfoWidth = useMemo(() => {
-    return getWidth(contextExpression["@_id"]) ?? CONTEXT_ENTRY_INFO_MIN_WIDTH;
-  }, [contextExpression, getWidth]);
+  const widths = useMemo(() => widthsById.get(id) ?? [], [id, widthsById]);
+
+  const entryInfoWidth = useMemo(
+    () => widths?.[CONTEXT_ENTRY_INFO_WIDTH_INDEX] ?? CONTEXT_ENTRY_INFO_MIN_WIDTH,
+    [widths]
+  );
 
   const setEntryInfoWidth = useCallback(
     (newWidthAction: React.SetStateAction<number | undefined>) => {
-      setExpression((prev: ContextExpressionDefinition) => {
-        const newWidth =
-          typeof newWidthAction === "function"
-            ? newWidthAction(getWidth(prev["@_id"]) ?? CONTEXT_ENTRY_INFO_MIN_WIDTH)
-            : newWidthAction;
-        return { ...prev, entryInfoWidth: newWidth };
-      });
+      const newWidth = typeof newWidthAction === "function" ? newWidthAction(entryInfoWidth) : newWidthAction;
+
+      if (newWidth) {
+        const values = [...widths];
+        values.splice(CONTEXT_ENTRY_INFO_WIDTH_INDEX, 1, newWidth);
+        setWidth({ id, values });
+      }
     },
-    [getWidth, setExpression]
+    [entryInfoWidth, id, setWidth, widths]
   );
 
   const [entryInfoResizingWidth, setEntryInfoResizingWidth] = useState<ResizingWidth>({
@@ -145,7 +139,7 @@ export function ContextExpression(
           flexibleColumnIndex: 2,
           widthsById: widthsById,
         };
-      }, [contextExpression, entryInfoResizingWidth, entryInfoWidth, entryResult])
+      }, [contextExpression, entryInfoResizingWidth, entryInfoWidth, entryResult, widthsById])
     );
 
   /// //////////////////////////////////////////////////////
@@ -161,7 +155,7 @@ export function ContextExpression(
   const beeTableColumns = useMemo<ReactTable.Column<ROWTYPE>[]>(() => {
     return [
       {
-        accessor: contextExpression["@_id"] as any, // FIXME: https://github.com/kiegroup/kie-issues/issues/169
+        accessor: id as any, // FIXME: https://github.com/kiegroup/kie-issues/issues/169
         label: contextExpression["@_label"] ?? DEFAULT_EXPRESSION_NAME,
         isRowIndexColumn: false,
         dataType: contextExpression["@_typeRef"] ?? CONTEXT_ENTRY_DEFAULT_DATA_TYPE,
@@ -188,7 +182,7 @@ export function ContextExpression(
         ],
       },
     ];
-  }, [contextExpression, entryInfoWidth, setEntryInfoWidth]);
+  }, [contextExpression, entryInfoWidth, id, setEntryInfoWidth]);
 
   const onColumnUpdates = useCallback(
     ([{ name, dataType }]: BeeTableColumnUpdate<ROWTYPE>[]) => {
@@ -285,7 +279,7 @@ export function ContextExpression(
   }, [i18n]);
 
   const getRowKey = useCallback((row: ReactTable.Row<ROWTYPE>) => {
-    return row.original.variable?.["@_id"] ?? "";
+    return row.id;
   }, []);
 
   const beeTableAdditionalRow = useMemo(() => {
@@ -294,12 +288,12 @@ export function ContextExpression(
       <ContextResultExpressionCell
         key={"context-result-expression"}
         contextExpression={contextExpression}
-        rowIndex={(contextExpression.contextEntry ?? []).length}
+        rowIndex={(contextExpression.contextEntry ?? []).length - 1}
         columnIndex={2}
         widthsById={widthsById}
       />,
     ];
-  }, [contextExpression]);
+  }, [contextExpression, widthsById]);
 
   const getDefaultContextEntry = useCallback(
     (name?: string): DMN15__tContextEntry => {
@@ -310,10 +304,11 @@ export function ContextExpression(
           "ContextEntry"
         );
       return {
-        expression: undefined!,
+        expression: undefined as any, // SPEC DISCREPANCY: Starting without an expression gives users the ability to select the expression type.
         "@_id": generateUuid(),
         variable: {
           "@_name": variableName,
+          "@_typeRef": DmnBuiltInDataType.Undefined,
           description: { __$$text: "" },
         },
         "@_label": variableName,
@@ -393,7 +388,7 @@ export function ContextExpression(
         const newContextEntries = [...(prev.contextEntry ?? [])];
 
         if (prev.contextEntry) {
-          variables?.repository.removeVariable(prev.contextEntry[args.rowIndex]["@_id"] ?? "");
+          variables?.repository.removeVariable(prev.contextEntry[args.rowIndex]["@_id"]!);
         }
 
         newContextEntries.splice(args.rowIndex, 1);
@@ -468,15 +463,15 @@ export function ContextExpression(
 
   return (
     <NestedExpressionContainerContext.Provider value={nestedExpressionContainerValue}>
-      <div className={`context-expression ${contextExpression["@_id"]}`}>
+      <div className={`context-expression ${id}`}>
         <BeeTable<ROWTYPE>
           resizerStopBehavior={ResizerStopBehavior.SET_WIDTH_WHEN_SMALLER}
-          tableId={contextExpression["@_id"]}
+          tableId={id}
           headerLevelCountForAppendingRowIndexColumn={1}
           headerVisibility={headerVisibility}
           cellComponentByColumnAccessor={cellComponentByColumnAccessor}
           columns={beeTableColumns}
-          rows={contextExpression.contextEntry?.filter((e) => e.variable) ?? []}
+          rows={contextExpression.contextEntry?.filter((e, i, { length }) => i < length - 1) ?? []}
           onColumnUpdates={onColumnUpdates}
           operationConfig={beeTableOperationConfig}
           allowedOperations={allowedOperations}
