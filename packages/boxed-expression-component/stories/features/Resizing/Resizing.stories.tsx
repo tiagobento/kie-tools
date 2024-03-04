@@ -104,6 +104,7 @@ const expression: ExpressionDefinition = {
               },
               expression: {
                 "@_id": "_245FAB0B-6267-4F89-9884-144B838F8F5E",
+                "@_label": "Result Expression",
                 "@_typeRef": DmnBuiltInDataType.Number,
                 __$$element: "literalExpression",
                 text: { __$$text: "Monthly Income - (Monthly Repayments + Monthly Expenses)" },
@@ -134,12 +135,8 @@ const expression: ExpressionDefinition = {
                     },
                   },
                   {
-                    variable: {
-                      "@_id": "_650908EF-5842-4098-9CB0-E6BD69EFDE52",
-                      "@_name": "Result Expression",
-                      "@_typeRef": DmnBuiltInDataType.Undefined,
-                    },
                     expression: {
+                      "@_label": "Result Expression",
                       __$$element: "decisionTable",
                       "@_hitPolicy": "UNIQUE",
                       "@_aggregation": undefined,
@@ -156,7 +153,7 @@ const expression: ExpressionDefinition = {
                       output: [
                         {
                           "@_id": "_64AA2820-EC4F-4A5B-9045-A474983CC86E",
-                          "@_name": "Result Expression",
+                          "@_name": "Risk Category",
                           "@_typeRef": DmnBuiltInDataType.Undefined,
                         },
                       ],
@@ -232,12 +229,8 @@ const expression: ExpressionDefinition = {
               },
             },
             {
-              variable: {
-                "@_id": "_A83FF43F-CB4E-4C7F-A121-D7067A3D490A",
-                "@_name": "Result Expression",
-                "@_typeRef": DmnBuiltInDataType.Undefined,
-              },
               expression: {
+                "@_label": "Result Expression",
                 __$$element: "literalExpression",
                 text: { __$$text: "Affordability" },
               },
@@ -247,11 +240,6 @@ const expression: ExpressionDefinition = {
       },
     },
     {
-      variable: {
-        "@_id": "_591A3EA4-C90E-4B58-9E66-039817DA39CA",
-        "@_name": "Result Expression",
-        "@_typeRef": DmnBuiltInDataType.Undefined,
-      },
       expression: {
         __$$element: "invocation",
         expression: {

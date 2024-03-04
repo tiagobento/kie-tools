@@ -52,6 +52,10 @@ export const Base: Story = {
           },
           expression: undefined!,
         },
+        {
+          "@_label": "Result Expression",
+          expression: undefined as any, // SPEC DISCREPANCY: Undefined result expression.
+        },
       ],
     },
     isResetSupportedOnRootExpression: false,
@@ -152,6 +156,10 @@ export const Customer: Story = {
             text: { __$$text: "30" },
           },
         },
+        {
+          "@_label": "Result Expression",
+          expression: undefined as any, // SPEC DISCREPANCY: Undefined result expression.
+        },
       ],
     },
     isResetSupportedOnRootExpression: false,
@@ -190,8 +198,16 @@ export const Nested: Story = {
                   text: { __$$text: "" },
                 },
               },
+              {
+                "@_label": "Result Expression",
+                expression: undefined as any, // SPEC DISCREPANCY: Undefined result expression.
+              },
             ],
           },
+        },
+        {
+          "@_label": "Result Expression",
+          expression: undefined as any, // SPEC DISCREPANCY: Undefined result expression.
         },
       ],
     },

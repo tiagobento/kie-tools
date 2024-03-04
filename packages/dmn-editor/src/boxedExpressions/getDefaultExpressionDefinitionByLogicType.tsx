@@ -132,6 +132,7 @@ export function getDefaultExpressionDefinitionByLogicType({
     // context <result> cell
     contextEntries.push({
       "@_id": generateUuid(),
+      "@_label": "Result Expression",
       expression: undefined as any, // SPEC DISCREPANCY: Starting without an expression gives users the ability to select the expression type.
     });
 

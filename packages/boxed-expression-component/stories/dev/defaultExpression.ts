@@ -89,6 +89,10 @@ export function getDefaultExpressionDefinitionByLogicType(
             "@_label": "ContextEntry-2",
           },
         },
+        {
+          "@_label": "Result Expression",
+          expression: undefined as any, // SPEC DISCREPANCY: Undefined result expression.
+        },
       ],
     };
     return contextExpression;

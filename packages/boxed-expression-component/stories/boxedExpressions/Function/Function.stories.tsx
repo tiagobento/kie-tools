@@ -110,6 +110,10 @@ export const Nested: Story = {
             formalParameter: [],
           },
         },
+        {
+          "@_label": "Result Expression",
+          expression: undefined as any, // SPEC DISCREPANCY: Undefined result expression.
+        },
       ],
     },
     isResetSupportedOnRootExpression: false,

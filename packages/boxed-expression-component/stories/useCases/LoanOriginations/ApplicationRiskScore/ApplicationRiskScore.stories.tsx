@@ -120,7 +120,7 @@ export const applicationRiskScoreExpression: ContextExpressionDefinition = {
         output: [
           {
             "@_id": "_813B3D23-EA80-4D61-B197-150B9C51FAD8",
-            "@_name": "Result Expression",
+            "@_name": "Application risk score",
           },
         ],
         rule: [

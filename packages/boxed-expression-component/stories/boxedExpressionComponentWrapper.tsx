@@ -21,6 +21,7 @@ import * as React from "react";
 import { BoxedExpressionEditor } from "../src/expressions";
 import { BeeGwtService, DmnDataType, ExpressionDefinition, PmmlDocument } from "../src/api";
 import { beeGwtService, pmmlDocuments, dataTypes } from "./boxedExpressionStoriesWrapper";
+import { useState } from "react";
 
 export function BoxedExpressionComponentWrapper(props: {
   expression: ExpressionDefinition;
@@ -30,6 +31,8 @@ export function BoxedExpressionComponentWrapper(props: {
   isResetSupportedOnRootExpression?: boolean;
 }) {
   const emptyRef = React.useRef<HTMLDivElement>(null);
+
+  const [widthsById, setWidthsById] = useState(new Map<string, number[]>());
 
   return (
     <div ref={emptyRef}>
@@ -42,8 +45,8 @@ export function BoxedExpressionComponentWrapper(props: {
         beeGwtService={props.beeGwtService ?? beeGwtService}
         pmmlDocuments={props.pmmlDocuments ?? pmmlDocuments}
         isResetSupportedOnRootExpression={props.isResetSupportedOnRootExpression}
-        widthsById={new Map<string, number[]>()}
-        onWidthsChange={() => {}}
+        widthsById={widthsById}
+        onWidthsChange={setWidthsById}
       />
     </div>
   );

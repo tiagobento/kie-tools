@@ -85,6 +85,10 @@ export const Nested: Story = {
             "@_label": "Expression Name",
           },
         },
+        {
+          "@_label": "Result Expression",
+          expression: undefined as any, // SPEC DISCREPANCY: Undefined result expression.
+        },
       ],
     },
     isResetSupportedOnRootExpression: false,

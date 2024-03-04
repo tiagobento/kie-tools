@@ -81,18 +81,22 @@ export function BoxedExpressionEditorContextProvider({
   const [currentlyOpenContextMenu, setCurrentlyOpenContextMenu] = useState<string | undefined>(undefined);
 
   const editorRef = useRef<HTMLDivElement>(null);
+  const widthsByIdRef = useRef<Map<string, number[]>>(widthsById);
+  React.useEffect(() => {
+    widthsByIdRef.current = widthsById;
+  }, [widthsById]);
 
   const dispatch = useMemo<BoxedExpressionEditorDispatchContextType>(
     () => ({
       setExpression: onExpressionChange,
       setWidth: ({ id, values }) => {
         console.log("width" + id);
-        const n = new Map(widthsById);
+        const n = new Map(widthsByIdRef.current);
         n.set(id, values);
         onWidthsChange(n);
       },
     }),
-    [onExpressionChange, onWidthsChange, widthsById]
+    [onExpressionChange, onWidthsChange]
   );
 
   return (
