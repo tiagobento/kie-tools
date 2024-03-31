@@ -21,7 +21,12 @@
     "src"
   ],
   "scripts": {
-    "install": "rimraf dist && tsc"
+    "build": "tsc -p tsconfig.json",
+    "build:dev": "pnpm build",
+    "build:prod": "pnpm build",
+    "clean": "rimraf dist*",
+    "lint": "kie-tools--eslint ./src",
+    "test": "run-script-if --ignore-errors \"$(build-env tests.ignoreFailures)\" --bool true --then \"jest --silent --verbose --passWithNoTests\""
   },
   "devDependencies": {
     "@kie-tools-core/webpack-base": "workspace:*",

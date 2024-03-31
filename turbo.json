@@ -1,0 +1,36 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "pipeline": {
+    "clean": {
+      "cache": false
+    },
+    "lint": {},
+    "codegen": {
+      "dependsOn": ["^build"]
+    },
+    "build": {
+      "dependsOn": ["^build", "codegen"],
+      "inputs": ["src"],
+      "outputs": ["dist"]
+    },
+    "build:tests": {
+      "dependsOn": ["^build:tests", "build"],
+      "inputs": ["src-tests"],
+      "outputs": ["dist-tests"]
+    },
+    "test": {
+      "dependsOn": ["build", "build:tests"],
+      "inputs": ["tests"],
+      "outputs": ["dist-tests"]
+    },
+    "test:e2e": {
+      "dependsOn": ["build"],
+      "inputs": ["tests/e2e"], // FIXME: I think this should be e2e-tests or tests-e2e
+      "outputs": ["dist-e2e-tests"] // FIXME: I think this should be dist-e2e-tests or dist-tests-e2e
+    },
+    "start": {
+      "dependsOn": ["^build"],
+      "persistent": true
+    }
+  }
+}
