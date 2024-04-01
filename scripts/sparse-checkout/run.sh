@@ -44,16 +44,16 @@ echo "[kie-tools-sparse-checkout] Installing packages dependencies..."
 eval "pnpm bootstrap:packages $KIE_TOOLS_PACKAGES_PNPM_FILTER_STRING --frozen-lockfile"
 echo ""
 
-echo "[kie-tools-sparse-checkout] Building packages with 'build:dev'..."
-eval "pnpm $KIE_TOOLS_PACKAGES_PNPM_FILTER_STRING build:dev"
-echo ""
+# echo "[kie-tools-sparse-checkout] Building packages with 'build:dev'..."
+# eval "pnpm $KIE_TOOLS_PACKAGES_PNPM_FILTER_STRING build:dev"
+# echo ""
 
-echo "[kie-tools-sparse-checkout] Formatting changes..."
-pnpm pretty-quick
-echo ""
+# echo "[kie-tools-sparse-checkout] Formatting changes..."
+# pnpm pretty-quick
+# echo ""
 
-echo "[kie-tools-sparse-checkout] Git status..."
-git status
-echo ""
+# echo "[kie-tools-sparse-checkout] Git status..."
+# git status
+# echo ""
 
 echo "[kie-tools-sparse-checkout] Done."
