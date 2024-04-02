@@ -12,7 +12,7 @@ Keep in mind that sparse checkouts make Git behave a little differently for some
 
 ```
 ORG="tiagobento"
-BRANCH="tb-tests"
+BRANCH="tr-tests"
 PKGS="@kie-tools/boxed-expression-component"
 bash <(curl -s https://raw.githubusercontent.com/$ORG/kie-tools/$BRANCH/scripts/sparse-checkout/run.sh) $ORG $BRANCH ${(z)PKGS}
 ```
@@ -23,7 +23,7 @@ bash <(curl -s https://raw.githubusercontent.com/$ORG/kie-tools/$BRANCH/scripts/
 
 ```
 ORG="tiagobento"
-BRANCH="tb-tests"
+BRANCH="tr-tests"
 PKGS="@kie-tools/boxed-expression-component"
 bash <(curl -s https://raw.githubusercontent.com/$ORG/kie-tools/$BRANCH/scripts/sparse-checkout/run.sh) $ORG $BRANCH $PKGS
 ```
@@ -34,7 +34,7 @@ bash <(curl -s https://raw.githubusercontent.com/$ORG/kie-tools/$BRANCH/scripts/
 docker run -it -p 9900:9900 --rm quay.io/kie-tools/kie-tools-ci-build bash -ci '\
 cd; \
 ORG="tiagobento"; \
-BRANCH="tb-tests"; \
+BRANCH="tr-tests"; \
 PKGS="@kie-tools/boxed-expression-component"; \
 bash <(curl -s https://raw.githubusercontent.com/$ORG/kie-tools/$BRANCH/scripts/sparse-checkout/run.sh) $ORG $BRANCH $PKGS; \
 cd kie-tools; \
