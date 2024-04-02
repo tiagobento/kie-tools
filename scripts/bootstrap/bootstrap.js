@@ -53,6 +53,9 @@ execSync(`node ${require.resolve("./check_required_preinstalled_cli_commands.mjs
 console.info("\n\n[bootstrap] Checking packages dependencies...");
 execSync(`node ${require.resolve("./check_packages_dependencies.js")}`, execOpts);
 
+console.info("\n\n[bootstrap] Checking structure...");
+execSync(`node ${require.resolve("./check_structure.mjs")}`, execOpts);
+
 console.info("\n\n[bootstrap] Formatting pnpm-lock.yaml...");
 execSync(`prettier --write pnpm-lock.yaml`, execOpts);
 
