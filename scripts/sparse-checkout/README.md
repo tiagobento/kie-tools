@@ -36,8 +36,8 @@ cd; \
 ORG="tiagobento"; \
 BRANCH="tr-tests"; \
 PKGS="@kie-tools/boxed-expression-component"; \
-bash <(curl -s https://raw.githubusercontent.com/$ORG/kie-tools/$BRANCH/scripts/sparse-checkout/run.sh) $ORG $BRANCH $PKGS; \
-cd kie-tools; \
+bash <(curl -s https://raw.githubusercontent.com/$ORG/incubator-kie-tools/$BRANCH/scripts/sparse-checkout/run.sh) $ORG $BRANCH $PKGS; \
+cd incubator-kie-tools; \
 npm install -g turbo; \
 turbo start -F boxed-expression-component;'
 ```
