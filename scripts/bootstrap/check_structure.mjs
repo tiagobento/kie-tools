@@ -22,7 +22,7 @@ async function main() {
   // 2. there can't be files inside packages/examples directories
   // 3. prettierignore is always a superset of gitignore
 
-  console.info(`[check-structure] Checking if all package directoties have a a valid package.json file...`);
+  console.info(`[check-structure] Checking if all package directories have a a valid package.json file...`);
 
   console.info(`[check-structure] Checking if there's dangling files outside packages directories...`);
 
