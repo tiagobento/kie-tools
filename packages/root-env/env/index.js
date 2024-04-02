@@ -22,33 +22,13 @@ const rootPackageJson = require("../../../package.json");
 
 module.exports = composeEnv([], {
   vars: varsWithName({
-    KIE_TOOLS_BUILD__runLinters: {
-      default: `${true}`,
-      description: "Enables/disables running linters during the build.",
-    },
-    KIE_TOOLS_BUILD__runTests: {
-      default: `${true}`,
-      description: "Enables/disables running tests during the build.",
-    },
     KIE_TOOLS_BUILD__ignoreTestFailures: {
       default: `${false}`,
       description: "Ignores failures on tests and continues with the build until the end.",
     },
-    KIE_TOOLS_BUILD__runEndToEndTests: {
-      default: `${false}`,
-      description: "Enables/disables running end-to-end tests during the build.",
-    },
     KIE_TOOLS_BUILD__ignoreEndToEndTestFailures: {
       default: `${false}`,
       description: "Ignores failures on end-to-end tests and continues with the build until the end.",
-    },
-    KIE_TOOLS_BUILD__buildContainerImages: {
-      default: `${false}`,
-      description: "Enables/disables building container images during the build.",
-    },
-    KIE_TOOLS_BUILD__buildExamples: {
-      default: `${false}`,
-      description: "Enables/disables building example packages during the build.",
     },
     QUARKUS_PLATFORM_version: {
       default: "3.2.9.Final",
@@ -65,21 +45,10 @@ module.exports = composeEnv([], {
         version: rootPackageJson.version,
       },
       tests: {
-        run: str2bool(getOrDefault(this.vars.KIE_TOOLS_BUILD__runTests)),
         ignoreFailures: str2bool(getOrDefault(this.vars.KIE_TOOLS_BUILD__ignoreTestFailures)),
       },
       endToEndTests: {
-        run: str2bool(getOrDefault(this.vars.KIE_TOOLS_BUILD__runEndToEndTests)),
         ignoreFailures: str2bool(getOrDefault(this.vars.KIE_TOOLS_BUILD__ignoreEndToEndTestFailures)),
-      },
-      linters: {
-        run: str2bool(getOrDefault(this.vars.KIE_TOOLS_BUILD__runLinters)),
-      },
-      containerImages: {
-        build: str2bool(getOrDefault(this.vars.KIE_TOOLS_BUILD__buildContainerImages)),
-      },
-      examples: {
-        build: str2bool(getOrDefault(this.vars.KIE_TOOLS_BUILD__buildExamples)),
       },
       kogitoRuntime: {
         version: getOrDefault(this.vars.KOGITO_RUNTIME_version),
