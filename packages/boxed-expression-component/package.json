@@ -18,7 +18,7 @@
     "start:linux:darwin": "cross-env STORYBOOK_PORT=$(build-env boxedExpressionComponent.storybook.port) pnpm storybook-base --storybookArgs=\"dev\"",
     "start:win32": "pnpm powershell \"cross-env STORYBOOK_PORT=$(build-env boxedExpressionComponent.storybook.port) pnpm storybook-base --storybookArgs='dev'",
     "test": "run-script-if --ignore-errors \"$(build-env tests.ignoreFailures)\" --bool true --then \"jest --silent --verbose --passWithNoTests\"",
-    "test:e2e": "run-script-if --ignore-errors \"$(build-env endToEndTests.ignoreFailures)\" --bool true --then \"pnpm exec playwright test\""
+    "test-e2e": "run-script-if --ignore-errors \"$(build-env endToEndTests.ignoreFailures)\" --bool true --then \"pnpm exec playwright test\""
   },
   "dependencies": {
     "@kie-tools-core/i18n": "workspace:*",
