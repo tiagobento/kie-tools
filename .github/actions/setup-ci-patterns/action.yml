@@ -52,7 +52,7 @@ runs:
 
           const cwd = process.env["CWD"];
 
-          const pnpmWorkspacePackagesRootPaths = ["packages", "examples"].map(p => path.join(cwd, p)).join("\n");
+          const pnpmWorkspacePackagesRootPaths = ["packages", "examples", "scripts"].map(p => path.join(cwd, p)).join("\n");
 
           const nonSourceFilesPatterns = fs.readFileSync(path.join(cwd, "./.github/supporting-files/ci/non-source-files-patterns.txt"), "utf-8");
           const nonSourceFilesPatternsForGitDiff = nonSourceFilesPatterns.split("\n").filter(p => p.trim() !== "").map(p => `':!${p}'`).join(" ");

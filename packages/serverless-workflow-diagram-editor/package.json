@@ -17,12 +17,11 @@
     "dist"
   ],
   "scripts": {
-    "build:dev": "run-script-os",
-    "build:dev:linux:darwin": "mvn clean install -DskipTests -DskipITs -Pno-showcase",
-    "build:dev:win32": "pnpm powershell \"mvn clean install `-DskipTests `-DskipITs `-Pno-showcase\"",
-    "build:prod": "run-script-os",
-    "build:prod:linux:darwin": "pnpm lint && mvn clean install -DskipTests=$(build-env tests.run --not) -Dmaven.test.failure.ignore=$(build-env tests.ignoreFailures) -DskipITs=$(build-env endToEndTests.run --not) -Pno-showcase",
-    "build:prod:win32": "pnpm lint && pnpm powershell \"mvn clean install `-DskipTests=$(build-env tests.run --not) `-Dmaven.test.failure.ignore=$(build-env tests.ignoreFailures) `-DskipITs=$(build-env endToEndTests.run --not) `-Pno-showcase\"",
+    "build": "mvn source:jar source:test-jar jar:jar jar:test-jar install:install",
+    "build:caching": "run-script-os",
+    "build:caching:darwin:linux": "mvn package -DskipTests=$(build-env tests.run --not) -DskipITs=$(build-env endToEndTests.run --not) -Dmaven.test.failure.ignore=$(build-env tests.ignoreFailures)",
+    "build:caching:win32": "pnpm powershell \"mvn package `-DskipTests=$(build-env tests.run --not) `-DskipITs=$(build-env endToEndTests.run --not) `-Dmaven.test.failure.ignore=$(build-env tests.ignoreFailures)\"",
+    "clean": "mvn clean",
     "install": "node install.js",
     "lint": "echo 'Linting'",
     "powershell": "@powershell -NoProfile -ExecutionPolicy Unrestricted -Command"
