@@ -52,6 +52,11 @@ runs:
       with:
         node-version: 18.14.0
 
+    - name: "Setup turbo"
+      shell: bash
+      run: |
+        "npm -g install turbo"
+
     - name: "Setup JDK 17"
       uses: actions/setup-java@v3
       with:
