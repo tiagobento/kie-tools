@@ -96,7 +96,7 @@ jobs:
           START_SERVER_AND_TEST_INSECURE: "true"
           NODE_OPTIONS: "--max_old_space_size=4096"
         run: >-
-          turbo -F boxed-expression-component build test test-e2e
+          turbo -F boxed-expression-component... build test test-e2e
 
       - name: "PARTIAL → Bootstrap"
         if: steps.setup_build_mode.outputs.mode == 'partial'
