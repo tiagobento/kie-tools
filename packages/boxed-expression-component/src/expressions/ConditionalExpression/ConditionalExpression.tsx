@@ -25,9 +25,9 @@ import {
   BoxedConditional,
   DmnBuiltInDataType,
 } from "../../api";
-import { BeeTable, BeeTableColumnUpdate } from "../../table/BeeTable";
+import { BeeTable, BeeTableColumnUpdate, BeeTableRef } from "../../table/BeeTable";
 import { ResizerStopBehavior } from "../../resizing/ResizingWidthsContext";
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useRef } from "react";
 import { DMN15__tChildExpression } from "@kie-tools/dmn-marshaller/dist/schemas/dmn-1_5/ts-gen/types";
 import * as ReactTable from "react-table";
 import { useBoxedExpressionEditorI18n } from "../../i18n";
@@ -42,6 +42,7 @@ import {
   CONDITIONAL_EXPRESSION_EXTRA_WIDTH,
   CONDITIONAL_EXPRESSION_LABEL_COLUMN_WIDTH,
 } from "../../resizing/WidthConstants";
+import { InlineEditableTextInput } from "../../table/BeeTable/InlineEditableTextInput";
 
 export type ROWTYPE = ConditionalClause;
 
@@ -71,16 +72,38 @@ export function ConditionalExpression({
     ];
   }, [conditionalExpression.else, conditionalExpression.if, conditionalExpression.then]);
 
+  const beeTableRef = useRef<BeeTableRef>(null);
+
   const cellComponentByColumnAccessor: BeeTableProps<ROWTYPE>["cellComponentByColumnAccessor"] = useMemo(() => {
     return {
       label: (props) => {
         return <BeeTableReadOnlyCell value={props.data[props.rowIndex].label} />;
       },
       part: (props) => {
-        return <ConditionalExpressionCell {...props} parentElementId={parentElementId} />;
+        if (props.rowIndex === 0) {
+          return (
+            <div style={{ minHeight: "60px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <InlineEditableTextInput
+                {...props}
+                value={"Value"}
+                onChange={(updatedValue) => {
+                  console.log("Inline editable text input changed. New value: " + updatedValue);
+                }}
+                setActiveCellEditing={(value) => {
+                  console.log("Editing status of Inine editable text input changed. Is editing: " + value);
+                  console.log(beeTableRef.current);
+                  beeTableRef.current?.setActiveCellEditing(value);
+                }}
+              />
+            </div>
+          );
+        } else {
+          return <ConditionalExpressionCell {...props} parentElementId={parentElementId} />;
+        }
       },
     };
   }, [parentElementId]);
+
   const id = conditionalExpression["@_id"]!;
 
   const tableColumns = useMemo<ReactTable.Column<ROWTYPE>[]>(() => {
@@ -219,6 +242,7 @@ export function ConditionalExpression({
     <NestedExpressionContainerContext.Provider value={nestedExpressionContainerValue}>
       <div>
         <BeeTable<ROWTYPE>
+          forwardRef={beeTableRef}
           resizerStopBehavior={ResizerStopBehavior.SET_WIDTH_WHEN_SMALLER}
           tableId={id}
           headerLevelCountForAppendingRowIndexColumn={1}
