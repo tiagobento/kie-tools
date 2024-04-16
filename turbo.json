@@ -1,6 +1,7 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "pipeline": {
+    // Root
     "//#bootstrap": {
       "cache": false
     },
@@ -19,15 +20,21 @@
     "//#update-version-to": {
       "cache": false
     },
+
+    // Packages
     "clean": {
       "cache": false
     },
-    "lint": {},
+    "lint": {
+      "cache": false
+    },
     "codegen": {
+      "cache": false,
       "dependsOn": ["^build"]
     },
     "build:caching": {
       "dependsOn": ["^build", "codegen"],
+      "cache": true,
       "inputs": ["src/**"],
       "outputs": ["dist/**"]
     },
@@ -36,24 +43,29 @@
       "dependsOn": ["build:caching"]
     },
     "codegen-tests": {
+      "cache": false,
       "dependsOn": ["build"]
     },
     "build-tests": {
+      "cache": true,
       "dependsOn": ["^build-tests", "codegen-tests"],
       "inputs": ["src-tests/**"],
       "outputs": ["dist-tests/**"]
     },
     "test": {
+      "cache": true,
       "dependsOn": ["build-tests"],
       "inputs": ["tests/**"],
       "outputs": ["dist-tests/**"]
     },
     "test-e2e": {
+      "cache": true,
       "dependsOn": ["build"],
       "inputs": ["tests/e2e/**"], // FIXME: I think this should be e2e-tests or tests-e2e
       "outputs": ["dist-e2e-tests/**"] // FIXME: I think this should be dist-e2e-tests or dist-tests-e2e
     },
     "start": {
+      "cache": false,
       "dependsOn": ["^build"],
       "persistent": true
     }
