@@ -29,5 +29,5 @@ jobs:
       - name: "Check dependencies mismatches"
         shell: bash
         run: |
-          pnpm bootstrap:root
+          turbo bootstrap:root
           npx --yes syncpack@6.2.0 list-mismatches

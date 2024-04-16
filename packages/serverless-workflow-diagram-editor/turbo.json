@@ -1,0 +1,9 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "extends": ["//"],
+  "pipeline": {
+    "build:caching": {
+      "outputs": ["**/target/**", "**/.flattened-pom.xml", "mvnw", "mvnw.cmd"]
+    }
+  }
+}

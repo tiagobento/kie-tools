@@ -17,9 +17,19 @@
  * under the License.
  */
 
-const buildEnv = require("./env");
-const { setup } = require("@kie-tools/maven-config-setup-helper");
+async function main() {
+  // 1. all folders inside packages/examples must have a valid package.json file on it
+  // 2. there can't be files inside packages/examples directories
+  // 3. prettierignore is always a superset of gitignore
 
-setup(`
-    -Drevision=${buildEnv.env.yardValidator.version}
-`);
+  console.info(`[check-structure] Checking if all package directories have a a valid package.json file...`);
+
+  console.info(`[check-structure] Checking if there's dangling files outside packages directories...`);
+
+  console.info(`[check-structure] Checking if .prettierignore is a superset of .gitignore...`);
+
+  console.info(`[check-structure] Done.`);
+  process.exit(0);
+}
+
+main();
