@@ -19,7 +19,7 @@
     "build:caching:darwin:linux": "mvn package -DskipTests=$(build-env tests.run --not) -DskipITs=$(build-env endToEndTests.run --not) -Dmaven.test.failure.ignore=$(build-env tests.ignoreFailures)",
     "build:caching:win32": "pnpm powershell \"mvn package `-DskipTests=$(build-env tests.run --not) `-DskipITs=$(build-env endToEndTests.run --not) `-Dmaven.test.failure.ignore=$(build-env tests.ignoreFailures)\"",
     "clean": "mvn clean",
-    "install": "node install.js",
+    "install": "node install.js && mvn dependency:tree",
     "lint": "echo 'Linting'",
     "powershell": "@powershell -NoProfile -ExecutionPolicy Unrestricted -Command"
   },
