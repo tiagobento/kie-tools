@@ -105,7 +105,7 @@ jobs:
           START_SERVER_AND_TEST_INSECURE: "true"
           NODE_OPTIONS: "--max_old_space_size=4096"
         run: >-
-          eval "pnpm ${{ steps.setup_build_mode.outputs.fullBuildPnpmFilterString }} --workspace-concurrency=1 build:prod"
+          eval "pnpm ${{ steps.setup_build_mode.outputs.fullBuildPnpmFilterString }} build:prod"
 
       - name: "PARTIAL → Build upstream"
         if: steps.setup_build_mode.outputs.mode == 'partial'
@@ -130,7 +130,7 @@ jobs:
           START_SERVER_AND_TEST_INSECURE: "true"
           NODE_OPTIONS: "--max_old_space_size=4096"
         run: |
-          eval "pnpm ${{ steps.setup_build_mode.outputs.affectedPnpmFilterString }} --workspace-concurrency=1 build:prod"
+          eval "pnpm ${{ steps.setup_build_mode.outputs.affectedPnpmFilterString }} build:prod"
 
       - name: "Check tests result (`main` only)"
         if: always() && !cancelled() && steps.setup_build_mode.outputs.mode != 'none'
