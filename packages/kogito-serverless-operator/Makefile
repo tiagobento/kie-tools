@@ -360,3 +360,5 @@ load-docker-image: install-kind
 full-test-e2e: create-cluster load-docker-image deploy
 	kubectl wait pod -A -l control-plane=sonataflow-operator --for condition=Ready --timeout 120s
 	go test ./test/e2e/* -v -ginkgo.v -ginkgo.no-color -ginkgo.junit-report=./e2e-test-report.xml -timeout 60m
+
+# test
