@@ -48,6 +48,9 @@ importers:
       "@kie-tools-scripts/update-kogito-version":
         specifier: workspace:*
         version: link:scripts/update-kogito-version
+      "@kie-tools-scripts/update-stream-name":
+        specifier: workspace:*
+        version: link:scripts/update-stream-name
       "@kie-tools-scripts/update-version":
         specifier: workspace:*
         version: link:scripts/update-version
@@ -13490,6 +13493,8 @@ importers:
         version: 2.0.0
 
   scripts/update-kogito-version: {}
+
+  scripts/update-stream-name: {}
 
   scripts/update-version: {}
 
