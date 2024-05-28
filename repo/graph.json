@@ -50,21 +50,24 @@
       { "id": "@kie-tools-core/notifications" },
       { "id": "@kie-tools-core/i18n" },
       { "id": "@kie-tools-core/workspace" },
+      { "id": "bamoe-developer-tools" },
+      { "id": "@kie-tools/dmn-editor-envelope" },
+      { "id": "@kie-tools/vscode-java-code-completion-extension-plugin" },
+      { "id": "@kie-tools/dmn-editor" },
+      { "id": "@kie-tools/dmn-language-service" },
+      { "id": "@kie-tools/pmml-editor-marshaller" },
+      { "id": "@kie-tools/stunner-editors-dmn-loader" },
       { "id": "@kie-tools/boxed-expression-component" },
       { "id": "@kie-tools-core/operating-system" },
       { "id": "@kie-tools/feel-input-component" },
       { "id": "@kie-tools/playwright-base" },
       { "id": "@kie-tools/storybook-base" },
       { "id": "@kie-tools-core/monaco-editor" },
-      { "id": "@kie-tools/dmn-language-service" },
       { "id": "@kie-tools/i18n-common-dictionary" },
       { "id": "@kie-tools/bpmn-marshaller" },
       { "id": "@kie-tools/xml-parser-ts-codegen" },
       { "id": "@kie-tools/xml-parser-ts" },
       { "id": "bpmn-vscode-extension" },
-      { "id": "@kie-tools/vscode-java-code-completion-extension-plugin" },
-      { "id": "@kie-tools/pmml-editor-marshaller" },
-      { "id": "@kie-tools/stunner-editors-dmn-loader" },
       { "id": "chrome-extension-pack-kogito-kie-editors" },
       { "id": "@kie-tools/chrome-extension-test-helper" },
       { "id": "chrome-extension-serverless-workflow-editor" },
@@ -108,8 +111,6 @@
       { "id": "@kie-tools/dev-deployment-dmn-form-webapp-image" },
       { "id": "@kie-tools/dev-deployment-kogito-quarkus-blank-app" },
       { "id": "@kie-tools/dev-deployment-kogito-quarkus-blank-app-image" },
-      { "id": "@kie-tools/dmn-editor" },
-      { "id": "@kie-tools/dmn-editor-envelope" },
       { "id": "@kie-tools/dmn-feel-antlr4-parser" },
       { "id": "@kie-tools/dmn-marshaller" },
       { "id": "@kie-tools/dmn-marshaller-backend-compatibility-tester" },
@@ -374,6 +375,40 @@
       { "source": "@kie-tools-core/i18n", "target": "@kie-tools/root-env", "weight": 1 },
       { "source": "@kie-tools-core/i18n", "target": "@kie-tools/tsconfig", "weight": 1 },
       { "source": "@kie-tools-core/workspace", "target": "@kie-tools-core/operating-system", "weight": 1 },
+      { "source": "bamoe-developer-tools", "target": "@kie-tools-core/vscode-extension", "weight": 1 },
+      { "source": "bamoe-developer-tools", "target": "@kie-tools/dmn-editor-envelope", "weight": 1 },
+      { "source": "bamoe-developer-tools", "target": "@kie-tools/kie-bc-editors", "weight": 1 },
+      { "source": "bamoe-developer-tools", "target": "@kie-tools/stunner-editors", "weight": 1 },
+      {
+        "source": "bamoe-developer-tools",
+        "target": "@kie-tools/vscode-java-code-completion-extension-plugin",
+        "weight": 1
+      },
+      { "source": "@kie-tools/dmn-editor-envelope", "target": "@kie-tools-core/editor", "weight": 1 },
+      { "source": "@kie-tools/dmn-editor-envelope", "target": "@kie-tools/dmn-editor", "weight": 1 },
+      {
+        "source": "@kie-tools/vscode-java-code-completion-extension-plugin",
+        "target": "@kie-tools/maven-base",
+        "weight": 1
+      },
+      { "source": "@kie-tools/dmn-editor", "target": "@kie-tools-core/react-hooks", "weight": 1 },
+      { "source": "@kie-tools/dmn-editor", "target": "@kie-tools/boxed-expression-component", "weight": 1 },
+      { "source": "@kie-tools/dmn-editor", "target": "@kie-tools/pmml-editor-marshaller", "weight": 1 },
+      { "source": "@kie-tools/dmn-language-service", "target": "@kie-tools/dmn-feel-antlr4-parser", "weight": 1 },
+      { "source": "@kie-tools/dmn-language-service", "target": "@kie-tools-core/switch-expression-ts", "weight": 1 },
+      { "source": "@kie-tools/pmml-editor-marshaller", "target": "@kie-tools/eslint", "weight": 1 },
+      { "source": "@kie-tools/pmml-editor-marshaller", "target": "@kie-tools/root-env", "weight": 1 },
+      { "source": "@kie-tools/pmml-editor-marshaller", "target": "@kie-tools/tsconfig", "weight": 1 },
+      {
+        "source": "@kie-tools/stunner-editors-dmn-loader",
+        "target": "@kie-tools/boxed-expression-component",
+        "weight": 1
+      },
+      {
+        "source": "@kie-tools/stunner-editors-dmn-loader",
+        "target": "@kie-tools/import-java-classes-component",
+        "weight": 1
+      },
       { "source": "@kie-tools/boxed-expression-component", "target": "@kie-tools-core/operating-system", "weight": 1 },
       { "source": "@kie-tools/boxed-expression-component", "target": "@kie-tools/feel-input-component", "weight": 1 },
       { "source": "@kie-tools/boxed-expression-component", "target": "@kie-tools/playwright-base", "weight": 1 },
@@ -393,8 +428,6 @@
       { "source": "@kie-tools-core/monaco-editor", "target": "@kie-tools/eslint", "weight": 1 },
       { "source": "@kie-tools-core/monaco-editor", "target": "@kie-tools/root-env", "weight": 1 },
       { "source": "@kie-tools-core/monaco-editor", "target": "@kie-tools/tsconfig", "weight": 1 },
-      { "source": "@kie-tools/dmn-language-service", "target": "@kie-tools/dmn-feel-antlr4-parser", "weight": 1 },
-      { "source": "@kie-tools/dmn-language-service", "target": "@kie-tools-core/switch-expression-ts", "weight": 1 },
       { "source": "@kie-tools/i18n-common-dictionary", "target": "@kie-tools-core/i18n", "weight": 1 },
       { "source": "@kie-tools/bpmn-marshaller", "target": "@kie-tools/xml-parser-ts-codegen", "weight": 1 },
       { "source": "@kie-tools/xml-parser-ts-codegen", "target": "@kie-tools/xml-parser-ts", "weight": 1 },
@@ -407,24 +440,6 @@
       {
         "source": "bpmn-vscode-extension",
         "target": "@kie-tools/vscode-java-code-completion-extension-plugin",
-        "weight": 1
-      },
-      {
-        "source": "@kie-tools/vscode-java-code-completion-extension-plugin",
-        "target": "@kie-tools/maven-base",
-        "weight": 1
-      },
-      { "source": "@kie-tools/pmml-editor-marshaller", "target": "@kie-tools/eslint", "weight": 1 },
-      { "source": "@kie-tools/pmml-editor-marshaller", "target": "@kie-tools/root-env", "weight": 1 },
-      { "source": "@kie-tools/pmml-editor-marshaller", "target": "@kie-tools/tsconfig", "weight": 1 },
-      {
-        "source": "@kie-tools/stunner-editors-dmn-loader",
-        "target": "@kie-tools/boxed-expression-component",
-        "weight": 1
-      },
-      {
-        "source": "@kie-tools/stunner-editors-dmn-loader",
-        "target": "@kie-tools/import-java-classes-component",
         "weight": 1
       },
       {
@@ -724,11 +739,6 @@
         "target": "@kie-tools/dev-deployment-kogito-quarkus-blank-app",
         "weight": 1
       },
-      { "source": "@kie-tools/dmn-editor", "target": "@kie-tools-core/react-hooks", "weight": 1 },
-      { "source": "@kie-tools/dmn-editor", "target": "@kie-tools/boxed-expression-component", "weight": 1 },
-      { "source": "@kie-tools/dmn-editor", "target": "@kie-tools/pmml-editor-marshaller", "weight": 1 },
-      { "source": "@kie-tools/dmn-editor-envelope", "target": "@kie-tools-core/editor", "weight": 1 },
-      { "source": "@kie-tools/dmn-editor-envelope", "target": "@kie-tools/dmn-editor", "weight": 1 },
       { "source": "@kie-tools/dmn-feel-antlr4-parser", "target": "@kie-tools/dmn-marshaller", "weight": 1 },
       {
         "source": "@kie-tools/dmn-marshaller",
@@ -1191,6 +1201,7 @@
     ["@kie-tools-examples/uniforms-patternfly", "examples/uniforms-patternfly"],
     ["@kie-tools-examples/webapp", "examples/webapp"],
     ["@kie-tools-core/backend", "packages/backend"],
+    ["bamoe-developer-tools", "packages/bamoe-developer-tools-for-vscode"],
     ["@kie-tools/boxed-expression-component", "packages/boxed-expression-component"],
     ["@kie-tools/bpmn-marshaller", "packages/bpmn-marshaller"],
     ["bpmn-vscode-extension", "packages/bpmn-vscode-extension"],
