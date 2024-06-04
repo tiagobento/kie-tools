@@ -769,10 +769,9 @@
       },
       {
         "source": "@kie-tools/dev-deployment-kogito-quarkus-blank-app",
-        "target": "@kie-tools/maven-config-setup-helper",
+        "target": "@kie-tools/jbpm-quarkus-devui",
         "weight": 1
       },
-      { "source": "@kie-tools/dev-deployment-kogito-quarkus-blank-app", "target": "@kie-tools/root-env", "weight": 1 },
       {
         "source": "@kie-tools/dev-deployment-kogito-quarkus-blank-app-image",
         "target": "@kie-tools/dev-deployment-base-image",

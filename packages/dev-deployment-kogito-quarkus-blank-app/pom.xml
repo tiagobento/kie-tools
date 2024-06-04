@@ -65,9 +65,11 @@
         <scope>import</scope>
       </dependency>
       <dependency>
-        <groupId>org.jbpm</groupId>
-        <artifactId>jbpm-with-drools-quarkus</artifactId>
+        <groupId>org.kie.kogito</groupId>
+        <artifactId>kogito-apps-bom</artifactId>
         <version>${version.org.kie.kogito}</version>
+        <type>pom</type>
+        <scope>import</scope>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -97,23 +99,7 @@
       <groupId>org.kie</groupId>
       <artifactId>kie-dmn-openapi</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.jbpm</groupId>
-      <artifactId>jbpm-with-drools-quarkus</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.kie.kogito</groupId>
-          <artifactId>kogito-ruleunits</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <!-- This still requires docker to run. Uncomment when solved. -->
-    <!-- https://github.com/apache/incubator-kie-issues/issues/1272 -->
-    <!-- <dependency>
-      <groupId>org.jbpm</groupId>
-      <artifactId>jbpm-quarkus-devui</artifactId>
-      <version>${project.version}</version>
-    </dependency> -->
+
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-junit5</artifactId>
@@ -129,6 +115,69 @@
       <artifactId>junit</artifactId>
       <version>${version.junit}</version>
       <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jbpm</groupId>
+      <artifactId>jbpm-quarkus-devui</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jbpm</groupId>
+      <artifactId>jbpm-with-drools-quarkus</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.kie</groupId>
+      <artifactId>kie-addons-quarkus-process-management</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.kie</groupId>
+      <artifactId>kogito-addons-quarkus-jobs-management</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.kie</groupId>
+      <artifactId>kie-addons-quarkus-process-svg</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.kie</groupId>
+      <artifactId>kie-addons-quarkus-source-files</artifactId>
+    </dependency>
+
+    <!-- Persistence -->
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-jdbc-postgresql</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkiverse.embedded.postgresql</groupId>
+      <artifactId>quarkus-embedded-postgresql</artifactId>
+      <version>0.2.2</version>
+    </dependency> 
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-agroal</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.kie</groupId>
+      <artifactId>kie-addons-quarkus-persistence-jdbc</artifactId>
+    </dependency>
+
+    <!-- Data Index Addon -->
+    <dependency>
+      <groupId>org.kie</groupId>
+      <artifactId>kogito-addons-quarkus-data-index-postgresql</artifactId>
+    </dependency>
+
+    <!-- Jobs Service -->
+    <dependency>
+      <groupId>org.kie</groupId>
+      <artifactId>kogito-addons-quarkus-jobs</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.kie.kogito</groupId>
+      <artifactId>jobs-service-postgresql-common</artifactId>
     </dependency>
   </dependencies>
 
