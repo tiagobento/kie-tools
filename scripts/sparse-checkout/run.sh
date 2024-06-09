@@ -59,7 +59,7 @@ eval "git sparse-checkout set $KIE_TOOLS_PATHS_INCLUDED_BY_DEFAULT $KIE_TOOLS_PA
 echo ""
 
 echo "[kie-tools-sparse-checkout] Installing packages dependencies..."
-eval "turbo bootstrap:packages $KIE_TOOLS_PACKAGES_PNPM_FILTER_STRING -- --frozen-lockfile"
+eval "turbo bootstrap:packages -- $KIE_TOOLS_PACKAGES_PNPM_FILTER_STRING --frozen-lockfile"
 echo ""
 
 echo "[kie-tools-sparse-checkout] Done."
