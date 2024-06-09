@@ -16,7 +16,6 @@
     "dist"
   ],
   "scripts": {
-    "bootstrap": "go mod tidy",
     "build": "run-script-os",
     "build-headless": "pnpm copy-jitexecutor-linux-headless && make linux-headless",
     "build:darwin": "make darwin",
@@ -33,6 +32,7 @@
     "copy-jitexecutor:darwin": "cp $(build-env extendedServices.jitexecutor.nativeBinaryPath.macOS) jitexecutor && chmod +x jitexecutor",
     "copy-jitexecutor:linux": "cp $(build-env extendedServices.jitexecutor.nativeBinaryPath.linux) jitexecutor && chmod +x jitexecutor",
     "copy-jitexecutor:win32": "pnpm powershell \"Copy-Item $(build-env extendedServices.jitexecutor.nativeBinaryPath.win32) jitexecutor\"",
+    "install": "go mod tidy",
     "pack-app": "run-script-os",
     "pack-app:darwin": "cd ./scripts/macos && ./build.sh",
     "pack-app:linux": "cd ./dist/linux && tar -pcvzf kie_sandbox_extended_services.tar.gz kie_sandbox_extended_services",

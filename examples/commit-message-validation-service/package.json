@@ -16,7 +16,6 @@
     "dist"
   ],
   "scripts": {
-    "bootstrap": "go mod tidy",
     "build": "run-script-os",
     "build:darwin": "make darwin",
     "build:darwin:amd": "make darwin-amd64",
@@ -24,6 +23,7 @@
     "build:dev": "pnpm build",
     "build:linux": "make linux",
     "build:win32": "make win32",
+    "install": "go mod tidy",
     "pack-app": "run-script-os",
     "start:app": "make start"
   },

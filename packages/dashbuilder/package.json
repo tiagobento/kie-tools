@@ -16,7 +16,6 @@
     "**/dist/*"
   ],
   "scripts": {
-    "bootstrap": "node bootstrap.js",
     "build:dev": "run-script-os && pnpm copy:components && pnpm build:dev:runtime",
     "build:dev:linux:darwin": "mvn clean install -DskipTests -Dgwt.compiler.skip=true",
     "build:dev:runtime": "run-script-os",
@@ -33,6 +32,7 @@
     "build:prod:win32": "pnpm powershell \"mvn clean install `-Dgwt.compiler.skip=true `-DskipTests\"",
     "copy:components": "pnpm delete:components && copyfiles -u 3 \"../dashbuilder-component-assembler/dist/**/*\" ./dashbuilder-runtime-parent/dashbuilder-runtime-client/src/main/webapp/dashbuilder/component",
     "delete:components": "rimraf ./dashbuilder-runtime-parent/dashbuilder-runtime-client/src/main/webapp/dashbuilder/component",
+    "install": "node install.js",
     "lint": "echo 'Linting'",
     "powershell": "@powershell -NoProfile -ExecutionPolicy Unrestricted -Command"
   },

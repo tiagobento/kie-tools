@@ -16,11 +16,11 @@
     "dist"
   ],
   "scripts": {
-    "bootstrap": "node bootstrap.js",
     "build:dev": "rimraf dist && copyfiles index.js dist/ && run-script-os",
     "build:dev:linux:darwin": "mvn clean verify",
     "build:dev:win32": "pnpm powershell \"mvn clean verify\"",
     "build:prod": "pnpm build:dev",
+    "install": "node install.js",
     "powershell": "@powershell -NoProfile -ExecutionPolicy Unrestricted -Command"
   },
   "dependencies": {

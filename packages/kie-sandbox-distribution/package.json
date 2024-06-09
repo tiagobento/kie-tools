@@ -13,7 +13,6 @@
     "url": "https://github.com/apache/incubator-kie-tools/issues"
   },
   "scripts": {
-    "bootstrap": "pnpm docker:create-env-file",
     "build:dev": "pnpm docker:build",
     "build:prod": "run-script-if --bool \"$(build-env containerImages.build)\" --then \"pnpm docker:build\" \"pnpm test\"",
     "docker:build": "docker compose build",
@@ -22,6 +21,7 @@
     "docker:start": "docker compose up -d --wait",
     "docker:start-no-pull": "docker compose up -d --wait --pull=never",
     "docker:stop": "docker compose stop",
+    "install": "pnpm docker:create-env-file",
     "test": "run-script-os",
     "test:darwin:win32": "echo 'Testing kie-sandbox-distribution not supported'",
     "test:linux": "run-script-if --bool \"$(build-env containerImages.build)\" --bool \"$(build-env tests.run)\" --ignore-errors \"$(build-env tests.ignoreFailures)\" --then \"jest --verbose\""

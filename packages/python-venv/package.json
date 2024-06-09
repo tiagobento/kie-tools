@@ -6,9 +6,9 @@
   "license": "Apache-2.0",
   "keywords": [],
   "scripts": {
-    "bootstrap": "python3 -m venv ./venv && run-script-os",
     "bootstrap:linux:darwin": ". ./venv/bin/activate && pnpm install:pip",
     "bootstrap:win32": ".\\venv\\Scripts\\Activate.bat && pnpm install:pip",
+    "install": "python3 -m venv ./venv && run-script-os",
     "install:pip": "pip3 install -r requirements.txt"
   },
   "devDependencies": {
