@@ -47,6 +47,7 @@ To build and test all packages of the Apache KIE Tools project, you're going to 
 
 - Node `18` _(To install, follow these instructions: https://nodejs.org/en/download/package-manager/)_
 - pnpm `8.7.0` _(To install, follow these instructions: https://pnpm.io/installation#using-npm)_
+- turbo `2` _(To install, run: `npm -g install turbo@2`)_
 - Maven `3.9.6`
 - Java `17`
 - Go `1.21.9` _(To install, follow these instructions: https://go.dev/doc/install)_
@@ -63,16 +64,16 @@ To build and test all packages of the Apache KIE Tools project, you're going to 
 Bootstrapping installs the necessary dependencies for each package.
 
 - `turbo run bootstrap` --> Will bootstrap all packages
-- `turbo bootstrap -- [turbo-filter]` --> Will bootstrap packages filtered by [`turbo` filter](https://pnpm.io/filtering)
+- `turbo run bootstrap -- [turbo-filter]` --> Will bootstrap packages filtered by [`turbo` filter](https://turbo.build/repo/docs/reference/run#--filter-string)
 - > E.g.,
   >
-  > `turbo bootstrap -- -F dmn-editor...` bootstraps the `dmn-editor` package and its dependencies.
+  > `turbo run bootstrap -- -F dmn-editor...` bootstraps the `dmn-editor` package and its dependencies.
 
 > **ℹ️ NOTE**
 >
 > If you plan on running Playwright tests, set the `PLAYWRIGHT_BASE__installDeps` environment variable to `true` before running the command above.
 >
-> `PLAYWRIGHT_BASE__installDeps=true turbo bootstrap`.
+> `PLAYWRIGHT_BASE__installDeps=true turbo run bootstrap`.
 >
 > This will install all Playwright dependencies (such as browsers engines and OS-specific libraries).
 
@@ -83,24 +84,24 @@ Bootstrapping installs the necessary dependencies for each package.
   - `turbo build:dev`
     - Will build all packages for development. Skipping linters, tests, minifiers etc.
   - `turbo build:dev [turbo-filter]`
-    - Will build packages filtered by [`pnpm` filter](https://pnpm.io/filtering)
+    - Will build packages filtered by [`turbo` filter](https://turbo.build/repo/docs/reference/run#--filter-string)
   - > E.g.,
     >
     > `turbo build:dev -F dmn-editor...` builds the `dmn-editor` package and its dependencies.
 
 - Prod
 
-  - `pnpm -r build:prod`
+  - `turbo build:prod`
     - Will build all packages for production. Optimizers will run, binaries will be produced for multiple architectures etc.
-  - `pnpm [pnpm-filter] build:prod`
-    - Will build packages filtered by [`pnpm` filter](https://pnpm.io/filtering)
+  - `turbo build:prod [turbo-filter]`
+    - Will build packages filtered by [`turbo` filter](https://turbo.build/repo/docs/reference/run#--filter-string)
   - > E.g.,
     >
-    > `pnpm -F dmn-editor... build:prod` builds the `dmn-editor` package and its dependencies.
+    > `turbo build:prod -F dmn-editor...` builds the `dmn-editor` package and its dependencies.
 
 - Changed
-  - `pnpm -F '...[HEAD]' build:dev`; or
-  - `pnpm -F '...[HEAD]' build:prod`
+  - `turbo build:dev -F '...[HEAD^1]'`; or
+  - `turbo build:prod -F '...[HEAD^1]'`
     - Will build changed and affected packages based on your local changes. Useful for verifying that you didn't break anything.
 
 > **ℹ️ NOTE**

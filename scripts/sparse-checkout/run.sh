@@ -46,7 +46,7 @@ git sparse-checkout set $KIE_TOOLS_PATHS_INCLUDED_BY_DEFAULT
 echo ""
 
 echo "[kie-tools-sparse-checkout] Installing scripts and root dependencies..."
-turbo bootstrap:root -- --frozen-lockfile
+turbo run bootstrap:root -- --frozen-lockfile
 echo ""
 
 echo "[kie-tools-sparse-checkout] Listing paths of packages to fetch for (${KIE_TOOLS_PACKAGE_NAMES_TO_BUILD[@]})..."
@@ -59,7 +59,7 @@ eval "git sparse-checkout set $KIE_TOOLS_PATHS_INCLUDED_BY_DEFAULT $KIE_TOOLS_PA
 echo ""
 
 echo "[kie-tools-sparse-checkout] Installing packages dependencies..."
-eval "turbo bootstrap:packages -- $KIE_TOOLS_PACKAGES_PNPM_FILTER_STRING --frozen-lockfile"
+eval "turbo run bootstrap:packages -- $KIE_TOOLS_PACKAGES_PNPM_FILTER_STRING --frozen-lockfile"
 echo ""
 
 echo "[kie-tools-sparse-checkout] Done."
