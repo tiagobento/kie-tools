@@ -13,6 +13,7 @@
     "url": "https://github.com/apache/incubator-kie-tools/issues"
   },
   "scripts": {
+    "bootstrap": "node install.js && pnpm format",
     "build:dev": "run-script-if --bool \"$(build-env containerImages.build)\" --then \"pnpm copy-assets\" \"pnpm image:build\"",
     "build:prod": "pnpm build:dev && pnpm image:test",
     "copy-assets": "run-script-os",
@@ -27,7 +28,6 @@
     "image:test": "run-script-if --ignore-errors \"$(build-env tests.ignoreFailures)\" --bool \"$(build-env endToEndTests.run)\" --then \"run-script-os\" --finally \"cp -r build/target/test/results dist-tests-e2e/\"",
     "image:test:darwin:win32": "echo \"Tests skipped on macOS and Windows\"",
     "image:test:linux": "pnpm copy-test-assets && pnpm setup:env make -C ./build test-image",
-    "install": "node install.js && pnpm format",
     "setup:env": ". ./node_modules/@kie-tools/python-venv/venv/bin/activate && cross-env SWF_IMAGE_REGISTRY=$(build-env sonataflowDevModeImage.registry) SWF_IMAGE_REGISTRY_ACCOUNT=$(build-env sonataflowDevModeImage.account) SWF_IMAGE_NAME=$(build-env sonataflowDevModeImage.name) SWF_IMAGE_TAG=$(build-env sonataflowDevModeImage.tag) QUARKUS_PLATFORM_VERSION=$(build-env quarkusPlatform.version) KOGITO_VERSION=$(build-env kogitoRuntime.version) SONATAFLOW_QUARKUS_DEVUI_VERSION=$(build-env sonataflowDevModeImage.sonataflowQuarkusDevUiVersion)"
   },
   "devDependencies": {

@@ -16,6 +16,7 @@
     "dist"
   ],
   "scripts": {
+    "bootstrap": "go mod tidy",
     "build": "run-script-os",
     "build-all": "run-script-os",
     "build-all:linux:darwin": "cross-env DDUS_VERSION=$(build-env root.version) make build-all",
@@ -24,7 +25,6 @@
     "build-install-script:prod": "node scripts/generateInstallScript.js",
     "build:dev": "rimraf dist && pnpm build-install-script:dev && pnpm build-all",
     "build:prod": "rimraf dist && pnpm build-install-script:prod && pnpm build-all && pnpm test",
-    "install": "go mod tidy",
     "powershell": "@powershell -NoProfile -ExecutionPolicy Unrestricted -Command",
     "start": "make start",
     "start-test-servers": "run-script-if --bool \"$(build-env containerImages.build)\" --then \"node scripts/runTestServers.js\"",

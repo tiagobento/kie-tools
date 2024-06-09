@@ -13,7 +13,7 @@
     "url": "https://github.com/apache/incubator-kie-tools/issues"
   },
   "scripts": {
-    "install": "node install.js"
+    "bootstrap": "node install.js"
   },
   "devDependencies": {
     "@kie-tools/python-venv": "workspace:*",

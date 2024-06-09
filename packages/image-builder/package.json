@@ -23,7 +23,7 @@
     "src"
   ],
   "scripts": {
-    "install": "rimraf dist && tsc && pnpm write-readme",
+    "bootstrap": "rimraf dist && tsc && pnpm write-readme",
     "write-readme": "run-script-os",
     "write-readme:darwin:linux": "echo '```' > README.md && ./bin.js --help >> README.md && echo '```' >> README.md",
     "write-readme:win32": "echo 'Nothing to do.'"

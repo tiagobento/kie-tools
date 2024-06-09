@@ -146,6 +146,7 @@ runs:
         echo "STEP: Setup network timeout"
         cd ${{ inputs.working_dir }}
         pnpm config set network-timeout 1000000
+        npm -g install turbo
 
     - name: "Setup default Maven args"
       shell: bash

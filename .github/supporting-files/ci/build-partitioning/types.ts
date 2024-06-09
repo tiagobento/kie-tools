@@ -25,16 +25,16 @@ export type None = {
 export type Full = {
   mode: "full";
   name: string;
-  bootstrapPnpmFilterString: string;
-  fullBuildPnpmFilterString: string;
+  bootstrapTurboFilterString: string;
+  fullBuildTurboFilterString: string;
 };
 
 export type Partial = {
   mode: "partial";
   name: string;
-  bootstrapPnpmFilterString: string;
-  upstreamPnpmFilterString: string;
-  affectedPnpmFilterString: string;
+  bootstrapTurboFilterString: string;
+  upstreamTurboFilterString: string;
+  affectedTurboFilterString: string;
 };
 
 export type PartitionDefinition = {

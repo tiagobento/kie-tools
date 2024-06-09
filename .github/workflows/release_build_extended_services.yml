@@ -84,12 +84,12 @@ jobs:
         id: bootstrap
         uses: ./.github/actions/bootstrap
         with:
-          pnpm_filter_string: -F @kie-tools/extended-services...
+          turbo_filter_string: -F @kie-tools/extended-services...
 
       - name: "Build"
         shell: bash
         run: |
-          pnpm ${{ steps.bootstrap.outputs.pnpm_filter_string }} build:prod
+          pnpm ${{ steps.bootstrap.outputs.turbo_filter_string }} build:prod
 
       - name: "Upload Extended Services for macOS"
         if: ${{ runner.os == 'macOS' && !inputs.dry_run && !inputs.release_candidate }}

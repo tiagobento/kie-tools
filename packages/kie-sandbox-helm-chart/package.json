@@ -13,6 +13,7 @@
     "url": "https://github.com/apache/incubator-kie-tools/issues"
   },
   "scripts": {
+    "bootstrap": "node install.js && pnpm update-readmes",
     "build:dev": "pnpm build:prod",
     "build:prod": "pnpm update-readmes && run-script-os",
     "build:prod:linux:darwin": "pnpm cleanup && run-script-if --bool $([ $(command -v helm) ] && echo true || echo false) --then \"helm package -u -d ./dist ./src\"",
@@ -21,7 +22,6 @@
     "format": "prettier --write .",
     "helm:delete": "helm delete kie-sandbox-helm-chart",
     "helm:install": "pnpm cleanup && helm install --dependency-update kie-sandbox-helm-chart ./src",
-    "install": "node install.js && pnpm update-readmes",
     "update-readmes": "node scripts/update-readmes.js && pnpm format"
   },
   "dependencies": {

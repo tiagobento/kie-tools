@@ -16,6 +16,7 @@
     "dist"
   ],
   "scripts": {
+    "bootstrap": "go mod tidy",
     "build": "run-script-os",
     "build:darwin": "pnpm setup:env make build-darwin",
     "build:darwin:amd": "pnpm setup:env make build-darwin-amd64",
@@ -37,7 +38,6 @@
     "go:test-e2e:quarkus:logs": "rimraf dist-tests-e2e && mkdir dist-tests-e2e && go test -v ./e2e-tests/... --tags e2e_tests -run Quarkus -timeout 20m -logs 2>&1 | tee ./dist-tests-e2e/go-test-output-e2e.txt",
     "go:test-e2e:report": "go run github.com/jstemmer/go-junit-report/v2 -set-exit-code -in ./dist-tests-e2e/go-test-output-e2e.txt -out ./dist-tests-e2e/junit-report-it.xml",
     "go:test:report": "go run github.com/jstemmer/go-junit-report/v2 -set-exit-code -in ./dist-tests/go-test-output.txt -out ./dist-tests/junit-report.xml",
-    "install": "go mod tidy",
     "powershell": "@powershell -NoProfile -ExecutionPolicy Unrestricted -Command",
     "setup:env": "cross-env QUARKUS_PLATFORM_GROUP_ID=$(build-env knPluginWorkflow.quarkusPlatformGroupId) QUARKUS_VERSION=$(build-env quarkusPlatform.version) PLUGIN_VERSION=$(build-env knPluginWorkflow.version) DEV_MODE_IMAGE_URL=$(build-env knPluginWorkflow.devModeImageUrl) KOGITO_VERSION=$(build-env kogitoRuntime.version)",
     "setup:env:win32": "pnpm powershell \"cross-env QUARKUS_PLATFORM_GROUP_ID=$(build-env knPluginWorkflow.quarkusPlatformGroupId) QUARKUS_VERSION=$(build-env quarkusPlatform.version) DEV_MODE_IMAGE_URL=$(build-env knPluginWorkflow.devModeImageUrl) KOGITO_VERSION=$(build-env kogitoRuntime.version) PLUGIN_VERSION=$(build-env knPluginWorkflow.version)\"",

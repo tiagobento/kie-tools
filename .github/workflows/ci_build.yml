@@ -21,7 +21,7 @@ name: "CI :: Build"
 
 on:
   push:
-    branches: [main]
+    branches: ["**"]
   pull_request:
     branches: ["**"]
     types: [opened, reopened, ready_for_review, synchronize]
@@ -90,10 +90,10 @@ jobs:
           npm -g uninstall bun 
 
           echo "mode=$(jq --raw-output '.[${{ matrix.partition }}].mode' /tmp/partitions.json)" >> $GITHUB_OUTPUT
-          echo "bootstrapPnpmFilterString=$(jq --raw-output '.[${{ matrix.partition }}].bootstrapPnpmFilterString' /tmp/partitions.json)" >> $GITHUB_OUTPUT
-          echo "fullBuildPnpmFilterString=$(jq --raw-output '.[${{ matrix.partition }}].fullBuildPnpmFilterString' /tmp/partitions.json)" >> $GITHUB_OUTPUT
-          echo "upstreamPnpmFilterString=$(jq --raw-output '.[${{ matrix.partition }}].upstreamPnpmFilterString' /tmp/partitions.json)" >> $GITHUB_OUTPUT
-          echo "affectedPnpmFilterString=$(jq --raw-output '.[${{ matrix.partition }}].affectedPnpmFilterString' /tmp/partitions.json)" >> $GITHUB_OUTPUT
+          echo "bootstrapTurboFilterString=$(jq --raw-output '.[${{ matrix.partition }}].bootstrapTurboFilterString' /tmp/partitions.json)" >> $GITHUB_OUTPUT
+          echo "fullBuildTurboFilterString=$(jq --raw-output '.[${{ matrix.partition }}].fullBuildTurboFilterString' /tmp/partitions.json)" >> $GITHUB_OUTPUT
+          echo "upstreamTurboFilterString=$(jq --raw-output '.[${{ matrix.partition }}].upstreamTurboFilterString' /tmp/partitions.json)" >> $GITHUB_OUTPUT
+          echo "affectedTurboFilterString=$(jq --raw-output '.[${{ matrix.partition }}].affectedTurboFilterString' /tmp/partitions.json)" >> $GITHUB_OUTPUT
           echo "Done."
 
       - name: "Setup environment"
@@ -106,7 +106,7 @@ jobs:
           PLAYWRIGHT_BASE__installDeps: "true"
         uses: ./.github/actions/bootstrap
         with:
-          pnpm_filter_string: ${{ steps.setup_build_mode.outputs.bootstrapPnpmFilterString }}
+          turbo_filter_string: ${{ steps.setup_build_mode.outputs.bootstrapTurboFilterString }}
 
       - name: "FULL → Build"
         if: steps.setup_build_mode.outputs.mode == 'full'
@@ -125,7 +125,7 @@ jobs:
           START_SERVER_AND_TEST_INSECURE: "true"
           NODE_OPTIONS: "--max_old_space_size=4096"
         run: >-
-          eval "pnpm ${{ steps.setup_build_mode.outputs.fullBuildPnpmFilterString }} --workspace-concurrency=1 build:prod"
+          eval "turbo build:prod ${{ steps.setup_build_mode.outputs.fullBuildTurboFilterString }}"
 
       - name: "PARTIAL → Build upstream"
         if: steps.setup_build_mode.outputs.mode == 'partial'
@@ -134,7 +134,7 @@ jobs:
           KIE_TOOLS_BUILD__buildContainerImages: ${{ runner.os != 'Windows' }}
           KIE_TOOLS_BUILD__buildExamples: "true"
         run: |
-          eval "pnpm ${{ steps.setup_build_mode.outputs.upstreamPnpmFilterString }} build:dev"
+          eval "pnpm build:dev ${{ steps.setup_build_mode.outputs.upstreamTurboFilterString }}"
 
       - name: "PARTIAL → Build changed and downstream"
         shell: bash
@@ -150,7 +150,7 @@ jobs:
           START_SERVER_AND_TEST_INSECURE: "true"
           NODE_OPTIONS: "--max_old_space_size=4096"
         run: |
-          eval "pnpm ${{ steps.setup_build_mode.outputs.affectedPnpmFilterString }} --workspace-concurrency=1 build:prod"
+          eval "turbo build:prod ${{ steps.setup_build_mode.outputs.affectedTurboFilterString }}"
 
       - name: "Check tests result (`main` only)"
         if: always() && !cancelled() && steps.setup_build_mode.outputs.mode != 'none'

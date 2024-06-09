@@ -322,3 +322,5 @@ packages/python-venv/venv
 
 # devbox
 .devbox
+
+.turbo

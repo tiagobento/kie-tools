@@ -178,8 +178,8 @@ async function getPartitions(): Promise<Array<None | Full | Partial>> {
         return {
           mode: "full",
           name: partition.name,
-          bootstrapPnpmFilterString: [...partition.leafPackageNames].map((l) => `-F '${l}...'`).join(" "),
-          fullBuildPnpmFilterString: [...partition.leafPackageNames].map((l) => `-F '${l}...'`).join(" "),
+          bootstrapTurboFilterString: [...partition.leafPackageNames].map((l) => `-F '${l}...'`).join(" "),
+          fullBuildTurboFilterString: [...partition.leafPackageNames].map((l) => `-F '${l}...'`).join(" "),
         };
       }
 
@@ -229,9 +229,9 @@ async function getPartitions(): Promise<Array<None | Full | Partial>> {
       return {
         mode: "partial",
         name: partition.name,
-        bootstrapPnpmFilterString: [...relevantPackageNamesInPartition].map((p) => `-F '${p}'`).join(" "),
-        upstreamPnpmFilterString: [...upstreamPackageNamesInPartition].map((p) => `-F '${p}'`).join(" "),
-        affectedPnpmFilterString: [...affectedPackageNamesInPartition].map((p) => `-F '${p}'`).join(" "),
+        bootstrapTurboFilterString: [...relevantPackageNamesInPartition].map((p) => `-F '${p}'`).join(" "),
+        upstreamTurboFilterString: [...upstreamPackageNamesInPartition].map((p) => `-F '${p}'`).join(" "),
+        affectedTurboFilterString: [...affectedPackageNamesInPartition].map((p) => `-F '${p}'`).join(" "),
       };
     })
   );

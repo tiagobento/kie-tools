@@ -14,8 +14,8 @@
     "url": "https://github.com/apache/incubator-kie-tools/issues"
   },
   "scripts": {
-    "build": "rimraf dist && tsc",
-    "prepare": "pnpm run build"
+    "bootstrap": "pnpm run build",
+    "build": "rimraf dist && tsc"
   },
   "devDependencies": {
     "@kie-tools/tsconfig": "workspace:*",

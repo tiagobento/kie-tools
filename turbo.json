@@ -1,0 +1,50 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "ui": "stream",
+  "globalPassThroughEnv": ["*"],
+  "remoteCache": {
+    "enabled": false
+  },
+  "tasks": {
+    "//#bootstrap": {
+      "cache": false
+    },
+    "//#bootstrap:root": {
+      "cache": false
+    },
+    "//#bootstrap:packages": {
+      "cache": false
+    },
+    "//#format": {
+      "cache": false
+    },
+    "//#format:check": {
+      "cache": false
+    },
+    "//#update-version-to": {
+      "cache": false
+    },
+    "//#update-stream-name-to": {
+      "cache": false
+    },
+    "//#update-kogito-version-to": {
+      "cache": false
+    },
+    "bootstrap": {
+      "cache": false,
+      "dependsOn": ["//#bootstrap", "^bootstrap"]
+    },
+    "build:dev": {
+      "cache": false,
+      "dependsOn": ["^build:dev"]
+    },
+    "build:prod": {
+      "cache": false,
+      "dependsOn": ["^build:prod"]
+    },
+    "start": {
+      "cache": false,
+      "persistent": true
+    }
+  }
+}
