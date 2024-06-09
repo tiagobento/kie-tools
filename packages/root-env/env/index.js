@@ -50,15 +50,10 @@ module.exports = composeEnv([], {
       default: `${false}`,
       description: "Enables/disables building example packages during the build.",
     },
-    KIE_TOOLS_BUILD__packageConcurrency: {
-      default: "main",
-      description: `Name of packages that can be built concurrently.`,
-    },
     KIE_TOOLS_BUILD__threadsAvailableForEachPackage: {
-      default: "main",
+      default: "1",
       description: `Number of threads available during a package's build.`,
     },
-
     /* (begin) This part of the file is referenced in `scripts/update-stream-name` */
     KIE_TOOLS_BUILD__streamName: {
       default: "main",
@@ -83,7 +78,6 @@ module.exports = composeEnv([], {
         streamName: getOrDefault(this.vars.KIE_TOOLS_BUILD__streamName),
       },
       build: {
-        packageConcurrency: getOrDefault(this.vars.KIE_TOOLS_BUILD__packageConcurrency),
         threadsAvailableForEachPackage: getOrDefault(this.vars.KIE_TOOLS_BUILD__threadsAvailableForEachPackage),
       },
       tests: {
