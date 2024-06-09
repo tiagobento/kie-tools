@@ -50,7 +50,7 @@ runs:
       run: |
         echo "STEP: Bootstrap"
         cd ${{ inputs.working_dir }}
-        turbo run bootstrap ${{ inputs.turbo_filter_string }}
+        turbo run bootstrap -- ${{ inputs.turbo_filter_string }}
 
     - name: "Print storage usage (after bootstrap)"
       shell: bash
