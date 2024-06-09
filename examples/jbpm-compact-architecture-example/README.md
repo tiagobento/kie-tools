@@ -223,7 +223,7 @@ sh startServices.sh example
 To run the example in Development mode, just run the following command in a Terminal:
 
 ```shell
-mvn clean package quarkus:dev -Pdevelopment
+mvn quarkus:dev -Pdevelopment
 ```
 
 The Development Mode will embed all the needed Infrastructure Services (PostgreSQL, Data-Index & Jobs Service) and won't

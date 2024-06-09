@@ -25,9 +25,7 @@
     "install:mvnw:win32": "pnpm powershell \"mvn -e org.apache.maven.plugins:maven-wrapper-plugin:3.3.0:wrapper\"",
     "lint": "echo 'Linting'",
     "powershell": "@powershell -NoProfile -ExecutionPolicy Unrestricted -Command",
-    "quarkus:dev": "run-script-os",
-    "quarkus:dev:darwin:linux": "mvn clean package quarkus:dev -DskipTests",
-    "quarkus:dev:win32": "mvn clean package quarkus:dev `-DskipTests"
+    "start:app": "mvn quarkus:dev"
   },
   "dependencies": {},
   "devDependencies": {

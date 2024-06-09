@@ -55,7 +55,7 @@ When using native image compilation, you will also need:
 ### Compile and Run in Local Dev Mode
 
 ```sh
-mvn clean package quarkus:dev
+mvn quarkus:dev
 ```
 
 ### Compile and Run in JVM mode
@@ -65,7 +65,7 @@ mvn clean package
 java -jar target/quarkus-app/quarkus-run.jar
 ```
 
-or on windows
+or on Windows
 
 ```sh
 mvn clean package

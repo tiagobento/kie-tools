@@ -42,7 +42,11 @@
       "cache": false,
       "dependsOn": ["^build:prod"]
     },
-    "start": {
+    "start:app": {
+      "cache": false,
+      "persistent": true
+    },
+    "start:lib": {
       "cache": false,
       "persistent": true
     }

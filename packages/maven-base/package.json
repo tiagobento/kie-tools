@@ -16,7 +16,7 @@
     "bootstrap": "pnpm set-quarkus-version && pnpm set-kogito-version && node install.js",
     "build:dev": "run-script-os",
     "build:dev:darwin:linux": "mvn clean install -DskipTests",
-    "build:dev:win32": "pnpm powershell \"mvn clean install -DskipTests \"",
+    "build:dev:win32": "pnpm powershell \"mvn clean install `-DskipTests\"",
     "build:prod": "pnpm lint && run-script-os",
     "build:prod:darwin:linux": "mvn clean deploy -DdeployAtEnd -DskipTests=$(build-env tests.run --not) -Dmaven.test.failure.ignore=$(build-env tests.ignoreFailures) -Dmaven.deploy.skip=$(build-env maven.deploy.skip)",
     "build:prod:win32": "pnpm powershell \"mvn clean deploy `-DdeployAtEnd `-DskipTests `-Dmaven.test.failure.ignore=$(build-env tests.ignoreFailures) `-Dmaven.deploy.skip=$(build-env maven.deploy.skip)\"",

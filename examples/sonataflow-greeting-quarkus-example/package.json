@@ -16,16 +16,13 @@
     "bootstrap": "node install.js",
     "build:dev": "run-script-if --bool \"$(build-env examples.build)\" --then run-script-os",
     "build:dev:darwin:linux": "mvn clean package -DskipTests",
-    "build:dev:win32": "pnpm powershell \"mvn clean package -DskipTests \"",
+    "build:dev:win32": "pnpm powershell \"mvn clean package `-DskipTests\"",
     "build:prod": "pnpm lint && run-script-if --bool \"$(build-env examples.build)\" --then run-script-os",
     "build:prod:darwin:linux": "mvn clean package -DskipTests=$(build-env tests.run --not) -Dmaven.test.failure.ignore=$(build-env tests.ignoreFailures)",
     "build:prod:win32": "pnpm powershell \"mvn clean package `-DskipTests `-Dmaven.test.failure.ignore=$(build-env tests.ignoreFailures)\"",
     "lint": "echo 'Linting'",
     "powershell": "@powershell -NoProfile -ExecutionPolicy Unrestricted -Command",
-    "quarkus:dev": "run-script-os",
-    "quarkus:dev:darwin:linux": "mvn clean package quarkus:dev -DskipTests",
-    "quarkus:dev:win32": "mvn clean package quarkus:dev -DskipTests",
-    "start:app": "pnpm quarkus:dev"
+    "start:app": "mvn quarkus:dev"
   },
   "dependencies": {
     "@kie-tools/maven-base": "workspace:*",
