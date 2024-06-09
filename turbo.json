@@ -32,10 +32,6 @@
     "//#update-kogito-version-to": {
       "cache": false
     },
-    "bootstrap": {
-      "cache": false,
-      "dependsOn": ["//#bootstrap", "^bootstrap"]
-    },
     "build:dev": {
       "cache": false,
       "dependsOn": ["^build:dev"]
