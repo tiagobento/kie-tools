@@ -13,7 +13,7 @@
     "url": "https://github.com/apache/incubator-kie-tools/issues"
   },
   "scripts": {
-    "bootstrap": "node install.js && pnpm format",
+    "bootstrap": "node bootstrap.js && pnpm format",
     "build:dev": "run-script-if --bool \"$(build-env containerImages.build)\" --then \"pnpm copy-assets\" \"pnpm image:build\"",
     "build:prod": "pnpm build:dev && pnpm image:test",
     "copy-assets": "run-script-os",

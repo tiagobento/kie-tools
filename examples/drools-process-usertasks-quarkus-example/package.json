@@ -13,7 +13,7 @@
     "url": "https://github.com/apache/incubator-kie-tools/issues"
   },
   "scripts": {
-    "bootstrap": "node install.js",
+    "bootstrap": "node bootstrap.js",
     "build:dev": "run-script-if --bool \"$(build-env examples.build)\" --then run-script-os",
     "build:dev:darwin:linux": "mvn clean compile -DskipTests",
     "build:dev:win32": "pnpm powershell \"mvn clean compile `-DskipTests\"",

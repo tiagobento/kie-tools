@@ -16,7 +16,7 @@
     "dist"
   ],
   "scripts": {
-    "bootstrap": "node install.js",
+    "bootstrap": "node bootstrap.js",
     "build:dev": "run-script-os",
     "build:dev:linux:darwin": "mvn clean install -DskipTests -DskipITs && pnpm dist",
     "build:dev:win32": "pnpm powershell \"mvn clean install `-DskipTests `-DskipITs\" && pnpm dist",

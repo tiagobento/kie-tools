@@ -13,7 +13,7 @@
     "url": "https://github.com/apache/incubator-kie-tools/issues"
   },
   "scripts": {
-    "bootstrap": "node install.js && pnpm install:mvnw",
+    "bootstrap": "node bootstrap.js && pnpm install:mvnw",
     "build:dev": "run-script-if --bool \"$(build-env containerImages.build)\" --then \"pnpm copy-assets\" \"pnpm image:docker:build\"",
     "build:prod": "run-script-if --bool \"$(build-env containerImages.build)\" --then \"pnpm copy-assets\" \"pnpm image:docker:build\"",
     "copy-assets": "rimraf dist-dev && pnpm copy-upload-service-assets",

@@ -13,7 +13,7 @@
     "url": "https://github.com/apache/incubator-kie-tools/issues"
   },
   "scripts": {
-    "bootstrap": "node install.js && pnpm update-readmes",
+    "bootstrap": "node bootstrap.js && pnpm update-readmes",
     "build:dev": "pnpm build:prod",
     "build:prod": "pnpm update-readmes && run-script-os",
     "build:prod:linux:darwin": "pnpm cleanup && run-script-if --bool $([ $(command -v helm) ] && echo true || echo false) --then \"helm package -u -d ./dist ./src\"",

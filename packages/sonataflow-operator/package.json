@@ -13,7 +13,7 @@
     "url": "https://github.com/apache/incubator-kie-tools/issues"
   },
   "scripts": {
-    "bootstrap": "rimraf bin && go mod tidy && node install.js && pnpm bump-version && pnpm format",
+    "bootstrap": "rimraf bin && go mod tidy && node bootstrap.js && pnpm bump-version && pnpm format",
     "build:dev": "run-script-os",
     "build:dev:darwin:linux": ". ./node_modules/@kie-tools/python-venv/venv/bin/activate && make build && pnpm image:build && pnpm format",
     "build:dev:win32": "echo 'Build not supported on Windows'",

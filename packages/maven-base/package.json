@@ -13,7 +13,7 @@
     "url": "https://github.com/apache/incubator-kie-tools/issues"
   },
   "scripts": {
-    "bootstrap": "pnpm set-quarkus-version && pnpm set-kogito-version && node install.js",
+    "bootstrap": "pnpm set-quarkus-version && pnpm set-kogito-version && node bootstrap.js",
     "build:dev": "run-script-os",
     "build:dev:darwin:linux": "mvn clean install -DskipTests",
     "build:dev:win32": "pnpm powershell \"mvn clean install `-DskipTests\"",
