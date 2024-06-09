@@ -6194,6 +6194,9 @@ importers:
       "@kie-tools/maven-config-setup-helper":
         specifier: workspace:*
         version: link:../maven-config-setup-helper
+      "@kie-tools/new-package":
+        specifier: workspace:*
+        version: link:../new-package
       "@kie-tools/root-env":
         specifier: workspace:*
         version: link:../root-env
@@ -6284,6 +6287,12 @@ importers:
       webpack-merge:
         specifier: ^5.9.0
         version: 5.9.0
+
+  packages/new-package:
+    devDependencies:
+      "@kie-tools/root-env":
+        specifier: workspace:*
+        version: link:../root-env
 
   packages/notifications:
     dependencies:

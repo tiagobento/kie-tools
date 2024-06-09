@@ -83,6 +83,7 @@
       { "id": "@kie-tools/dashbuilder" },
       { "id": "@kie-tools/dashbuilder-component-assembler" },
       { "id": "@kie-tools/maven-config-setup-helper" },
+      { "id": "@kie-tools/new-package" },
       { "id": "@kie-tools/dashbuilder-component-echarts" },
       { "id": "@kie-tools/dashbuilder-component-map" },
       { "id": "@kie-tools/dashbuilder-component-svg-heatmap" },
@@ -266,7 +267,7 @@
         "weight": 1
       },
       { "source": "@kie-tools/maven-base", "target": "@kie-tools/maven-config-setup-helper", "weight": 1 },
-      { "source": "@kie-tools/maven-base", "target": "@kie-tools/root-env", "weight": 1 },
+      { "source": "@kie-tools/maven-base", "target": "@kie-tools/new-package", "weight": 1 },
       {
         "source": "@kie-tools/runtime-tools-process-dev-ui-webapp",
         "target": "@kie-tools/runtime-tools-process-webapp-components",
@@ -576,6 +577,7 @@
         "target": "@kie-tools/dashbuilder-component-victory-charts",
         "weight": 1
       },
+      { "source": "@kie-tools/new-package", "target": "@kie-tools/root-env", "weight": 1 },
       {
         "source": "@kie-tools/dashbuilder-component-echarts",
         "target": "@kie-tools/dashbuilder-component-echarts-base",
@@ -1300,6 +1302,7 @@
     ["@kie-tools/maven-config-setup-helper", "packages/maven-config-setup-helper"],
     ["@kie-tools/maven-m2-repo-via-http-image", "packages/maven-m2-repo-via-http-image"],
     ["@kie-tools-core/monaco-editor", "packages/monaco-editor"],
+    ["@kie-tools/new-package", "packages/new-package"],
     ["@kie-tools-core/notifications", "packages/notifications"],
     ["@kie-tools/online-editor", "packages/online-editor"],
     ["@kie-tools-core/operating-system", "packages/operating-system"],
