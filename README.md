@@ -62,17 +62,17 @@ To build and test all packages of the Apache KIE Tools project, you're going to 
 
 Bootstrapping installs the necessary dependencies for each package.
 
-- `pnpm bootstrap` --> Will bootstrap all packages
-- `pnpm bootstrap [pnpm-filter]` --> Will bootstrap packages filtered by [`pnpm` filter](https://pnpm.io/filtering)
+- `turbo run bootstrap` --> Will bootstrap all packages
+- `turbo bootstrap -- [turbo-filter]` --> Will bootstrap packages filtered by [`turbo` filter](https://pnpm.io/filtering)
 - > E.g.,
   >
-  > `pnpm bootstrap -F dmn-editor...` bootstraps the `dmn-editor` package and its dependencies.
+  > `turbo bootstrap -- -F dmn-editor...` bootstraps the `dmn-editor` package and its dependencies.
 
 > **ℹ️ NOTE**
 >
 > If you plan on running Playwright tests, set the `PLAYWRIGHT_BASE__installDeps` environment variable to `true` before running the command above.
 >
-> `PLAYWRIGHT_BASE__installDeps=true pnpm bootstrap`.
+> `PLAYWRIGHT_BASE__installDeps=true turbo bootstrap`.
 >
 > This will install all Playwright dependencies (such as browsers engines and OS-specific libraries).
 
@@ -80,13 +80,13 @@ Bootstrapping installs the necessary dependencies for each package.
 
 - Dev
 
-  - `pnpm -r build:dev`
+  - `turbo build:dev`
     - Will build all packages for development. Skipping linters, tests, minifiers etc.
-  - `pnpm [pnpm-filter] build:dev`
+  - `turbo build:dev [turbo-filter]`
     - Will build packages filtered by [`pnpm` filter](https://pnpm.io/filtering)
   - > E.g.,
     >
-    > `pnpm -F dmn-editor... build:dev` builds the `dmn-editor` package and its dependencies.
+    > `turbo build:dev -F dmn-editor...` builds the `dmn-editor` package and its dependencies.
 
 - Prod
 
@@ -137,8 +137,8 @@ The Apache KIE Tools project contains several applications. To develop each one 
 #### Chrome Extension (DMN, BPMN, and SceSim Editors)
 
 1. After you've successfully built the project following the instructions above, open the `packages/chrome-extension-pack-kogito-kie-editors` folder on your favourite IDE. You can import the entire repo as well if you want to make changes to other packages.
-2. Run `pnpm build:dev` on `packages/chrome-extension-pack-kogito-kie-editors`. This will create a version of the Chrome Extension that fetches the envelope locally.
-3. Open a terminal and run `pnpm start` on `packages/chrome-extension-pack-kogito-kie-editors`. This will start a `webpack serve` instance with the editors and their envelope. We use that because we don't pack the Chrome Extension bundle with the editors inside. Instead, we fetch them from GitHub pages.
+2. Run `turbo build:dev` on `packages/chrome-extension-pack-kogito-kie-editors`. This will create a version of the Chrome Extension that fetches the envelope locally.
+3. Open a terminal and run `turbo start:lib` on `packages/chrome-extension-pack-kogito-kie-editors`. This will start a `webpack serve` instance with the editors and their envelope. We use that because we don't pack the Chrome Extension bundle with the editors inside. Instead, we fetch them from GitHub pages.
 4. You also have to enable invalid certificates for resources loaded from localhost in your browser. To do that, go to `chrome://flags/#temporary-unexpire-flags-m118` in your Chrome browser, enable this flag and restart browser. Then go to `chrome://flags/#allow-insecure-localhost` in your Chrome browser and enable also this flag. Alternativelly, you can go to `https://localhost:9001` and add an exception.
 5. Open Chrome and go to `chrome://extensions`. Enable "Developer mode" in the top-right corner and click on "Load unpacked". Choose the `packages/chrome-extension-pack-kogito-kie-editors/dist` folder.
 6. From now on you can use the development version of the extension. **Remember!** After each change, you have to rebuild the changed modules and hit the "Refresh" button of the extension card.
@@ -146,8 +146,8 @@ The Apache KIE Tools project contains several applications. To develop each one 
 #### Chrome Extension (Serverless Workflow Editor)
 
 1. After you've successfully built the project following the instructions above, open the `packages/chrome-extension-serverless-workflow-editor` folder on your favourite IDE. You can import the entire repo as well if you want to make changes to other packages.
-1. Run `pnpm build:dev` on `packages/chrome-extension-serverless-workflow-editor`. This will create a version of the Chrome Extension that fetches the envelope locally.
-1. Open a terminal and run `pnpm start` on `packages/chrome-extension-serverless-workflow-editor`. This will start a `webpack serve` instance with the editors and their envelope. We use that because we don't pack the Chrome Extension bundle with the editors inside. Instead, we fetch them from GitHub pages.
+1. Run `turbo build:dev` on `packages/chrome-extension-serverless-workflow-editor`. This will create a version of the Chrome Extension that fetches the envelope locally.
+1. Open a terminal and run `turbo start:lib` on `packages/chrome-extension-serverless-workflow-editor`. This will start a `webpack serve` instance with the editors and their envelope. We use that because we don't pack the Chrome Extension bundle with the editors inside. Instead, we fetch them from GitHub pages.
 1. You also have to enable invalid certificates for resources loaded from localhost in your browser. To do that, go to `chrome://flags/#temporary-unexpire-flags-m118` in your Chrome browser, enable this flag and restart browser. Then go to `chrome://flags/#allow-insecure-localhost` in your Chrome browser and enable also this flag. Alternativelly, you can go to `https://localhost:9000` and add an exception.
 1. Open Chrome and go to `chrome://extensions`. Enable "Developer mode" in the top-right corner and click on "Load unpacked". Choose the `packages/chrome-extension-serverless-workflow-editor/dist` folder.
 1. From now on you can use the development version of the extension. **Remember!** After each change, you have to rebuild the changed modules and hit the "Refresh" button of the extension card.
@@ -155,21 +155,21 @@ The Apache KIE Tools project contains several applications. To develop each one 
 #### KIE Sandbox
 
 1. After you've successfully built the project following the instructions above, go to `packages/online-editor`.
-2. Open a terminal and run `pnpm start`. This will start a `webpack serve` instance with the Online Editor resources.
+2. Open a terminal and run `turbo start:app`. This will start a `webpack serve` instance with the Online Editor resources.
 3. From now on you can use the development version of the Online Editor by accessing `https://localhost:9001`.
-4. Run the CORS Proxy by running `pnpm start` at `packages/cors-proxy`.
+4. Run the CORS Proxy by running `turbo start:app` at `packages/cors-proxy`.
 
 #### Serverless Logic Web Tools
 
 1. After you've successfully built the project following the instructions above, go to `packages/serverless-logic-web-tools`.
-1. Open a terminal and run `pnpm start`. This will start a `webpack serve` instance with the Serverless Logic Web Tools resources.
+1. Open a terminal and run `turbo start:app`. This will start a `webpack serve` instance with the Serverless Logic Web Tools resources.
 1. From now on you can use the development version of the Serverless Logic Web Tools by accessing `https://localhost:9020`.
-1. Run the CORS Proxy by running `pnpm start` at `packages/cors-proxy`.
+1. Run the CORS Proxy by running `turbo start:app` at `packages/cors-proxy`.
 
 #### Standalone Editors (DMN and BPMN)
 
 1. After you've successfully built the project following the instructions above, go to `packages/kie-editors-standalone`.
-2. Open a terminal and run `pnpm start`. This will start a `webpack serve` instance with the Standalone Editors test page.
+2. Open a terminal and run `turbo start:lib`. This will start a `webpack serve` instance with the Standalone Editors test page.
 3. From now on you can use the development version of the Standalone DMN Editor by accessing `https://localhost:9001/resources/dmn` and the Standalone BPMN Editor by accessing `https://localhost:9001/resources/bpmn`.
 
 #### Knative Workflow plugin
@@ -183,9 +183,9 @@ The Apache KIE Tools project contains several applications. To develop each one 
 The `stunner-editors` package contains the BPMN, DMN, and SceSim Editors that are used in many applications of Apache KIE Tools.
 After cloning the repo, start with a fresh build.
 
-- `pnpm bootstrap -F @kie-tools/stunner-editors...`
+- `turbo run bootstrap -- -F @kie-tools/stunner-editors...`
 
-- `pnpm -F @kie-tools/stunner-editors... build:dev`
+- `turbo build:dev -F @kie-tools/stunner-editors...`
 
 After that, you're ready to start developing the Editors individually.
 

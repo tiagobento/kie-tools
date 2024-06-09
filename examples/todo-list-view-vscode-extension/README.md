@@ -36,7 +36,7 @@ This extensions has the following commands:
 
 ## Building
 
-Run `pnpm build:prod`. A `.vsix` file will be on the `dist` folder.
+Run `turbo build:prod`. A `.vsix` file will be on the `dist` folder.
 
 ---
 

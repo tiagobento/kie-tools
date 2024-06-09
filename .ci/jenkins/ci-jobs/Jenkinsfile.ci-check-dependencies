@@ -70,7 +70,7 @@ pipeline {
                     steps {
                         dir('kie-tools') {
                             sh '''#!/bin/bash -el
-                            pnpm bootstrap:root
+                            turbo run bootstrap:root
                             npx --yes syncpack@6.2.0 list-mismatches
                             '''.trim()
                         }

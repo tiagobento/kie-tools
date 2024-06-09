@@ -23,8 +23,8 @@ There is a set of cypress tests in `e2e-tests` folder. To run them, please refer
 
 More suitable for running particular tests from `e2e-tests`.
 
-- `packages/extended-services$ pnpm start`
-- `packages/online-editor$ pnpm start`
+- `packages/extended-services$ turbo start:app`
+- `packages/online-editor$ turbo start:app`
 - `packages/online-editor$ pnpm cy:open`
 
 ## Run tests automatically
@@ -36,8 +36,8 @@ More suitable for running `e2e-tests` completely.
 > **NOTE:**
 > Before test development, you may need to build `online-editor` as:
 >
-> - `kie-tools$ pnpm bootstrap`
-> - `kie-tools$ pnpm -r -F @kie-tools/online-editor... build:dev`
+> - `kie-tools$ turbo run bootstrap`
+> - `kie-tools$ turbo build:dev -F @kie-tools/online-editor`
 
 ## Testing insecure/invalid TLS certificates with Git providers
 

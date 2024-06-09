@@ -83,7 +83,7 @@ try {
   );
 
   console.info(`[update-kogito-version] Bootstrapping with updated Kogito version...`);
-  execSync(`pnpm bootstrap`, execOpts);
+  execSync(`turbo run bootstrap`, execOpts);
 
   console.info(`[update-kogito-version] Formatting files...`);
   execSync(`pnpm pretty-quick`, execOpts);

@@ -36,11 +36,11 @@ The module structure is composed of:
 
 ### Usage
 
-To build the module: `pnpm build:prod`
+To build the module: `turbo build:prod`
 
-To build the module in dev mode (no tests): `pnpm build:dev`
+To build the module in dev mode (no tests): `turbo build:dev`
 
-To run the development webapp: `pnpm start`
+To run the development webapp: `turbo start:lib`
 
 ---
 

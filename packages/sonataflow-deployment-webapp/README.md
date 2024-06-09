@@ -23,19 +23,19 @@ This is the web application for SonataFlow Deployments.
 
 To run the local web server, use the following command:
 
-    pnpm start
+    turbo start:lib
 
 ## Build the Webjar
 
 To build the webjar, use the following command:
 
-    pnpm build:prod
+    turbo build:prod
 
 ## Install locally
 
 To install the project locally, use the following command:
 
-    pnpm build:dev
+    turbo build:dev
     mvn clean install
 
 ## Consumer app for local tests

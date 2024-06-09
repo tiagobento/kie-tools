@@ -30,7 +30,7 @@ const customConfig = defineConfig({
   },
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: "pnpm start",
+    command: "turbo start:lib",
     url: `http://localhost:${buildEnv.dmnEditor.storybook.port}/iframe.html?args=&id=use-cases-empty--empty&viewMode=story`,
     reuseExistingServer: !process.env.CI || true,
     stdout: "pipe",

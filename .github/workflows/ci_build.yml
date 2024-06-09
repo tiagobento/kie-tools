@@ -134,7 +134,7 @@ jobs:
           KIE_TOOLS_BUILD__buildContainerImages: ${{ runner.os != 'Windows' }}
           KIE_TOOLS_BUILD__buildExamples: "true"
         run: |
-          eval "pnpm build:dev ${{ steps.setup_build_mode.outputs.upstreamTurboFilterString }}"
+          eval "turbo build:dev --only ${{ steps.setup_build_mode.outputs.upstreamTurboFilterString }}"
 
       - name: "PARTIAL → Build changed and downstream"
         shell: bash
@@ -150,7 +150,7 @@ jobs:
           START_SERVER_AND_TEST_INSECURE: "true"
           NODE_OPTIONS: "--max_old_space_size=4096"
         run: |
-          eval "turbo build:prod ${{ steps.setup_build_mode.outputs.affectedTurboFilterString }}"
+          eval "turbo build:prod --only ${{ steps.setup_build_mode.outputs.affectedTurboFilterString }}"
 
       - name: "Check tests result (`main` only)"
         if: always() && !cancelled() && steps.setup_build_mode.outputs.mode != 'none'

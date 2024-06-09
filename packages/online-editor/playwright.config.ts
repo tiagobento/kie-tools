@@ -48,7 +48,7 @@ const customConfig = defineConfig({
       stdout: "pipe",
     },
     {
-      command: "pnpm start",
+      command: "turbo start:app",
       url: `http://localhost:${buildEnv.onlineEditor.dev.port}`,
       reuseExistingServer: !process.env.CI || true,
       ignoreHTTPSErrors: true,

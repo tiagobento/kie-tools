@@ -101,7 +101,7 @@ pipeline {
                         dir('kie-tools') {
                             sh '''#!/bin/bash -el
                             export PLAYWRIGHT_BASE__installDeps=true
-                            pnpm bootstrap
+                            turbo run bootstrap
                             '''.trim()
                         }
                     }

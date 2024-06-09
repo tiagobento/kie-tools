@@ -70,8 +70,8 @@ pipeline {
                     steps {
                         dir('kie-tools') {
                             sh '''#!/bin/bash -el
-                            pnpm bootstrap:root
-                            pnpm format:check
+                            turbo run bootstrap:root
+                            turbo run format:check
                             '''.trim()
                         }
                     }

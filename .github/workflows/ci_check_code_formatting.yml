@@ -49,5 +49,5 @@ jobs:
         shell: bash
         run: |
           export NODE_OPTIONS=--max_old_space_size=6144
-          pnpm bootstrap:root
-          pnpm format:check
+          turbo run bootstrap:root
+          turbo run format:check

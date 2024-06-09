@@ -35,7 +35,7 @@ Import as a library and invoke the functions described above.
 Run
 
 ```bash
-pnpm start <k8sApiServerUrl> <k8sNamespace> <k8sServiceAccountToken> <k8sYamlFilepath>
+turbo start:lib <k8sApiServerUrl> <k8sNamespace> <k8sServiceAccountToken> <k8sYamlFilepath>
 ```
 
 to test changes made to this libray.
@@ -43,7 +43,7 @@ to test changes made to this libray.
 #### Example:
 
 ```bash
-pnpm start https://api.to.my.openshift.cluster.com:6443 my-project sha256~MGnPXMPsi1YJkCV6kr970gQYI6KtQWztIObm3jQxUJI ../myDeployment.yaml
+turbo start:lib https://api.to.my.openshift.cluster.com:6443 my-project sha256~MGnPXMPsi1YJkCV6kr970gQYI6KtQWztIObm3jQxUJI ../myDeployment.yaml
 ```
 
 ---

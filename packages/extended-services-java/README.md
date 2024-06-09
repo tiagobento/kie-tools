@@ -24,7 +24,7 @@ but it uses Java instead.
 
 You can run it on developement mode:
 
-- `pnpm start`
+- `turbo start:app`
 
 ## Parameters
 

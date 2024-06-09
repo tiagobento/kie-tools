@@ -30,8 +30,8 @@ This example requires the VS Code version 1.46 or later.
 Install all dependencies and build the project on the **root** folder of this repository
 
 ```shell script
-pnpm init
-pnpm build:prod
+turbo run bootstrap
+turbo build:prod
 ```
 
 - Debug mode
@@ -44,7 +44,7 @@ code .
 
 - Installing VSIX
 
-The `pnpm build:prod` generate a vsix file on the `/dist` folder. Open your VS Code, and install it.
+The `turbo build:prod` generate a vsix file on the `/dist` folder. Open your VS Code, and install it.
 
 ---
 

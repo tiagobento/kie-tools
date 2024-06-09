@@ -3,7 +3,6 @@
   "ui": "stream",
   "globalPassThroughEnv": ["*"],
   "globalDependencies": [],
-  "globalDotEnv": [],
   "globalEnv": [],
   "remoteCache": {
     "enabled": false
@@ -44,6 +43,17 @@
     "build:prod": {
       "cache": false,
       "dependsOn": ["^build:prod"]
+    },
+    "lint": {
+      "cache": false
+    },
+    "test": {
+      "cache": false,
+      "dependsOn": ["^build:dev"]
+    },
+    "test-e2e": {
+      "cache": false,
+      "dependsOn": ["^build:dev"]
     },
     "start:app": {
       "cache": false,

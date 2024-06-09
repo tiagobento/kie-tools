@@ -38,44 +38,6 @@ All exposed function expected to exist, are defined in `src/api/BoxedExpressionE
 
 Consider that the showcase app is able to display the most updated JSON representing an expression, because uses such APIs (please refer to `showcase/src/index.tsx`).
 
-## Scripts
-
-In the main project (where the components actually live), it is possible to execute, from the root folder, the following scripts (`pnpm` is recommended):
-
-```sh
-
-# Remove 'dist' folder (such script is automatically called when the build is executed)
-pnpm prebuild
-
-# Build a production-ready artifact to be deployed
-pnpm build:prod
-
-# Execute all tests
-pnpm test
-
-# Trigger static code analysis
-pnpm lint
-
-# Trigger type checking
-pnpm type-check
-
-# Perform all the three checks above (tests, lint and type checking)
-pnpm quality-checks
-```
-
-In the showcase project, these scripts are available:
-
-```sh
-# Start a local server to see the 'BoxedExpressionEditor' in action
-pnpm start
-# Compiles a production ready showcase application
-pnpm build
-# Run PlayWright 'BoxedExpressionEditor' tests.
-pnpm test-e2e
-# To update the PlayWright Snapshot files, used for the regression:
-pnpm test-e2e:run -u
-```
-
 ---
 
 Apache KIE (incubating) is an effort undergoing incubation at The Apache Software

@@ -62,7 +62,7 @@ def setupPnpm() {
 */
 def pnpmBootstrap(String filters = '') {
     sh """#!/bin/bash -el
-    pnpm bootstrap ${filters}
+    turbo run bootstrap -- ${filters}
     """.trim()
 }
 
