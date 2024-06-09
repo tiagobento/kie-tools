@@ -25,7 +25,7 @@
     "build:linux": "make linux",
     "build:win32": "make win32",
     "pack-app": "run-script-os",
-    "start": "make start"
+    "start:app": "make start"
   },
   "devDependencies": {
     "@kie-tools/root-env": "workspace:*",

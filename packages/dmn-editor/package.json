@@ -22,7 +22,7 @@
     "build:storybook": "storybook build -o dist-storybook",
     "copy:css": "copyfiles -u 1 \"src/**/*.{sass,scss,css}\" dist/",
     "lint": "run-script-if --bool \"$(build-env linters.run)\" --then \"kie-tools--eslint ./src\"",
-    "start": "run-script-os",
+    "start:lib": "run-script-os",
     "start:linux:darwin": "cross-env STORYBOOK_PORT=$(build-env dmnEditor.storybook.port) pnpm kie-tools--storybook --storybookArgs=\"dev --no-open\"",
     "start:win32": "pnpm powershell \"cross-env STORYBOOK_PORT=$(build-env dmnEditor.storybook.port) pnpm kie-tools--storybook --storybookArgs='dev --no-open'",
     "test": "run-script-if --ignore-errors \"$(build-env tests.ignoreFailures)\" --bool \"$(build-env tests.run)\" --then \"jest --silent --verbose --passWithNoTests\"",

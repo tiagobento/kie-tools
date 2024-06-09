@@ -7,7 +7,7 @@
     "build": "rimraf dist && webpack",
     "build:dev": "run-script-if --bool \"$(build-env examples.build)\" --then \"pnpm build --env dev\"",
     "build:prod": "run-script-if --bool \"$(build-env examples.build)\" --then \"pnpm build\"",
-    "start": "webpack serve --host 0.0.0.0 --env dev"
+    "start:lib": "webpack serve --host 0.0.0.0 --env dev"
   },
   "dependencies": {
     "@kie-tools-core/patternfly-base": "workspace:*",

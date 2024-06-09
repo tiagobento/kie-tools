@@ -24,7 +24,7 @@
     "copy:dashbuilder": "copyfiles -u 3 \"../dashbuilder-client/dist/**/*\" ./dist/dashbuilder-client && copyfiles -u 1 src/setup.js ./dist/dashbuilder-client/",
     "deploy": "gh-pages -d dist",
     "lint": "run-script-if --bool \"$(build-env linters.run)\" --then \"kie-tools--eslint ./src\"",
-    "start": "webpack serve -c ./dev-webapp/webpack.config.js --host 0.0.0.0 --env dev",
+    "start:lib": "webpack serve -c ./dev-webapp/webpack.config.js --host 0.0.0.0 --env dev",
     "test": "run-script-if --ignore-errors \"$(build-env tests.ignoreFailures)\" --bool \"$(build-env tests.run)\" --then \"jest --silent --verbose --passWithNoTests\"",
     "test:clearCache": "jest --clearCache",
     "test:watch": "jest --watch"

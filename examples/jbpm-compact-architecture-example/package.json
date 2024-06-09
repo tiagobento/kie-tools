@@ -29,9 +29,9 @@
     "quarkus:dev:win32": "mvn clean package quarkus:dev `-DskipTests `-Pdevelopment",
     "run": "run-script-os",
     "run:darwin:linux": "cd ./docker-compose && sh startServices.sh",
-    "start": "run-script-os",
-    "start:darwin:linux": "pnpm run build && pnpm run run",
-    "start:win32": "echo Running full example ot supported in windows",
+    "start:app": "run-script-os",
+    "start:app:darwin:linux": "pnpm run build && pnpm run run",
+    "start:app:win32": "echo Running full example ot supported in windows",
     "stop": "run-script-os",
     "stop:darwin:linux": "cd ./docker-compose && docker compose down"
   },
