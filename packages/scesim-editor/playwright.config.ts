@@ -31,7 +31,7 @@ const customConfig = defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: "turbo start:lib",
+    command: "turbo run start:lib",
     url: `http://localhost:${buildEnv.scesimEditor.storybook.port}/iframe.html?args=&id=misc-empty--empty&viewMode=story`,
     reuseExistingServer: !process.env.CI || true,
     stdout: "pipe",

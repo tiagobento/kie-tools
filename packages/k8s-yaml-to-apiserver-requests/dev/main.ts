@@ -32,11 +32,11 @@ async function main(args: {
   if (!args.k8sApiServerUrl || !args.k8sNamespace || !args.k8sServiceAccountToken || !args.k8sYamlFilepath) {
     console.info(`USAGE:
 
-turbo start:lib <k8sApiServerUrl> <k8sNamespace> <k8sServiceAccountToken> <k8sYamlFilepath>
+turbo run start:lib <k8sApiServerUrl> <k8sNamespace> <k8sServiceAccountToken> <k8sYamlFilepath>
 
 EXAMPLE:
 
-turbo start:lib https://api.to.my.openshift.cluster.com:6443 my-project sha256~MGnPXMPsi1YJkCV6kr970gQYI6KtQWztIObm3jQxUJI ../myDeployment.yaml
+turbo run start:lib https://api.to.my.openshift.cluster.com:6443 my-project sha256~MGnPXMPsi1YJkCV6kr970gQYI6KtQWztIObm3jQxUJI ../myDeployment.yaml
     `);
     return;
   }

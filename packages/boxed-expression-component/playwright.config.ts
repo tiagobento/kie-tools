@@ -30,7 +30,7 @@ const customConfig = defineConfig({
   },
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: "turbo start:lib",
+    command: "turbo run start:lib",
     url: `http://localhost:${buildEnv.boxedExpressionComponent.storybook.port}/iframe.html?id=misc-empty-boxed-expression--base`,
     reuseExistingServer: !process.env.CI || true,
     stdout: "pipe",

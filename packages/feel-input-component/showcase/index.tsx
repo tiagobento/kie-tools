@@ -30,7 +30,7 @@ if (!feelServerUrl) {
     "" +
       "--------------------------------------------------------------------------------------------\n" +
       "The FEEL server is not enabled. You may enable it by starting your development web app with:\n" +
-      "`FEEL_INPUT_COMPONENT_DEV_WEBAPP__feelServerUrl=http://your-feel-server-url turbo start:lib`.\n" +
+      "`FEEL_INPUT_COMPONENT_DEV_WEBAPP__feelServerUrl=http://your-feel-server-url turbo run start:lib`.\n" +
       "--------------------------------------------------------------------------------------------"
   );
 }
