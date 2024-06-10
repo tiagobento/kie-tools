@@ -25,14 +25,14 @@ export type None = {
 export type Full = {
   mode: "full";
   name: string;
-  bootstrapTurboFilterString: string;
+  bootstrapPnpmFilterString: string;
   fullBuildTurboFilterString: string;
 };
 
 export type Partial = {
   mode: "partial";
   name: string;
-  bootstrapTurboFilterString: string;
+  bootstrapPnpmFilterString: string;
   upstreamTurboFilterString: string;
   affectedTurboFilterString: string;
 };

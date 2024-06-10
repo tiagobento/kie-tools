@@ -89,7 +89,7 @@ def pnpmBuild(String filters, Integer workspaceConcurrency = 1) {
 */
 def pnpmUpdateProjectVersion(String projectVersion) {
     sh """#!/bin/bash -el
-    pnpm update-version-to ${projectVersion}
+    turbo update-version-to -- ${projectVersion}
     """.trim()
 }
 
@@ -98,7 +98,7 @@ def pnpmUpdateProjectVersion(String projectVersion) {
 */
 def pnpmUpdateKogitoVersion(String kogitoVersion, String imagesTag) {
     sh """#!/bin/bash -el
-    pnpm update-kogito-version-to --maven ${kogitoVersion} --images-tag ${imagesTag}
+    turbo update-kogito-version-to -- --maven ${kogitoVersion} --images-tag ${imagesTag}
     """.trim()
 }
 
@@ -107,7 +107,7 @@ def pnpmUpdateKogitoVersion(String kogitoVersion, String imagesTag) {
 */
 def pnpmUpdateStreamName(String streamName) {
     sh """#!/bin/bash -el
-    pnpm update-stream-name-to ${streamName}
+    turbo update-stream-name-to -- ${streamName}
     """.trim()
 }
 

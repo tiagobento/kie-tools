@@ -64,7 +64,7 @@ To build and test all packages of the Apache KIE Tools project, you're going to 
 Bootstrapping installs the necessary dependencies for each package.
 
 - `turbo run bootstrap` --> Will bootstrap all packages
-- `turbo run bootstrap -- [turbo-filter]` --> Will bootstrap packages filtered by [`turbo` filter](https://turbo.build/repo/docs/reference/run#--filter-string)
+- `turbo run bootstrap -- [pnpm-filter]` --> Will bootstrap packages filtered by [`pnpm` filter](https://pnpm.io/filtering)
 - > E.g.,
   >
   > `turbo run bootstrap -- -F dmn-editor...` bootstraps the `dmn-editor` package and its dependencies.
@@ -87,7 +87,7 @@ Bootstrapping installs the necessary dependencies for each package.
     - Will build packages filtered by [`turbo` filter](https://turbo.build/repo/docs/reference/run#--filter-string)
   - > E.g.,
     >
-    > `turbo build:dev -F dmn-editor...` builds the `dmn-editor` package and its dependencies.
+    > `turbo build:dev -F @kie-tools/dmn-editor...` builds the `dmn-editor` package and its dependencies.
 
 - Prod
 
@@ -97,7 +97,7 @@ Bootstrapping installs the necessary dependencies for each package.
     - Will build packages filtered by [`turbo` filter](https://turbo.build/repo/docs/reference/run#--filter-string)
   - > E.g.,
     >
-    > `turbo build:prod -F dmn-editor...` builds the `dmn-editor` package and its dependencies.
+    > `turbo build:prod -F @kie-tools/dmn-editor...` builds the `@kie-tolls/dmn-editor` package and its dependencies.
 
 - Changed
   - `turbo build:dev -F '...[HEAD^1]'`; or

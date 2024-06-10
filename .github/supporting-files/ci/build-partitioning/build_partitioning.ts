@@ -178,7 +178,7 @@ async function getPartitions(): Promise<Array<None | Full | Partial>> {
         return {
           mode: "full",
           name: partition.name,
-          bootstrapTurboFilterString: [...partition.leafPackageNames].map((l) => `-F '${l}...'`).join(" "),
+          bootstrapPnpmFilterString: [...partition.leafPackageNames].map((l) => `-F '${l}...'`).join(" "),
           fullBuildTurboFilterString: [...partition.leafPackageNames].map((l) => `-F '${l}...'`).join(" "),
         };
       }
@@ -229,7 +229,7 @@ async function getPartitions(): Promise<Array<None | Full | Partial>> {
       return {
         mode: "partial",
         name: partition.name,
-        bootstrapTurboFilterString: [...relevantPackageNamesInPartition].map((p) => `-F '${p}'`).join(" "),
+        bootstrapPnpmFilterString: [...relevantPackageNamesInPartition].map((p) => `-F '${p}'`).join(" "),
         upstreamTurboFilterString: [...upstreamPackageNamesInPartition].map((p) => `-F '${p}'`).join(" "),
         affectedTurboFilterString: [...affectedPackageNamesInPartition].map((p) => `-F '${p}'`).join(" "),
       };

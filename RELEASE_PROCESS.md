@@ -27,7 +27,7 @@ Make sure an associated tag to the release is created on:
 
 1. Update the `CHANGELOG.md` files and send a PR to `main`.
 2. Create a `{version}-prerelease` branch from the commit you just made with the CHANGELOG updates.
-3. Update version from `0.0.0` to `{version}` -- `pnpm update-version-to {version}`.
+3. Update version from `0.0.0` to `{version}` -- `turbo update-version-to -- {version}`.
 4. Push `{version}-prerelease` branch to `origin`.
 5. 🔨(automatic) Jenkins job [Staging publish](https://ci-builds.apache.org/job/KIE/job/kie-tools/job/kie-tools-staging-publish).
    - Create new draft release on GitHub.

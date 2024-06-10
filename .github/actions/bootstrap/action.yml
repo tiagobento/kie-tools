@@ -25,15 +25,15 @@ inputs:
     description: "kie-tools path"
     required: false
     default: "."
-  turbo_filter_string:
+  pnpm_filter_string:
     description: "turbo filter string to choose what to bootstrap"
     required: false
     default: ""
 
 outputs:
-  turbo_filter_string:
+  pnpm_filter_string:
     description: "Same as the input"
-    value: ${{ inputs.turbo_filter_string }}
+    value: ${{ inputs.pnpm_filter_string }}
 
 runs:
   using: "composite"
@@ -50,7 +50,7 @@ runs:
       run: |
         echo "STEP: Bootstrap"
         cd ${{ inputs.working_dir }}
-        turbo run bootstrap -- ${{ inputs.turbo_filter_string }}
+        turbo run bootstrap -- ${{ inputs.pnpm_filter_string }}
 
     - name: "Print storage usage (after bootstrap)"
       shell: bash
