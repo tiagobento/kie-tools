@@ -17,6 +17,8 @@
  * under the License.
  */
 
+const fs = require("fs");
+
 const findWorkspacePackages = require("@pnpm/find-workspace-packages").default;
 
 async function main() {
@@ -46,7 +48,58 @@ async function main() {
   }
 
   console.info(`[check-packages-dependencies] Done.`);
-  process.exit(0);
+  console.info(`[check-packages-scripts] Checking package script names...`);
+
+  const turboTasksForPackages = [
+    ...Object.keys(require("../../turbo.json").tasks).filter((s) => !s.startsWith("//")),
+    "install",
+  ];
+
+  const scriptNameErrors = new Map();
+
+  for (const p of packages) {
+    if (p.dir === ".") {
+      continue; // Ignore the root package.json
+    }
+
+    for (const scriptName in p.manifest.scripts) {
+      const split = scriptName.split("~:");
+      // Does have ~:
+      if (split.length === 1) {
+        if (turboTasksForPackages.some((t) => t === scriptName)) {
+          // OK. Conventionalized script name from Turbo.
+        } else {
+          // ERROR. Non-conventionalized script without ~: prefix.
+          const error = "Non-conventionalized script name without ~: prefix";
+          scriptNameErrors.set(error, [...(scriptNameErrors.get(error) ?? []), `${p.dir}#${scriptName}`]);
+        }
+      }
+      // Does not have ~:
+      else if (split.length === 2) {
+        if (split[0] !== "") {
+          // ERROR. Invalid script name.
+          const error = "Invalid location of ~: marker on script name";
+          scriptNameErrors.set(error, [...(scriptNameErrors.get(error) ?? []), `${p.dir}#${scriptName}`]);
+        } else if (turboTasksForPackages.some((t) => t === split[1])) {
+          // ERROR. Conventionalized script name from Turbo prefixed with ~:
+          const error = "Conventionalized script name prefixed with ~:";
+          scriptNameErrors.set(error, [...(scriptNameErrors.get(error) ?? []), `${p.dir}#${scriptName}`]);
+        } else {
+          // OK. Arbitrary script with ~: prefix.
+        }
+      }
+    }
+  }
+
+  if (scriptNameErrors.size > 0) {
+    console.error(`[check-packages-scripts] Errors:`);
+    console.error(JSON.stringify(Object.fromEntries(scriptNameErrors), null, 2));
+    console.error(`[check-packages-scripts] Done.`);
+    // process.exit(1);
+  } else {
+    console.error(`[check-packages-scripts] Done.`);
+    process.exit(0);
+  }
 }
 
 main();
