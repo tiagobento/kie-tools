@@ -18,7 +18,7 @@
     "build:dev": "rimraf dist && webpack --env dev",
     "build:prod": "pnpm lint && pnpm test && rimraf dist && webpack",
     "lint": "run-script-if --bool \"$(build-env linters.run)\" --then \"kie-tools--eslint ./src\"",
-    "start:lib": "cross-env WEBPACK__sourceMaps=false node ./dev-webapp/start.js",
+    "start:app": "cross-env WEBPACK__sourceMaps=false node ./dev-webapp/start.js",
     "test": "run-script-if --ignore-errors \"$(build-env tests.ignoreFailures)\" --bool \"$(build-env tests.run)\" --then \"jest --silent --verbose\""
   },
   "dependencies": {

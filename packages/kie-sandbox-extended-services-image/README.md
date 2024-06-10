@@ -46,7 +46,7 @@ Default values can be found [here](../build-env/index.js).
 After setting up the environment variables, run the following in the root folder of the repository to build the package:
 
 ```bash
-$ pnpm build:prod @kie-tools/kie-sandbox-extended-services-image...
+$ turbo build:prod -F @kie-tools/kie-sandbox-extended-services-image...
 ```
 
 Then check out the image:

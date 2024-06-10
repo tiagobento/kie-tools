@@ -21,10 +21,8 @@
   "scripts": {
     "build:dev": "rimraf dist && webpack --env dev",
     "build:prod": "pnpm lint && pnpm test && rimraf dist && webpack",
-    "dev": "concurrently 'pnpm run start:lib' 'pnpm run dev:server'",
-    "dev:server": "node ./server/app.js",
     "lint": "run-script-if --bool \"$(build-env linters.run)\" --then \"kie-tools--eslint ./src\"",
-    "start:lib": "webpack serve --host 0.0.0.0 --env dev",
+    "start:app": "concurrently 'webpack serve --host 0.0.0.0 --env dev' 'node ./server/app.js'",
     "test": "run-script-if --ignore-errors \"$(build-env tests.ignoreFailures)\" --bool \"$(build-env tests.run)\" --then \"jest --silent --verbose --passWithNoTests\""
   },
   "dependencies": {

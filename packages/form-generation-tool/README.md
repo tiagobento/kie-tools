@@ -40,7 +40,7 @@ Each generated form consist in two files, the source code (`.tsx` or `.html`) an
 In order to build the CLI you must run the following command in the root folder of the repository:
 
 ```shell script
-pnpm -F @kie-tools/form-generation-tool... build:prod
+turbo build:prod -F @kie-tools/form-generation-tool...
 ```
 
 After the command has finished, go to `packages/form-generation-tool/dist` folder and you'll find the CLI binary (`form-generation-cli-macos`, `form-generation-cli-linux` or `form-generation-cli-win.exe` depending on your OS).

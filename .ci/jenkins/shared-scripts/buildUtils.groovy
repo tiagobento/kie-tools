@@ -71,7 +71,7 @@ def pnpmBootstrap(String filters = '') {
 */
 def pnpmBuildFull(Integer workspaceConcurrency = 1) {
     sh """#!/bin/bash -el
-    pnpm -r --workspace-concurrency=${workspaceConcurrency} build:prod
+    turbo build:prod --workspace-concurrency=${workspaceConcurrency}
     """.trim()
 }
 
@@ -80,7 +80,7 @@ def pnpmBuildFull(Integer workspaceConcurrency = 1) {
 */
 def pnpmBuild(String filters, Integer workspaceConcurrency = 1) {
     sh """#!/bin/bash -el
-    pnpm ${filters} --workspace-concurrency=${workspaceConcurrency} build:prod
+    turbo build:prod ${filters} --concurrency=${workspaceConcurrency}
     """.trim()
 }
 

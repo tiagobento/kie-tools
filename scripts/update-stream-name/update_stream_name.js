@@ -42,7 +42,7 @@ try {
   );
 
   console.info(`[update-stream-name] Bootstrapping with updated Stream name...`);
-  execSync(`pnpm bootstrap`, execOpts);
+  execSync(`turbo run bootstrap`, execOpts);
 
   console.info(`[update-stream-name] Formatting files...`);
   execSync(`pnpm pretty-quick`, execOpts);

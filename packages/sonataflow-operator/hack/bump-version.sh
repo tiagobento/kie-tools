@@ -23,12 +23,12 @@ set -e
 script_dir_path=$(dirname "${BASH_SOURCE[0]}")
 source "${script_dir_path}"/env.sh
 
-imageName=$(pnpm build-env sontaflowOperator.registry)/$(pnpm build-env sontaflowOperator.account)/$(pnpm build-env sontaflowOperator.name)
-imageTag=$(pnpm build-env sontaflowOperator.tag)
-version=$(pnpm build-env sontaflowOperator.version)
+imageName=$(build-env sontaflowOperator.registry)/$(build-env sontaflowOperator.account)/$(build-env sontaflowOperator.name)
+imageTag=$(build-env sontaflowOperator.tag)
+version=$(build-env sontaflowOperator.version)
 
-targetSonataflowBuilderImage=$(pnpm build-env sontaflowOperator.sonataflowBuilderImage)
-targetSonataflowDevModeImage=$(pnpm build-env sontaflowOperator.sonataflowDevModeImage)
+targetSonataflowBuilderImage=$(build-env sontaflowOperator.sonataflowBuilderImage)
+targetSonataflowDevModeImage=$(build-env sontaflowOperator.sonataflowDevModeImage)
 
 if [ -z "${version}" ]; then
   echo "Please inform the new version"

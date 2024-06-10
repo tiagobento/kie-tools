@@ -48,7 +48,7 @@ Default values can be found [here](./env/index.js).
 After setting up the environment variables, run the following in the root folder of the repository to build the package:
 
 ```bash
-$ pnpm @kie-tools/cors-proxy-image... build:prod
+$ turbo build:prod -F @kie-tools/cors-proxy-image...
 ```
 
 Then check out the image:

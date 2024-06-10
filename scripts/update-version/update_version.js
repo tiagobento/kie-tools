@@ -43,7 +43,7 @@ try {
   execSync(`pnpm -r ${pnpmFilterString} exec pnpm version ${newVersion} ${pnpmVersionArgs}`, execOpts);
 
   console.info(`[update-version] Bootstrapping with updated version...`);
-  execSync(`pnpm bootstrap ${pnpmFilterString}`, execOpts);
+  execSync(`turbo run bootstrap -- ${pnpmFilterString}`, execOpts);
 
   console.info(`[update-version] Formatting files...`);
   execSync(`pnpm pretty-quick`, execOpts);

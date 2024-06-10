@@ -547,7 +547,7 @@ pipeline {
                                 pnpm -F jbpm-quarkus-devui... -F sonataflow-quarkus-devui... exec 'bash' '-c' 'echo -Dapache.repository.username=${REPOSITORY_USER} >> .mvn/maven.config'
                                 pnpm -F jbpm-quarkus-devui... -F sonataflow-quarkus-devui... exec 'bash' '-c' 'echo -Dapache.repository.password=${REPOSITORY_TOKEN} >> .mvn/maven.config'
                                 pnpm -F jbpm-quarkus-devui... -F sonataflow-quarkus-devui... exec 'bash' '-c' 'echo -Drevision=999-SNAPSHOT >> .mvn/maven.config'
-                                pnpm -F jbpm-quarkus-devui... -F sonataflow-quarkus-devui... build:prod
+                                turbo build:prod -F @kie-tools/jbpm-quarkus-devui... -F @kie-tools/sonataflow-quarkus-devui...
                                 """.trim()
                             }
                         }

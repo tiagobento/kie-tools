@@ -22,7 +22,7 @@ This package contains a `cors-proxy`, which is a simple Node.js application inte
 # Build
 
 ```bash
-$ pnpm @kie-tools/cors-proxy... build:prod
+$ turbo build:prod -F @kie-tools/cors-proxy...
 ```
 
 # Configuration
@@ -52,7 +52,7 @@ $ node ./dist/index.js
 # Running `cors-proxy` in dev mode.
 
 ```bash
-$ pnpm @kie-tools/cors-proxy start
+$ turbo start:app -F @kie-tools/cors-proxy
 ```
 
 You can also use the following envs to configure `cors-proxy` when starting in dev-mode:

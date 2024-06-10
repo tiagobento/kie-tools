@@ -41,7 +41,7 @@ To get more the details please take a look on each implementation:
 To install all dependencies it's necessary to execute the following command on the root folder of the project:
 
 ```shell script
-pnpm init
+turbo run bootstrap -- -F @kie-tools-examples/webapp...
 ```
 
 ### Build
@@ -49,8 +49,8 @@ pnpm init
 To build the webapp execute one of the following commands on the root folder of the project:
 
 ```shell script
-KIE_TOOLS_BUILD__buildExamples=true pnpm -F @kie-tools-examples/webapp... build:dev
-KIE_TOOLS_BUILD__buildExamples=true pnpm -F @kie-tools-examples/webapp... build:prod
+KIE_TOOLS_BUILD__buildExamples=true turbo build:dev -F @kie-tools-examples/webapp...
+KIE_TOOLS_BUILD__buildExamples=true turbo build:prod -F @kie-tools-examples/webapp...
 ```
 
 ### Run
@@ -58,7 +58,7 @@ KIE_TOOLS_BUILD__buildExamples=true pnpm -F @kie-tools-examples/webapp... build:
 To start the webapp execute the following command on the root folder of the project:
 
 ```shell script
-pnpm -F @kie-tools-examples/webapp start
+turbo start:app -F @kie-tools-examples/webapp
 ```
 
 ---

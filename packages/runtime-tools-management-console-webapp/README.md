@@ -213,7 +213,7 @@ To change any of this client configuration access to http://localhost:8280/auth/
 
 Enable `PROD` env mode by running the app with:
 
-`RUNTIME_TOOLS_MANAGEMENT_CONSOLE_WEBAPP__kogitoEnvMode=PROD pnpm dev`
+`RUNTIME_TOOLS_MANAGEMENT_CONSOLE_WEBAPP__kogitoEnvMode=PROD turbo start:app`
 
 ---
 

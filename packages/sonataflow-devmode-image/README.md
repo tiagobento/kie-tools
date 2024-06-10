@@ -51,7 +51,7 @@ image along with the modules and scripts provided in `@kie-tools/sonataflow-imag
 - After optionally setting up the environment variables, run the following in the root folder of the repository to build the package:
 
   ```bash
-  pnpm -F @kie-tools/sonataflow-devmode-image build:prod
+  turbo build:prod -F @kie-tools/sonataflow-devmode-image...
   ```
 
 - Then check if the image is correctly stored:

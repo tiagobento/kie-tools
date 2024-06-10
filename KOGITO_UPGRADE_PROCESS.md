@@ -86,7 +86,7 @@ You can find an example of the Quarkus upgrade in [this PR](https://github.com/a
 
 # Upgrading Kogito
 
-In the root directory, run `pnpm update-kogito-version-to --maven [version] --images-tag [tag]`.
+In the root directory, run `turbo update-kogito-version-to -- --maven [version] --images-tag [tag]`.
 
 Of course, a new Kogito version may lead to incompatibilities in the code and with other dependencies. In such a case, an investigation and evetually a fix is required to complete the process.
 
@@ -101,8 +101,8 @@ To test the `kie-sandbox-quarkus-accelerator` module with the updated version, p
 
 - Create a PR with the updated version in the `pom.xml` file;
 - In kie-tools, `temporarily change gitRepositoryUrl` (fork link) and `gitRepositoryGitRef` (branch name) keys in `packages/online-editor/build/defaultEnvJson.ts` to point to your fork's PR (the one created in the above step)
-- Run `pnpm -F @kie-tools/cors-proxy... build:dev` and `pnpm -F @kie-tools/cors-proxy start`;
-- Run `pnpm -F @kie-tools/online-editor... build:dev` and `pnpm -F @kie-tools/online-editor start` to test it.
+- Run `turbo build:dev -F @kie-tools/cors-proxy... build:d` and `turbo start:app -F @kie-tools/cors-proxy`;
+- Run `turbo build:dev -F @kie-tools/online-editor...` and `turbo start:app -F @kie-tools/online-editor` to test it.
 
 You can find an example of the Kogito version upgrade in [this PR](https://github.com/apache/incubator-kie-sandbox-quarkus-accelerator/pull/8)
 

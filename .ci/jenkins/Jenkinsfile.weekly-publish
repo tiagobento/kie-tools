@@ -123,7 +123,7 @@ pipeline {
                                 pnpm ${env.PNPM_FILTER_STRING} exec 'bash' '-c' 'echo -Dapache.repository.username=${REPOSITORY_USER} >> .mvn/maven.config'
                                 pnpm ${env.PNPM_FILTER_STRING} exec 'bash' '-c' 'echo -Dapache.repository.password=${REPOSITORY_TOKEN} >> .mvn/maven.config'
                                 pnpm ${env.PNPM_FILTER_STRING} exec 'bash' '-c' 'echo -Drevision=${timestampedSnapshotVersion} >> .mvn/maven.config'
-                                pnpm ${env.PNPM_FILTER_STRING} build:prod
+                                turbo build:prod ${env.PNPM_FILTER_STRING}
                                 """.trim()
                             }
                         }

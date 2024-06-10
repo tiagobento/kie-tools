@@ -128,7 +128,7 @@ pipeline {
                                     pnpm ${env.PNPM_FILTER_STRING} exec 'bash' '-c' 'echo -Dapache.repository.password=${REPOSITORY_TOKEN} >> .mvn/maven.config'
                                     pnpm ${env.PNPM_FILTER_STRING} exec 'bash' '-c' 'echo -Dgpg.passphrase=${SIGNING_KEY_PASSWORD} >> .mvn/maven.config'
                                     pnpm ${env.PNPM_FILTER_STRING} exec 'bash' '-c' 'echo -Papache-release >> .mvn/maven.config'
-                                    pnpm ${env.PNPM_FILTER_STRING} build:prod
+                                    turbo build:prod ${env.PNPM_FILTER_STRING}
                                     """.trim()
                                 }
                             }

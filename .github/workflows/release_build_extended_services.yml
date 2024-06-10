@@ -89,7 +89,7 @@ jobs:
       - name: "Build"
         shell: bash
         run: |
-          pnpm ${{ steps.bootstrap.outputs.pnpm_filter_string }} build:prod
+          turbo build:prod ${{ steps.bootstrap.outputs.pnpm_filter_string }}
 
       - name: "Upload Extended Services for macOS"
         if: ${{ runner.os == 'macOS' && !inputs.dry_run && !inputs.release_candidate }}

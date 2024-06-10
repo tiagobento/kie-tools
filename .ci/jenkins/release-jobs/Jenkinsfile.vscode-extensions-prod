@@ -124,7 +124,7 @@ pipeline {
             steps {
                 dir('kie-tools') {
                     sh '''#!/bin/bash -el
-                    pnpm -F bpmn-vscode-extension... \
+                    turbo -F bpmn-vscode-extension... \
                     -F dmn-vscode-extension... \
                     -F pmml-vscode-extension... \
                     -F vscode-extension-kogito-bundle... \

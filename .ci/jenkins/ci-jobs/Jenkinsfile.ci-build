@@ -122,7 +122,7 @@ pipeline {
                             export KIE_TOOLS_BUILD__ignoreEndToEndTestFailures=false
                             export START_SERVER_AND_TEST_INSECURE=true
                             export CYPRESS_VERIFY_TIMEOUT=100000
-                            pnpm -r --workspace-concurrency=1 build:prod
+                            turbo build:prod --concurrency=1
                             '''.trim()
                         }
                     }
