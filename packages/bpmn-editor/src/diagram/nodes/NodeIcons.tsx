@@ -92,7 +92,7 @@ export function TaskIcon() {
 export function SubProcessIcon() {
   return (
     <RoundSvg>
-      <SubProcessNodeSvg {...nodeSvgProps} />
+      <SubProcessNodeSvg {...nodeSvgProps} icons={["SubProcessIcon"]} />
     </RoundSvg>
   );
 }

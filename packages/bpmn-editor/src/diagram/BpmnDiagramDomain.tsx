@@ -101,6 +101,15 @@ export type Values<T> = T[keyof T];
 export type BpmnNodeType = Values<typeof NODE_TYPES>;
 export type BpmnEdgeType = Values<typeof EDGE_TYPES>;
 
+export enum ActivityNodeMarker {
+  Compensation = "Compensation",
+  MultiInstanceParallel = "MultiInstanceParallel",
+  MultiInstanceSequential = "MultiInstanceSequential",
+  Collapsed = "Collapsed",
+  Loop = "Loop",
+  AdHocSubProcess = "AdHocSubProcess",
+}
+
 export const BPMN_GRAPH_STRUCTURE: GraphStructure<BpmnNodeType, BpmnEdgeType> = new Map([
   [
     NODE_TYPES.startEvent,
@@ -201,7 +210,25 @@ export const BPMN_GRAPH_STRUCTURE: GraphStructure<BpmnNodeType, BpmnEdgeType> = 
     NODE_TYPES.transaction,
     new Map<BpmnEdgeType, Set<BpmnNodeType>>([[EDGE_TYPES.association, new Set([NODE_TYPES.textAnnotation])]]),
   ],
-  [NODE_TYPES.textAnnotation, new Map([])],
+  [
+    NODE_TYPES.textAnnotation,
+    new Map<BpmnEdgeType, Set<BpmnNodeType>>([
+      [
+        EDGE_TYPES.association,
+        new Set([
+          NODE_TYPES.startEvent,
+          NODE_TYPES.task,
+          NODE_TYPES.intermediateCatchEvent,
+          NODE_TYPES.intermediateThrowEvent,
+          NODE_TYPES.gateway,
+          NODE_TYPES.endEvent,
+          NODE_TYPES.dataObject,
+          NODE_TYPES.lane,
+          NODE_TYPES.transaction,
+        ]),
+      ],
+    ]),
+  ],
 ]);
 
 export const BPMN_CONTAINMENT_MAP: ContainmentMap<BpmnNodeType> = new Map([]);
@@ -400,7 +427,7 @@ export const bpmnNodesOutgoingStuffNodePanelMapping: OutgoingStuffNodePanelNodeM
   },
   [NODE_TYPES.subProcess]: {
     actionTitle: "Add Sub-Process",
-    icon: (nodeSvgProps) => <SubProcessNodeSvg {...nodeSvgProps} />,
+    icon: (nodeSvgProps) => <SubProcessNodeSvg {...nodeSvgProps} icons={["SubProcessIcon"]} />,
   },
   [NODE_TYPES.gateway]: {
     actionTitle: "Add Gateway",
