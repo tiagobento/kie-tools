@@ -53,28 +53,34 @@ export function computeDiagramData(
     .forEach((bpmnElement) => {
       // nodes
       if (
+        // activities
+        //     '->  sub-processes
+        bpmnElement?.__$$element === "subProcess" ||
+        bpmnElement?.__$$element === "adHocSubProcess" ||
+        bpmnElement?.__$$element === "transaction" ||
+        bpmnElement?.__$$element === "callActivity" || // a.k.a. reusable sub-process
+        //     '->  tasks
+        bpmnElement?.__$$element === "businessRuleTask" ||
+        bpmnElement?.__$$element === "scriptTask" ||
+        bpmnElement?.__$$element === "serviceTask" ||
+        bpmnElement?.__$$element === "userTask" ||
+        bpmnElement?.__$$element === "task" ||
+        // events
         bpmnElement?.__$$element === "boundaryEvent" ||
         bpmnElement?.__$$element === "startEvent" ||
         bpmnElement?.__$$element === "intermediateCatchEvent" ||
         bpmnElement?.__$$element === "intermediateThrowEvent" ||
+        bpmnElement?.__$$element === "endEvent" ||
+        // gateways
         bpmnElement?.__$$element === "complexGateway" ||
         bpmnElement?.__$$element === "eventBasedGateway" ||
         bpmnElement?.__$$element === "exclusiveGateway" ||
         bpmnElement?.__$$element === "inclusiveGateway" ||
         bpmnElement?.__$$element === "parallelGateway" ||
-        bpmnElement?.__$$element === "businessRuleTask" ||
-        bpmnElement?.__$$element === "choreographyTask" ||
-        bpmnElement?.__$$element === "manualTask" ||
-        bpmnElement?.__$$element === "receiveTask" ||
-        bpmnElement?.__$$element === "scriptTask" ||
-        bpmnElement?.__$$element === "sendTask" ||
-        bpmnElement?.__$$element === "serviceTask" ||
-        bpmnElement?.__$$element === "task" ||
-        bpmnElement?.__$$element === "userTask" ||
-        bpmnElement?.__$$element === "endEvent" ||
-        bpmnElement?.__$$element === "group" ||
+        // lanes
         bpmnElement?.__$$element === "lane" ||
-        bpmnElement?.__$$element === "transaction" ||
+        // artifacts
+        bpmnElement?.__$$element === "group" ||
         bpmnElement?.__$$element === "textAnnotation"
       ) {
         nodeBpmnElementsById.set(bpmnElement["@_id"], bpmnElement);

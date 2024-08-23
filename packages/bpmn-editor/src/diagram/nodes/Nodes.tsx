@@ -41,7 +41,14 @@ import { useCallback, useEffect, useMemo, useRef } from "react";
 import * as RF from "reactflow";
 import { Normalized } from "../../normalization/normalize";
 import { useBpmnEditorStore, useBpmnEditorStoreApi } from "../../store/StoreContext";
-import { BPMN_CONTAINMENT_MAP, BpmnDiagramNodeData, BpmnNodeType, EDGE_TYPES, NODE_TYPES } from "../BpmnDiagramDomain";
+import {
+  ActivityNodeMarker,
+  BPMN_CONTAINMENT_MAP,
+  BpmnDiagramNodeData,
+  BpmnNodeType,
+  EDGE_TYPES,
+  NODE_TYPES,
+} from "../BpmnDiagramDomain";
 import { BPMN_OUTGOING_STRUCTURE } from "../BpmnDiagramDomain";
 import { MIN_NODE_SIZES } from "../BpmnDiagramDomain";
 import { getNodeLabelPosition, useNodeStyle } from "./NodeStyle";
@@ -617,10 +624,14 @@ export const SubProcessNode = React.memo(
       isEnabled: enableCustomNodeStyles,
     });
 
+    const icons = useMemo(() => {
+      return [ActivityNodeMarker.Collapsed];
+    }, []);
+
     return (
       <>
         <svg className={`xyflow-react-kie-diagram--node-shape ${className} ${selected ? "selected" : ""}`}>
-          <SubProcessNodeSvg {...nodeDimensions} x={0} y={0} />
+          <SubProcessNodeSvg {...nodeDimensions} x={0} y={0} icons={icons} strokeWidth={5} />
         </svg>
         <PositionalNodeHandles isTargeted={isTargeted && isValidConnectionTarget} nodeId={id} />
         <div

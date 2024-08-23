@@ -26,7 +26,8 @@ import {
   normalize,
 } from "@kie-tools/xyflow-react-kie-diagram/dist/nodes/NodeSvgs";
 import { containerNodeVisibleRectCssClassName } from "@kie-tools/xyflow-react-kie-diagram/dist/nodes/NodeSvgs";
-import { EventVariant, GatewayVariant } from "../BpmnDiagramDomain";
+import { ActivityNodeMarker, EventVariant, GatewayVariant } from "../BpmnDiagramDomain";
+import { useMemo } from "react";
 
 export function DataObjectNodeSvg(__props: NodeSvgProps & { isIcon: boolean; transform?: string }) {
   const {
@@ -324,15 +325,19 @@ export function TaskNodeSvg(__props: NodeSvgProps) {
   );
 }
 
-export function SubProcessNodeSvg(__props: NodeSvgProps) {
+export function SubProcessNodeSvg(__props: NodeSvgProps & { icons?: (ActivityNodeMarker | "SubProcessIcon")[] }) {
   const {
     x,
     y,
     width,
     height,
     strokeWidth,
-    props: { ...props },
+    props: { ..._props },
   } = normalize(__props);
+
+  const { icons, ...props } = { ..._props };
+
+  const iconsSet = useMemo(() => new Set(icons), [icons]);
 
   return (
     <>
@@ -349,19 +354,46 @@ export function SubProcessNodeSvg(__props: NodeSvgProps) {
         ry="5"
         {...props}
       />
-      <rect
-        x={x + (width / 2 - width / 3 / 2)}
-        y={y + (height - height / 3)}
-        strokeWidth={strokeWidth}
-        width={width / 3}
-        height={height / 3}
-        fill={"black"}
-        stroke={"black"}
-        strokeLinejoin={"round"}
-        rx="0"
-        ry="0"
-        {...props}
-      />
+      {iconsSet.has("SubProcessIcon") && (
+        <rect
+          x={x + (width / 2 - width / 3 / 2)}
+          y={y + (height - height / 3)}
+          strokeWidth={strokeWidth}
+          width={width / 3}
+          height={height / 3}
+          fill={"black"}
+          stroke={"black"}
+          strokeLinejoin={"round"}
+          rx="0"
+          ry="0"
+          {...props}
+        />
+      )}
+      {iconsSet.has(ActivityNodeMarker.Loop) && (
+        <text fontSize="2em" textAnchor={"middle"} dominantBaseline={"auto"} x={x + width / 2} y={y + height}>
+          ↻
+        </text>
+      )}
+      {iconsSet.has(ActivityNodeMarker.Compensation) && (
+        <text fontSize="2em" textAnchor={"middle"} dominantBaseline={"auto"} x={x + width / 2} y={y + height}>
+          ⏪
+        </text>
+      )}
+      {iconsSet.has(ActivityNodeMarker.Collapsed) && (
+        <text fontSize="2em" textAnchor={"middle"} dominantBaseline={"auto"} x={x + width / 2} y={y + height}>
+          +
+        </text>
+      )}
+      {iconsSet.has(ActivityNodeMarker.MultiInstanceParallel) && (
+        <text fontSize="2em" textAnchor={"middle"} dominantBaseline={"auto"} x={x + width / 2} y={y + height}>
+          ≣
+        </text>
+      )}
+      {iconsSet.has(ActivityNodeMarker.MultiInstanceSequential) && (
+        <text fontSize="2em" textAnchor={"middle"} dominantBaseline={"auto"} x={x + width / 2} y={y + height}>
+          |||
+        </text>
+      )}
     </>
   );
 }
