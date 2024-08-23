@@ -272,7 +272,6 @@ export const BPMN_OUTGOING_STRUCTURE = {
       NODE_TYPES.gateway,
       NODE_TYPES.intermediateCatchEvent,
       NODE_TYPES.intermediateThrowEvent,
-      NODE_TYPES.endEvent,
       NODE_TYPES.textAnnotation,
     ],
     edges: [EDGE_TYPES.sequenceFlow, EDGE_TYPES.association],

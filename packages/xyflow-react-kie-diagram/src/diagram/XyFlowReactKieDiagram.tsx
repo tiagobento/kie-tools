@@ -32,6 +32,7 @@ import { SelectionStatusLabel } from "./SelectionStatusLabel";
 import { XyFlowDiagramState, XyFlowReactKieDiagramEdgeData, XyFlowReactKieDiagramNodeData } from "../store/State";
 import { Draft } from "immer";
 import { PositionalNodeHandleId } from "../nodes/PositionalNodeHandles";
+import { WaypointActionsContextProvider, WaypointActionsContextType } from "../waypoints/WaypointActionsContext";
 
 // nodes
 
@@ -151,9 +152,9 @@ export type OnEdgeDeleted<
 
 // waypoints
 
-export type OnWaypointAdded = () => void;
-export type OnWaypointRepositioned = () => void;
-export type OnWaypointDeleted = () => void;
+export type OnWaypointAdded = (args: { beforeIndex: number; waypoint: DC__Point; edgeIndex: number }) => void;
+export type OnWaypointDeleted = (args: { edgeIndex: number; waypointIndex: number }) => void;
+export type OnWaypointRepositioned = (args: { edgeIndex: number; waypointIndex: number; waypoint: DC__Point }) => void;
 
 // misc
 
@@ -259,6 +260,9 @@ export function XyFlowReactKieDiagram<
   onEdgeAdded,
   onEdgeUpdated,
   onEdgeDeleted,
+  onWaypointAdded,
+  onWaypointDeleted,
+  onWaypointRepositioned,
   onEscPressed,
 }: Props<S, N, E, NData, EData>) {
   // Contexts
@@ -828,62 +832,73 @@ export function XyFlowReactKieDiagram<
   const nodes = useXyFlowReactKieDiagramStore((s) => s.computed(s).getDiagramData().nodes);
   const edges = useXyFlowReactKieDiagramStore((s) => s.computed(s).getDiagramData().edges);
 
+  const waypointActionsContextValue = useMemo<WaypointActionsContextType>(
+    () => ({
+      onWaypointAdded,
+      onWaypointDeleted,
+      onWaypointRepositioned,
+    }),
+    [onWaypointAdded, onWaypointDeleted, onWaypointRepositioned]
+  );
+
   return (
     <>
-      <RF.ReactFlow
-        connectionMode={RF.ConnectionMode.Loose} // Allow target handles to be used as source. This is very important for allowing the positional handles to be updated for the base of an edge.
-        onKeyDownCapture={handleRfKeyDownCapture} // Override Reactflow's keyboard listeners.
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onEdgeUpdateStart={onEdgeUpdateStart}
-        onEdgeUpdateEnd={onEdgeUpdateEnd}
-        onEdgeUpdate={onEdgeUpdate}
-        onlyRenderVisibleElements={true}
-        zoomOnDoubleClick={false}
-        elementsSelectable={true}
-        panOnScroll={true}
-        zoomOnScroll={false}
-        preventScrolling={true}
-        selectionOnDrag={true}
-        panOnDrag={PAN_ON_DRAG}
-        selectionMode={RF.SelectionMode.Full} // For selections happening inside Containment nodes it's better to leave it as "Full"
-        isValidConnection={isValidConnection}
-        connectionLineComponent={connectionLineComponent}
-        onConnect={onConnect}
-        onConnectStart={onConnectStart}
-        onConnectEnd={onConnectEnd}
-        // (begin)
-        // 'Starting to drag' and 'dragging' should have the same behavior. Otherwise,
-        // clicking a node and letting it go, without moving, won't work properly, and
-        // Nodes will be removed from Containment Nodes.
-        onNodeDragStart={onNodeDragStart}
-        onNodeDrag={onNodeDrag}
-        // (end)
-        onNodeDragStop={onNodeDragStop}
-        nodeTypes={nodeComponents}
-        edgeTypes={edgeComponents}
-        snapToGrid={true}
-        snapGrid={xyFlowSnapGrid}
-        defaultViewport={DEFAULT_VIEWPORT}
-        fitView={false}
-        fitViewOptions={FIT_VIEW_OPTIONS}
-        attributionPosition={"bottom-right"}
-        onInit={setReactFlowInstance}
-        deleteKeyCode={DELETE_NODE_KEY_CODES}
-        // (begin)
-        // Used to make the Palette work by dropping nodes on the Reactflow Canvas
-        onDrop={onDrop}
-        onDragOver={onDragOver}
-        // (end)
-      >
-        {children}
-        <SelectionStatusLabel />
-        {!isFirefox && <RF.Background />}
-        <RF.Controls fitViewOptions={FIT_VIEW_OPTIONS} position={"bottom-right"} />
-        <SetConnectionToReactFlowStore />
-      </RF.ReactFlow>
+      <WaypointActionsContextProvider value={waypointActionsContextValue}>
+        <RF.ReactFlow
+          connectionMode={RF.ConnectionMode.Loose} // Allow target handles to be used as source. This is very important for allowing the positional handles to be updated for the base of an edge.
+          onKeyDownCapture={handleRfKeyDownCapture} // Override Reactflow's keyboard listeners.
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onEdgeUpdateStart={onEdgeUpdateStart}
+          onEdgeUpdateEnd={onEdgeUpdateEnd}
+          onEdgeUpdate={onEdgeUpdate}
+          onlyRenderVisibleElements={true}
+          zoomOnDoubleClick={false}
+          elementsSelectable={true}
+          panOnScroll={true}
+          zoomOnScroll={false}
+          preventScrolling={true}
+          selectionOnDrag={true}
+          panOnDrag={PAN_ON_DRAG}
+          selectionMode={RF.SelectionMode.Full} // For selections happening inside Containment nodes it's better to leave it as "Full"
+          isValidConnection={isValidConnection}
+          connectionLineComponent={connectionLineComponent}
+          onConnect={onConnect}
+          onConnectStart={onConnectStart}
+          onConnectEnd={onConnectEnd}
+          // (begin)
+          // 'Starting to drag' and 'dragging' should have the same behavior. Otherwise,
+          // clicking a node and letting it go, without moving, won't work properly, and
+          // Nodes will be removed from Containment Nodes.
+          onNodeDragStart={onNodeDragStart}
+          onNodeDrag={onNodeDrag}
+          // (end)
+          onNodeDragStop={onNodeDragStop}
+          nodeTypes={nodeComponents}
+          edgeTypes={edgeComponents}
+          snapToGrid={true}
+          snapGrid={xyFlowSnapGrid}
+          defaultViewport={DEFAULT_VIEWPORT}
+          fitView={false}
+          fitViewOptions={FIT_VIEW_OPTIONS}
+          attributionPosition={"bottom-right"}
+          onInit={setReactFlowInstance}
+          deleteKeyCode={DELETE_NODE_KEY_CODES}
+          // (begin)
+          // Used to make the Palette work by dropping nodes on the Reactflow Canvas
+          onDrop={onDrop}
+          onDragOver={onDragOver}
+          // (end)
+        >
+          {children}
+          <SelectionStatusLabel />
+          {!isFirefox && <RF.Background />}
+          <RF.Controls fitViewOptions={FIT_VIEW_OPTIONS} position={"bottom-right"} />
+          <SetConnectionToReactFlowStore />
+        </RF.ReactFlow>
+      </WaypointActionsContextProvider>
     </>
   );
 }

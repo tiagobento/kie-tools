@@ -22,6 +22,7 @@ import { useState, useCallback, useMemo } from "react";
 import { snapPoint } from "../snapgrid/SnapGrid";
 import { DC__Point } from "../maths/model";
 import { useXyFlowReactKieDiagramStore } from "../store/Store";
+import { useWaypointsActions } from "./WaypointActionsContext";
 
 export function usePotentialWaypointControls(
   waypoints: DC__Point[],
@@ -31,6 +32,8 @@ export function usePotentialWaypointControls(
   interactionPathRef: React.RefObject<SVGPathElement>
 ) {
   const reactFlowInstance = RF.useReactFlow();
+
+  const { onWaypointAdded } = useWaypointsActions();
 
   const snapGrid = useXyFlowReactKieDiagramStore((s) => s.xyFlowReactKieDiagram.snapGrid);
   const isDraggingWaypoint = useXyFlowReactKieDiagramStore(
@@ -50,6 +53,10 @@ export function usePotentialWaypointControls(
 
   const onMouseMove = useCallback(
     (e: React.MouseEvent) => {
+      if (!e.clientX || !e.clientY) {
+        return;
+      }
+
       const projectedPoint = reactFlowInstance.screenToFlowPosition({
         x: e.clientX,
         y: e.clientY,
@@ -94,9 +101,12 @@ export function usePotentialWaypointControls(
     }
 
     console.log("XYFLOW-DIAGRAM: Waypoint added");
-    // FIXME: Tiago: Mutation (add waypoint)
-    // addEdgeWaypoint({(
-  }, [edgeIndex, isExistingWaypoint, potentialWaypoint, snappedPotentialWaypoint, waypoints]);
+    onWaypointAdded({
+      beforeIndex: i - 1,
+      edgeIndex,
+      waypoint: snappedPotentialWaypoint,
+    });
+  }, [edgeIndex, isExistingWaypoint, onWaypointAdded, potentialWaypoint, snappedPotentialWaypoint, waypoints]);
 
   const shouldReturnPotentialWaypoint =
     isEdgeSelected &&
@@ -117,6 +127,7 @@ function approximateClosestPoint(
   pathNode: SVGPathElement,
   point: [number, number]
 ): { point: DOMPoint; lengthInPath: number } {
+  console.log(pathNode, point);
   const pathLength = pathNode.getTotalLength();
   let precision = Math.floor(pathLength / 10);
   let best: DOMPoint;

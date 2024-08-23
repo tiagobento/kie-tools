@@ -22,8 +22,10 @@ import { select } from "d3-selection";
 import { DC__Point } from "../maths/model";
 import * as React from "react";
 import { useEffect } from "react";
-import { useXyFlowReactKieDiagramStoreApi } from "../store/Store";
+import { useXyFlowReactKieDiagramStore, useXyFlowReactKieDiagramStoreApi } from "../store/Store";
 import "./Waypoints.css";
+import { useWaypointsActions } from "./WaypointActionsContext";
+import { snapPoint } from "../snapgrid/SnapGrid";
 
 export function PotentialWaypoint(props: { point: { x: number; y: number } }) {
   return (
@@ -75,6 +77,10 @@ export function Waypoint({
 
   const xyFlowReactKieDiagramStoreApi = useXyFlowReactKieDiagramStoreApi();
 
+  const { onWaypointDeleted, onWaypointRepositioned } = useWaypointsActions();
+
+  const snapGrid = useXyFlowReactKieDiagramStore((s) => s.xyFlowReactKieDiagram.snapGrid);
+
   useEffect(() => {
     if (!circleRef.current) {
       return;
@@ -89,8 +95,11 @@ export function Waypoint({
       })
       .on("drag", (e) => {
         console.log("XYFLOW-DIAGRAM: Waypoint repositioned");
-        // FIXME: Tiago: Mutation (move waypoint)
-        // repositionEdgeWaypoint({(
+        onWaypointRepositioned({
+          edgeIndex,
+          waypointIndex: index,
+          waypoint: snapPoint(snapGrid, { "@_x": e.x, "@_y": e.y }),
+        });
       })
       .on("end", (e) => {
         onDragStop(e);
@@ -103,7 +112,7 @@ export function Waypoint({
     return () => {
       selection.on(".drag", null);
     };
-  }, [edgeId, edgeIndex, index, onDragStop, xyFlowReactKieDiagramStoreApi]);
+  }, [edgeId, edgeIndex, index, onDragStop, onWaypointRepositioned, snapGrid, xyFlowReactKieDiagramStoreApi]);
 
   return (
     <circle
@@ -118,8 +127,10 @@ export function Waypoint({
         e.stopPropagation();
 
         console.log("XYFLOW-DIAGRAM: Waypoint deleted");
-        // FIXME: Tiago: Mutation (remove waypoint)
-        // removeEdgeWaypoint({(
+        onWaypointDeleted({
+          edgeIndex,
+          waypointIndex: index,
+        });
       }}
     />
   );
