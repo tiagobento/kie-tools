@@ -17,7 +17,6 @@
  * under the License.
  */
 
-import { BPMN20__tProcess, BPMNDI__BPMNShape } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
 import {
   DiagramRef,
   OnConnectedNodeAdded,
@@ -38,10 +37,20 @@ import {
 } from "@kie-tools/xyflow-react-kie-diagram/dist/diagram/XyFlowReactKieDiagram";
 import { ConnectionLine as ReactFlowDiagramConnectionLine } from "@kie-tools/xyflow-react-kie-diagram/dist/edges/ConnectionLine";
 import { EdgeMarkers } from "@kie-tools/xyflow-react-kie-diagram/dist/edges/EdgeMarkers";
+import { getHandlePosition } from "@kie-tools/xyflow-react-kie-diagram/dist/maths/DcMaths";
+import { PositionalNodeHandleId } from "@kie-tools/xyflow-react-kie-diagram/dist/nodes/PositionalNodeHandles";
 import * as React from "react";
 import { useCallback, useState } from "react";
 import * as RF from "reactflow";
 import { useBpmnEditor } from "../BpmnEditorContext";
+import { addConnectedNode } from "../mutations/addConnectedNode";
+import { addEdge } from "../mutations/addEdge";
+import { addStandaloneNode } from "../mutations/addStandaloneNode";
+import { deleteEdge } from "../mutations/deleteEdge";
+import { deleteNode } from "../mutations/deleteNode";
+import { nodeNatures } from "../mutations/NodeNature";
+import { repositionNode } from "../mutations/repositionNode";
+import { resizeNode } from "../mutations/resizeNode";
 import { normalize } from "../normalization/normalize";
 import { BpmnDiagramLhsPanel, State } from "../store/Store";
 import { useBpmnEditorStore, useBpmnEditorStoreApi } from "../store/StoreContext";
@@ -65,16 +74,9 @@ import { BpmnDiagramEmptyState } from "./BpmnDiagramEmptyState";
 import { TopRightCornerPanels } from "./BpmnDiagramTopRightPanels";
 import { BpmnPalette, MIME_TYPE_FOR_BPMN_EDITOR_NEW_NODE_FROM_PALETTE } from "./BpmnPalette";
 import { DiagramContainerContextProvider } from "./DiagramContainerContext";
-import { repositionNode } from "../mutations/repositionNode";
-import { deleteNode } from "../mutations/deleteNode";
-import { nodeNatures } from "../mutations/NodeNature";
-import { addConnectedNode } from "../mutations/addConnectedNode";
-import { addEdge } from "../mutations/addEdge";
-import { PositionalNodeHandleId } from "@kie-tools/xyflow-react-kie-diagram/dist/nodes/PositionalNodeHandles";
-import { getHandlePosition } from "@kie-tools/xyflow-react-kie-diagram/dist/maths/DcMaths";
-import { deleteEdge } from "../mutations/deleteEdge";
-import { addStandaloneNode } from "../mutations/addStandaloneNode";
-import { resizeNode } from "../mutations/resizeNode";
+import { repositionEdgeWaypoint } from "../mutations/repositionEdgeWaypoint";
+import { addEdgeWaypoint } from "../mutations/addEdgeWaypoint";
+import { deleteEdgeWaypoint } from "../mutations/deleteEdgeWaypoint";
 
 export function BpmnDiagram({
   container,
@@ -337,17 +339,49 @@ export function BpmnDiagram({
 
   // waypoints
 
-  const onWaypointAdded = useCallback<OnWaypointAdded>(() => {
-    console.log("BPMN EDITOR DIAGRAM: onWaypointAdded");
-  }, []);
+  const onWaypointAdded = useCallback<OnWaypointAdded>(
+    ({ beforeIndex, edgeIndex, waypoint }) => {
+      console.log("BPMN EDITOR DIAGRAM: onWaypointAdded");
+      bpmnEditorStoreApi.setState((s) => {
+        addEdgeWaypoint({
+          definitions: s.bpmn.model.definitions,
+          __readonly_edgeIndex: edgeIndex,
+          __readonly_beforeIndex: beforeIndex,
+          __readonly_waypoint: waypoint,
+        });
+      });
+    },
+    [bpmnEditorStoreApi]
+  );
 
-  const onWaypointRepositioned = useCallback<OnWaypointRepositioned>(() => {
-    console.log("BPMN EDITOR DIAGRAM: onWaypointRepositioned");
-  }, []);
+  const onWaypointRepositioned = useCallback<OnWaypointRepositioned>(
+    ({ waypointIndex, edgeIndex, waypoint }) => {
+      console.log("BPMN EDITOR DIAGRAM: onWaypointRepositioned");
+      bpmnEditorStoreApi.setState((s) => {
+        repositionEdgeWaypoint({
+          definitions: s.bpmn.model.definitions,
+          __readonly_edgeIndex: edgeIndex,
+          __readonly_waypoint: waypoint,
+          __readonly_waypointIndex: waypointIndex,
+        });
+      });
+    },
+    [bpmnEditorStoreApi]
+  );
 
-  const onWaypointDeleted = useCallback<OnWaypointDeleted>(() => {
-    console.log("BPMN EDITOR DIAGRAM: onWaypointDeleted");
-  }, []);
+  const onWaypointDeleted = useCallback<OnWaypointDeleted>(
+    ({ waypointIndex, edgeIndex }) => {
+      console.log("BPMN EDITOR DIAGRAM: onWaypointDeleted");
+      bpmnEditorStoreApi.setState((s) => {
+        deleteEdgeWaypoint({
+          definitions: s.bpmn.model.definitions,
+          __readonly_edgeIndex: edgeIndex,
+          __readonly_waypointIndex: waypointIndex,
+        });
+      });
+    },
+    [bpmnEditorStoreApi]
+  );
 
   // misc
 

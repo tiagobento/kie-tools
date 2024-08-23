@@ -18,10 +18,10 @@
  */
 
 import { useEdgeClassName } from "@kie-tools/xyflow-react-kie-diagram/dist/edges/Hooks";
-import { PotentialWaypoint, Waypoints } from "@kie-tools/xyflow-react-kie-diagram/dist/edges/Waypoints";
+import { PotentialWaypoint, Waypoints } from "@kie-tools/xyflow-react-kie-diagram/dist/waypoints/Waypoints";
 import { useAlwaysVisibleEdgeUpdatersAtNodeBorders } from "@kie-tools/xyflow-react-kie-diagram/dist/edges/useAlwaysVisibleEdgeUpdatersAtNodeBorders";
 import { usePathForEdgeWithWaypoints } from "@kie-tools/xyflow-react-kie-diagram/dist/edges/usePathForEdgeWithWaypoints";
-import { usePotentialWaypointControls } from "@kie-tools/xyflow-react-kie-diagram/dist/edges/usePotentialWaypointControls";
+import { usePotentialWaypointControls } from "@kie-tools/xyflow-react-kie-diagram/dist/waypoints/usePotentialWaypointControls";
 import { DEFAULT_INTRACTION_WIDTH } from "@kie-tools/xyflow-react-kie-diagram/dist/maths/DcMaths";
 import { propsHaveSameValuesDeep } from "@kie-tools/xyflow-react-kie-diagram/dist/memoization/memoization";
 import { useIsHovered } from "@kie-tools/xyflow-react-kie-diagram/dist/reactExt/useIsHovered";
