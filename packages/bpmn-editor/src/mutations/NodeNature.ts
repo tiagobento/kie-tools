@@ -33,7 +33,7 @@ export const nodeNatures: Record<BpmnNodeType, NodeNature> = {
   [NODE_TYPES.lane]: NodeNature.LANE,
 
   // CONTAINER
-  [NODE_TYPES.transaction]: NodeNature.CONTAINER,
+  [NODE_TYPES.subProcess]: NodeNature.CONTAINER,
 
   // PROCESS_FLOW_ELELEMENT
   [NODE_TYPES.startEvent]: NodeNature.PROCESS_FLOW_ELEMENT,
@@ -41,7 +41,6 @@ export const nodeNatures: Record<BpmnNodeType, NodeNature> = {
   [NODE_TYPES.intermediateThrowEvent]: NodeNature.PROCESS_FLOW_ELEMENT,
   [NODE_TYPES.endEvent]: NodeNature.PROCESS_FLOW_ELEMENT,
   [NODE_TYPES.task]: NodeNature.PROCESS_FLOW_ELEMENT,
-  [NODE_TYPES.subProcess]: NodeNature.PROCESS_FLOW_ELEMENT,
   [NODE_TYPES.gateway]: NodeNature.PROCESS_FLOW_ELEMENT,
   [NODE_TYPES.dataObject]: NodeNature.PROCESS_FLOW_ELEMENT,
   // [NODE_TYPES.custom]: NodeNature.PROCESS_FLOW_ELEMENT,

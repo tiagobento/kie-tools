@@ -41,7 +41,7 @@ export type OnNodeAdded<
   N extends string,
   NData extends XyFlowReactKieDiagramNodeData<N, NData>,
   EData extends XyFlowReactKieDiagramEdgeData,
-> = (args: { state: Draft<S>; type: N; dropPoint: { x: number; y: number } }) => { newNodeId: string };
+> = (args: { state: Draft<S>; type: N; element: string; dropPoint: { x: number; y: number } }) => { newNodeId: string };
 
 export type OnConnectedNodeAdded<
   S extends XyFlowDiagramState<S, N, NData, EData>,
@@ -367,7 +367,10 @@ export function XyFlowReactKieDiagram<
         y: e.clientY,
       });
       if (e.dataTransfer.getData(newNodeMimeType)) {
-        const typeOfNode = e.dataTransfer.getData(newNodeMimeType) as N;
+        const { nodeType, element } = JSON.parse(e.dataTransfer.getData(newNodeMimeType)) as {
+          nodeType: N;
+          element: string;
+        };
         e.stopPropagation();
 
         // --------- This is where we draw the line between the diagram and the model.
@@ -376,7 +379,8 @@ export function XyFlowReactKieDiagram<
           const { newNodeId } = onNodeAdded({
             state,
             dropPoint,
-            type: typeOfNode,
+            type: nodeType,
+            element,
           });
           state.xyFlowReactKieDiagram._selectedNodes = [newNodeId];
         });

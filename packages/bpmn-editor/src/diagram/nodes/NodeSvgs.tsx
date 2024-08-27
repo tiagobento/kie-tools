@@ -22,6 +22,7 @@ import { DEFAULT_INTRACTION_WIDTH } from "@kie-tools/xyflow-react-kie-diagram/di
 import { DEFAULT_NODE_FILL, DEFAULT_NODE_STROKE_COLOR } from "./NodeStyle";
 import {
   containerNodeInteractionRectCssClassName,
+  DEFAULT_NODE_STROKE_WIDTH,
   NodeSvgProps,
   normalize,
 } from "@kie-tools/xyflow-react-kie-diagram/dist/nodes/NodeSvgs";
@@ -118,7 +119,7 @@ export function StartEventNodeSvg(__props: NodeSvgProps & { variant: EventVarian
       <EventVariantSymbolSvg
         variant={variant}
         fill={true}
-        stroke={"#e6a000"}
+        stroke={"#4aa241"}
         x={x}
         y={y}
         cx={cx}
@@ -296,15 +297,19 @@ export function EndEventNodeSvg(__props: NodeSvgProps & { variant: EventVariant 
   );
 }
 
-export function TaskNodeSvg(__props: NodeSvgProps) {
+export function TaskNodeSvg(__props: NodeSvgProps & { icons?: (ActivityNodeMarker | "CallActivityPaletteIcon")[] }) {
   const {
     x,
     y,
     width,
     height,
     strokeWidth,
-    props: { ...props },
+    props: { ..._props },
   } = normalize(__props);
+
+  const { icons: _icons, ...props } = { ..._props };
+
+  const icons = useMemo(() => new Set(_icons), [_icons]);
 
   return (
     <>
@@ -321,40 +326,7 @@ export function TaskNodeSvg(__props: NodeSvgProps) {
         ry="3"
         {...props}
       />
-    </>
-  );
-}
-
-export function SubProcessNodeSvg(__props: NodeSvgProps & { icons?: (ActivityNodeMarker | "SubProcessIcon")[] }) {
-  const {
-    x,
-    y,
-    width,
-    height,
-    strokeWidth,
-    props: { ..._props },
-  } = normalize(__props);
-
-  const { icons, ...props } = { ..._props };
-
-  const iconsSet = useMemo(() => new Set(icons), [icons]);
-
-  return (
-    <>
-      <rect
-        x={x}
-        y={y}
-        strokeWidth={strokeWidth}
-        width={width}
-        height={height}
-        fill={DEFAULT_NODE_FILL}
-        stroke={DEFAULT_NODE_STROKE_COLOR}
-        strokeLinejoin={"round"}
-        rx="5"
-        ry="5"
-        {...props}
-      />
-      {iconsSet.has("SubProcessIcon") && (
+      {icons.has("CallActivityPaletteIcon") && (
         <rect
           x={x + (width / 2 - width / 3 / 2)}
           y={y + (height - height / 3)}
@@ -369,31 +341,7 @@ export function SubProcessNodeSvg(__props: NodeSvgProps & { icons?: (ActivityNod
           {...props}
         />
       )}
-      {iconsSet.has(ActivityNodeMarker.Loop) && (
-        <text fontSize="2em" textAnchor={"middle"} dominantBaseline={"auto"} x={x + width / 2} y={y + height}>
-          ↻
-        </text>
-      )}
-      {iconsSet.has(ActivityNodeMarker.Compensation) && (
-        <text fontSize="2em" textAnchor={"middle"} dominantBaseline={"auto"} x={x + width / 2} y={y + height}>
-          ⏪
-        </text>
-      )}
-      {iconsSet.has(ActivityNodeMarker.Collapsed) && (
-        <text fontSize="2em" textAnchor={"middle"} dominantBaseline={"auto"} x={x + width / 2} y={y + height}>
-          +
-        </text>
-      )}
-      {iconsSet.has(ActivityNodeMarker.MultiInstanceParallel) && (
-        <text fontSize="2em" textAnchor={"middle"} dominantBaseline={"auto"} x={x + width / 2} y={y + height}>
-          ≣
-        </text>
-      )}
-      {iconsSet.has(ActivityNodeMarker.MultiInstanceSequential) && (
-        <text fontSize="2em" textAnchor={"middle"} dominantBaseline={"auto"} x={x + width / 2} y={y + height}>
-          |||
-        </text>
-      )}
+      <ActivityNodeIcons x={x} y={y} width={width} height={height} icons={icons as Set<ActivityNodeMarker>} />
     </>
   );
 }
@@ -554,11 +502,16 @@ export const LaneNodeSvg = React.forwardRef<SVGRectElement, NodeSvgProps & { gut
   );
 });
 
-export const TransactionNodeSvg = React.forwardRef<
+export const SubProcessNodeSvg = React.forwardRef<
   SVGRectElement,
-  NodeSvgProps & { borderRadius?: number; rimWidth?: number }
+  NodeSvgProps & {
+    borderRadius?: number;
+    rimWidth?: number;
+    icons?: ActivityNodeMarker[];
+    type?: "transaction" | "event" | "other";
+  }
 >((__props, ref) => {
-  const { rimWidth: _rimWidth, borderRadius: _borderRadius, ..._props } = { ...__props };
+  const { rimWidth: _rimWidth, borderRadius: _borderRadius, icons: _icons, type: _type, ..._props } = { ...__props };
   const { x, y, width, height, strokeWidth, props } = normalize(_props);
 
   const {
@@ -572,25 +525,29 @@ export const TransactionNodeSvg = React.forwardRef<
 
   const { ...interactionRectProps } = _interactionRectProps;
 
-  const rimWidth = _rimWidth ?? 5;
-  const borderRadius = _borderRadius ?? 10;
+  const icons = useMemo(() => new Set(_icons), [_icons]);
+  const type = _type ?? "other";
+  const rimWidth = type === "transaction" ? _rimWidth ?? 5 : 0;
+  const borderRadius = type === "transaction" ? _borderRadius ?? 10 : 2;
 
   return (
     <>
-      <rect
-        {...props}
-        x={x + rimWidth}
-        y={y + rimWidth}
-        width={width - rimWidth * 2}
-        height={height - rimWidth * 2}
-        strokeWidth={strokeWidth}
-        fill={"transparent"}
-        stroke={DEFAULT_NODE_STROKE_COLOR}
-        strokeLinejoin={"round"}
-        rx={borderRadius - rimWidth}
-        ry={borderRadius - rimWidth}
-        className={containerNodeVisibleRectCssClassName}
-      />
+      {type === "transaction" && (
+        <rect
+          {...props}
+          x={x + rimWidth}
+          y={y + rimWidth}
+          width={width - rimWidth * 2}
+          height={height - rimWidth * 2}
+          strokeWidth={strokeWidth}
+          fill={"transparent"}
+          stroke={DEFAULT_NODE_STROKE_COLOR}
+          strokeLinejoin={"round"}
+          rx={borderRadius - rimWidth}
+          ry={borderRadius - rimWidth}
+          className={containerNodeVisibleRectCssClassName}
+        />
+      )}
       <rect
         {...props}
         x={x}
@@ -600,6 +557,7 @@ export const TransactionNodeSvg = React.forwardRef<
         strokeWidth={strokeWidth}
         fill={"transparent"}
         stroke={DEFAULT_NODE_STROKE_COLOR}
+        strokeDasharray={type === "event" ? "10,5" : undefined}
         strokeLinejoin={"round"}
         rx={borderRadius}
         ry={borderRadius}
@@ -621,6 +579,7 @@ export const TransactionNodeSvg = React.forwardRef<
         ry={"0"}
         className={containerNodeInteractionRectCssClassName}
       />
+      <ActivityNodeIcons x={x} y={y} width={width} height={height} icons={icons} />
     </>
   );
 });
@@ -754,14 +713,70 @@ export function EventVariantSymbolSvg({
 }) {
   return (
     <>
-      {variant === "messageEventDefinition" && <></>}
-      {variant === "timerEventDefinition" && <></>}
-      {variant === "errorEventDefinition" && <></>}
-      {variant === "escalationEventDefinition" && <></>}
-      {variant === "cancelEventDefinition" && <></>}
-      {variant === "compensateEventDefinition" && <></>}
-      {variant === "conditionalEventDefinition" && <></>}
-      {variant === "linkEventDefinition" && <></>}
+      {/* FIXME: Tiago: tmp icon */}
+      {variant === "messageEventDefinition" && (
+        <>
+          <text transform={`translate(${cx},${cy})`} textAnchor="middle" dominantBaseline={"middle"}>
+            ✉️
+          </text>
+        </>
+      )}
+      {/* FIXME: Tiago: tmp icon */}
+      {variant === "timerEventDefinition" && (
+        <>
+          <text transform={`translate(${cx},${cy})`} textAnchor="middle" dominantBaseline={"middle"}>
+            🕑
+          </text>
+        </>
+      )}
+      {/* FIXME: Tiago: tmp icon */}
+      {variant === "errorEventDefinition" && (
+        <>
+          <text transform={`translate(${cx},${cy})`} textAnchor="middle" dominantBaseline={"middle"}>
+            ⚡️
+          </text>
+        </>
+      )}
+      {/* FIXME: Tiago: tmp icon */}
+      {variant === "escalationEventDefinition" && (
+        <>
+          <text transform={`translate(${cx},${cy})`} textAnchor="middle" dominantBaseline={"middle"}>
+            ♦︎
+          </text>
+        </>
+      )}
+      {/* FIXME: Tiago: tmp icon */}
+      {variant === "cancelEventDefinition" && (
+        <>
+          <text transform={`translate(${cx},${cy})`} textAnchor="middle" dominantBaseline={"middle"}>
+            ❌
+          </text>
+        </>
+      )}
+      {/* FIXME: Tiago: tmp icon */}
+      {variant === "compensateEventDefinition" && (
+        <>
+          <text transform={`translate(${cx},${cy})`} textAnchor="middle" dominantBaseline={"middle"}>
+            ⏪
+          </text>
+        </>
+      )}
+      {/* FIXME: Tiago: tmp icon */}
+      {variant === "conditionalEventDefinition" && (
+        <>
+          <text transform={`translate(${cx},${cy})`} textAnchor="middle" dominantBaseline={"middle"}>
+            ≣
+          </text>
+        </>
+      )}
+      {/* FIXME: Tiago: tmp icon */}
+      {variant === "linkEventDefinition" && (
+        <>
+          <text transform={`translate(${cx},${cy})`} textAnchor="middle" dominantBaseline={"middle"}>
+            ⇨
+          </text>
+        </>
+      )}
       {variant === "signalEventDefinition" && (
         <SignalEventSymbolSvg
           fill={fill}
@@ -831,6 +846,102 @@ export function SignalEventSymbolSvg({
         fill={fill ? stroke : "transparent"}
         stroke={stroke}
       />
+    </>
+  );
+}
+
+export function ActivityNodeIcons({
+  x,
+  y,
+  width,
+  height,
+  icons,
+}: {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  icons: Set<ActivityNodeMarker>;
+}) {
+  return (
+    <>
+      {icons.has(ActivityNodeMarker.Loop) && (
+        <text
+          fontSize="2em"
+          textAnchor={"middle"}
+          dominantBaseline={"auto"}
+          fontWeight={"bold"}
+          transform={`translate(${x + width / 2}, ${y + height - 5}) rotate(0)`}
+        >
+          ↻
+        </text>
+      )}
+      {icons.has(ActivityNodeMarker.AdHocSubProcess) && (
+        <text
+          fontSize="2em"
+          textAnchor={"middle"}
+          dominantBaseline={"auto"}
+          fontWeight={"bold"}
+          transform={`translate(${x + width / 2}, ${y + height - 5}) rotate(0)`}
+        >
+          ~
+        </text>
+      )}
+      {icons.has(ActivityNodeMarker.Compensation) && (
+        <text
+          fontSize="2em"
+          textAnchor={"middle"}
+          dominantBaseline={"auto"}
+          transform={`translate(${x + width / 2}, ${y + height - 5}) rotate(0)`}
+        >
+          ⏪
+        </text>
+      )}
+      {icons.has(ActivityNodeMarker.Collapsed) && (
+        <>
+          <rect
+            x={x + width / 2 - 15}
+            y={y + height - 20 - DEFAULT_NODE_STROKE_WIDTH}
+            width={30}
+            height={20}
+            fill={"transparent"}
+            stroke={DEFAULT_NODE_STROKE_COLOR}
+            strokeWidth={DEFAULT_NODE_STROKE_WIDTH}
+          />
+          <text
+            fontSize="2em"
+            textAnchor={"middle"}
+            dominantBaseline={"auto"}
+            fontWeight={"bold"}
+            x={x + width / 2}
+            y={1 + y + height}
+          >
+            +
+          </text>
+        </>
+      )}
+      {icons.has(ActivityNodeMarker.MultiInstanceParallel) && (
+        <text
+          fontSize="2em"
+          textAnchor={"middle"}
+          dominantBaseline={"auto"}
+          fontWeight={"bold"}
+          transform={`translate(${x + width / 2 - 7}, ${y + height - 15}) rotate(90)`}
+        >
+          ☰
+        </text>
+      )}
+      {icons.has(ActivityNodeMarker.MultiInstanceSequential) && (
+        <text
+          fontSize="2em"
+          textAnchor={"middle"}
+          dominantBaseline={"auto"}
+          fontWeight={"bold"}
+          transform={`translate(${x + width / 2}, ${y + height - 5}) rotate(0)`}
+        >
+          ☰
+        </text>
+      )}
     </>
   );
 }

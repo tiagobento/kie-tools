@@ -27,10 +27,9 @@ import {
   IntermediateThrowEventNodeSvg,
   LaneNodeSvg,
   StartEventNodeSvg,
-  SubProcessNodeSvg,
   TaskNodeSvg,
   TextAnnotationNodeSvg,
-  TransactionNodeSvg,
+  SubProcessNodeSvg,
 } from "./NodeSvgs";
 import { switchExpression } from "@kie-tools-core/switch-expression-ts";
 import { BpmnNodeType } from "../BpmnDiagramDomain";
@@ -89,10 +88,10 @@ export function TaskIcon() {
   );
 }
 
-export function SubProcessIcon() {
+export function CallActivityIcon() {
   return (
     <RoundSvg>
-      <SubProcessNodeSvg {...nodeSvgProps} icons={["SubProcessIcon"]} />
+      <TaskNodeSvg {...nodeSvgProps} icons={["CallActivityPaletteIcon"]} />
     </RoundSvg>
   );
 }
@@ -113,10 +112,10 @@ export function LaneIcon() {
   );
 }
 
-export function TransactionIcon() {
+export function SubProcessIcon() {
   return (
     <RoundSvg>
-      <TransactionNodeSvg {...nodeSvgProps} strokeWidth={10} rimWidth={20} borderRadius={20} />
+      <SubProcessNodeSvg {...nodeSvgProps} strokeWidth={10} rimWidth={20} borderRadius={20} type={"transaction"} />
     </RoundSvg>
   );
 }

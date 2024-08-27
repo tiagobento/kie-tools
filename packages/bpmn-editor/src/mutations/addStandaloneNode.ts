@@ -21,16 +21,18 @@ import { switchExpression } from "@kie-tools-core/switch-expression-ts";
 import { generateUuid } from "@kie-tools/xyflow-react-kie-diagram/dist/uuid/uuid";
 import { Normalized } from "../normalization/normalize";
 import { BPMN20__tDefinitions } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
-import { BpmnNodeType, NODE_TYPES } from "../diagram/BpmnDiagramDomain";
+import { BpmnNodeType, elementToNodeType, NODE_TYPES } from "../diagram/BpmnDiagramDomain";
 import { DC__Bounds } from "@kie-tools/xyflow-react-kie-diagram/dist/maths/model";
 import { NodeNature, nodeNatures } from "./NodeNature";
 import { addOrGetProcessAndDiagramElements } from "./addOrGetProcessAndDiagramElements";
 
 export function addStandaloneNode({
   definitions,
-  __readonly_newNode: __readonly_newNode,
+  __readonly_element,
+  __readonly_newNode,
 }: {
   definitions: Normalized<BPMN20__tDefinitions>;
+  __readonly_element: keyof typeof elementToNodeType;
   __readonly_newNode: { type: BpmnNodeType; bounds: DC__Bounds };
 }) {
   const newBpmnElementId = generateUuid();
@@ -44,14 +46,21 @@ export function addStandaloneNode({
       switchExpression(
         __readonly_newNode.type as Exclude<
           BpmnNodeType,
-          "node_group" | "node_textAnnotation" | "node_unknown" | "node_lane" | "node_transaction"
+          "node_group" | "node_textAnnotation" | "node_unknown" | "node_lane" | "node_subProcess"
         >,
         {
-          [NODE_TYPES.task]: {
-            "@_id": newBpmnElementId,
-            "@_name": "New Task",
-            __$$element: "task",
-          },
+          [NODE_TYPES.task]:
+            __readonly_element === "callActivity"
+              ? {
+                  "@_id": newBpmnElementId,
+                  "@_name": "New sub-process",
+                  __$$element: "callActivity",
+                }
+              : {
+                  "@_id": newBpmnElementId,
+                  "@_name": "New task",
+                  __$$element: "task",
+                },
           [NODE_TYPES.startEvent]: {
             "@_id": newBpmnElementId,
             __$$element: "startEvent",
@@ -67,11 +76,6 @@ export function addStandaloneNode({
           [NODE_TYPES.endEvent]: {
             "@_id": newBpmnElementId,
             __$$element: "endEvent",
-          },
-          [NODE_TYPES.subProcess]: {
-            "@_id": newBpmnElementId,
-            "@_name": "New Sub-Process",
-            __$$element: "subProcess",
           },
           [NODE_TYPES.gateway]: {
             "@_id": newBpmnElementId,
@@ -107,10 +111,19 @@ export function addStandaloneNode({
     );
   } else if (nature === NodeNature.CONTAINER) {
     process.flowElement ??= [];
-    process.flowElement.push({
-      __$$element: "transaction",
-      "@_id": newBpmnElementId,
-    });
+    process.flowElement.push(
+      __readonly_element === "transaction"
+        ? {
+            "@_id": newBpmnElementId,
+            "@_name": "New transaction",
+            __$$element: "transaction",
+          }
+        : {
+            "@_id": newBpmnElementId,
+            "@_name": "New sub-process",
+            __$$element: "subProcess",
+          }
+    );
   } else if (nature === NodeNature.LANE) {
     process.laneSet ??= [{ "@_id": generateUuid() }];
     process.laneSet[0].lane ??= [];

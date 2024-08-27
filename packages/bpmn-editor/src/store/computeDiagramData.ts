@@ -22,6 +22,7 @@ import { snapShapeDimensions } from "@kie-tools/xyflow-react-kie-diagram/dist/sn
 import { XyFlowDiagramData } from "@kie-tools/xyflow-react-kie-diagram/dist/store/State";
 import * as RF from "reactflow";
 import {
+  BPMN_CONTAINMENT_MAP,
   BpmnDiagramEdgeData,
   BpmnDiagramNodeData,
   BpmnEdgeElement,
@@ -29,6 +30,8 @@ import {
   BpmnNodeElement,
   BpmnNodeType,
   EDGE_TYPES,
+  elementToEdgeType,
+  elementToNodeType,
   NODE_TYPES,
 } from "../diagram/BpmnDiagramDomain";
 import { MIN_NODE_SIZES } from "../diagram/BpmnDiagramDomain";
@@ -54,12 +57,12 @@ export function computeDiagramData(
       // nodes
       if (
         // activities
-        //     '->  sub-processes
+        // ->  sub-processes
         bpmnElement?.__$$element === "subProcess" ||
         bpmnElement?.__$$element === "adHocSubProcess" ||
         bpmnElement?.__$$element === "transaction" ||
         bpmnElement?.__$$element === "callActivity" || // a.k.a. reusable sub-process
-        //     '->  tasks
+        // ->  tasks
         bpmnElement?.__$$element === "businessRuleTask" ||
         bpmnElement?.__$$element === "scriptTask" ||
         bpmnElement?.__$$element === "serviceTask" ||
@@ -134,10 +137,7 @@ export function computeDiagramData(
           shapeIndex: i,
           parentXyFlowNode: undefined,
         },
-        className:
-          bpmnElement.__$$element === "lane" || bpmnElement.__$$element === "transaction"
-            ? "xyflow-react-kie-diagram--containerNode"
-            : "",
+        className: BPMN_CONTAINMENT_MAP.has(nodeType) ? "xyflow-react-kie-diagram--containerNode" : "",
         zIndex:
           bpmnElement.__$$element === "lane"
             ? NODE_LAYERS.GROUP_NODES
@@ -248,7 +248,7 @@ export function computeDiagramData(
   );
 
   const sortedNodes = [...nodes]
-    .sort((a, b) => Number(b.type === NODE_TYPES.transaction) - Number(a.type === NODE_TYPES.transaction))
+    .sort((a, b) => Number(b.type === NODE_TYPES.subProcess) - Number(a.type === NODE_TYPES.subProcess))
     .sort((a, b) => Number(b.type === NODE_TYPES.lane) - Number(a.type === NODE_TYPES.lane))
     .sort((a, b) => Number(b.type === NODE_TYPES.group) - Number(a.type === NODE_TYPES.group));
 
@@ -264,58 +264,3 @@ export function computeDiagramData(
     selectedEdgesById,
   };
 }
-
-export const elementToNodeType: Record<NonNullable<BpmnNodeElement>["__$$element"], BpmnNodeType> = {
-  // lane
-  lane: NODE_TYPES.lane,
-  // transaction
-  transaction: NODE_TYPES.transaction,
-  // start event
-  startEvent: NODE_TYPES.startEvent,
-  // intermediate events
-  boundaryEvent: NODE_TYPES.intermediateCatchEvent,
-  intermediateCatchEvent: NODE_TYPES.intermediateCatchEvent,
-  intermediateThrowEvent: NODE_TYPES.intermediateThrowEvent,
-  // tasks
-  businessRuleTask: NODE_TYPES.task,
-  task: NODE_TYPES.task,
-  userTask: NODE_TYPES.task,
-  manualTask: NODE_TYPES.task,
-  scriptTask: NODE_TYPES.task,
-  sendTask: NODE_TYPES.task,
-  receiveTask: NODE_TYPES.task,
-  serviceTask: NODE_TYPES.task,
-  // subprocess
-  subProcess: NODE_TYPES.subProcess,
-  adHocSubProcess: NODE_TYPES.subProcess,
-  // end event
-  endEvent: NODE_TYPES.endEvent,
-  // gateway
-  complexGateway: NODE_TYPES.gateway,
-  eventBasedGateway: NODE_TYPES.gateway,
-  exclusiveGateway: NODE_TYPES.gateway,
-  inclusiveGateway: NODE_TYPES.gateway,
-  parallelGateway: NODE_TYPES.gateway,
-  // misc
-  dataObject: NODE_TYPES.dataObject,
-  // artifacts
-  group: NODE_TYPES.group,
-  textAnnotation: NODE_TYPES.textAnnotation,
-  //
-  // unknown
-  //
-  callActivity: NODE_TYPES.unknown,
-  callChoreography: NODE_TYPES.unknown,
-  choreographyTask: NODE_TYPES.unknown,
-  event: NODE_TYPES.unknown,
-  implicitThrowEvent: NODE_TYPES.unknown,
-  subChoreography: NODE_TYPES.unknown,
-  // edges (ignore)
-  dataObjectReference: NODE_TYPES.unknown,
-  dataStoreReference: NODE_TYPES.unknown,
-};
-
-export const elementToEdgeType: Record<NonNullable<BpmnEdgeElement>["__$$element"], BpmnEdgeType> = {
-  association: EDGE_TYPES.association,
-  sequenceFlow: EDGE_TYPES.sequenceFlow,
-};

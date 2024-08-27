@@ -43,7 +43,6 @@ import {
   SubProcessNode,
   TaskNode,
   TextAnnotationNode,
-  TransactionNode,
   UnknownNode,
 } from "./nodes/Nodes";
 import {
@@ -61,7 +60,6 @@ import {
   GatewayNodeSvg,
   TextAnnotationNodeSvg,
   LaneNodeSvg,
-  TransactionNodeSvg,
 } from "./nodes/NodeSvgs";
 import { SequenceFlowEdge, AssociationEdge } from "./edges/Edges";
 import { Unpacked } from "@kie-tools/xyflow-react-kie-diagram/dist/tsExt/tsExt";
@@ -88,7 +86,6 @@ export const NODE_TYPES = {
   unknown: "node_unknown" as const,
   group: "node_group" as const,
   lane: "node_lane" as const,
-  transaction: "node_transaction" as const,
   // custom: "node_custom" as const,
 };
 
@@ -207,10 +204,6 @@ export const BPMN_GRAPH_STRUCTURE: GraphStructure<BpmnNodeType, BpmnEdgeType> = 
     new Map<BpmnEdgeType, Set<BpmnNodeType>>([[EDGE_TYPES.association, new Set([NODE_TYPES.textAnnotation])]]),
   ],
   [
-    NODE_TYPES.transaction,
-    new Map<BpmnEdgeType, Set<BpmnNodeType>>([[EDGE_TYPES.association, new Set([NODE_TYPES.textAnnotation])]]),
-  ],
-  [
     NODE_TYPES.textAnnotation,
     new Map<BpmnEdgeType, Set<BpmnNodeType>>([
       [
@@ -224,14 +217,16 @@ export const BPMN_GRAPH_STRUCTURE: GraphStructure<BpmnNodeType, BpmnEdgeType> = 
           NODE_TYPES.endEvent,
           NODE_TYPES.dataObject,
           NODE_TYPES.lane,
-          NODE_TYPES.transaction,
         ]),
       ],
     ]),
   ],
 ]);
 
-export const BPMN_CONTAINMENT_MAP: ContainmentMap<BpmnNodeType> = new Map([]);
+export const BPMN_CONTAINMENT_MAP: ContainmentMap<BpmnNodeType> = new Map([
+  [NODE_TYPES.lane, new Set([])],
+  [NODE_TYPES.subProcess, new Set([])],
+]);
 
 export const CONNECTION_LINE_EDGE_COMPONENTS_MAPPING: ConnectionLineEdgeMapping<BpmnEdgeType> = {
   [EDGE_TYPES.sequenceFlow]: SequenceFlowPath,
@@ -248,7 +243,6 @@ export const CONNECTION_LINE_NODE_COMPONENT_MAPPING: ConnectionLineNodeMapping<B
   [NODE_TYPES.gateway]: GatewayNodeSvg,
   [NODE_TYPES.textAnnotation]: TextAnnotationNodeSvg,
   [NODE_TYPES.lane]: LaneNodeSvg,
-  [NODE_TYPES.transaction]: TransactionNodeSvg,
   // Ignore
   node_dataObject: undefined as any,
   node_unknown: undefined as any,
@@ -267,7 +261,6 @@ export const XY_FLOW_NODE_TYPES: Record<BpmnNodeType, any> = {
   [NODE_TYPES.textAnnotation]: TextAnnotationNode,
   [NODE_TYPES.dataObject]: DataObjectNode,
   [NODE_TYPES.lane]: LaneNode,
-  [NODE_TYPES.transaction]: TransactionNode,
   [NODE_TYPES.unknown]: UnknownNode,
 };
 
@@ -374,10 +367,6 @@ export const BPMN_OUTGOING_STRUCTURE = {
     nodes: [NODE_TYPES.textAnnotation],
     edges: [EDGE_TYPES.association],
   },
-  [NODE_TYPES.transaction]: {
-    nodes: [NODE_TYPES.textAnnotation],
-    edges: [EDGE_TYPES.association],
-  },
   [NODE_TYPES.textAnnotation]: {
     nodes: [],
     edges: [EDGE_TYPES.association],
@@ -398,11 +387,7 @@ export const bpmnEdgesOutgoingStuffNodePanelMapping: OutgoingStuffNodePanelEdgeM
 export const bpmnNodesOutgoingStuffNodePanelMapping: OutgoingStuffNodePanelNodeMapping<
   Exclude<
     BpmnNodeType,
-    | typeof NODE_TYPES.dataObject
-    | typeof NODE_TYPES.unknown
-    | typeof NODE_TYPES.group
-    | typeof NODE_TYPES.lane
-    | typeof NODE_TYPES.transaction
+    typeof NODE_TYPES.dataObject | typeof NODE_TYPES.unknown | typeof NODE_TYPES.group | typeof NODE_TYPES.lane
   >
 > = {
   [NODE_TYPES.startEvent]: {
@@ -427,7 +412,7 @@ export const bpmnNodesOutgoingStuffNodePanelMapping: OutgoingStuffNodePanelNodeM
   },
   [NODE_TYPES.subProcess]: {
     actionTitle: "Add Sub-Process",
-    icon: (nodeSvgProps) => <SubProcessNodeSvg {...nodeSvgProps} icons={["SubProcessIcon"]} />,
+    icon: (nodeSvgProps) => <TaskNodeSvg {...nodeSvgProps} icons={["CallActivityPaletteIcon"]} />,
   },
   [NODE_TYPES.gateway]: {
     actionTitle: "Add Gateway",
@@ -529,13 +514,6 @@ export const MIN_NODE_SIZES: NodeSizes<BpmnNodeType> = {
       "@_height": snappedMinSize.height,
     };
   },
-  [NODE_TYPES.transaction]: ({ snapGrid }) => {
-    const snappedMinSize = MIN_SIZE_FOR_NODES(snapGrid);
-    return {
-      "@_width": snappedMinSize.width,
-      "@_height": snappedMinSize.height,
-    };
-  },
   [NODE_TYPES.unknown]: ({ snapGrid }) => {
     const snappedMinSize = MIN_SIZE_FOR_NODES(snapGrid);
     return {
@@ -582,7 +560,7 @@ export const DEFAULT_NODE_SIZES: NodeSizes<BpmnNodeType> = {
     };
   },
   [NODE_TYPES.subProcess]: ({ snapGrid }) => {
-    const snappedMinSize = MIN_SIZE_FOR_NODES(snapGrid, 180, 90);
+    const snappedMinSize = MIN_SIZE_FOR_NODES(snapGrid, 360, 180);
     return {
       "@_width": snappedMinSize.width,
       "@_height": snappedMinSize.height,
@@ -617,13 +595,6 @@ export const DEFAULT_NODE_SIZES: NodeSizes<BpmnNodeType> = {
     };
   },
   [NODE_TYPES.lane]: ({ snapGrid }) => {
-    const snappedMinSize = MIN_SIZE_FOR_NODES(snapGrid, 360, 180);
-    return {
-      "@_width": snappedMinSize.width,
-      "@_height": snappedMinSize.height,
-    };
-  },
-  [NODE_TYPES.transaction]: ({ snapGrid }) => {
     const snappedMinSize = MIN_SIZE_FOR_NODES(snapGrid, 360, 180);
     return {
       "@_width": snappedMinSize.width,
@@ -694,3 +665,55 @@ export type EventVariant = ElementFilter<
   | "terminateEventDefinition"
   | "timerEventDefinition"
 >["__$$element"];
+
+export const elementToNodeType: Record<NonNullable<BpmnNodeElement>["__$$element"], BpmnNodeType> = {
+  // lane
+  lane: NODE_TYPES.lane,
+  // events
+  startEvent: NODE_TYPES.startEvent,
+  boundaryEvent: NODE_TYPES.intermediateCatchEvent,
+  intermediateCatchEvent: NODE_TYPES.intermediateCatchEvent,
+  intermediateThrowEvent: NODE_TYPES.intermediateThrowEvent,
+  endEvent: NODE_TYPES.endEvent,
+  // tasks
+  callActivity: NODE_TYPES.task,
+  task: NODE_TYPES.task,
+  businessRuleTask: NODE_TYPES.task,
+  userTask: NODE_TYPES.task,
+  scriptTask: NODE_TYPES.task,
+  serviceTask: NODE_TYPES.task,
+  // subprocess
+  subProcess: NODE_TYPES.subProcess,
+  adHocSubProcess: NODE_TYPES.subProcess,
+  transaction: NODE_TYPES.subProcess,
+  // gateway
+  complexGateway: NODE_TYPES.gateway,
+  eventBasedGateway: NODE_TYPES.gateway,
+  exclusiveGateway: NODE_TYPES.gateway,
+  inclusiveGateway: NODE_TYPES.gateway,
+  parallelGateway: NODE_TYPES.gateway,
+  // misc
+  dataObject: NODE_TYPES.dataObject,
+  // artifacts
+  group: NODE_TYPES.group,
+  textAnnotation: NODE_TYPES.textAnnotation,
+  //
+  // unknown
+  //
+  event: NODE_TYPES.unknown,
+  manualTask: NODE_TYPES.unknown,
+  sendTask: NODE_TYPES.unknown,
+  receiveTask: NODE_TYPES.unknown,
+  callChoreography: NODE_TYPES.unknown,
+  choreographyTask: NODE_TYPES.unknown,
+  implicitThrowEvent: NODE_TYPES.unknown,
+  subChoreography: NODE_TYPES.unknown,
+  // edges (ignore)
+  dataObjectReference: NODE_TYPES.unknown,
+  dataStoreReference: NODE_TYPES.unknown,
+} as const;
+
+export const elementToEdgeType: Record<NonNullable<BpmnEdgeElement>["__$$element"], BpmnEdgeType> = {
+  association: EDGE_TYPES.association,
+  sequenceFlow: EDGE_TYPES.sequenceFlow,
+};
