@@ -224,8 +224,29 @@ export const BPMN_GRAPH_STRUCTURE: GraphStructure<BpmnNodeType, BpmnEdgeType> = 
 ]);
 
 export const BPMN_CONTAINMENT_MAP: ContainmentMap<BpmnNodeType> = new Map([
-  [NODE_TYPES.lane, new Set([])],
-  [NODE_TYPES.subProcess, new Set([])],
+  [
+    NODE_TYPES.lane,
+    new Set([
+      NODE_TYPES.startEvent,
+      NODE_TYPES.task,
+      NODE_TYPES.intermediateCatchEvent,
+      NODE_TYPES.intermediateThrowEvent,
+      NODE_TYPES.gateway,
+      NODE_TYPES.endEvent,
+      NODE_TYPES.subProcess,
+    ]),
+  ],
+  [
+    NODE_TYPES.subProcess,
+    new Set([
+      NODE_TYPES.startEvent,
+      NODE_TYPES.task,
+      NODE_TYPES.intermediateCatchEvent,
+      NODE_TYPES.intermediateThrowEvent,
+      NODE_TYPES.gateway,
+      NODE_TYPES.endEvent,
+    ]),
+  ],
 ]);
 
 export const CONNECTION_LINE_EDGE_COMPONENTS_MAPPING: ConnectionLineEdgeMapping<BpmnEdgeType> = {
