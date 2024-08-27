@@ -65,6 +65,7 @@ import {
   CONNECTION_LINE_EDGE_COMPONENTS_MAPPING,
   CONNECTION_LINE_NODE_COMPONENT_MAPPING,
   DEFAULT_NODE_SIZES,
+  elementToNodeType,
   MIN_NODE_SIZES,
   NODE_TYPES,
   XY_FLOW_EDGE_TYPES,
@@ -111,10 +112,11 @@ export function BpmnDiagram({
   // nodes
 
   const onNodeAdded = useCallback<OnNodeAdded<State, BpmnNodeType, BpmnDiagramNodeData, BpmnDiagramEdgeData>>(
-    ({ state, type, dropPoint }) => {
+    ({ state, type, element, dropPoint }) => {
       console.log("BPMN EDITOR DIAGRAM: onNodeAdded");
       const { id } = addStandaloneNode({
         definitions: state.bpmn.model.definitions,
+        __readonly_element: element as keyof typeof elementToNodeType,
         __readonly_newNode: {
           type,
           bounds: {
