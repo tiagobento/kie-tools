@@ -137,7 +137,10 @@ export function computeDiagramData(
           shapeIndex: i,
           parentXyFlowNode: undefined,
         },
-        className: BPMN_CONTAINMENT_MAP.has(nodeType) ? "xyflow-react-kie-diagram--containerNode" : "",
+        className:
+          BPMN_CONTAINMENT_MAP.has(nodeType) || nodeType === NODE_TYPES.group
+            ? "xyflow-react-kie-diagram--containerNode"
+            : "",
         zIndex:
           bpmnElement.__$$element === "lane"
             ? NODE_LAYERS.GROUP_NODES
