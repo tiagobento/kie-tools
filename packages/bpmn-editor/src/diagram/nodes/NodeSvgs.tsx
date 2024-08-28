@@ -118,7 +118,7 @@ export function StartEventNodeSvg(__props: NodeSvgProps & { variant: EventVarian
       />
       <EventVariantSymbolSvg
         variant={variant}
-        fill={true}
+        fill={false}
         stroke={"#4aa241"}
         x={x}
         y={y}
@@ -178,7 +178,7 @@ export function IntermediateCatchEventNodeSvg(
       />
       <EventVariantSymbolSvg
         variant={variant}
-        fill={true}
+        fill={false}
         stroke={"#e6a000"}
         x={x}
         y={y}
