@@ -18,7 +18,11 @@
  */
 
 import * as React from "react";
-import { ContainmentMap, GraphStructure } from "@kie-tools/xyflow-react-kie-diagram/dist/graph/graphStructure";
+import {
+  ContainmentMap,
+  ContainmentMode,
+  GraphStructure,
+} from "@kie-tools/xyflow-react-kie-diagram/dist/graph/graphStructure";
 import {
   BPMN20__tIntermediateCatchEvent,
   BPMN20__tLane,
@@ -223,28 +227,53 @@ export const BPMN_GRAPH_STRUCTURE: GraphStructure<BpmnNodeType, BpmnEdgeType> = 
   ],
 ]);
 
-export const BPMN_CONTAINMENT_MAP: ContainmentMap<BpmnNodeType> = new Map([
+export const BPMN_CONTAINMENT_MAP: ContainmentMap<BpmnNodeType> = new Map<
+  BpmnNodeType,
+  Map<ContainmentMode, Set<BpmnNodeType>>
+>([
   [
     NODE_TYPES.lane,
-    new Set([
-      NODE_TYPES.startEvent,
-      NODE_TYPES.task,
-      NODE_TYPES.intermediateCatchEvent,
-      NODE_TYPES.intermediateThrowEvent,
-      NODE_TYPES.gateway,
-      NODE_TYPES.endEvent,
-      NODE_TYPES.subProcess,
+    new Map([
+      [
+        ContainmentMode.INSIDE,
+        new Set([
+          NODE_TYPES.startEvent,
+          NODE_TYPES.task,
+          NODE_TYPES.intermediateCatchEvent,
+          NODE_TYPES.intermediateThrowEvent,
+          NODE_TYPES.gateway,
+          NODE_TYPES.endEvent,
+        ]),
+      ],
     ]),
   ],
   [
     NODE_TYPES.subProcess,
-    new Set([
-      NODE_TYPES.startEvent,
-      NODE_TYPES.task,
-      NODE_TYPES.intermediateCatchEvent,
-      NODE_TYPES.intermediateThrowEvent,
-      NODE_TYPES.gateway,
-      NODE_TYPES.endEvent,
+    new Map([
+      [
+        ContainmentMode.INSIDE,
+        new Set([
+          NODE_TYPES.startEvent,
+          NODE_TYPES.task,
+          NODE_TYPES.intermediateCatchEvent,
+          NODE_TYPES.intermediateThrowEvent,
+          NODE_TYPES.gateway,
+          NODE_TYPES.endEvent,
+        ]),
+      ],
+      [
+        ContainmentMode.BORDER, //
+        new Set([NODE_TYPES.intermediateCatchEvent, NODE_TYPES.intermediateThrowEvent]),
+      ],
+    ]),
+  ],
+  [
+    NODE_TYPES.task,
+    new Map([
+      [
+        ContainmentMode.BORDER, //
+        new Set([NODE_TYPES.intermediateCatchEvent, NODE_TYPES.intermediateThrowEvent]),
+      ],
     ]),
   ],
 ]);

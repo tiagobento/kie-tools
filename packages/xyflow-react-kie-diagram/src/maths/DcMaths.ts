@@ -181,6 +181,7 @@ export function getContainmentRelationship({
   snapGrid,
   containerMinSizes,
   boundsMinSizes,
+  borderAllowanceInPx,
 }: {
   bounds: DC__Bounds;
   container: DC__Bounds;
@@ -188,29 +189,69 @@ export function getContainmentRelationship({
   snapGrid: SnapGrid;
   containerMinSizes: (args: { snapGrid: SnapGrid }) => DC__Dimension;
   boundsMinSizes: (args: { snapGrid: SnapGrid }) => DC__Dimension;
-}): { isInside: true; section: "upper" | "lower" } | { isInside: false } {
+  borderAllowanceInPx: number;
+}):
+  | {
+      isCompletelyInside: true;
+      isCenterInside: boolean;
+      isAtBorder: boolean;
+      section: "upper" | "lower";
+    }
+  | {
+      isAtBorder: boolean;
+      isCompletelyInside: false;
+      isCenterInside: boolean;
+    } {
   const { x: cx, y: cy } = snapBoundsPosition(snapGrid, container);
   const { width: cw, height: ch } = snapBoundsDimensions(snapGrid, container, containerMinSizes({ snapGrid }));
   const { x: bx, y: by } = snapBoundsPosition(snapGrid, bounds);
   const { width: bw, height: bh } = snapBoundsDimensions(snapGrid, bounds, boundsMinSizes({ snapGrid }));
 
-  const center = getDiBoundsCenterPoint({
+  const boundsCenter = getDiBoundsCenterPoint({
     "@_height": bh,
     "@_width": bw,
     "@_x": bx,
     "@_y": by,
   });
 
-  const isInside =
+  const isCompletelyInside =
     bx >= cx && // force-line-break
     by >= cy && // force-line-break
     bx + bw <= cx + cw && // force-line-break
     by + bh <= cy + ch;
 
-  if (isInside) {
-    return { isInside: true, section: center["@_y"] > cy + (divingLineLocalY ?? 0) ? "lower" : "upper" };
+  const isCenterInside =
+    boundsCenter["@_x"] >= cx && // force-line-break
+    boundsCenter["@_y"] >= cy && // force-line-break
+    boundsCenter["@_x"] <= cx + cw && // force-line-break
+    boundsCenter["@_y"] <= cy + ch;
+
+  const isAtBorder = // inside bigger box...
+    boundsCenter["@_x"] >= cx - borderAllowanceInPx &&
+    boundsCenter["@_y"] >= cy - borderAllowanceInPx &&
+    boundsCenter["@_x"] <= cx + cw + borderAllowanceInPx &&
+    boundsCenter["@_y"] <= cy + ch + borderAllowanceInPx &&
+    // ...and not inside of smaller box
+    !(
+      boundsCenter["@_x"] >= cx + borderAllowanceInPx &&
+      boundsCenter["@_y"] >= cy + borderAllowanceInPx &&
+      boundsCenter["@_x"] <= cx + cw - borderAllowanceInPx &&
+      boundsCenter["@_y"] <= cy + ch - borderAllowanceInPx
+    );
+
+  if (isCompletelyInside) {
+    return {
+      isCompletelyInside: true,
+      section: boundsCenter["@_y"] > cy + (divingLineLocalY ?? 0) ? "lower" : "upper",
+      isCenterInside,
+      isAtBorder,
+    };
   } else {
-    return { isInside: false };
+    return {
+      isCompletelyInside,
+      isCenterInside,
+      isAtBorder,
+    };
   }
 }
 

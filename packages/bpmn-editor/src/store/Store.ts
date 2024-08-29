@@ -25,7 +25,6 @@ import {
   XyFlowReactKieDiagramNodeStatus,
 } from "@kie-tools/xyflow-react-kie-diagram/dist/store/State";
 import { computeIsDiagramEditingInProgress } from "@kie-tools/xyflow-react-kie-diagram/dist/store/computed/computeIsDiagramEditingInProgress";
-import { computeIsDropTargetNodeValidForSelection } from "@kie-tools/xyflow-react-kie-diagram/dist/store/computed/computeIsDropTargetNodeValidForSelection";
 import { setNodeStatus } from "@kie-tools/xyflow-react-kie-diagram/dist/store/dispatch/setNodeStatus";
 import { setEdgeStatus } from "@kie-tools/xyflow-react-kie-diagram/dist/store/dispatch/setEdgeStatus";
 import { enableMapSet } from "immer";
@@ -51,7 +50,6 @@ export interface State extends BpmnXyFlowDiagramState {
   // https://github.com/pmndrs/zustand/issues/132#issuecomment-1120467721
   computed: (s: State) => {
     getDiagramData(): ReturnType<typeof computeDiagramData>;
-    isDropTargetNodeValidForSelection(): boolean;
     isDiagramEditingInProgress(): boolean;
   };
   dispatch: (s: State) => {
@@ -109,7 +107,7 @@ export const getDefaultStaticState = (): Omit<State, "bpmn" | "computed" | "disp
     resizingNodes: [],
     draggingWaypoints: [],
     edgeIdBeingUpdated: undefined,
-    dropTargetNode: undefined,
+    dropTarget: undefined,
     ongoingConnection: undefined,
   },
 });
@@ -154,18 +152,12 @@ export function createBpmnEditorStore(
             ]
           ),
 
-        isDropTargetNodeValidForSelection: () =>
-          computedCache.cached("isDropTargetNodeValidForSelection", computeIsDropTargetNodeValidForSelection, [
-            s.xyFlowReactKieDiagram.dropTargetNode,
-            s.computed(s).getDiagramData(),
-            BPMN_CONTAINMENT_MAP,
-          ]),
-
         getDiagramData: () =>
           computedCache.cached("getDiagramData", computeDiagramData, [
             s.bpmn.model.definitions,
             s.xyFlowReactKieDiagram,
             s.xyFlowReactKieDiagram.snapGrid,
+            s.xyFlowReactKieDiagram.dropTarget,
           ]),
       }),
     }))
