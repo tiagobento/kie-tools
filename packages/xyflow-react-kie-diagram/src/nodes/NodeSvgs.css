@@ -11,19 +11,21 @@
 
 /* (begin) containerNodes */
 /* CONTAINER NODES HAVE A SPECIFIC SELECTION MECHANISM TO ALLOW EDITING EDGES INSIDE THEM */
-.react-flow__node.xyflow-react-kie-diagram--containerNode {
+.react-flow__node.xyflow-react-kie-diagram--containerNode--inside {
   pointer-events: none !important;
   background: transparent;
   box-shadow: none !important;
 }
-.react-flow__node.xyflow-react-kie-diagram--containerNode:not(.selected) .xyflow-react-kie-diagram--node-shape {
+.react-flow__node.xyflow-react-kie-diagram--containerNode--inside:not(.selected) .xyflow-react-kie-diagram--node-shape {
   filter: none !important;
 }
-.react-flow__node.xyflow-react-kie-diagram--containerNode .xyflow-react-kie-diagram--outgoing-stuff-node-panel,
-.react-flow__node.xyflow-react-kie-diagram--containerNode .xyflow-react-kie-diagram--editable-node-name-input span,
-.react-flow__node.xyflow-react-kie-diagram--containerNode .xyflow-react-kie-diagram--info-node-panel,
-.react-flow__node.xyflow-react-kie-diagram--containerNode .xyflow-react-kie-diagram--data-type-node-panel,
-.react-flow__node.xyflow-react-kie-diagram--containerNode .react-flow__resize-control div {
+.react-flow__node.xyflow-react-kie-diagram--containerNode--inside .xyflow-react-kie-diagram--outgoing-stuff-node-panel,
+.react-flow__node.xyflow-react-kie-diagram--containerNode--inside
+  .xyflow-react-kie-diagram--editable-node-name-input
+  span,
+.react-flow__node.xyflow-react-kie-diagram--containerNode--inside .xyflow-react-kie-diagram--info-node-panel,
+.react-flow__node.xyflow-react-kie-diagram--containerNode--inside .xyflow-react-kie-diagram--data-type-node-panel,
+.react-flow__node.xyflow-react-kie-diagram--containerNode--inside .react-flow__resize-control div {
   pointer-events: all !important;
 }
 

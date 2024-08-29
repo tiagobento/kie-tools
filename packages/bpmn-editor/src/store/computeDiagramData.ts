@@ -18,7 +18,11 @@
  */
 
 import { GraphStructureAdjacencyList, GraphStructureEdge } from "@kie-tools/xyflow-react-kie-diagram/dist/graph/graph";
-import { snapShapeDimensions } from "@kie-tools/xyflow-react-kie-diagram/dist/snapgrid/SnapGrid";
+import {
+  SnapGrid,
+  snapShapeDimensions,
+  snapShapePosition,
+} from "@kie-tools/xyflow-react-kie-diagram/dist/snapgrid/SnapGrid";
 import { XyFlowDiagramData } from "@kie-tools/xyflow-react-kie-diagram/dist/store/State";
 import * as RF from "reactflow";
 import {
@@ -26,10 +30,8 @@ import {
   BpmnDiagramEdgeData,
   BpmnDiagramNodeData,
   BpmnEdgeElement,
-  BpmnEdgeType,
   BpmnNodeElement,
   BpmnNodeType,
-  EDGE_TYPES,
   elementToEdgeType,
   elementToNodeType,
   NODE_TYPES,
@@ -37,11 +39,16 @@ import {
 import { MIN_NODE_SIZES } from "../diagram/BpmnDiagramDomain";
 import { BpmnXyFlowDiagramState, State } from "./Store";
 import { NODE_LAYERS } from "@kie-tools/xyflow-react-kie-diagram/dist/nodes/Hooks";
+import { ContainmentMode } from "@kie-tools/xyflow-react-kie-diagram/dist/graph/graphStructure";
+import { DC__Shape } from "@kie-tools/xyflow-react-kie-diagram/dist/maths/model";
+import { getCenter } from "@kie-tools/xyflow-react-kie-diagram/dist/maths/Maths";
+import { DEFAULT_BORDER_ALLOWANCE_IN_PX } from "@kie-tools/xyflow-react-kie-diagram/dist/snapgrid/BorderSnapping";
 
 export function computeDiagramData(
   definitions: State["bpmn"]["model"]["definitions"],
   xyFlowReactKieDiagram: BpmnXyFlowDiagramState["xyFlowReactKieDiagram"],
-  snapGrid: BpmnXyFlowDiagramState["xyFlowReactKieDiagram"]["snapGrid"]
+  snapGrid: BpmnXyFlowDiagramState["xyFlowReactKieDiagram"]["snapGrid"],
+  dropTarget: State["xyFlowReactKieDiagram"]["dropTarget"]
 ): XyFlowDiagramData<BpmnNodeType, BpmnDiagramNodeData, BpmnDiagramEdgeData> {
   const nodeBpmnElementsById = new Map<string, BpmnNodeElement>();
   const edgeBpmnElementsById = new Map<string, BpmnEdgeElement>();
@@ -126,10 +133,10 @@ export function computeDiagramData(
 
       const n: RF.Node<BpmnDiagramNodeData, BpmnNodeType> = {
         id,
-        position: {
-          x: bpmnShape?.["dc:Bounds"]?.["@_x"],
-          y: bpmnShape?.["dc:Bounds"]?.["@_y"],
-        },
+        position:
+          selectedNodes.has(id) && dropTarget?.containmentMode === ContainmentMode.BORDER
+            ? snapToDropTargetsBorder(dropTarget, bpmnShape, nodeType, snapGrid, DEFAULT_BORDER_ALLOWANCE_IN_PX)
+            : snapShapePosition(snapGrid, bpmnShape),
         data: {
           bpmnElement,
           shape: bpmnShape,
@@ -138,13 +145,13 @@ export function computeDiagramData(
           parentXyFlowNode: undefined,
         },
         className:
-          BPMN_CONTAINMENT_MAP.has(nodeType) || nodeType === NODE_TYPES.group
-            ? "xyflow-react-kie-diagram--containerNode"
+          BPMN_CONTAINMENT_MAP.get(nodeType)?.has(ContainmentMode.INSIDE) || nodeType === NODE_TYPES.group
+            ? "xyflow-react-kie-diagram--containerNode--inside"
             : "",
         zIndex:
-          bpmnElement.__$$element === "lane"
+          nodeType === NODE_TYPES.lane
             ? NODE_LAYERS.GROUP_NODES
-            : bpmnElement.__$$element === "transaction"
+            : nodeType === NODE_TYPES.subProcess
               ? NODE_LAYERS.CONTAINER_NODES
               : bpmnElement.__$$element === "boundaryEvent"
                 ? NODE_LAYERS.NESTED_NODES
@@ -266,4 +273,73 @@ export function computeDiagramData(
     selectedNodesById,
     selectedEdgesById,
   };
+}
+function snapToDropTargetsBorder(
+  dropTarget: NonNullable<State["xyFlowReactKieDiagram"]["dropTarget"]>,
+  bpmnShape: DC__Shape,
+  nodeType: BpmnNodeType,
+  snapGrid: SnapGrid,
+  borderAllowanceInPx: number
+): RF.XYPosition {
+  const dropTargetPosition = snapShapePosition(snapGrid, dropTarget.node.data.shape);
+  const dropTargetDimensions = snapShapeDimensions(
+    snapGrid,
+    dropTarget.node.data.shape,
+    MIN_NODE_SIZES[dropTarget.node.type!]({ snapGrid })
+  );
+
+  const shapeDimensions = snapShapeDimensions(snapGrid, bpmnShape, MIN_NODE_SIZES[nodeType!]({ snapGrid }));
+  const shapeCenterPoint = getCenter(
+    bpmnShape["dc:Bounds"]["@_x"],
+    bpmnShape["dc:Bounds"]["@_y"],
+    shapeDimensions.width,
+    shapeDimensions.height
+  );
+
+  // Rectangle coordinates
+  const dropTargetX_min = dropTargetPosition.x;
+  const dropTargetY_min = dropTargetPosition.y;
+  const dropTargetX_max = dropTargetPosition.x + dropTargetDimensions.width;
+  const dropTargetY_max = dropTargetPosition.y + dropTargetDimensions.height;
+
+  // Calculate distances to each side
+  const distanceLeft = Math.abs(shapeCenterPoint.x - dropTargetX_min);
+  const distanceRight = Math.abs(shapeCenterPoint.x - dropTargetX_max);
+  const distanceTop = Math.abs(shapeCenterPoint.y - dropTargetY_min);
+  const distanceBottom = Math.abs(shapeCenterPoint.y - dropTargetY_max);
+
+  let snappedX: number, snappedY: number;
+
+  // By doing this in two steps, and non-exclusively (note the lack of `else`s),
+  // we allow snapping to two sides at the same time, thus snapping to the corners.
+
+  // Step 1: Snap
+  if (distanceLeft <= borderAllowanceInPx) {
+    snappedX = dropTargetX_min - shapeDimensions.width / 2; // Snap to the top side
+  }
+  if (distanceRight <= borderAllowanceInPx) {
+    snappedX = dropTargetX_max - shapeDimensions.width / 2; // Snap to the right side
+  }
+  if (distanceTop <= borderAllowanceInPx) {
+    snappedY = dropTargetY_min - shapeDimensions.height / 2; // Snap to the top side
+  }
+  if (distanceBottom <= borderAllowanceInPx) {
+    snappedY = dropTargetY_max - shapeDimensions.height / 2; // Snap to the bottom side
+  }
+
+  // Step 2: Leave movement free if not already snapped.
+  if (distanceLeft <= borderAllowanceInPx) {
+    snappedY ??= bpmnShape["dc:Bounds"]["@_y"]; // Snap to the top side
+  }
+  if (distanceRight <= borderAllowanceInPx) {
+    snappedY ??= bpmnShape["dc:Bounds"]["@_y"]; // Snap to the right side
+  }
+  if (distanceTop <= borderAllowanceInPx) {
+    snappedX ??= bpmnShape["dc:Bounds"]["@_x"]; // Snap to the top side
+  }
+  if (distanceBottom <= borderAllowanceInPx) {
+    snappedX ??= bpmnShape["dc:Bounds"]["@_x"]; // Snap to the bottom side
+  }
+
+  return { x: snappedX!, y: snappedY! };
 }

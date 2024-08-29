@@ -127,7 +127,6 @@ function approximateClosestPoint(
   pathNode: SVGPathElement,
   point: [number, number]
 ): { point: DOMPoint; lengthInPath: number } {
-  console.log(pathNode, point);
   const pathLength = pathNode.getTotalLength();
   let precision = Math.floor(pathLength / 10);
   let best: DOMPoint;

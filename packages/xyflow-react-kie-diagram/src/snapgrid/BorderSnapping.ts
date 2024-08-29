@@ -17,17 +17,4 @@
  * under the License.
  */
 
-import { ContainmentMap } from "./graphStructure";
-
-export function isValidContainment<N extends string>({
-  containmentMap,
-  nodeTypes,
-  inside,
-}: {
-  containmentMap: ContainmentMap<N>;
-  nodeTypes: Set<N>;
-  inside: N;
-}) {
-  const allowedNodesInside = containmentMap.get(inside);
-  return [...nodeTypes].every((nodeType) => allowedNodesInside?.has(nodeType));
-}
+export const DEFAULT_BORDER_ALLOWANCE_IN_PX = 20;

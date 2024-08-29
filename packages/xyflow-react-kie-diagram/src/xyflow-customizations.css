@@ -49,29 +49,43 @@
 .react-flow__node.selected {
   color: #006ba4 !important;
 }
-.react-flow__node > .xyflow-react-kie-diagram--node-shape.drop-target-invalid ~ .xyflow-react-kie-diagram--node {
+.react-flow__node > .xyflow-react-kie-diagram--node-shape.drop-target-inside-invalid ~ .xyflow-react-kie-diagram--node {
   border-color: red !important;
   color: red !important;
   opacity: 0.4;
 }
-.react-flow__node > .xyflow-react-kie-diagram--node-shape.drop-target-invalid {
+.react-flow__node > .xyflow-react-kie-diagram--node-shape.drop-target-inside-invalid {
   border-color: red !important;
 }
-.react-flow__node > .xyflow-react-kie-diagram--node-shape.drop-target-invalid > * {
+.react-flow__node > .xyflow-react-kie-diagram--node-shape.drop-target-inside-invalid > * {
   stroke: rgba(255, 0, 0, 0.2) !important;
   fill: rgba(164, 0, 0, 0.1) !important;
 }
-.react-flow__node > .xyflow-react-kie-diagram--node-shape.drop-target ~ .xyflow-react-kie-diagram--node {
+.react-flow__node > .xyflow-react-kie-diagram--node-shape.drop-target-inside ~ .xyflow-react-kie-diagram--node {
   color: #006ba4 !important;
 }
-.react-flow__node > .xyflow-react-kie-diagram--node-shape.drop-target,
+.react-flow__node > .xyflow-react-kie-diagram--node-shape.drop-target-inside,
 .react-flow__node.selected > .xyflow-react-kie-diagram--node-shape.normal {
   border-color: #006ba4 !important;
   filter: drop-shadow(2px 2px 2px #006ba477);
 }
-.react-flow__node > .xyflow-react-kie-diagram--node-shape.drop-target > * {
+.react-flow__node > .xyflow-react-kie-diagram--node-shape.drop-target-inside > * {
   stroke: #006ba4 !important;
   fill: rgba(0, 107, 164, 0.1) !important;
+}
+
+.react-flow__node > .xyflow-react-kie-diagram--node-shape.drop-target-border > * {
+  stroke: #006ba4 !important;
+  stroke-width: 20px;
+}
+
+.react-flow__node > .xyflow-react-kie-diagram--node-shape.drop-target-border-invalid > * {
+  /* Empty on purpose. We don't want any CSS style for when an invalid node is dragged to another's border */
+  content: ""; /* <-- Only here to stop warnings of empty CSS rule */
+}
+
+.react-flow__node > .xyflow-react-kie-diagram--node-shape.drop-target-invalid-non-container > * {
+  opacity: 0.4;
 }
 
 .react-flow__node.selected:not(.react-flow__node-node_unknown):not(.react-flow__node-node_textAnnotation)

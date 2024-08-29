@@ -78,6 +78,7 @@ import { DiagramContainerContextProvider } from "./DiagramContainerContext";
 import { repositionEdgeWaypoint } from "../mutations/repositionEdgeWaypoint";
 import { addEdgeWaypoint } from "../mutations/addEdgeWaypoint";
 import { deleteEdgeWaypoint } from "../mutations/deleteEdgeWaypoint";
+import { Draft } from "immer";
 
 export function BpmnDiagram({
   container,
@@ -94,16 +95,17 @@ export function BpmnDiagram({
 
   const { bpmnModelBeforeEditingRef } = useBpmnEditor();
 
-  const resetToBeforeEditingBegan = useCallback(() => {
-    bpmnEditorStoreApi.setState((state) => {
-      state.bpmn.model = normalize(bpmnModelBeforeEditingRef.current);
-      state.xyFlowReactKieDiagram.draggingNodes = [];
-      state.xyFlowReactKieDiagram.draggingWaypoints = [];
-      state.xyFlowReactKieDiagram.resizingNodes = [];
-      state.xyFlowReactKieDiagram.dropTargetNode = undefined;
-      state.xyFlowReactKieDiagram.edgeIdBeingUpdated = undefined;
-    });
-  }, [bpmnEditorStoreApi, bpmnModelBeforeEditingRef]);
+  const resetToBeforeEditingBegan = useCallback(
+    (stateDraft: Draft<State>) => {
+      stateDraft.bpmn.model = normalize(bpmnModelBeforeEditingRef.current);
+      stateDraft.xyFlowReactKieDiagram.draggingNodes = [];
+      stateDraft.xyFlowReactKieDiagram.draggingWaypoints = [];
+      stateDraft.xyFlowReactKieDiagram.resizingNodes = [];
+      stateDraft.xyFlowReactKieDiagram.dropTarget = undefined;
+      stateDraft.xyFlowReactKieDiagram.edgeIdBeingUpdated = undefined;
+    },
+    [bpmnModelBeforeEditingRef]
+  );
 
   const nodes = useBpmnEditorStore((s) => s.computed(s).getDiagramData().nodes);
 
@@ -207,8 +209,8 @@ export function BpmnDiagram({
   );
 
   const onNodeParented = useCallback<OnNodeParented<State, BpmnNodeType, BpmnDiagramNodeData, BpmnDiagramEdgeData>>(
-    ({ state }) => {
-      console.log("BPMN EDITOR DIAGRAM: onNodeParented");
+    ({ state, containmentMode }) => {
+      console.log(`BPMN EDITOR DIAGRAM: onNodeParented (${containmentMode})`);
     },
     []
   );

@@ -29,8 +29,4 @@ export const INITIAL_COMPUTED_CACHE: Cache<ReturnType<State["computed"]>> = {
     value: undefined,
     dependencies: [],
   },
-  isDropTargetNodeValidForSelection: {
-    value: undefined,
-    dependencies: [],
-  },
 };

@@ -20,7 +20,7 @@
 import * as React from "react";
 import { useLayoutEffect, useMemo } from "react";
 import * as RF from "reactflow";
-import { ContainmentMap } from "../graph/graphStructure";
+import { ContainmentMode } from "../graph/graphStructure";
 import { DC__Shape } from "../maths/model";
 import { snapShapeDimensions } from "../snapgrid/SnapGrid";
 import { useXyFlowReactKieDiagramStore } from "../store/Store";
@@ -161,20 +161,17 @@ export function useConnectionTargetStatus(nodeId: string, shouldActLikeHovered: 
 }
 
 export function useNodeClassName<N extends string, E extends string>(
-  containmentMap: ContainmentMap<N>,
   isValidConnectionTarget: boolean,
   nodeId: string,
   NODE_TYPES: Record<string, N>,
-  EDGE_TYPES: Record<string, E>
+  EDGE_TYPES: Record<string, E>,
+  ignoreContainment: boolean = false
 ) {
-  const isDropTarget = useXyFlowReactKieDiagramStore(
-    (s) =>
-      s.xyFlowReactKieDiagram.dropTargetNode?.id === nodeId &&
-      containmentMap.get(s.xyFlowReactKieDiagram.dropTargetNode?.type as N)
+  const isDropTarget = useXyFlowReactKieDiagramStore((s) => s.xyFlowReactKieDiagram.dropTarget?.node.id === nodeId);
+  const dropTargetContainmentMode = useXyFlowReactKieDiagramStore(
+    (s) => s.xyFlowReactKieDiagram.dropTarget?.containmentMode
   );
-  const isDropTargetNodeValidForSelection = useXyFlowReactKieDiagramStore((s) =>
-    s.computed(s).isDropTargetNodeValidForSelection()
-  );
+
   const isConnectionNodeId = RF.useStore((s) => s.connectionNodeId === nodeId);
   const connection = useConnection(nodeId);
   const isEdgeConnection = !!Object.values(EDGE_TYPES).find((s) => s === connection.sourceHandle);
@@ -188,8 +185,24 @@ export function useNodeClassName<N extends string, E extends string>(
     return "dimmed";
   }
 
-  if (isDropTarget) {
-    return isDropTargetNodeValidForSelection ? "drop-target" : "drop-target-invalid";
+  if (!ignoreContainment && isDropTarget && dropTargetContainmentMode !== undefined) {
+    if (dropTargetContainmentMode === ContainmentMode.IGNORE) {
+      return "drop-target-ignore";
+    } else if (dropTargetContainmentMode === ContainmentMode.INSIDE) {
+      return "drop-target-inside";
+    } else if (dropTargetContainmentMode === ContainmentMode.BORDER) {
+      return "drop-target-border";
+    } else if (dropTargetContainmentMode === ContainmentMode.INVALID_BORDER) {
+      return "drop-target-border-invalid";
+    } else if (dropTargetContainmentMode === ContainmentMode.INVALID_INSIDE) {
+      return "drop-target-inside-invalid";
+    } else if (dropTargetContainmentMode === ContainmentMode.INVALID_NON_INSIDE_CONTAINER) {
+      return "drop-target-invalid-non-container";
+    } else if (dropTargetContainmentMode === ContainmentMode.INVALID_IGNORE) {
+      return "drop-target-invalid-ignore";
+    } else {
+      throw new Error("Unknown containment mode");
+    }
   }
 
   return "normal";

@@ -20,11 +20,11 @@
 import * as React from "react";
 import * as RF from "reactflow";
 import { buildHierarchy } from "../graph/graph";
-import { ContainmentMap, getDefaultEdgeTypeBetween, GraphStructure } from "../graph/graphStructure";
+import { ContainmentMap, ContainmentMode, getDefaultEdgeTypeBetween, GraphStructure } from "../graph/graphStructure";
 import { checkIsValidConnection } from "../graph/isValidConnection";
 import { getContainmentRelationship, getDiBoundsCenterPoint } from "../maths/DcMaths";
-import { DC__Bounds, DC__Dimension, DC__Point, DC__Shape } from "../maths/model";
-import { SnapGrid, snapShapeDimensions } from "../snapgrid/SnapGrid";
+import { DC__Point } from "../maths/model";
+import { snapShapeDimensions } from "../snapgrid/SnapGrid";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useXyFlowReactKieDiagramStore, useXyFlowReactKieDiagramStoreApi } from "../store/Store";
 import { NodeSizes } from "../nodes/NodeSizes";
@@ -33,6 +33,7 @@ import { XyFlowDiagramState, XyFlowReactKieDiagramEdgeData, XyFlowReactKieDiagra
 import { Draft } from "immer";
 import { PositionalNodeHandleId } from "../nodes/PositionalNodeHandles";
 import { WaypointActionsContextProvider, WaypointActionsContextType } from "../waypoints/WaypointActionsContext";
+import { DEFAULT_BORDER_ALLOWANCE_IN_PX } from "../snapgrid/BorderSnapping";
 
 // nodes
 
@@ -78,6 +79,7 @@ export type OnNodeParented<
   state: Draft<S>;
   parentNode: RF.Node<NData, N>;
   activeNode: RF.Node<NData, N>;
+  containmentMode: ContainmentMode;
   selectedNodes: RF.Node<NData, N>[];
 }) => void;
 
@@ -172,7 +174,7 @@ export type Props<
   // model
   model: unknown;
   modelBeforeEditingRef: React.MutableRefObject<unknown>;
-  resetToBeforeEditingBegan: () => void;
+  resetToBeforeEditingBegan: (stateDraft: Draft<S>) => void;
   // components
   connectionLineComponent: RF.ConnectionLineComponent;
   nodeComponents: RF.NodeTypes;
@@ -317,30 +319,6 @@ export function XyFlowReactKieDiagram<
       });
     },
     [onEdgeAdded, xyFlowReactKieDiagramStoreApi]
-  );
-
-  const getFirstNodeFittingBounds = useCallback(
-    (
-      nodeIdToIgnore: string,
-      bounds: DC__Bounds,
-      minSizes: (args: { snapGrid: SnapGrid }) => DC__Dimension,
-      snapGrid: SnapGrid
-    ) =>
-      reactFlowInstance
-        ?.getNodes()
-        .reverse() // Respect the nodes z-index.
-        .find(
-          (node) =>
-            node.id !== nodeIdToIgnore && // don't ever use the node being dragged
-            getContainmentRelationship({
-              bounds: bounds!,
-              container: node.data.shape["dc:Bounds"]!,
-              snapGrid,
-              containerMinSizes: minNodeSizes[node.type as N],
-              boundsMinSizes: minSizes,
-            }).isInside
-        ),
-    [minNodeSizes, reactFlowInstance]
   );
 
   const onDragOver = useCallback(
@@ -599,23 +577,89 @@ export function XyFlowReactKieDiagram<
   );
 
   const onNodeDrag = useCallback<RF.NodeDragHandler>(
-    (e, node: RF.Node<NData, N>) => {
-      nodeIdBeingDraggedRef.current = node.id;
+    (e, nodeBeingDragged: RF.Node<NData, N>) => {
+      nodeIdBeingDraggedRef.current = nodeBeingDragged.id;
       xyFlowReactKieDiagramStoreApi.setState((state) => {
-        state.xyFlowReactKieDiagram.dropTargetNode = getFirstNodeFittingBounds(
-          node.id,
-          {
-            "@_x": node.positionAbsolute?.x ?? 0,
-            "@_y": node.positionAbsolute?.y ?? 0,
-            "@_width": node.width ?? 0,
-            "@_height": node.height ?? 0,
-          },
-          minNodeSizes[node.type as N],
-          state.xyFlowReactKieDiagram.snapGrid
-        ) as Draft<RF.Node<NData, N>>; // FIXME: Tiago: Not sure why NData is not assignable to Draft<NData>
+        const nodeBeingDraggedBounds = {
+          "@_x": nodeBeingDragged.positionAbsolute?.x ?? 0,
+          "@_y": nodeBeingDragged.positionAbsolute?.y ?? 0,
+          "@_width": nodeBeingDragged.width ?? 0,
+          "@_height": nodeBeingDragged.height ?? 0,
+        };
+
+        let foundContainer = false;
+        for (const potentialContainer of reactFlowInstance?.getNodes().reverse() ??
+          [] /* Respect the nodes z-index */) {
+          if (potentialContainer.id === nodeBeingDragged.id) {
+            // ignore `nodeBeingDragged`
+            continue;
+          }
+
+          const containmentRelationship = getContainmentRelationship({
+            snapGrid,
+            container: potentialContainer.data.shape["dc:Bounds"]!,
+            containerMinSizes: minNodeSizes[potentialContainer.type as N],
+            bounds: nodeBeingDraggedBounds,
+            boundsMinSizes: minNodeSizes[nodeBeingDragged.type as N],
+            borderAllowanceInPx: DEFAULT_BORDER_ALLOWANCE_IN_PX,
+          });
+
+          if (!(containmentRelationship.isAtBorder || containmentRelationship.isCompletelyInside)) {
+            // `nodeBeingDragged` is not inside `potentialContainer`
+            continue;
+          }
+
+          let containmentMode: ContainmentMode;
+          if (containmentRelationship.isAtBorder) {
+            containmentMode = ContainmentMode.BORDER;
+          } else if (containmentRelationship.isCompletelyInside) {
+            containmentMode = ContainmentMode.INSIDE;
+          } else {
+            throw new Error("Can't determine ContainmentMode for a node that is not visually inside the other.");
+          }
+
+          const diagramData = state.computed(state).getDiagramData();
+          if (diagramData.selectedNodesById.size > 1 && containmentMode === ContainmentMode.BORDER) {
+            // Containment at border should only be done 1 by 1. Can't drag a selection to the border of another node.
+            continue;
+          }
+
+          const allowedContainmentModes =
+            containmentMap.get(potentialContainer.type as N) ?? new Map<ContainmentMode, Set<N>>();
+
+          const allSelectedNodesRespectContainmentMode = [...diagramData.selectedNodeTypes].every((nodeType) =>
+            allowedContainmentModes.get(containmentMode)?.has(nodeType)
+          );
+
+          const newDropTarget = {
+            node: potentialContainer as Draft<RF.Node<NData, N>>,
+            containmentMode: allSelectedNodesRespectContainmentMode
+              ? containmentMode
+              : containmentMode === ContainmentMode.INSIDE && allowedContainmentModes.has(ContainmentMode.INSIDE)
+                ? ContainmentMode.INVALID_INSIDE
+                : containmentMode === ContainmentMode.BORDER && allowedContainmentModes.has(ContainmentMode.BORDER)
+                  ? ContainmentMode.INVALID_BORDER
+                  : containmentMode === ContainmentMode.INSIDE
+                    ? ContainmentMode.INVALID_NON_INSIDE_CONTAINER
+                    : containmentMode === ContainmentMode.BORDER
+                      ? ContainmentMode.INVALID_IGNORE
+                      : ContainmentMode.INVALID_IGNORE,
+          };
+
+          state.xyFlowReactKieDiagram.dropTarget ??= newDropTarget;
+          state.xyFlowReactKieDiagram.dropTarget.node = newDropTarget.node;
+          state.xyFlowReactKieDiagram.dropTarget.containmentMode = newDropTarget.containmentMode;
+          foundContainer = true;
+          break;
+        }
+
+        // cleanup from last dragging event if none was found this time.
+        if (!foundContainer) {
+          state.xyFlowReactKieDiagram.dropTarget = undefined;
+        }
       });
     },
-    [xyFlowReactKieDiagramStoreApi, getFirstNodeFittingBounds, minNodeSizes]
+    [xyFlowReactKieDiagramStoreApi, containmentMap, reactFlowInstance, snapGrid, minNodeSizes]
   );
 
   const onNodeDragStart = useCallback<RF.NodeDragHandler>(
@@ -638,24 +682,25 @@ export function XyFlowReactKieDiagram<
           }
 
           // Validate
-          const dropTargetNode = xyFlowReactKieDiagramStoreApi.getState().xyFlowReactKieDiagram.dropTargetNode;
+          const dropTarget = state.xyFlowReactKieDiagram.dropTarget;
+          state.xyFlowReactKieDiagram.dropTarget = undefined;
           if (
-            dropTargetNode?.type &&
-            containmentMap.has(dropTargetNode.type) &&
-            !state.computed(state).isDropTargetNodeValidForSelection
+            containmentMap.has(dropTarget?.node.type as N) &&
+            (dropTarget?.containmentMode === ContainmentMode.INVALID_INSIDE ||
+              /* dropTarget?.containmentMode === ContainmentMode.INVALID_IGNORE // Commented on purpose: We don't want to disallow positioning nodes on top of another. Especially without visual feedback. */
+              /* dropTarget?.containmentMode === ContainmentMode.INVALID_BORDER // Commented on purpose: We don't want to disallow positioning nodes slightly on top of another. Especially without visual feedback. */
+              dropTarget?.containmentMode === ContainmentMode.INVALID_NON_INSIDE_CONTAINER)
           ) {
             console.debug(
               `XYFLOW KIE DIAGRAM: Invalid containment: '${[
                 ...state.computed(state).getDiagramData().selectedNodeTypes,
-              ].join("', '")}' inside '${dropTargetNode.type}'. Ignoring nodes dropped.`
+              ].join("', '")}' inside '${dropTarget?.node.type}'. Ignoring nodes dropped.`
             );
-            resetToBeforeEditingBegan();
+            resetToBeforeEditingBegan(state);
             return;
           }
 
           const selectedNodes = [...state.computed(state).getDiagramData().selectedNodesById.values()];
-
-          state.xyFlowReactKieDiagram.dropTargetNode = undefined;
 
           if (!node.dragging) {
             return;
@@ -665,27 +710,40 @@ export function XyFlowReactKieDiagram<
           // Un-parent
           if (nodeBeingDragged.data.parentXyFlowNode) {
             const p = state.computed(state).getDiagramData().nodesById.get(nodeBeingDragged.data.parentXyFlowNode.id);
-            if (p?.type && nodeBeingDragged.type && containmentMap.get(nodeBeingDragged.type)?.has(p.type)) {
+            if (
+              p?.type &&
+              nodeBeingDragged.type &&
+              dropTarget &&
+              containmentMap.get(nodeBeingDragged.type)?.get(dropTarget.containmentMode)?.has(p.type)
+            ) {
               onNodeUnparented({ state, exParentNode: p, activeNode: nodeBeingDragged, selectedNodes });
             } else {
               console.debug(
-                `XYFLOW KIE DIAGRAM: Ignoring '${nodeBeingDragged.type}' with parent '${dropTargetNode?.type}' dropping somewhere..`
+                `XYFLOW KIE DIAGRAM: Ignoring '${nodeBeingDragged.type}' with parent '${dropTarget?.node.type}' dropping somewhere..`
               );
             }
           }
 
           // // Parent
-          if (dropTargetNode?.type && containmentMap.get(dropTargetNode.type)) {
-            onNodeParented({ state, parentNode: dropTargetNode, activeNode: nodeBeingDragged, selectedNodes });
+          if (dropTarget?.node.type && containmentMap.get(dropTarget.node.type as N)) {
+            onNodeParented({
+              state,
+              parentNode: dropTarget.node as RF.Node<NData, N>,
+              activeNode: nodeBeingDragged,
+              selectedNodes,
+              containmentMode: dropTarget.containmentMode,
+            });
           } else {
             console.debug(
-              `XYFLOW KIE DIAGRAM: Ignoring '${nodeBeingDragged.type}' dropped on top of '${dropTargetNode?.type}'`
+              `XYFLOW KIE DIAGRAM: Ignoring '${nodeBeingDragged.type}' dropped on top of '${dropTarget?.node.type}'`
             );
           }
         });
       } catch (e) {
         console.error(e);
-        resetToBeforeEditingBegan();
+        xyFlowReactKieDiagramStoreApi.setState((state) => {
+          resetToBeforeEditingBegan(state);
+        });
       }
     },
     [containmentMap, onNodeParented, onNodeUnparented, xyFlowReactKieDiagramStoreApi, resetToBeforeEditingBegan]
@@ -801,8 +859,9 @@ export function XyFlowReactKieDiagram<
 
           e.stopPropagation();
           e.preventDefault();
-
-          resetToBeforeEditingBegan();
+          xyFlowReactKieDiagramStoreApi.setState((state) => {
+            resetToBeforeEditingBegan(state);
+          });
         } else if (!s.xyFlowReactKieDiagram.ongoingConnection) {
           xyFlowReactKieDiagramStoreApi.setState((state) => {
             if (

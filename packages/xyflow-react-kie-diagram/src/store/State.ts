@@ -21,6 +21,7 @@ import * as RF from "reactflow";
 import { SnapGrid } from "../snapgrid/SnapGrid";
 import { DC__Point, DC__Shape } from "../maths/model";
 import { GraphStructureAdjacencyList, GraphStructureEdge } from "../graph/graph";
+import { ContainmentMode } from "../graph/graphStructure";
 
 export type XyFlowReactKieDiagramNodeData<N extends string, NData extends XyFlowReactKieDiagramNodeData<N, NData>> = {
   shape: DC__Shape;
@@ -75,7 +76,6 @@ export interface XyFlowDiagramState<
   computed: (s: ThisType<this>) => {
     getDiagramData(): XyFlowDiagramData<N, NData, EData>;
     isDiagramEditingInProgress(): boolean;
-    isDropTargetNodeValidForSelection(): boolean;
   };
   dispatch: (s: ThisType<this>) => {
     setNodeStatus: (nodeId: string, status: Partial<XyFlowReactKieDiagramNodeStatus>) => any;
@@ -89,7 +89,7 @@ export interface XyFlowDiagramState<
     resizingNodes: Array<string>;
     draggingWaypoints: Array<string>;
     edgeIdBeingUpdated: string | undefined;
-    dropTargetNode: undefined | RF.Node<NData, N>;
+    dropTarget: undefined | { node: RF.Node<NData, N>; containmentMode: ContainmentMode };
     ongoingConnection: RF.OnConnectStartParams | undefined;
   };
 }
