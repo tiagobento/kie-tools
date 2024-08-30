@@ -162,6 +162,15 @@ export type OnWaypointRepositioned = (args: { edgeIndex: number; waypointIndex: 
 
 export type OnEscPressed = () => void;
 
+// model
+export type OnResetToBeforeEditingBegan<
+  S extends XyFlowDiagramState<S, N, NData, EData>,
+  N extends string,
+  E extends string,
+  NData extends XyFlowReactKieDiagramNodeData<N, NData>,
+  EData extends XyFlowReactKieDiagramEdgeData,
+> = (stateDraft: Draft<S>) => void;
+
 //
 
 export type Props<
@@ -174,7 +183,7 @@ export type Props<
   // model
   model: unknown;
   modelBeforeEditingRef: React.MutableRefObject<unknown>;
-  resetToBeforeEditingBegan: (stateDraft: Draft<S>) => void;
+  onResetToBeforeEditingBegan: OnResetToBeforeEditingBegan<S, N, E, NData, EData>;
   // components
   connectionLineComponent: RF.ConnectionLineComponent;
   nodeComponents: RF.NodeTypes;
@@ -236,7 +245,7 @@ export function XyFlowReactKieDiagram<
   // model
   model,
   modelBeforeEditingRef,
-  resetToBeforeEditingBegan,
+  onResetToBeforeEditingBegan,
   // infra
   diagramRef,
   children,
@@ -304,8 +313,6 @@ export function XyFlowReactKieDiagram<
         throw new Error("Cannot create connection without target bounds!");
       }
 
-      // --------- This is where we draw the line between the diagram and the model.
-
       console.log("XYFLOW KIE DIAGRAM: Edge added");
       xyFlowReactKieDiagramStoreApi.setState((state) => {
         onEdgeAdded({
@@ -350,8 +357,6 @@ export function XyFlowReactKieDiagram<
           element: string;
         };
         e.stopPropagation();
-
-        // --------- This is where we draw the line between the diagram and the model.
 
         xyFlowReactKieDiagramStoreApi.setState((state) => {
           const { newNodeId } = onNodeAdded({
@@ -445,8 +450,6 @@ export function XyFlowReactKieDiagram<
         if (!edgeType) {
           throw new Error(`XYFLOW KIE DIAGRAM: Invalid structure: ${sourceNodeType} --(any)--> ${newNodeType}`);
         }
-
-        // --------- This is where we draw the line between the diagram and the model.
 
         console.log("XYFLOW KIE DIAGRAM: Node added (connected)");
         const { newNodeId } = onConnectedNodeAdded({
@@ -649,8 +652,20 @@ export function XyFlowReactKieDiagram<
           state.xyFlowReactKieDiagram.dropTarget ??= newDropTarget;
           state.xyFlowReactKieDiagram.dropTarget.node = newDropTarget.node;
           state.xyFlowReactKieDiagram.dropTarget.containmentMode = newDropTarget.containmentMode;
-          foundContainer = true;
-          break;
+
+          // If one one those states is reached, we stop searching for a valid container.
+          // As there's no reason to keep looking if the node is already visually completely inside another node.
+          // That's not true for borders, though, as we don't want to let an invalid "border" containment to
+          // stop us from finding an "inside" container, for example.
+          if (
+            newDropTarget.containmentMode === ContainmentMode.BORDER ||
+            newDropTarget.containmentMode === ContainmentMode.INSIDE ||
+            newDropTarget.containmentMode === ContainmentMode.INVALID_INSIDE ||
+            newDropTarget.containmentMode === ContainmentMode.INVALID_NON_INSIDE_CONTAINER
+          ) {
+            foundContainer = true;
+            break;
+          }
         }
 
         // cleanup from last dragging event if none was found this time.
@@ -696,7 +711,7 @@ export function XyFlowReactKieDiagram<
                 ...state.computed(state).getDiagramData().selectedNodeTypes,
               ].join("', '")}' inside '${dropTarget?.node.type}'. Ignoring nodes dropped.`
             );
-            resetToBeforeEditingBegan(state);
+            onResetToBeforeEditingBegan(state);
             return;
           }
 
@@ -710,12 +725,7 @@ export function XyFlowReactKieDiagram<
           // Un-parent
           if (nodeBeingDragged.data.parentXyFlowNode) {
             const p = state.computed(state).getDiagramData().nodesById.get(nodeBeingDragged.data.parentXyFlowNode.id);
-            if (
-              p?.type &&
-              nodeBeingDragged.type &&
-              dropTarget &&
-              containmentMap.get(nodeBeingDragged.type)?.get(dropTarget.containmentMode)?.has(p.type)
-            ) {
+            if (p?.type && containmentMap.get(p.type)) {
               onNodeUnparented({ state, exParentNode: p, activeNode: nodeBeingDragged, selectedNodes });
             } else {
               console.debug(
@@ -742,11 +752,11 @@ export function XyFlowReactKieDiagram<
       } catch (e) {
         console.error(e);
         xyFlowReactKieDiagramStoreApi.setState((state) => {
-          resetToBeforeEditingBegan(state);
+          onResetToBeforeEditingBegan(state);
         });
       }
     },
-    [containmentMap, onNodeParented, onNodeUnparented, xyFlowReactKieDiagramStoreApi, resetToBeforeEditingBegan]
+    [containmentMap, onNodeParented, onNodeUnparented, xyFlowReactKieDiagramStoreApi, onResetToBeforeEditingBegan]
   );
 
   const onEdgesChange = useCallback<RF.OnEdgesChange>(
@@ -797,8 +807,6 @@ export function XyFlowReactKieDiagram<
       if (!sourceBounds || !targetBounds) {
         throw new Error("Cannot create connection without target bounds!");
       }
-
-      // --------- This is where we draw the line between the diagram and the model.
 
       const lastWaypoint = oldEdge.data?.edgeInfo
         ? oldEdge.data!["di:waypoint"]![oldEdge.data!["di:waypoint"]!.length - 1]!
@@ -860,7 +868,7 @@ export function XyFlowReactKieDiagram<
           e.stopPropagation();
           e.preventDefault();
           xyFlowReactKieDiagramStoreApi.setState((state) => {
-            resetToBeforeEditingBegan(state);
+            onResetToBeforeEditingBegan(state);
           });
         } else if (!s.xyFlowReactKieDiagram.ongoingConnection) {
           xyFlowReactKieDiagramStoreApi.setState((state) => {
@@ -889,7 +897,7 @@ export function XyFlowReactKieDiagram<
         }
       }
     },
-    [xyFlowReactKieDiagramStoreApi, modelBeforeEditingRef, resetToBeforeEditingBegan, onEscPressed]
+    [xyFlowReactKieDiagramStoreApi, modelBeforeEditingRef, onResetToBeforeEditingBegan, onEscPressed]
   );
 
   const nodes = useXyFlowReactKieDiagramStore((s) => s.computed(s).getDiagramData().nodes);

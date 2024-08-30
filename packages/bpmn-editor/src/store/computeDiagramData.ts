@@ -52,6 +52,7 @@ export function computeDiagramData(
 ): XyFlowDiagramData<BpmnNodeType, BpmnDiagramNodeData, BpmnDiagramEdgeData> {
   const nodeBpmnElementsById = new Map<string, BpmnNodeElement>();
   const edgeBpmnElementsById = new Map<string, BpmnEdgeElement>();
+  const parentIdsById = new Map<string, string>();
 
   definitions.rootElement
     ?.flatMap((s) => (s.__$$element !== "process" ? [] : s))
@@ -94,6 +95,31 @@ export function computeDiagramData(
         bpmnElement?.__$$element === "textAnnotation"
       ) {
         nodeBpmnElementsById.set(bpmnElement["@_id"], bpmnElement);
+      }
+
+      // sub-processes
+      if (
+        bpmnElement?.__$$element === "subProcess" ||
+        bpmnElement?.__$$element === "adHocSubProcess" ||
+        bpmnElement?.__$$element === "transaction"
+      ) {
+        for (const flowElement of bpmnElement.flowElement ?? []) {
+          parentIdsById.set(flowElement["@_id"], bpmnElement["@_id"]);
+          if (flowElement.__$$element !== "sequenceFlow") {
+            nodeBpmnElementsById.set(flowElement["@_id"], flowElement);
+          } else {
+            edgeBpmnElementsById.set(flowElement["@_id"], flowElement);
+          }
+        }
+
+        for (const flowElement of bpmnElement.artifact ?? []) {
+          parentIdsById.set(flowElement["@_id"], bpmnElement["@_id"]);
+          if (flowElement.__$$element !== "association") {
+            nodeBpmnElementsById.set(flowElement["@_id"], flowElement);
+          } else {
+            edgeBpmnElementsById.set(flowElement["@_id"], flowElement);
+          }
+        }
       }
 
       // edges
@@ -154,7 +180,7 @@ export function computeDiagramData(
             : nodeType === NODE_TYPES.subProcess
               ? NODE_LAYERS.CONTAINER_NODES
               : bpmnElement.__$$element === "boundaryEvent"
-                ? NODE_LAYERS.NESTED_NODES
+                ? NODE_LAYERS.ATTACHED_NODES
                 : NODE_LAYERS.NODES,
         selected: selectedNodes.has(id),
         resizing: resizingNodes.has(id),
@@ -172,6 +198,14 @@ export function computeDiagramData(
     (acc, n) => acc.set(n.id, n),
     new Map<string, RF.Node<BpmnDiagramNodeData, BpmnNodeType>>()
   );
+
+  // Assign parents
+  for (const node of nodes) {
+    const parentId = parentIdsById.get(node.id);
+    if (parentId) {
+      node.data.parentXyFlowNode = nodesById.get(parentId);
+    }
+  }
 
   const selectedNodesById = xyFlowReactKieDiagram._selectedNodes.reduce(
     (acc, s) => acc.set(s, nodesById.get(s)!),

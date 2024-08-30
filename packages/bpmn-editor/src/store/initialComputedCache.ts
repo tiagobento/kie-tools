@@ -22,11 +22,15 @@ import { State } from "./Store";
 
 export const INITIAL_COMPUTED_CACHE: Cache<ReturnType<State["computed"]>> = {
   isDiagramEditingInProgress: {
-    value: undefined,
+    value: false,
     dependencies: [],
   },
   getDiagramData: {
     value: undefined,
+    dependencies: [],
+  },
+  getBoundaryEventIdsByAttachedBpmnElementId: {
+    value: new Map(),
     dependencies: [],
   },
 };

@@ -18,8 +18,6 @@
  */
 
 import { BPMN20__tDefinitions, BPMNDI__BPMNShape } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
-import { ElementFilter } from "@kie-tools/xml-parser-ts/dist/elementFilter";
-import { Unpacked } from "@kie-tools/xyflow-react-kie-diagram/dist/tsExt/tsExt";
 import { BpmnDiagramEdgeData, BpmnNodeElement } from "../diagram/BpmnDiagramDomain";
 import { Normalized } from "../normalization/normalize";
 import { NodeNature } from "./NodeNature";

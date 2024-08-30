@@ -25,13 +25,13 @@ import {
   XyFlowReactKieDiagramNodeStatus,
 } from "@kie-tools/xyflow-react-kie-diagram/dist/store/State";
 import { computeIsDiagramEditingInProgress } from "@kie-tools/xyflow-react-kie-diagram/dist/store/computed/computeIsDiagramEditingInProgress";
+import { computeBoundaryEventIdsByAttachedBpmnElementId } from "./computeBoundaryEventIdsByAttachedBpmnElementId";
 import { setNodeStatus } from "@kie-tools/xyflow-react-kie-diagram/dist/store/dispatch/setNodeStatus";
 import { setEdgeStatus } from "@kie-tools/xyflow-react-kie-diagram/dist/store/dispatch/setEdgeStatus";
 import { enableMapSet } from "immer";
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 import { BpmnDiagramEdgeData } from "../diagram/BpmnDiagramDomain";
-import { BPMN_CONTAINMENT_MAP } from "../diagram/BpmnDiagramDomain";
 import { BpmnNodeType } from "../diagram/BpmnDiagramDomain";
 import { BpmnDiagramNodeData } from "../diagram/BpmnDiagramDomain";
 import { Normalized, normalize } from "../normalization/normalize";
@@ -50,6 +50,7 @@ export interface State extends BpmnXyFlowDiagramState {
   // https://github.com/pmndrs/zustand/issues/132#issuecomment-1120467721
   computed: (s: State) => {
     getDiagramData(): ReturnType<typeof computeDiagramData>;
+    getBoundaryEventIdsByAttachedBpmnElementId(): ReturnType<typeof computeBoundaryEventIdsByAttachedBpmnElementId>;
     isDiagramEditingInProgress(): boolean;
   };
   dispatch: (s: State) => {
@@ -159,6 +160,13 @@ export function createBpmnEditorStore(
             s.xyFlowReactKieDiagram.snapGrid,
             s.xyFlowReactKieDiagram.dropTarget,
           ]),
+
+        getBoundaryEventIdsByAttachedBpmnElementId: () =>
+          computedCache.cached(
+            "getBoundaryEventIdsByAttachedBpmnElementId",
+            computeBoundaryEventIdsByAttachedBpmnElementId,
+            [s.bpmn.model.definitions]
+          ),
       }),
     }))
   );

@@ -35,6 +35,7 @@ export const NODE_LAYERS = {
   NODES: 2000, // We need a difference > 1000 here, since ReactFlow will add 1000 to the z-index when a node is selected.
   PARENT_NODES: 3000, // We need a difference > 1000 here, since ReactFlow will add 1000 to the z-index when a node is selected.
   NESTED_NODES: 5000,
+  ATTACHED_NODES: 10000,
 };
 
 export const resizerControlStyle = {
