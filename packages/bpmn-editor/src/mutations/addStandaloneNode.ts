@@ -68,6 +68,12 @@ export function addStandaloneNode({
           [NODE_TYPES.intermediateCatchEvent]: {
             "@_id": newBpmnElementId,
             __$$element: "intermediateCatchEvent",
+            eventDefinition: [
+              {
+                "@_id": generateUuid(),
+                __$$element: "timerEventDefinition",
+              },
+            ],
           },
           [NODE_TYPES.intermediateThrowEvent]: {
             "@_id": newBpmnElementId,
