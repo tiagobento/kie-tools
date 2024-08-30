@@ -52,7 +52,7 @@ export function repositionNode({
       }
   );
 }) {
-  const { process, diagramElements } = addOrGetProcessAndDiagramElements({ definitions });
+  const { diagramElements } = addOrGetProcessAndDiagramElements({ definitions });
 
   const shape = diagramElements?.[__readonly_change.shapeIndex] as Normalized<DC__Shape> | undefined;
   const shapeBounds = shape?.["dc:Bounds"];

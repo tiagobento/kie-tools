@@ -17,4 +17,22 @@
  * under the License.
  */
 
-export const DEFAULT_BORDER_ALLOWANCE_IN_PX = 14;
+import { State } from "./Store";
+
+export function computeBoundaryEventIdsByAttachedBpmnElementId(definitions: State["bpmn"]["model"]["definitions"]) {
+  const boundaryEventIdsByAttachedBpmnElementId = new Map<string, string[]>();
+
+  for (const boundaryEvent of definitions.rootElement?.filter((s) => s.__$$element === "process")[0].flowElement ??
+    []) {
+    if (boundaryEvent.__$$element !== "boundaryEvent") {
+      continue;
+    }
+
+    boundaryEventIdsByAttachedBpmnElementId.set(
+      boundaryEvent["@_attachedToRef"], // force line-break
+      [...(boundaryEventIdsByAttachedBpmnElementId.get(boundaryEvent["@_attachedToRef"]) ?? []), boundaryEvent["@_id"]]
+    );
+  }
+
+  return boundaryEventIdsByAttachedBpmnElementId;
+}

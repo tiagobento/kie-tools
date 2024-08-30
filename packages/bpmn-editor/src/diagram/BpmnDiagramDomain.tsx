@@ -261,21 +261,10 @@ export const BPMN_CONTAINMENT_MAP: ContainmentMap<BpmnNodeType> = new Map<
           NODE_TYPES.endEvent,
         ]),
       ],
-      [
-        ContainmentMode.BORDER, //
-        new Set([NODE_TYPES.intermediateCatchEvent, NODE_TYPES.intermediateThrowEvent]),
-      ],
+      [ContainmentMode.BORDER, new Set([NODE_TYPES.intermediateCatchEvent])],
     ]),
   ],
-  [
-    NODE_TYPES.task,
-    new Map([
-      [
-        ContainmentMode.BORDER, //
-        new Set([NODE_TYPES.intermediateCatchEvent, NODE_TYPES.intermediateThrowEvent]),
-      ],
-    ]),
-  ],
+  [NODE_TYPES.task, new Map([[ContainmentMode.BORDER, new Set([NODE_TYPES.intermediateCatchEvent])]])],
 ]);
 
 export const CONNECTION_LINE_EDGE_COMPONENTS_MAPPING: ConnectionLineEdgeMapping<BpmnEdgeType> = {
@@ -299,7 +288,8 @@ export const CONNECTION_LINE_NODE_COMPONENT_MAPPING: ConnectionLineNodeMapping<B
   node_group: undefined as any,
 };
 
-export const XY_FLOW_NODE_TYPES: Record<BpmnNodeType, any> = {
+// FIXME: Tiago: Properly type React component
+export const XY_FLOW_NODE_TYPES: Record<BpmnNodeType, React.ComponentType<any>> = {
   [NODE_TYPES.startEvent]: StartEventNode,
   [NODE_TYPES.intermediateCatchEvent]: IntermediateCatchEventNode,
   [NODE_TYPES.intermediateThrowEvent]: IntermediateThrowEventNode,
@@ -314,7 +304,8 @@ export const XY_FLOW_NODE_TYPES: Record<BpmnNodeType, any> = {
   [NODE_TYPES.unknown]: UnknownNode,
 };
 
-export const XY_FLOW_EDGE_TYPES: Record<BpmnEdgeType, any> = {
+// FIXME: Tiago: Properly type React component
+export const XY_FLOW_EDGE_TYPES: Record<BpmnEdgeType, React.ComponentType<any>> = {
   [EDGE_TYPES.sequenceFlow]: SequenceFlowEdge,
   [EDGE_TYPES.association]: AssociationEdge,
 };
