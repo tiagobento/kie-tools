@@ -78,6 +78,7 @@ import { BpmnPalette, MIME_TYPE_FOR_BPMN_EDITOR_NEW_NODE_FROM_PALETTE } from "./
 import { DiagramContainerContextProvider } from "./DiagramContainerContext";
 import { repositionEdgeWaypoint } from "../mutations/repositionEdgeWaypoint";
 import { addNodesToSubProcess } from "../mutations/addNodesToSubProcess";
+import { makeBoundaryEvent } from "../mutations/makeBoundaryEvent";
 import { addEdgeWaypoint } from "../mutations/addEdgeWaypoint";
 import { deleteEdgeWaypoint } from "../mutations/deleteEdgeWaypoint";
 import { deleteNodesFromSubProcess } from "../mutations/deleteNodesFromSubProcess";
@@ -303,6 +304,15 @@ export function BpmnDiagram({
           definitions: state.bpmn.model.definitions,
           __readonly_subProcessId: parentNode.data.bpmnElement?.["@_id"],
           __readonly_nodeIds: selectedNodes.flatMap((s) => s.data.bpmnElement?.["@_id"] ?? []),
+        });
+      } else if (
+        containmentMode === ContainmentMode.BORDER &&
+        (parentNode.type === NODE_TYPES.subProcess || parentNode.type === NODE_TYPES.task)
+      ) {
+        makeBoundaryEvent({
+          definitions: state.bpmn.model.definitions,
+          __readonly_targetActivityId: parentNode.data.bpmnElement?.["@_id"],
+          __readonly_eventId: activeNode.data.bpmnElement?.["@_id"],
         });
       }
     },
