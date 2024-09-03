@@ -26,7 +26,7 @@ import { DC__Bounds } from "@kie-tools/xyflow-react-kie-diagram/dist/maths/model
 import { BpmnNodeType, NODE_TYPES } from "../diagram/BpmnDiagramDomain";
 import { Normalized } from "../normalization/normalize";
 import { addOrGetProcessAndDiagramElements } from "./addOrGetProcessAndDiagramElements";
-import { NodeNature, nodeNatures } from "./NodeNature";
+import { NodeNature, nodeNatures } from "./_NodeNature";
 
 export function addConnectedNode({
   definitions,

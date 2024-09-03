@@ -20,7 +20,7 @@
 import { BPMN20__tDefinitions, BPMNDI__BPMNShape } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
 import { BpmnDiagramEdgeData, BpmnNodeElement } from "../diagram/BpmnDiagramDomain";
 import { Normalized } from "../normalization/normalize";
-import { NodeNature } from "./NodeNature";
+import { NodeNature } from "./_NodeNature";
 import { addOrGetProcessAndDiagramElements } from "./addOrGetProcessAndDiagramElements";
 import { deleteEdge } from "./deleteEdge";
 
