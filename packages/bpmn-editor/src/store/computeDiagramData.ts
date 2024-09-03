@@ -43,6 +43,7 @@ import { ContainmentMode } from "@kie-tools/xyflow-react-kie-diagram/dist/graph/
 import { DC__Shape } from "@kie-tools/xyflow-react-kie-diagram/dist/maths/model";
 import { getCenter } from "@kie-tools/xyflow-react-kie-diagram/dist/maths/Maths";
 import { DEFAULT_BORDER_ALLOWANCE_IN_PX } from "@kie-tools/xyflow-react-kie-diagram/dist/snapgrid/BorderSnapping";
+import { BPMN20__tLane } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
 
 export function computeDiagramData(
   definitions: State["bpmn"]["model"]["definitions"],
@@ -104,7 +105,11 @@ export function computeDiagramData(
         bpmnElement?.__$$element === "transaction"
       ) {
         for (const flowElement of bpmnElement.flowElement ?? []) {
-          parentIdsById.set(flowElement["@_id"], bpmnElement["@_id"]);
+          if (flowElement.__$$element === "boundaryEvent") {
+            parentIdsById.set(flowElement["@_id"], flowElement["@_attachedToRef"]);
+          } else {
+            parentIdsById.set(flowElement["@_id"], bpmnElement["@_id"]);
+          }
           if (flowElement.__$$element !== "sequenceFlow") {
             nodeBpmnElementsById.set(flowElement["@_id"], flowElement);
           } else {
@@ -120,6 +125,24 @@ export function computeDiagramData(
             edgeBpmnElementsById.set(flowElement["@_id"], flowElement);
           }
         }
+      }
+
+      // lanes
+      if (bpmnElement.__$$element === "lane") {
+        const recursivelyAddNodesInsideLane = (lane: BPMN20__tLane) => {
+          for (const flowNodeRef of lane.flowNodeRef ?? []) {
+            parentIdsById.set(flowNodeRef.__$$text, bpmnElement["@_id"]);
+          }
+          for (const childLane of lane.childLaneSet?.lane ?? []) {
+            recursivelyAddNodesInsideLane(childLane);
+          }
+        };
+        recursivelyAddNodesInsideLane(bpmnElement);
+      }
+
+      // boundary events
+      if (bpmnElement.__$$element === "boundaryEvent") {
+        parentIdsById.set(bpmnElement["@_id"], bpmnElement["@_attachedToRef"]);
       }
 
       // edges

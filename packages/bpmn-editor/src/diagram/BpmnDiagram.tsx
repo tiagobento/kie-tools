@@ -38,18 +38,30 @@ import {
 } from "@kie-tools/xyflow-react-kie-diagram/dist/diagram/XyFlowReactKieDiagram";
 import { ConnectionLine as ReactFlowDiagramConnectionLine } from "@kie-tools/xyflow-react-kie-diagram/dist/edges/ConnectionLine";
 import { EdgeMarkers } from "@kie-tools/xyflow-react-kie-diagram/dist/edges/EdgeMarkers";
+import { ContainmentMode } from "@kie-tools/xyflow-react-kie-diagram/dist/graph/graphStructure";
 import { getHandlePosition } from "@kie-tools/xyflow-react-kie-diagram/dist/maths/DcMaths";
 import { PositionalNodeHandleId } from "@kie-tools/xyflow-react-kie-diagram/dist/nodes/PositionalNodeHandles";
+import { offsetShapePosition, snapShapePosition } from "@kie-tools/xyflow-react-kie-diagram/dist/snapgrid/SnapGrid";
+import { Draft } from "immer";
 import * as React from "react";
 import { useCallback, useState } from "react";
 import * as RF from "reactflow";
 import { useBpmnEditor } from "../BpmnEditorContext";
 import { addConnectedNode } from "../mutations/addConnectedNode";
 import { addEdge } from "../mutations/addEdge";
+import { addEdgeWaypoint } from "../mutations/addEdgeWaypoint";
+import { moveNodesInsideLane } from "../mutations/moveNodesInsideLane";
+import { moveNodesInsideSubProcess } from "../mutations/moveNodesInsideSubProcess";
 import { addStandaloneNode } from "../mutations/addStandaloneNode";
 import { deleteEdge } from "../mutations/deleteEdge";
+import { deleteEdgeWaypoint } from "../mutations/deleteEdgeWaypoint";
 import { deleteNode } from "../mutations/deleteNode";
-import { nodeNatures } from "../mutations/NodeNature";
+import { moveNodesOutOfLane } from "../mutations/moveNodesOutOfLane";
+import { moveNodesOutOfSubProcess } from "../mutations/moveNodesOutOfSubProcess";
+import { makeBoundaryEvent } from "../mutations/makeBoundaryEvent";
+import { detachBoundaryEvent } from "../mutations/detachBoundaryEvent";
+import { nodeNatures } from "../mutations/_NodeNature";
+import { repositionEdgeWaypoint } from "../mutations/repositionEdgeWaypoint";
 import { repositionNode } from "../mutations/repositionNode";
 import { resizeNode } from "../mutations/resizeNode";
 import { normalize } from "../normalization/normalize";
@@ -76,15 +88,6 @@ import { BpmnDiagramEmptyState } from "./BpmnDiagramEmptyState";
 import { TopRightCornerPanels } from "./BpmnDiagramTopRightPanels";
 import { BpmnPalette, MIME_TYPE_FOR_BPMN_EDITOR_NEW_NODE_FROM_PALETTE } from "./BpmnPalette";
 import { DiagramContainerContextProvider } from "./DiagramContainerContext";
-import { repositionEdgeWaypoint } from "../mutations/repositionEdgeWaypoint";
-import { addNodesToSubProcess } from "../mutations/addNodesToSubProcess";
-import { makeBoundaryEvent } from "../mutations/makeBoundaryEvent";
-import { addEdgeWaypoint } from "../mutations/addEdgeWaypoint";
-import { deleteEdgeWaypoint } from "../mutations/deleteEdgeWaypoint";
-import { deleteNodesFromSubProcess } from "../mutations/deleteNodesFromSubProcess";
-import { Draft } from "immer";
-import { ContainmentMode } from "@kie-tools/xyflow-react-kie-diagram/dist/graph/graphStructure";
-import { snapShapePosition, offsetShapePosition } from "@kie-tools/xyflow-react-kie-diagram/dist/snapgrid/SnapGrid";
 
 export function BpmnDiagram({
   container,
@@ -174,7 +177,7 @@ export function BpmnDiagram({
 
   const onNodeRepositioned = useCallback<
     OnNodeRepositioned<State, BpmnNodeType, BpmnDiagramNodeData, BpmnDiagramEdgeData>
-  >(({ state, node, controlWaypointsByEdge, newPosition }) => {
+  >(({ state, node, controlWaypointsByEdge, newPosition, childNodeIds }) => {
     console.log("BPMN EDITOR DIAGRAM: onNodeRepositioned");
     const selectedEdges = [...state.computed(state).getDiagramData().selectedEdgesById.keys()];
     const { delta } = repositionNode({
@@ -197,38 +200,7 @@ export function BpmnDiagram({
       },
     });
 
-    const nodeIdsToMoveTogether: string[] = [];
-
-    // Contained in lanes
-    if (node.data.bpmnElement?.__$$element === "lane") {
-      // FIXME: Tiago - Implement
-    }
-
-    // Contained in subProcesses
-    else if (
-      node.data.bpmnElement?.__$$element === "subProcess" ||
-      node.data.bpmnElement?.__$$element === "adHocSubProcess" ||
-      node.data.bpmnElement?.__$$element === "transaction"
-    ) {
-      for (const nested of [...(node.data.bpmnElement.flowElement ?? []), ...(node.data.bpmnElement.artifact ?? [])]) {
-        if (nested.__$$element === "sequenceFlow" || nested.__$$element === "association") {
-          // we're only interested in nodes here.
-          continue;
-        }
-
-        nodeIdsToMoveTogether.push(nested["@_id"]);
-        nodeIdsToMoveTogether.push(
-          ...(state.computed(state).getBoundaryEventIdsByAttachedBpmnElementId().get(nested["@_id"]) ?? [])
-        );
-      }
-    }
-
-    // Boundary Events
-    nodeIdsToMoveTogether.push(
-      ...(state.computed(state).getBoundaryEventIdsByAttachedBpmnElementId().get(node.id) ?? [])
-    );
-
-    for (const nestedId of nodeIdsToMoveTogether) {
+    for (const nestedId of childNodeIds) {
       const nestedNode = state.computed(state).getDiagramData().nodesById.get(nestedId);
       if (!nestedNode) {
         throw new Error("Can't reposition nested node with id " + nestedId);
@@ -286,10 +258,36 @@ export function BpmnDiagram({
     ({ state, activeNode, exParentNode, selectedNodes }) => {
       console.log("BPMN EDITOR DIAGRAM: onNodeUnparented");
       if (exParentNode.type === NODE_TYPES.subProcess) {
-        deleteNodesFromSubProcess({
+        // ContainmentMode was INSIDE
+        moveNodesOutOfSubProcess({
           definitions: state.bpmn.model.definitions,
           __readonly_subProcessId: exParentNode.data.bpmnElement?.["@_id"],
           __readonly_nodeIds: selectedNodes.flatMap((s) => s.data.bpmnElement?.["@_id"] ?? []),
+        });
+      }
+
+      if (exParentNode.type === NODE_TYPES.lane) {
+        // ContainmentMode was INSIDE
+        moveNodesOutOfLane({
+          definitions: state.bpmn.model.definitions,
+          __readonly_laneId: exParentNode.data.bpmnElement?.["@_id"],
+          __readonly_nodeIds: selectedNodes.flatMap((s) => s.data.bpmnElement?.["@_id"] ?? []),
+        });
+      }
+
+      if (
+        (exParentNode.type === NODE_TYPES.subProcess || exParentNode.type === NODE_TYPES.task) &&
+        activeNode.type === NODE_TYPES.intermediateCatchEvent &&
+        activeNode.data.bpmnElement?.__$$element === "boundaryEvent"
+      ) {
+        if (selectedNodes.length > 1) {
+          throw new Error("Can't unparent more than one node when boundary events are selected.");
+        }
+
+        // ContainmentMode was BORDER
+        detachBoundaryEvent({
+          definitions: state.bpmn.model.definitions,
+          __readonly_eventId: activeNode.data.bpmnElement?.["@_id"],
         });
       }
     },
@@ -300,9 +298,15 @@ export function BpmnDiagram({
     ({ state, containmentMode, activeNode, parentNode, selectedNodes }) => {
       console.log(`BPMN EDITOR DIAGRAM: onNodeParented (${containmentMode})`);
       if (containmentMode === ContainmentMode.INSIDE && parentNode.type === NODE_TYPES.subProcess) {
-        addNodesToSubProcess({
+        moveNodesInsideSubProcess({
           definitions: state.bpmn.model.definitions,
           __readonly_subProcessId: parentNode.data.bpmnElement?.["@_id"],
+          __readonly_nodeIds: selectedNodes.flatMap((s) => s.data.bpmnElement?.["@_id"] ?? []),
+        });
+      } else if (containmentMode === ContainmentMode.INSIDE && parentNode.type === NODE_TYPES.lane) {
+        moveNodesInsideLane({
+          definitions: state.bpmn.model.definitions,
+          __readonly_laneId: parentNode.data.bpmnElement?.["@_id"],
           __readonly_nodeIds: selectedNodes.flatMap((s) => s.data.bpmnElement?.["@_id"] ?? []),
         });
       } else if (

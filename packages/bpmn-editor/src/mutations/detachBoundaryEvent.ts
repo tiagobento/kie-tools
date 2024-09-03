@@ -22,31 +22,29 @@ import { ElementFilter } from "@kie-tools/xml-parser-ts/dist/elementFilter";
 import { Unpacked } from "@kie-tools/xyflow-react-kie-diagram/dist/tsExt/tsExt";
 import { Normalized } from "../normalization/normalize";
 import { State } from "../store/Store";
-import { FoundFlowElement, visitFlowElements } from "./_flowElementVisitor";
 import { addOrGetProcessAndDiagramElements } from "./addOrGetProcessAndDiagramElements";
+import { FoundFlowElement, visitFlowElements } from "./_flowElementVisitor";
 
-export function makeBoundaryEvent({
+export function detachBoundaryEvent({
   definitions,
-  __readonly_targetActivityId,
   __readonly_eventId,
 }: {
   definitions: State["bpmn"]["model"]["definitions"];
-  __readonly_targetActivityId: string | undefined;
   __readonly_eventId: string | undefined;
 }) {
   const { process } = addOrGetProcessAndDiagramElements({ definitions });
 
-  if (__readonly_targetActivityId === undefined || __readonly_eventId === undefined) {
-    throw new Error("Event or Target Activity need to have an ID.");
+  if (__readonly_eventId === undefined) {
+    throw new Error("Event needs to have an ID.");
   }
 
-  let intermediateCatchEvent:
+  let boundaryEvent:
     | undefined
     | FoundFlowElement<
-        Normalized<ElementFilter<Unpacked<NonNullable<BPMN20__tProcess["flowElement"]>>, "intermediateCatchEvent">>
+        Normalized<ElementFilter<Unpacked<NonNullable<BPMN20__tProcess["flowElement"]>>, "boundaryEvent">>
       >;
 
-  let targetActivity:
+  let activity:
     | undefined
     | FoundFlowElement<
         Normalized<
@@ -66,14 +64,20 @@ export function makeBoundaryEvent({
 
   visitFlowElements(process, ({ flowElement, index, owner }) => {
     if (flowElement["@_id"] === __readonly_eventId) {
-      if (flowElement.__$$element === "intermediateCatchEvent") {
-        intermediateCatchEvent = { owner, index, flowElement };
+      if (flowElement.__$$element === "boundaryEvent") {
+        boundaryEvent = { owner, index, flowElement };
       } else {
-        throw new Error("Provided id is not associated with an Intermediate Catch Event");
+        throw new Error("Provided id is not associated with a Boundary Event.");
       }
     }
+  });
 
-    if (flowElement["@_id"] === __readonly_targetActivityId) {
+  if (!boundaryEvent) {
+    throw new Error("Boundary Event not found. Aborting.");
+  }
+
+  visitFlowElements(process, ({ flowElement, index, owner }) => {
+    if (flowElement["@_id"] === boundaryEvent?.flowElement["@_attachedToRef"]) {
       if (
         flowElement.__$$element === "task" ||
         flowElement.__$$element === "businessRuleTask" ||
@@ -84,27 +88,22 @@ export function makeBoundaryEvent({
         flowElement.__$$element === "adHocSubProcess" ||
         flowElement.__$$element === "transaction"
       ) {
-        targetActivity = { owner, index, flowElement };
+        activity = { owner, index, flowElement };
       } else {
-        throw new Error("Provided id is not associated with an Activity.");
+        throw new Error("'attachedToRef' is not associated with an Activity.");
       }
     }
   });
 
-  if (!targetActivity) {
+  if (!activity) {
     throw new Error("Target Activity not found. Aborting.");
   }
 
-  if (!intermediateCatchEvent) {
-    throw new Error("Can't find Intermediate Catch Event to transform into a Boundary Event. Aborting.");
-  }
+  boundaryEvent.owner.flowElement?.splice(boundaryEvent.index, 1);
 
-  // If we found an intermediate catch event, we need to "transform" it into a boundary event.
-  intermediateCatchEvent.owner.flowElement?.splice(intermediateCatchEvent.index, 1);
-  targetActivity.owner.flowElement?.push({
-    __$$element: "boundaryEvent",
-    "@_id": intermediateCatchEvent.flowElement["@_id"],
-    "@_attachedToRef": targetActivity.flowElement["@_id"],
-    eventDefinition: intermediateCatchEvent.flowElement.eventDefinition,
+  process.flowElement?.push({
+    "@_id": boundaryEvent.flowElement["@_id"],
+    __$$element: "intermediateCatchEvent",
+    eventDefinition: boundaryEvent.flowElement.eventDefinition,
   });
 }

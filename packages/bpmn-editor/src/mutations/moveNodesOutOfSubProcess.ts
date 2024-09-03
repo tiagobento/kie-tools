@@ -17,14 +17,14 @@
  * under the License.
  */
 
+import { BPMN20__tProcess } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
+import { ElementExclusion } from "@kie-tools/xml-parser-ts/dist/elementFilter";
 import { Unpacked } from "@kie-tools/xyflow-react-kie-diagram/dist/tsExt/tsExt";
 import { Normalized } from "../normalization/normalize";
 import { State } from "../store/Store";
 import { addOrGetProcessAndDiagramElements } from "./addOrGetProcessAndDiagramElements";
-import { ElementExclusion } from "@kie-tools/xml-parser-ts/dist/elementFilter";
-import { BPMN20__tProcess } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
 
-export function addNodesToSubProcess({
+export function moveNodesOutOfSubProcess({
   definitions,
   __readonly_subProcessId,
   __readonly_nodeIds,
@@ -42,20 +42,7 @@ export function addNodesToSubProcess({
     ElementExclusion<Unpacked<NonNullable<BPMN20__tProcess["artifact"]>>, "association">
   >[] = [];
 
-  for (const nodeId of __readonly_nodeIds) {
-    const fIndex = process.flowElement?.findIndex((f) => f["@_id"] === nodeId) ?? -1;
-    if (fIndex > -1) {
-      flowElementsToMove.push(...((process.flowElement?.splice(fIndex, 1) ?? []) as typeof flowElementsToMove));
-    }
-
-    const aIndex = process.artifact?.findIndex((f) => f["@_id"] === nodeId) ?? -1;
-    if (aIndex > -1) {
-      artifactsToMove.push(...((process.artifact?.splice(aIndex, 1) ?? []) as typeof artifactsToMove));
-    }
-  }
-
   const subProcess = process.flowElement?.find((s) => s["@_id"] === __readonly_subProcessId);
-
   if (
     !(
       subProcess?.__$$element === "subProcess" ||
@@ -63,11 +50,32 @@ export function addNodesToSubProcess({
       subProcess?.__$$element === "transaction"
     )
   ) {
-    throw new Error(`BPMN Element with id ${__readonly_subProcessId} is not a subProcess.`);
+    throw new Error(`Can't find subProcess with ID ${__readonly_subProcessId}`);
   }
 
-  subProcess.flowElement ??= [];
-  subProcess.flowElement.push(...flowElementsToMove);
-  subProcess.artifact ??= [];
-  subProcess.artifact.push(...artifactsToMove);
+  const nodeIdsToMoveOut = new Set(__readonly_nodeIds);
+
+  for (let i = 0; i < (subProcess.flowElement ?? []).length; i++) {
+    const flowElement = (subProcess.flowElement ?? [])[i];
+    if (
+      nodeIdsToMoveOut.has(flowElement["@_id"]) ||
+      (flowElement.__$$element === "boundaryEvent" && nodeIdsToMoveOut.has(flowElement["@_attachedToRef"]))
+    ) {
+      flowElementsToMove.push(...((subProcess.flowElement?.splice(i, 1) ?? []) as typeof flowElementsToMove));
+      i--; // repeat one index because we just altered the array we're iterating over.
+    }
+  }
+
+  for (let i = 0; i < (subProcess.artifact ?? []).length; i++) {
+    const artifact = (subProcess.artifact ?? [])[i];
+    if (nodeIdsToMoveOut.has(artifact["@_id"])) {
+      artifactsToMove.push(...((subProcess.artifact?.splice(i, 1) ?? []) as typeof artifactsToMove));
+      i--; // repeat one index because we just altered the array we're iterating over.
+    }
+  }
+
+  process.flowElement ??= [];
+  process.flowElement.push(...flowElementsToMove);
+  process.artifact ??= [];
+  process.artifact.push(...artifactsToMove);
 }

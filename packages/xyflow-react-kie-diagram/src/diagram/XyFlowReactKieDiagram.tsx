@@ -20,6 +20,7 @@
 import * as React from "react";
 import * as RF from "reactflow";
 import { buildHierarchy } from "../graph/graph";
+import { getDeepChildNodes } from "../graph/childNodes";
 import { ContainmentMap, ContainmentMode, getDefaultEdgeTypeBetween, GraphStructure } from "../graph/graphStructure";
 import { checkIsValidConnection } from "../graph/isValidConnection";
 import { getContainmentRelationship, getDiBoundsCenterPoint } from "../maths/DcMaths";
@@ -94,6 +95,7 @@ export type OnNodeRepositioned<
   controlWaypointsByEdge: Map<number, Set<number>>;
   node: RF.Node<NData, N>;
   newPosition: RF.XYPosition;
+  childNodeIds: string[];
 }) => void;
 
 export type OnNodeDeleted<
@@ -549,9 +551,15 @@ export function XyFlowReactKieDiagram<
 
               if (change.positionAbsolute) {
                 const node = state.computed(state).getDiagramData().nodesById.get(change.id)!;
-
+                const allNodes = state.computed(state).getDiagramData().nodes;
                 console.log("XYFLOW KIE DIAGRAM: Node repositioned");
-                onNodeRepositioned({ state, controlWaypointsByEdge, node, newPosition: change.positionAbsolute });
+                onNodeRepositioned({
+                  state,
+                  controlWaypointsByEdge,
+                  node,
+                  newPosition: change.positionAbsolute,
+                  childNodeIds: getDeepChildNodes([change.id], allNodes).get(change.id) ?? [],
+                });
               }
               break;
             case "remove":

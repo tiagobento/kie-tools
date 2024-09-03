@@ -23,7 +23,7 @@ import { Normalized } from "../normalization/normalize";
 import { BPMN20__tDefinitions } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
 import { BpmnNodeType, elementToNodeType, NODE_TYPES } from "../diagram/BpmnDiagramDomain";
 import { DC__Bounds } from "@kie-tools/xyflow-react-kie-diagram/dist/maths/model";
-import { NodeNature, nodeNatures } from "./NodeNature";
+import { NodeNature, nodeNatures } from "./_NodeNature";
 import { addOrGetProcessAndDiagramElements } from "./addOrGetProcessAndDiagramElements";
 
 export function addStandaloneNode({

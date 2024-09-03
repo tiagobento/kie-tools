@@ -23,6 +23,9 @@ import { ElementFilter } from "@kie-tools/xml-parser-ts/dist/elementFilter";
 import { Unpacked } from "@kie-tools/xyflow-react-kie-diagram/dist/tsExt/tsExt";
 import { Normalized } from "../normalization/normalize";
 
+/**
+ * Assumes a single process is present together with a single diagram.
+ */
 export function addOrGetProcessAndDiagramElements({ definitions }: { definitions: Normalized<BPMN20__tDefinitions> }): {
   process: ElementFilter<Unpacked<Normalized<BPMN20__tDefinitions["rootElement"]>>, "process">;
   diagramElements: NonNullable<Normalized<BPMNDI__BPMNPlane["di:DiagramElement"]>>;
