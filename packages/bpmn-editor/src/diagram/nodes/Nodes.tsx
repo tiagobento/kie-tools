@@ -1142,14 +1142,14 @@ export const LaneNode = React.memo(
               edgeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.lane].edges}
             />
 
-            {/* {shouldActLikeHovered && (
+            {shouldActLikeHovered && (
               <NodeResizerHandle
                 nodeType={type as typeof NODE_TYPES.lane}
                 nodeId={id}
                 nodeShapeIndex={shapeIndex}
                 MIN_NODE_SIZES={MIN_NODE_SIZES}
               />
-            )} */}
+            )}
           </div>
         </div>
       </>
