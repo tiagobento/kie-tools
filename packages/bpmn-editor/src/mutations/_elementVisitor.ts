@@ -22,13 +22,14 @@ import { ElementFilter } from "@kie-tools/xml-parser-ts/dist/elementFilter";
 import { Unpacked } from "@kie-tools/xyflow-react-kie-diagram/dist/tsExt/tsExt";
 import { Normalized } from "../normalization/normalize";
 
-export type FoundFlowElement<F> = {
-  owner: FlowElementOwner;
-  flowElement: F;
+export type FoundElement<F> = {
+  owner: ElementOwner;
+  element: F;
+  array: ElementVisitorArgs["element"][];
   index: number;
 };
 
-type FlowElementOwner = Normalized<
+type ElementOwner = Normalized<
   | ElementFilter<Unpacked<NonNullable<BPMN20__tDefinitions["rootElement"]>>, "process">
   | ElementFilter<
       Unpacked<NonNullable<BPMN20__tProcess["flowElement"]>>,
@@ -36,28 +37,26 @@ type FlowElementOwner = Normalized<
     >
 >;
 
-type FlowElementVisitorArgs = {
-  flowElement: Normalized<Unpacked<NonNullable<BPMN20__tProcess["flowElement"]>>>;
+type ElementVisitorArgs = {
+  element: Normalized<Unpacked<NonNullable<BPMN20__tProcess["flowElement"] | BPMN20__tProcess["artifact"]>>>;
   index: number;
-  owner: FlowElementOwner;
+  array: ElementVisitorArgs["element"][];
+  owner: ElementOwner;
 };
 
-export function visitFlowElements(
-  process: Normalized<ElementFilter<Unpacked<NonNullable<BPMN20__tDefinitions["rootElement"]>>, "process">>,
-  visitor: (args: FlowElementVisitorArgs) => void
-) {
+/**
+ * Recursive method that will visit flowElements and artifacts inside root and/or deeply nested sub processes.
+ */
+export function visitFlowElementsAndArtifacts(process: ElementOwner, visitor: (args: ElementVisitorArgs) => void) {
   for (let i = 0; i < (process.flowElement ?? []).length; i++) {
-    const flowElement = process.flowElement![i];
-    visitor({ flowElement, index: i, owner: process });
-    if (
-      flowElement.__$$element === "subProcess" ||
-      flowElement.__$$element === "adHocSubProcess" ||
-      flowElement.__$$element === "transaction"
-    ) {
-      for (let j = 0; j < (flowElement.flowElement ?? []).length; j++) {
-        const nestedFlowElement = flowElement.flowElement![j];
-        visitor({ flowElement: nestedFlowElement, index: j, owner: flowElement });
-      }
+    const f = process.flowElement![i];
+    visitor({ element: f, index: i, owner: process, array: process.flowElement! });
+    if (f.__$$element === "subProcess" || f.__$$element === "adHocSubProcess" || f.__$$element === "transaction") {
+      visitFlowElementsAndArtifacts(f, visitor);
     }
+  }
+
+  for (let i = 0; i < (process.artifact ?? []).length; i++) {
+    visitor({ element: process.artifact![i], index: i, owner: process, array: process.artifact! });
   }
 }

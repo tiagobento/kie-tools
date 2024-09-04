@@ -23,7 +23,7 @@ import { Unpacked } from "@kie-tools/xyflow-react-kie-diagram/dist/tsExt/tsExt";
 import { Normalized } from "../normalization/normalize";
 import { State } from "../store/Store";
 import { addOrGetProcessAndDiagramElements } from "./addOrGetProcessAndDiagramElements";
-import { FoundFlowElement, visitFlowElements } from "./_flowElementVisitor";
+import { FoundElement, visitFlowElementsAndArtifacts } from "./_elementVisitor";
 
 export function detachBoundaryEvent({
   definitions,
@@ -38,15 +38,13 @@ export function detachBoundaryEvent({
     throw new Error("Event needs to have an ID.");
   }
 
-  let boundaryEvent:
+  let foundBoundaryEvent:
     | undefined
-    | FoundFlowElement<
-        Normalized<ElementFilter<Unpacked<NonNullable<BPMN20__tProcess["flowElement"]>>, "boundaryEvent">>
-      >;
+    | FoundElement<Normalized<ElementFilter<Unpacked<NonNullable<BPMN20__tProcess["flowElement"]>>, "boundaryEvent">>>;
 
-  let activity:
+  let foundActivity:
     | undefined
-    | FoundFlowElement<
+    | FoundElement<
         Normalized<
           ElementFilter<
             Unpacked<NonNullable<BPMN20__tProcess["flowElement"]>>,
@@ -62,48 +60,48 @@ export function detachBoundaryEvent({
         >
       >;
 
-  visitFlowElements(process, ({ flowElement, index, owner }) => {
-    if (flowElement["@_id"] === __readonly_eventId) {
-      if (flowElement.__$$element === "boundaryEvent") {
-        boundaryEvent = { owner, index, flowElement };
+  visitFlowElementsAndArtifacts(process, ({ element, index, owner, array }) => {
+    if (element["@_id"] === __readonly_eventId) {
+      if (element.__$$element === "boundaryEvent") {
+        foundBoundaryEvent = { owner, index, element, array };
       } else {
         throw new Error("Provided id is not associated with a Boundary Event.");
       }
     }
   });
 
-  if (!boundaryEvent) {
+  if (!foundBoundaryEvent) {
     throw new Error("Boundary Event not found. Aborting.");
   }
 
-  visitFlowElements(process, ({ flowElement, index, owner }) => {
-    if (flowElement["@_id"] === boundaryEvent?.flowElement["@_attachedToRef"]) {
+  visitFlowElementsAndArtifacts(process, ({ element, index, owner, array }) => {
+    if (element["@_id"] === foundBoundaryEvent?.element["@_attachedToRef"]) {
       if (
-        flowElement.__$$element === "task" ||
-        flowElement.__$$element === "businessRuleTask" ||
-        flowElement.__$$element === "userTask" ||
-        flowElement.__$$element === "scriptTask" ||
-        flowElement.__$$element === "serviceTask" ||
-        flowElement.__$$element === "subProcess" ||
-        flowElement.__$$element === "adHocSubProcess" ||
-        flowElement.__$$element === "transaction"
+        element.__$$element === "task" ||
+        element.__$$element === "businessRuleTask" ||
+        element.__$$element === "userTask" ||
+        element.__$$element === "scriptTask" ||
+        element.__$$element === "serviceTask" ||
+        element.__$$element === "subProcess" ||
+        element.__$$element === "adHocSubProcess" ||
+        element.__$$element === "transaction"
       ) {
-        activity = { owner, index, flowElement };
+        foundActivity = { owner, index, element, array };
       } else {
         throw new Error("'attachedToRef' is not associated with an Activity.");
       }
     }
   });
 
-  if (!activity) {
+  if (!foundActivity) {
     throw new Error("Target Activity not found. Aborting.");
   }
 
-  boundaryEvent.owner.flowElement?.splice(boundaryEvent.index, 1);
+  foundBoundaryEvent.owner.flowElement?.splice(foundBoundaryEvent.index, 1);
 
   process.flowElement?.push({
-    "@_id": boundaryEvent.flowElement["@_id"],
+    "@_id": foundBoundaryEvent.element["@_id"],
     __$$element: "intermediateCatchEvent",
-    eventDefinition: boundaryEvent.flowElement.eventDefinition,
+    eventDefinition: foundBoundaryEvent.element.eventDefinition,
   });
 }

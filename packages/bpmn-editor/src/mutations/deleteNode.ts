@@ -17,22 +17,26 @@
  * under the License.
  */
 
-import { BPMN20__tDefinitions, BPMNDI__BPMNShape } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
+import {
+  BPMN20__tDefinitions,
+  BPMN20__tProcess,
+  BPMNDI__BPMNShape,
+} from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
 import { BpmnDiagramEdgeData, BpmnNodeElement } from "../diagram/BpmnDiagramDomain";
 import { Normalized } from "../normalization/normalize";
-import { NodeNature } from "./_NodeNature";
 import { addOrGetProcessAndDiagramElements } from "./addOrGetProcessAndDiagramElements";
 import { deleteEdge } from "./deleteEdge";
+import { FoundElement, visitFlowElementsAndArtifacts } from "./_elementVisitor";
+import { Unpacked } from "@kie-tools/xyflow-react-kie-diagram/dist/tsExt/tsExt";
+import { ElementExclusion } from "@kie-tools/xml-parser-ts/dist/elementFilter";
 
 export function deleteNode({
   definitions,
   __readonly_bpmnEdgeData,
-  __readonly_nodeNature,
   __readonly_bpmnElementId,
 }: {
   definitions: Normalized<BPMN20__tDefinitions>;
   __readonly_bpmnEdgeData: BpmnDiagramEdgeData[];
-  __readonly_nodeNature: NodeNature;
   __readonly_bpmnElementId: string | undefined;
 }): {
   deletedBpmnElement: BpmnNodeElement | undefined;
@@ -57,36 +61,48 @@ export function deleteNode({
     }
   }
 
+  // Delete the bpmnElement
+
+  let laneIndex: number;
+
+  let foundElement:
+    | undefined
+    | FoundElement<
+        | ElementExclusion<Unpacked<NonNullable<BPMN20__tProcess["flowElement"]>>, "sequenceFlow">
+        | ElementExclusion<Unpacked<NonNullable<BPMN20__tProcess["artifact"]>>, "association">
+      >;
+
   let deletedBpmnElement: BpmnNodeElement | undefined = undefined;
 
-  // Delete the bpmnElement itself
-  if (__readonly_nodeNature === NodeNature.ARTIFACT) {
-    const nodeIndex = (process.artifact ?? []).findIndex((a) => a["@_id"] === __readonly_bpmnElementId);
-    deletedBpmnElement = process.artifact?.splice(nodeIndex, 1)?.[0] as typeof deletedBpmnElement;
-  } else if (
-    __readonly_nodeNature === NodeNature.PROCESS_FLOW_ELEMENT ||
-    __readonly_nodeNature == NodeNature.CONTAINER
-  ) {
-    const nodeIndex = (process.flowElement ?? []).findIndex((d) => d["@_id"] === __readonly_bpmnElementId);
-    deletedBpmnElement = process.flowElement?.splice(nodeIndex, 1)?.[0] as typeof deletedBpmnElement;
-  } else if (__readonly_nodeNature === NodeNature.LANE) {
-    const nodeIndex = (process.laneSet?.[0].lane ?? []).findIndex((d) => d["@_id"] === __readonly_bpmnElementId);
-    const deletedLane = (process.laneSet?.[0].lane ?? [])?.splice(nodeIndex, 1)?.[0];
-    deletedBpmnElement = deletedLane ? { ...deletedLane, __$$element: "lane" } : undefined;
-  } else if (__readonly_nodeNature === NodeNature.UNKNOWN) {
-    // Ignore. There's no bpmnElement here.
-  } else {
-    throw new Error(`BPMN MUTATION: Unknown node nature '${__readonly_nodeNature}'.`);
+  visitFlowElementsAndArtifacts(process, (args) => {
+    if (
+      args.element["@_id"] === __readonly_bpmnElementId &&
+      args.element.__$$element !== "sequenceFlow" &&
+      args.element.__$$element !== "association"
+    ) {
+      foundElement = { element: args.element, index: args.index, array: args.array, owner: args.owner };
+    }
+  });
+
+  // if flowElement or artifact
+  if (foundElement) {
+    deletedBpmnElement = foundElement.array.splice(foundElement.index, 1)?.[0] as BpmnNodeElement | undefined;
   }
 
-  if (!deletedBpmnElement && __readonly_nodeNature !== NodeNature.UNKNOWN) {
-    /**
-     * We do not want to throw error in case of `nodeNature` equals to `NodeNature.UNKNOWN`.
-     * In such scenario it is expected `bpmnElement` is undefined as we can not pair `bpmnElement` with the `BPMNShape`.
-     * However we are still able to delete at least the selected `BPMNShape` from the diagram.
-     */
-    throw new Error(`BPMN MUTATION: Can't delete BPMN object that doesn't exist: ID=${__readonly_bpmnElementId}`);
+  // if lane
+  else if (
+    (laneIndex = (process.laneSet?.[0].lane ?? []).findIndex((d) => d["@_id"] === __readonly_bpmnElementId)) >= 0
+  ) {
+    const deletedLane = (process.laneSet?.[0].lane ?? [])?.splice(laneIndex, 1)?.[0];
+    deletedBpmnElement = deletedLane ? { ...deletedLane, __$$element: "lane" } : undefined;
   }
+
+  // or error
+  else {
+    throw new Error(`BPMN MUTATION: Cannot find any BPMN Element with ID '${__readonly_bpmnElementId}'.`);
+  }
+
+  // Delete the BPMNShape
 
   let deletedBpmnShape: Normalized<BPMNDI__BPMNShape> | undefined;
   const bpmnShapeIndex = (diagramElements ?? []).findIndex((d) => d["@_bpmnElement"] === __readonly_bpmnElementId);

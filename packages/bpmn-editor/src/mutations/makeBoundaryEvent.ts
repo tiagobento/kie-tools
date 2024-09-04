@@ -22,7 +22,7 @@ import { ElementFilter } from "@kie-tools/xml-parser-ts/dist/elementFilter";
 import { Unpacked } from "@kie-tools/xyflow-react-kie-diagram/dist/tsExt/tsExt";
 import { Normalized } from "../normalization/normalize";
 import { State } from "../store/Store";
-import { FoundFlowElement, visitFlowElements } from "./_flowElementVisitor";
+import { FoundElement, visitFlowElementsAndArtifacts } from "./_elementVisitor";
 import { addOrGetProcessAndDiagramElements } from "./addOrGetProcessAndDiagramElements";
 
 export function makeBoundaryEvent({
@@ -40,15 +40,15 @@ export function makeBoundaryEvent({
     throw new Error("Event or Target Activity need to have an ID.");
   }
 
-  let intermediateCatchEvent:
+  let foundIntermediateCatchEvent:
     | undefined
-    | FoundFlowElement<
+    | FoundElement<
         Normalized<ElementFilter<Unpacked<NonNullable<BPMN20__tProcess["flowElement"]>>, "intermediateCatchEvent">>
       >;
 
-  let targetActivity:
+  let foundTargetActivity:
     | undefined
-    | FoundFlowElement<
+    | FoundElement<
         Normalized<
           ElementFilter<
             Unpacked<NonNullable<BPMN20__tProcess["flowElement"]>>,
@@ -64,47 +64,47 @@ export function makeBoundaryEvent({
         >
       >;
 
-  visitFlowElements(process, ({ flowElement, index, owner }) => {
-    if (flowElement["@_id"] === __readonly_eventId) {
-      if (flowElement.__$$element === "intermediateCatchEvent") {
-        intermediateCatchEvent = { owner, index, flowElement };
+  visitFlowElementsAndArtifacts(process, ({ element, index, owner, array }) => {
+    if (element["@_id"] === __readonly_eventId) {
+      if (element.__$$element === "intermediateCatchEvent") {
+        foundIntermediateCatchEvent = { owner, index, element, array };
       } else {
         throw new Error("Provided id is not associated with an Intermediate Catch Event");
       }
     }
 
-    if (flowElement["@_id"] === __readonly_targetActivityId) {
+    if (element["@_id"] === __readonly_targetActivityId) {
       if (
-        flowElement.__$$element === "task" ||
-        flowElement.__$$element === "businessRuleTask" ||
-        flowElement.__$$element === "userTask" ||
-        flowElement.__$$element === "scriptTask" ||
-        flowElement.__$$element === "serviceTask" ||
-        flowElement.__$$element === "subProcess" ||
-        flowElement.__$$element === "adHocSubProcess" ||
-        flowElement.__$$element === "transaction"
+        element.__$$element === "task" ||
+        element.__$$element === "businessRuleTask" ||
+        element.__$$element === "userTask" ||
+        element.__$$element === "scriptTask" ||
+        element.__$$element === "serviceTask" ||
+        element.__$$element === "subProcess" ||
+        element.__$$element === "adHocSubProcess" ||
+        element.__$$element === "transaction"
       ) {
-        targetActivity = { owner, index, flowElement };
+        foundTargetActivity = { owner, index, element, array };
       } else {
         throw new Error("Provided id is not associated with an Activity.");
       }
     }
   });
 
-  if (!targetActivity) {
+  if (!foundTargetActivity) {
     throw new Error("Target Activity not found. Aborting.");
   }
 
-  if (!intermediateCatchEvent) {
+  if (!foundIntermediateCatchEvent) {
     throw new Error("Can't find Intermediate Catch Event to transform into a Boundary Event. Aborting.");
   }
 
   // If we found an intermediate catch event, we need to "transform" it into a boundary event.
-  intermediateCatchEvent.owner.flowElement?.splice(intermediateCatchEvent.index, 1);
-  targetActivity.owner.flowElement?.push({
+  foundIntermediateCatchEvent.owner.flowElement?.splice(foundIntermediateCatchEvent.index, 1);
+  foundTargetActivity.owner.flowElement?.push({
     __$$element: "boundaryEvent",
-    "@_id": intermediateCatchEvent.flowElement["@_id"],
-    "@_attachedToRef": targetActivity.flowElement["@_id"],
-    eventDefinition: intermediateCatchEvent.flowElement.eventDefinition,
+    "@_id": foundIntermediateCatchEvent.element["@_id"],
+    "@_attachedToRef": foundTargetActivity.element["@_id"],
+    eventDefinition: foundIntermediateCatchEvent.element.eventDefinition,
   });
 }
