@@ -639,7 +639,7 @@ export const DEFAULT_NODE_SIZES: NodeSizes<BpmnNodeType> = {
     };
   },
   [NODE_TYPES.lane]: ({ snapGrid }) => {
-    const snappedMinSize = MIN_SIZE_FOR_NODES(snapGrid, 360, 180);
+    const snappedMinSize = MIN_SIZE_FOR_NODES(snapGrid, 540, 240);
     return {
       "@_width": snappedMinSize.width,
       "@_height": snappedMinSize.height,
