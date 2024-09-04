@@ -60,7 +60,6 @@ import { moveNodesOutOfLane } from "../mutations/moveNodesOutOfLane";
 import { moveNodesOutOfSubProcess } from "../mutations/moveNodesOutOfSubProcess";
 import { makeBoundaryEvent } from "../mutations/makeBoundaryEvent";
 import { detachBoundaryEvent } from "../mutations/detachBoundaryEvent";
-import { nodeNatures } from "../mutations/_NodeNature";
 import { repositionEdgeWaypoint } from "../mutations/repositionEdgeWaypoint";
 import { repositionNode } from "../mutations/repositionNode";
 import { resizeNode } from "../mutations/resizeNode";
@@ -179,14 +178,13 @@ export function BpmnDiagram({
     OnNodeRepositioned<State, BpmnNodeType, BpmnDiagramNodeData, BpmnDiagramEdgeData>
   >(({ state, node, controlWaypointsByEdge, newPosition, childNodeIds }) => {
     console.log("BPMN EDITOR DIAGRAM: onNodeRepositioned");
-    const selectedEdges = [...state.computed(state).getDiagramData().selectedEdgesById.keys()];
     const { delta } = repositionNode({
       definitions: state.bpmn.model.definitions,
       controlWaypointsByEdge,
       __readonly_change: {
         type: "absolute",
         nodeType: node.type as BpmnNodeType,
-        selectedEdges,
+        selectedEdges: [...state.computed(state).getDiagramData().selectedEdgesById.keys()],
         shapeIndex: node.data.shapeIndex,
         sourceEdgeIndexes: state
           .computed(state)
@@ -199,6 +197,11 @@ export function BpmnDiagram({
         position: newPosition,
       },
     });
+
+    const allEdgeIds = state
+      .computed(state)
+      .getDiagramData()
+      .edges.map((e) => e.id); // Simulate all edges being selected
 
     for (const nestedId of childNodeIds) {
       const nestedNode = state.computed(state).getDiagramData().nodesById.get(nestedId);
@@ -222,7 +225,7 @@ export function BpmnDiagram({
         __readonly_change: {
           type: "absolute",
           nodeType: nestedNode.type as BpmnNodeType,
-          selectedEdges,
+          selectedEdges: allEdgeIds, // Makes sure all internal waypoints move too.
           shapeIndex: nestedNode.data.shapeIndex,
           sourceEdgeIndexes: state
             .computed(state)
@@ -244,7 +247,6 @@ export function BpmnDiagram({
       deleteNode({
         definitions: state.bpmn.model.definitions,
         __readonly_bpmnElementId: node.data.bpmnElement?.["@_id"],
-        __readonly_nodeNature: nodeNatures[node.type as BpmnNodeType],
         __readonly_bpmnEdgeData: state
           .computed(state)
           .getDiagramData()
