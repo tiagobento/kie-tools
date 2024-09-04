@@ -34,7 +34,7 @@ import { XyFlowDiagramState, XyFlowReactKieDiagramEdgeData, XyFlowReactKieDiagra
 import { Draft } from "immer";
 import { PositionalNodeHandleId } from "../nodes/PositionalNodeHandles";
 import { WaypointActionsContextProvider, WaypointActionsContextType } from "../waypoints/WaypointActionsContext";
-import { DEFAULT_BORDER_ALLOWANCE_IN_PX } from "../snapgrid/BorderSnapping";
+import { DEFAULT_BORDER_ALLOWANCE_IN_PX, snapToDropTargetsBorder } from "../snapgrid/BorderSnapping";
 
 // nodes
 
@@ -550,14 +550,125 @@ export function XyFlowReactKieDiagram<
               state.dispatch(state).setNodeStatus(change.id, { dragging: change.dragging });
 
               if (change.positionAbsolute) {
-                const node = state.computed(state).getDiagramData().nodesById.get(change.id)!;
+                console.log(change.positionAbsolute);
                 const allNodes = state.computed(state).getDiagramData().nodes;
-                console.log("XYFLOW KIE DIAGRAM: Node repositioned");
+
+                if (nodeIdBeingDraggedRef.current === change.id) {
+                  const nodeBeingDragged = state.computed(state).getDiagramData().nodesById.get(change.id)!;
+
+                  let foundContainer = false;
+                  for (const potentialContainer of reactFlowInstance?.getNodes().reverse() ??
+                    [] /* Respect the nodes z-index */) {
+                    if (potentialContainer.id === nodeBeingDragged.id) {
+                      // ignore `nodeBeingDragged`
+                      continue;
+                    }
+
+                    const containmentRelationship = getContainmentRelationship({
+                      snapGrid,
+                      container: potentialContainer.data.shape["dc:Bounds"]!,
+                      containerMinSizes: minNodeSizes[potentialContainer.type as N],
+                      bounds: {
+                        ...nodeBeingDragged.data.shape["dc:Bounds"],
+                        "@_x": change.positionAbsolute.x,
+                        "@_y": change.positionAbsolute.y,
+                      },
+                      boundsMinSizes: minNodeSizes[nodeBeingDragged.type as N],
+                      borderAllowanceInPx: DEFAULT_BORDER_ALLOWANCE_IN_PX,
+                    });
+
+                    if (!(containmentRelationship.isAtBorder || containmentRelationship.isCompletelyInside)) {
+                      // `nodeBeingDragged` is not inside `potentialContainer`
+                      continue;
+                    }
+
+                    let containmentMode: ContainmentMode;
+                    if (containmentRelationship.isAtBorder) {
+                      containmentMode = ContainmentMode.BORDER;
+                    } else if (containmentRelationship.isCompletelyInside) {
+                      containmentMode = ContainmentMode.INSIDE;
+                    } else {
+                      throw new Error(
+                        "Can't determine ContainmentMode for a node that is not visually inside the other."
+                      );
+                    }
+
+                    const diagramData = state.computed(state).getDiagramData();
+                    if (diagramData.selectedNodesById.size > 1 && containmentMode === ContainmentMode.BORDER) {
+                      // Containment at border should only be done 1 by 1. Can't drag a selection to the border of another node.
+                      continue;
+                    }
+
+                    const allowedContainmentModes =
+                      containmentMap.get(potentialContainer.type as N) ?? new Map<ContainmentMode, Set<N>>();
+
+                    const allSelectedNodesRespectContainmentMode = [...diagramData.selectedNodeTypes].every(
+                      (nodeType) => allowedContainmentModes.get(containmentMode)?.has(nodeType)
+                    );
+
+                    const newDropTarget = {
+                      node: potentialContainer as Draft<RF.Node<NData, N>>,
+                      containmentMode: allSelectedNodesRespectContainmentMode
+                        ? containmentMode
+                        : containmentMode === ContainmentMode.INSIDE &&
+                            allowedContainmentModes.has(ContainmentMode.INSIDE)
+                          ? ContainmentMode.INVALID_INSIDE
+                          : containmentMode === ContainmentMode.BORDER &&
+                              allowedContainmentModes.has(ContainmentMode.BORDER)
+                            ? ContainmentMode.INVALID_BORDER
+                            : containmentMode === ContainmentMode.INSIDE
+                              ? ContainmentMode.INVALID_NON_INSIDE_CONTAINER
+                              : containmentMode === ContainmentMode.BORDER
+                                ? ContainmentMode.INVALID_IGNORE
+                                : ContainmentMode.INVALID_IGNORE,
+                    };
+
+                    state.xyFlowReactKieDiagram.dropTarget ??= newDropTarget;
+                    state.xyFlowReactKieDiagram.dropTarget.node = newDropTarget.node;
+                    state.xyFlowReactKieDiagram.dropTarget.containmentMode = newDropTarget.containmentMode;
+
+                    // If one one those states is reached, we stop searching for a valid container.
+                    // As there's no reason to keep looking if the node is already visually completely inside another node.
+                    // That's not true for borders, though, as we don't want to let an invalid "border" containment to
+                    // stop us from finding an "inside" container, for example.
+                    if (
+                      newDropTarget.containmentMode === ContainmentMode.BORDER ||
+                      newDropTarget.containmentMode === ContainmentMode.INSIDE ||
+                      newDropTarget.containmentMode === ContainmentMode.INVALID_INSIDE ||
+                      newDropTarget.containmentMode === ContainmentMode.INVALID_NON_INSIDE_CONTAINER
+                    ) {
+                      foundContainer = true;
+                      break;
+                    }
+                  }
+
+                  // cleanup from last dragging event if none was found this time.
+                  if (!foundContainer) {
+                    state.xyFlowReactKieDiagram.dropTarget = undefined;
+                  }
+                }
+
+                const node = state.computed(state).getDiagramData().nodesById.get(change.id)!;
+                const dropTarget = state.xyFlowReactKieDiagram.dropTarget as S["xyFlowReactKieDiagram"]["dropTarget"];
                 onNodeRepositioned({
                   state,
                   controlWaypointsByEdge,
                   node,
-                  newPosition: change.positionAbsolute,
+                  newPosition:
+                    dropTarget?.containmentMode === ContainmentMode.BORDER
+                      ? snapToDropTargetsBorder(
+                          dropTarget,
+                          {
+                            ...node.data.shape["dc:Bounds"],
+                            "@_x": change.positionAbsolute.x,
+                            "@_y": change.positionAbsolute.y,
+                          },
+                          node.type!,
+                          state.xyFlowReactKieDiagram.snapGrid,
+                          minNodeSizes,
+                          DEFAULT_BORDER_ALLOWANCE_IN_PX
+                        )
+                      : change.positionAbsolute,
                   childNodeIds: getDeepChildNodes([change.id], allNodes).get(change.id) ?? [],
                 });
               }
@@ -584,106 +695,21 @@ export function XyFlowReactKieDiagram<
         }
       });
     },
-    [minNodeSizes, onNodeDeleted, onNodeRepositioned, onNodeResized, reactFlowInstance, xyFlowReactKieDiagramStoreApi]
+    [
+      containmentMap,
+      minNodeSizes,
+      onNodeDeleted,
+      onNodeRepositioned,
+      onNodeResized,
+      reactFlowInstance,
+      snapGrid,
+      xyFlowReactKieDiagramStoreApi,
+    ]
   );
 
-  const onNodeDrag = useCallback<RF.NodeDragHandler>(
-    (e, nodeBeingDragged: RF.Node<NData, N>) => {
-      nodeIdBeingDraggedRef.current = nodeBeingDragged.id;
-      xyFlowReactKieDiagramStoreApi.setState((state) => {
-        const nodeBeingDraggedBounds = {
-          "@_x": nodeBeingDragged.positionAbsolute?.x ?? 0,
-          "@_y": nodeBeingDragged.positionAbsolute?.y ?? 0,
-          "@_width": nodeBeingDragged.width ?? 0,
-          "@_height": nodeBeingDragged.height ?? 0,
-        };
-
-        let foundContainer = false;
-        for (const potentialContainer of reactFlowInstance?.getNodes().reverse() ??
-          [] /* Respect the nodes z-index */) {
-          if (potentialContainer.id === nodeBeingDragged.id) {
-            // ignore `nodeBeingDragged`
-            continue;
-          }
-
-          const containmentRelationship = getContainmentRelationship({
-            snapGrid,
-            container: potentialContainer.data.shape["dc:Bounds"]!,
-            containerMinSizes: minNodeSizes[potentialContainer.type as N],
-            bounds: nodeBeingDraggedBounds,
-            boundsMinSizes: minNodeSizes[nodeBeingDragged.type as N],
-            borderAllowanceInPx: DEFAULT_BORDER_ALLOWANCE_IN_PX,
-          });
-
-          if (!(containmentRelationship.isAtBorder || containmentRelationship.isCompletelyInside)) {
-            // `nodeBeingDragged` is not inside `potentialContainer`
-            continue;
-          }
-
-          let containmentMode: ContainmentMode;
-          if (containmentRelationship.isAtBorder) {
-            containmentMode = ContainmentMode.BORDER;
-          } else if (containmentRelationship.isCompletelyInside) {
-            containmentMode = ContainmentMode.INSIDE;
-          } else {
-            throw new Error("Can't determine ContainmentMode for a node that is not visually inside the other.");
-          }
-
-          const diagramData = state.computed(state).getDiagramData();
-          if (diagramData.selectedNodesById.size > 1 && containmentMode === ContainmentMode.BORDER) {
-            // Containment at border should only be done 1 by 1. Can't drag a selection to the border of another node.
-            continue;
-          }
-
-          const allowedContainmentModes =
-            containmentMap.get(potentialContainer.type as N) ?? new Map<ContainmentMode, Set<N>>();
-
-          const allSelectedNodesRespectContainmentMode = [...diagramData.selectedNodeTypes].every((nodeType) =>
-            allowedContainmentModes.get(containmentMode)?.has(nodeType)
-          );
-
-          const newDropTarget = {
-            node: potentialContainer as Draft<RF.Node<NData, N>>,
-            containmentMode: allSelectedNodesRespectContainmentMode
-              ? containmentMode
-              : containmentMode === ContainmentMode.INSIDE && allowedContainmentModes.has(ContainmentMode.INSIDE)
-                ? ContainmentMode.INVALID_INSIDE
-                : containmentMode === ContainmentMode.BORDER && allowedContainmentModes.has(ContainmentMode.BORDER)
-                  ? ContainmentMode.INVALID_BORDER
-                  : containmentMode === ContainmentMode.INSIDE
-                    ? ContainmentMode.INVALID_NON_INSIDE_CONTAINER
-                    : containmentMode === ContainmentMode.BORDER
-                      ? ContainmentMode.INVALID_IGNORE
-                      : ContainmentMode.INVALID_IGNORE,
-          };
-
-          state.xyFlowReactKieDiagram.dropTarget ??= newDropTarget;
-          state.xyFlowReactKieDiagram.dropTarget.node = newDropTarget.node;
-          state.xyFlowReactKieDiagram.dropTarget.containmentMode = newDropTarget.containmentMode;
-
-          // If one one those states is reached, we stop searching for a valid container.
-          // As there's no reason to keep looking if the node is already visually completely inside another node.
-          // That's not true for borders, though, as we don't want to let an invalid "border" containment to
-          // stop us from finding an "inside" container, for example.
-          if (
-            newDropTarget.containmentMode === ContainmentMode.BORDER ||
-            newDropTarget.containmentMode === ContainmentMode.INSIDE ||
-            newDropTarget.containmentMode === ContainmentMode.INVALID_INSIDE ||
-            newDropTarget.containmentMode === ContainmentMode.INVALID_NON_INSIDE_CONTAINER
-          ) {
-            foundContainer = true;
-            break;
-          }
-        }
-
-        // cleanup from last dragging event if none was found this time.
-        if (!foundContainer) {
-          state.xyFlowReactKieDiagram.dropTarget = undefined;
-        }
-      });
-    },
-    [xyFlowReactKieDiagramStoreApi, containmentMap, reactFlowInstance, snapGrid, minNodeSizes]
-  );
+  const onNodeDrag = useCallback<RF.NodeDragHandler>((e, nodeBeingDragged: RF.Node<NData, N>) => {
+    nodeIdBeingDraggedRef.current = nodeBeingDragged.id;
+  }, []);
 
   const onNodeDragStart = useCallback<RF.NodeDragHandler>(
     (e, node: RF.Node<NData, N>, nodes) => {

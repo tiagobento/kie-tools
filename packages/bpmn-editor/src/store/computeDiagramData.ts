@@ -63,8 +63,16 @@ export function computeDiagramData(
       ...(s.laneSet ?? []).flatMap((s) => s.lane ?? []).map((l) => ({ ...l, __$$element: "lane" as const })),
     ])
     .forEach((bpmnElement) => {
-      // nodes
+      // edges
       if (
+        bpmnElement?.__$$element === "sequenceFlow" || //
+        bpmnElement?.__$$element === "association"
+      ) {
+        edgeBpmnElementsById.set(bpmnElement["@_id"], bpmnElement);
+      }
+
+      // nodes
+      else if (
         // activities
         // ->  sub-processes
         bpmnElement?.__$$element === "subProcess" ||
@@ -96,66 +104,61 @@ export function computeDiagramData(
         bpmnElement?.__$$element === "textAnnotation"
       ) {
         nodeBpmnElementsById.set(bpmnElement["@_id"], bpmnElement);
-      }
 
-      // sub-processes
-      if (
-        bpmnElement?.__$$element === "subProcess" ||
-        bpmnElement?.__$$element === "adHocSubProcess" ||
-        bpmnElement?.__$$element === "transaction"
-      ) {
-        for (const flowElement of bpmnElement.flowElement ?? []) {
-          if (flowElement.__$$element === "boundaryEvent") {
-            parentIdsById.set(flowElement["@_id"], flowElement["@_attachedToRef"]);
-          } else {
+        // sub-processes
+        if (
+          bpmnElement?.__$$element === "subProcess" ||
+          bpmnElement?.__$$element === "adHocSubProcess" ||
+          bpmnElement?.__$$element === "transaction"
+        ) {
+          for (const flowElement of bpmnElement.flowElement ?? []) {
+            if (flowElement.__$$element === "boundaryEvent") {
+              parentIdsById.set(flowElement["@_id"], flowElement["@_attachedToRef"]);
+            } else {
+              parentIdsById.set(flowElement["@_id"], bpmnElement["@_id"]);
+            }
+            if (flowElement.__$$element !== "sequenceFlow") {
+              nodeBpmnElementsById.set(flowElement["@_id"], flowElement);
+            } else {
+              edgeBpmnElementsById.set(flowElement["@_id"], flowElement);
+            }
+          }
+
+          for (const flowElement of bpmnElement.artifact ?? []) {
             parentIdsById.set(flowElement["@_id"], bpmnElement["@_id"]);
-          }
-          if (flowElement.__$$element !== "sequenceFlow") {
-            nodeBpmnElementsById.set(flowElement["@_id"], flowElement);
-          } else {
-            edgeBpmnElementsById.set(flowElement["@_id"], flowElement);
-          }
-        }
-
-        for (const flowElement of bpmnElement.artifact ?? []) {
-          parentIdsById.set(flowElement["@_id"], bpmnElement["@_id"]);
-          if (flowElement.__$$element !== "association") {
-            nodeBpmnElementsById.set(flowElement["@_id"], flowElement);
-          } else {
-            edgeBpmnElementsById.set(flowElement["@_id"], flowElement);
+            if (flowElement.__$$element !== "association") {
+              nodeBpmnElementsById.set(flowElement["@_id"], flowElement);
+            } else {
+              edgeBpmnElementsById.set(flowElement["@_id"], flowElement);
+            }
           }
         }
-      }
 
-      // lanes
-      if (bpmnElement.__$$element === "lane") {
-        const recursivelyAddNodesInsideLane = (lane: BPMN20__tLane) => {
-          for (const flowNodeRef of lane.flowNodeRef ?? []) {
-            parentIdsById.set(flowNodeRef.__$$text, bpmnElement["@_id"]);
-          }
-          for (const childLane of lane.childLaneSet?.lane ?? []) {
-            recursivelyAddNodesInsideLane(childLane);
-          }
-        };
-        recursivelyAddNodesInsideLane(bpmnElement);
-      }
+        // lanes
+        else if (bpmnElement.__$$element === "lane") {
+          const recursivelyAddNodesInsideLane = (lane: BPMN20__tLane) => {
+            for (const flowNodeRef of lane.flowNodeRef ?? []) {
+              parentIdsById.set(flowNodeRef.__$$text, bpmnElement["@_id"]);
+            }
+            for (const childLane of lane.childLaneSet?.lane ?? []) {
+              recursivelyAddNodesInsideLane(childLane);
+            }
+          };
+          recursivelyAddNodesInsideLane(bpmnElement);
+        }
 
-      // boundary events
-      if (bpmnElement.__$$element === "boundaryEvent") {
-        parentIdsById.set(bpmnElement["@_id"], bpmnElement["@_attachedToRef"]);
-      }
+        // boundary events
+        else if (bpmnElement.__$$element === "boundaryEvent") {
+          parentIdsById.set(bpmnElement["@_id"], bpmnElement["@_attachedToRef"]);
+        }
 
-      // edges
-      else if (
-        bpmnElement?.__$$element === "sequenceFlow" || //
-        bpmnElement?.__$$element === "association"
-      ) {
-        edgeBpmnElementsById.set(bpmnElement["@_id"], bpmnElement);
-      }
-
-      // other
-      else {
-        // ignore
+        // other
+        else {
+          // ignore on purpose
+        }
+      } else {
+        bpmnElement.__$$element;
+        // ignore on purpose
       }
     }, new Map<string, BpmnNodeElement>()) ?? new Map<string, BpmnNodeElement>();
 
@@ -184,7 +187,7 @@ export function computeDiagramData(
         id,
         position:
           selectedNodes.has(id) && dropTarget?.containmentMode === ContainmentMode.BORDER
-            ? snapToDropTargetsBorder(dropTarget, bpmnShape, nodeType, snapGrid, DEFAULT_BORDER_ALLOWANCE_IN_PX)
+            ? { x: bpmnShape["dc:Bounds"]["@_x"], y: bpmnShape["dc:Bounds"]["@_y"] } // Do not snap, leave it to the node repositioning to do the snapping.
             : snapShapePosition(snapGrid, bpmnShape),
         data: {
           bpmnElement,
@@ -330,73 +333,4 @@ export function computeDiagramData(
     selectedNodesById,
     selectedEdgesById,
   };
-}
-function snapToDropTargetsBorder(
-  dropTarget: NonNullable<State["xyFlowReactKieDiagram"]["dropTarget"]>,
-  bpmnShape: DC__Shape,
-  nodeType: BpmnNodeType,
-  snapGrid: SnapGrid,
-  borderAllowanceInPx: number
-): RF.XYPosition {
-  const dropTargetPosition = snapShapePosition(snapGrid, dropTarget.node.data.shape);
-  const dropTargetDimensions = snapShapeDimensions(
-    snapGrid,
-    dropTarget.node.data.shape,
-    MIN_NODE_SIZES[dropTarget.node.type!]({ snapGrid })
-  );
-
-  const shapeDimensions = snapShapeDimensions(snapGrid, bpmnShape, MIN_NODE_SIZES[nodeType!]({ snapGrid }));
-  const shapeCenterPoint = getCenter(
-    bpmnShape["dc:Bounds"]["@_x"],
-    bpmnShape["dc:Bounds"]["@_y"],
-    shapeDimensions.width,
-    shapeDimensions.height
-  );
-
-  // Rectangle coordinates
-  const dropTargetX_min = dropTargetPosition.x;
-  const dropTargetY_min = dropTargetPosition.y;
-  const dropTargetX_max = dropTargetPosition.x + dropTargetDimensions.width;
-  const dropTargetY_max = dropTargetPosition.y + dropTargetDimensions.height;
-
-  // Calculate distances to each side
-  const distanceLeft = Math.abs(shapeCenterPoint.x - dropTargetX_min);
-  const distanceRight = Math.abs(shapeCenterPoint.x - dropTargetX_max);
-  const distanceTop = Math.abs(shapeCenterPoint.y - dropTargetY_min);
-  const distanceBottom = Math.abs(shapeCenterPoint.y - dropTargetY_max);
-
-  let snappedX: number, snappedY: number;
-
-  // By doing this in two steps, and non-exclusively (note the lack of `else`s),
-  // we allow snapping to two sides at the same time, thus snapping to the corners.
-
-  // Step 1: Snap
-  if (distanceLeft <= borderAllowanceInPx) {
-    snappedX = dropTargetX_min - shapeDimensions.width / 2; // Snap to the top side
-  }
-  if (distanceRight <= borderAllowanceInPx) {
-    snappedX = dropTargetX_max - shapeDimensions.width / 2; // Snap to the right side
-  }
-  if (distanceTop <= borderAllowanceInPx) {
-    snappedY = dropTargetY_min - shapeDimensions.height / 2; // Snap to the top side
-  }
-  if (distanceBottom <= borderAllowanceInPx) {
-    snappedY = dropTargetY_max - shapeDimensions.height / 2; // Snap to the bottom side
-  }
-
-  // Step 2: Leave movement free if not already snapped.
-  if (distanceLeft <= borderAllowanceInPx) {
-    snappedY ??= bpmnShape["dc:Bounds"]["@_y"]; // Snap to the top side
-  }
-  if (distanceRight <= borderAllowanceInPx) {
-    snappedY ??= bpmnShape["dc:Bounds"]["@_y"]; // Snap to the right side
-  }
-  if (distanceTop <= borderAllowanceInPx) {
-    snappedX ??= bpmnShape["dc:Bounds"]["@_x"]; // Snap to the top side
-  }
-  if (distanceBottom <= borderAllowanceInPx) {
-    snappedX ??= bpmnShape["dc:Bounds"]["@_x"]; // Snap to the bottom side
-  }
-
-  return { x: snappedX!, y: snappedY! };
 }
