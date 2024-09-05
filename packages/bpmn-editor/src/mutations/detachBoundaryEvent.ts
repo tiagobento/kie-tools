@@ -61,10 +61,10 @@ export function detachBoundaryEvent({
         >
       >;
 
-  visitFlowElementsAndArtifacts(process, ({ element, index, owner, array }) => {
+  visitFlowElementsAndArtifacts(process, ({ element, ...args }) => {
     if (element["@_id"] === __readonly_eventId) {
       if (element.__$$element === "boundaryEvent") {
-        foundBoundaryEvent = { owner, index, element, array };
+        foundBoundaryEvent = { element, ...args };
       } else {
         throw new Error("Provided id is not associated with a Boundary Event.");
       }
@@ -75,7 +75,7 @@ export function detachBoundaryEvent({
     throw new Error("Boundary Event not found. Aborting.");
   }
 
-  visitFlowElementsAndArtifacts(process, ({ element, index, owner, array }) => {
+  visitFlowElementsAndArtifacts(process, ({ element, ...args }) => {
     if (element["@_id"] === foundBoundaryEvent?.element["@_attachedToRef"]) {
       if (
         element.__$$element === "task" ||
@@ -88,7 +88,7 @@ export function detachBoundaryEvent({
         element.__$$element === "adHocSubProcess" ||
         element.__$$element === "transaction"
       ) {
-        foundActivity = { owner, index, element, array };
+        foundActivity = { element, ...args };
       } else {
         throw new Error("'attachedToRef' is not associated with an Activity.");
       }

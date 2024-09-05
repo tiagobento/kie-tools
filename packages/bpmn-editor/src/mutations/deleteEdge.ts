@@ -26,44 +26,83 @@ import {
   BPMNDI__BPMNEdge,
 } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
 import { addOrGetProcessAndDiagramElements } from "./addOrGetProcessAndDiagramElements";
+import { FoundElement, visitFlowElementsAndArtifacts } from "./_elementVisitor";
+import { ElementFilter } from "@kie-tools/xml-parser-ts/dist/elementFilter";
+import { Unpacked } from "@kie-tools/xyflow-react-kie-diagram/dist/tsExt/tsExt";
 
 export function deleteEdge({
   definitions,
-  __readonly_edge,
+  __readonly_edgeId,
 }: {
   definitions: Normalized<BPMN20__tDefinitions>;
-  __readonly_edge: { id: string; bpmnElement: BpmnDiagramEdgeData["bpmnElement"] };
+  __readonly_edgeId: string;
 }): {
   deletedBpmnEdge: BPMNDI__BPMNEdge | undefined;
   deletedBpmnElement: BpmnDiagramEdgeData["bpmnElement"] | undefined;
 } {
   const { process, diagramElements } = addOrGetProcessAndDiagramElements({ definitions });
-  const bpmnElements: Normalized<BPMN20__tProcess>["flowElement" | "artifact"] =
-    switchExpression(__readonly_edge?.bpmnElement?.__$$element, {
-      association: process.artifact,
-      default: process.flowElement,
-    }) ?? [];
 
-  // Deleting the sequenceFlow/association
-  const bpmnElementIndex = bpmnElements.findIndex((e) => e["@_id"] === __readonly_edge.bpmnElement?.["@_id"]);
-  if (bpmnElementIndex < 0) {
-    throw new Error(`BPMN MUTATION: Can't find BPMN element with ID ${__readonly_edge.bpmnElement?.["@_id"]}`);
+  // BPMN Element (<sequenceFlow> or <association>)
+  let foundBpmnElement:
+    | undefined
+    | FoundElement<
+        | Normalized<ElementFilter<Unpacked<NonNullable<BPMN20__tProcess["flowElement"]>>, "sequenceFlow">>
+        | Normalized<ElementFilter<Unpacked<NonNullable<BPMN20__tProcess["artifact"]>>, "association">>
+      >;
+
+  visitFlowElementsAndArtifacts(process, ({ element, ...args }) => {
+    if (
+      (element.__$$element === "sequenceFlow" || element.__$$element === "association") &&
+      element["@_id"] === __readonly_edgeId
+    ) {
+      foundBpmnElement = { element, ...args };
+    }
+  });
+
+  if (!foundBpmnElement) {
+    throw new Error(`BPMN MUTATION: Can't find BPMN Element with ID '${__readonly_edgeId}'`);
   }
 
-  const bpmnEdgeIndex = (diagramElements ?? []).findIndex(
-    (e) => e["@_bpmnElement"] === __readonly_edge.bpmnElement?.["@_id"]
-  );
+  foundBpmnElement.array.splice(foundBpmnElement.index, 1);
+
+  // <incoming> and <outgoing> elements of Flow Elements
+  visitFlowElementsAndArtifacts(process, ({ element, ...args }) => {
+    if (
+      element.__$$element !== "association" &&
+      element.__$$element !== "group" &&
+      element.__$$element !== "textAnnotation" &&
+      element.__$$element !== "sequenceFlow" &&
+      element.__$$element !== "dataStoreReference" &&
+      element.__$$element !== "dataObject" &&
+      element.__$$element !== "dataObjectReference"
+    ) {
+      // outgoing
+      if (element["@_id"] === foundBpmnElement?.element?.["@_sourceRef"]) {
+        element.outgoing = element.outgoing?.filter((s) => s.__$$text !== foundBpmnElement?.element?.["@_targetRef"]);
+      }
+
+      // incoming
+      else if (element["@_id"] === foundBpmnElement?.element?.["@_targetRef"]) {
+        element.incoming = element.incoming?.filter((s) => s.__$$text !== foundBpmnElement?.element?.["@_sourceRef"]);
+      }
+
+      // ignore
+      else {
+        // empty on purpose
+      }
+      element.outgoing = element.outgoing?.filter((s) => s.__$$text !== deletedBpmnEdge?.["@_sourceElement"]);
+    }
+  });
+
+  // BPMNEdge
+  const bpmnEdgeIndex = (diagramElements ?? []).findIndex((e) => e["@_bpmnElement"] === __readonly_edgeId);
   if (bpmnEdgeIndex < 0) {
-    throw new Error(
-      `BPMN MUTATION: Can't find BPMNEdge with referencing a BPMN element with ID ${__readonly_edge.bpmnElement?.["@_id"]}`
-    );
+    throw new Error(`BPMN MUTATION: Can't find BPMNEdge with referencing a BPMN element with ID ${__readonly_edgeId}`);
   }
-
-  const deletedBpmnElements = bpmnElements?.splice(bpmnElementIndex, 1);
-  const deletedBpmnEdges = diagramElements?.splice(bpmnEdgeIndex, 1);
+  const deletedBpmnEdge = diagramElements?.splice(bpmnEdgeIndex, 1)[0] as BPMNDI__BPMNEdge | undefined;
 
   return {
-    deletedBpmnEdge: deletedBpmnEdges[0] as BPMNDI__BPMNEdge | undefined,
-    deletedBpmnElement: deletedBpmnElements[0] as BpmnDiagramEdgeData["bpmnElement"] | undefined,
+    deletedBpmnEdge,
+    deletedBpmnElement: foundBpmnElement.element,
   };
 }

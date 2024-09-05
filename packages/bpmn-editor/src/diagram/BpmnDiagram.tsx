@@ -421,11 +421,7 @@ export function BpmnDiagram({
 
     // The BPMN Edge changed nodes, so we need to delete the old one, but keep the waypoints.
     if (newBpmnEdge["@_bpmnElement"] !== edge.id) {
-      const { deletedBpmnEdge } = deleteEdge({
-        definitions: state.bpmn.model.definitions,
-        __readonly_edge: { id: edge.id, bpmnElement: edge.data!.bpmnElement },
-      });
-
+      const { deletedBpmnEdge } = deleteEdge({ definitions: state.bpmn.model.definitions, __readonly_edgeId: edge.id });
       const deletedWaypoints = deletedBpmnEdge?.["di:waypoint"];
 
       if (edge.source !== sourceNode.id && deletedWaypoints) {
@@ -445,10 +441,7 @@ export function BpmnDiagram({
     OnEdgeDeleted<State, BpmnNodeType, BpmnEdgeType, BpmnDiagramNodeData, BpmnDiagramEdgeData>
   >(({ state, edge }) => {
     console.log("BPMN EDITOR DIAGRAM: onEdgeDeleted");
-    deleteEdge({
-      definitions: state.bpmn.model.definitions,
-      __readonly_edge: { id: edge.id, bpmnElement: edge.data!.bpmnElement },
-    });
+    deleteEdge({ definitions: state.bpmn.model.definitions, __readonly_edgeId: edge.id });
   }, []);
 
   // waypoints
