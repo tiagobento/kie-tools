@@ -693,7 +693,7 @@ export const SubProcessNode = React.memo(
               edgeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.subProcess].edges}
             />
 
-            {shouldActLikeHovered && (
+            {selected && !dragging && (
               <NodeResizerHandle
                 nodeType={type as typeof NODE_TYPES.subProcess}
                 nodeId={id}
@@ -1142,7 +1142,7 @@ export const LaneNode = React.memo(
               edgeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.lane].edges}
             />
 
-            {shouldActLikeHovered && (
+            {selected && !dragging && (
               <NodeResizerHandle
                 nodeType={type as typeof NODE_TYPES.lane}
                 nodeId={id}
