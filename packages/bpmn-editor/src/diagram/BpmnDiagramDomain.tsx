@@ -119,6 +119,7 @@ export const BPMN_GRAPH_STRUCTURE: GraphStructure<BpmnNodeType, BpmnEdgeType> = 
         EDGE_TYPES.sequenceFlow,
         new Set([
           NODE_TYPES.task,
+          NODE_TYPES.subProcess,
           NODE_TYPES.intermediateCatchEvent,
           NODE_TYPES.intermediateThrowEvent,
           NODE_TYPES.gateway,
@@ -168,6 +169,7 @@ export const BPMN_GRAPH_STRUCTURE: GraphStructure<BpmnNodeType, BpmnEdgeType> = 
         EDGE_TYPES.sequenceFlow,
         new Set([
           NODE_TYPES.task,
+          NODE_TYPES.subProcess,
           NODE_TYPES.gateway,
           NODE_TYPES.intermediateCatchEvent,
           NODE_TYPES.intermediateThrowEvent,
@@ -184,6 +186,7 @@ export const BPMN_GRAPH_STRUCTURE: GraphStructure<BpmnNodeType, BpmnEdgeType> = 
         EDGE_TYPES.sequenceFlow,
         new Set([
           NODE_TYPES.task,
+          NODE_TYPES.subProcess,
           NODE_TYPES.gateway,
           NODE_TYPES.intermediateCatchEvent,
           NODE_TYPES.intermediateThrowEvent,
@@ -200,6 +203,7 @@ export const BPMN_GRAPH_STRUCTURE: GraphStructure<BpmnNodeType, BpmnEdgeType> = 
         EDGE_TYPES.sequenceFlow,
         new Set([
           NODE_TYPES.task,
+          NODE_TYPES.subProcess,
           NODE_TYPES.gateway,
           NODE_TYPES.intermediateCatchEvent,
           NODE_TYPES.intermediateThrowEvent,
