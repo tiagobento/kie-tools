@@ -27,4 +27,12 @@
   pointer-events: all !important;
 }
 
+.react-flow__node.xyflow-react-kie-diagram--containerNode--inside:not(.selected):hover
+  .xyflow-react-kie-diagram--node-shape {
+  filter: drop-shadow(2px 2px 3px #006ba47b) !important;
+}
+.react-flow__node.xyflow-react-kie-diagram--containerNode--inside.selected:hover .xyflow-react-kie-diagram--node-shape {
+  filter: drop-shadow(2px 2px 3px #004e77d6) !important;
+}
+
 /* (end) containerNodes */
