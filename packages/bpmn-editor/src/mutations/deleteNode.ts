@@ -51,13 +51,7 @@ export function deleteNode({
     const drgEdge = __readonly_bpmnEdgeData[i];
     // Only delete edges that end at or start from the node being deleted.
     if (drgEdge.bpmnEdge?.["@_sourceElement"] === nodeId || drgEdge.bpmnEdge?.["@_targetElement"] === nodeId) {
-      deleteEdge({
-        definitions,
-        __readonly_edge: {
-          id: drgEdge["@_id"],
-          bpmnElement: drgEdge.bpmnElement,
-        },
-      });
+      deleteEdge({ definitions, __readonly_edgeId: drgEdge["@_id"] });
     }
   }
 
@@ -74,13 +68,13 @@ export function deleteNode({
 
   let deletedBpmnElement: BpmnNodeElement | undefined = undefined;
 
-  visitFlowElementsAndArtifacts(process, (args) => {
+  visitFlowElementsAndArtifacts(process, ({ element, ...args }) => {
     if (
-      args.element["@_id"] === __readonly_bpmnElementId &&
-      args.element.__$$element !== "sequenceFlow" &&
-      args.element.__$$element !== "association"
+      element["@_id"] === __readonly_bpmnElementId &&
+      element.__$$element !== "sequenceFlow" &&
+      element.__$$element !== "association"
     ) {
-      foundElement = { element: args.element, index: args.index, array: args.array, owner: args.owner };
+      foundElement = { element, ...args };
     }
   });
 

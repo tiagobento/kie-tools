@@ -65,10 +65,10 @@ export function makeBoundaryEvent({
         >
       >;
 
-  visitFlowElementsAndArtifacts(process, ({ element, index, owner, array }) => {
+  visitFlowElementsAndArtifacts(process, ({ element, ...args }) => {
     if (element["@_id"] === __readonly_eventId) {
       if (element.__$$element === "intermediateCatchEvent") {
-        foundIntermediateCatchEvent = { owner, index, element, array };
+        foundIntermediateCatchEvent = { element, ...args };
       } else {
         throw new Error("Provided id is not associated with an Intermediate Catch Event");
       }
@@ -86,7 +86,7 @@ export function makeBoundaryEvent({
         element.__$$element === "adHocSubProcess" ||
         element.__$$element === "transaction"
       ) {
-        foundTargetActivity = { owner, index, element, array };
+        foundTargetActivity = { element, ...args };
       } else {
         throw new Error("Provided id is not associated with an Activity.");
       }
