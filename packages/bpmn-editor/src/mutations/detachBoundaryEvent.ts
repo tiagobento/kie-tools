@@ -53,6 +53,7 @@ export function detachBoundaryEvent({
             | "userTask"
             | "scriptTask"
             | "serviceTask"
+            | "callActivity"
             | "subProcess"
             | "adHocSubProcess"
             | "transaction"
@@ -83,6 +84,7 @@ export function detachBoundaryEvent({
         element.__$$element === "scriptTask" ||
         element.__$$element === "serviceTask" ||
         element.__$$element === "subProcess" ||
+        element.__$$element === "callActivity" ||
         element.__$$element === "adHocSubProcess" ||
         element.__$$element === "transaction"
       ) {
