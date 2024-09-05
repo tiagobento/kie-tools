@@ -58,6 +58,7 @@ export function makeBoundaryEvent({
             | "scriptTask"
             | "serviceTask"
             | "subProcess"
+            | "callActivity"
             | "adHocSubProcess"
             | "transaction"
           >
@@ -81,6 +82,7 @@ export function makeBoundaryEvent({
         element.__$$element === "scriptTask" ||
         element.__$$element === "serviceTask" ||
         element.__$$element === "subProcess" ||
+        element.__$$element === "callActivity" ||
         element.__$$element === "adHocSubProcess" ||
         element.__$$element === "transaction"
       ) {
