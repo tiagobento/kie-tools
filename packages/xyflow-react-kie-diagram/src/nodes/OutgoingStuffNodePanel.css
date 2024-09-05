@@ -24,14 +24,43 @@
   padding-left: 15px;
   height: max(40%, 80px);
   align-content: flex-start;
+  pointer-events: none;
+}
+/* used to fill gaps where pointer-events would be `none`*/
+/* uncomment the background:red property to see what it means */
+.xyflow-react-kie-diagram--outgoing-stuff-node-panel::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 32px; /* 15px margin + 17px border-radius; */
+  height: 100%;
+  pointer-events: all;
+  /* background: red; */
+  z-index: 1000;
+}
+/* used to fill gaps where pointer-events would be `none`*/
+/* uncomment the background:red property to see what it means */
+.xyflow-react-kie-diagram--outgoing-stuff-node-panel::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: calc(50% - 4px); /* 4px margin */
+  width: calc(100% - 17px); /* 17px border radius */
+  height: 8px;
+  pointer-events: all;
+  /* background: red; */
+  z-index: 1000;
 }
 .xyflow-react-kie-diagram--outgoing-stuff-node-panel > div {
+  pointer-events: all;
   display: flex;
   margin: 0 0 4px 0;
   background: #fff;
   border-radius: 24px;
   border: 1px solid black;
   box-shadow: 4px 4px 2px 0px rgb(127 127 127);
+  z-index: 2000;
 }
 .xyflow-react-kie-diagram--outgoing-stuff-node-panel > div > div {
   color: black;

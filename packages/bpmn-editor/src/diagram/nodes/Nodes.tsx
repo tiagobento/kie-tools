@@ -673,7 +673,7 @@ export const SubProcessNode = React.memo(
           <br /> */}
           <div className={"xyflow-react-kie-diagram--node"}>
             <InfoNodePanel
-              isVisible={!isTargeted && shouldActLikeHovered}
+              isVisible={!isTargeted && selected && !dragging}
               onClick={useCallback(() => {
                 bpmnEditorStoreApi.setState((state) => {
                   state.diagram.propertiesPanel.isOpen = true;
@@ -688,7 +688,7 @@ export const SubProcessNode = React.memo(
               nodeMapping={bpmnNodesOutgoingStuffNodePanelMapping}
               edgeMapping={bpmnEdgesOutgoingStuffNodePanelMapping}
               nodeHref={id}
-              isVisible={!isTargeted && shouldActLikeHovered}
+              isVisible={!isTargeted && selected && !dragging}
               nodeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.subProcess].nodes}
               edgeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.subProcess].edges}
             />
@@ -1122,7 +1122,7 @@ export const LaneNode = React.memo(
           <br /> */}
           <div className={"xyflow-react-kie-diagram--node"}>
             <InfoNodePanel
-              isVisible={!isTargeted && shouldActLikeHovered}
+              isVisible={!isTargeted && selected && !dragging}
               onClick={useCallback(() => {
                 bpmnEditorStoreApi.setState((state) => {
                   state.diagram.propertiesPanel.isOpen = true;
@@ -1137,7 +1137,7 @@ export const LaneNode = React.memo(
               nodeMapping={bpmnNodesOutgoingStuffNodePanelMapping}
               edgeMapping={bpmnEdgesOutgoingStuffNodePanelMapping}
               nodeHref={id}
-              isVisible={!isTargeted && shouldActLikeHovered}
+              isVisible={!isTargeted && selected && !dragging}
               nodeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.lane].nodes}
               edgeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.lane].edges}
             />
