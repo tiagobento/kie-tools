@@ -829,28 +829,27 @@ export function XyFlowReactKieDiagram<
     (oldEdge, newConnection) => {
       console.debug("XYFLOW KIE DIAGRAM: `onEdgeUpdate`", oldEdge, newConnection);
 
-      const state = xyFlowReactKieDiagramStoreApi.getState();
-      const sourceNode = state.computed(state).getDiagramData().nodesById.get(newConnection.source!);
-      const targetNode = state.computed(state).getDiagramData().nodesById.get(newConnection.target!);
-      if (!sourceNode || !targetNode) {
-        throw new Error("Cannot create connection without target and source nodes!");
-      }
-
-      const sourceBounds = sourceNode.data.shape["dc:Bounds"];
-      const targetBounds = targetNode.data.shape["dc:Bounds"];
-      if (!sourceBounds || !targetBounds) {
-        throw new Error("Cannot create connection without target bounds!");
-      }
-
-      const lastWaypoint = oldEdge.data?.edgeInfo
-        ? oldEdge.data!["di:waypoint"]![oldEdge.data!["di:waypoint"]!.length - 1]!
-        : getDiBoundsCenterPoint(targetBounds);
-      const firstWaypoint = oldEdge.data?.edgeInfo
-        ? oldEdge.data!["di:waypoint"]![0]!
-        : getDiBoundsCenterPoint(sourceBounds);
-
-      console.log("XYFLOW KIE DIAGRAM: Edge updated");
       xyFlowReactKieDiagramStoreApi.setState((state) => {
+        const sourceNode = state.computed(state).getDiagramData().nodesById.get(newConnection.source!);
+        const targetNode = state.computed(state).getDiagramData().nodesById.get(newConnection.target!);
+        if (!sourceNode || !targetNode) {
+          throw new Error("Cannot create connection without target and source nodes!");
+        }
+
+        const sourceBounds = sourceNode.data.shape["dc:Bounds"];
+        const targetBounds = targetNode.data.shape["dc:Bounds"];
+        if (!sourceBounds || !targetBounds) {
+          throw new Error("Cannot create connection without target bounds!");
+        }
+
+        const lastWaypoint = oldEdge.data?.edgeInfo
+          ? oldEdge.data!["di:waypoint"]![oldEdge.data!["di:waypoint"]!.length - 1]!
+          : getDiBoundsCenterPoint(targetBounds);
+        const firstWaypoint = oldEdge.data?.edgeInfo
+          ? oldEdge.data!["di:waypoint"]![0]!
+          : getDiBoundsCenterPoint(sourceBounds);
+
+        console.log("XYFLOW KIE DIAGRAM: Edge updated");
         onEdgeUpdated({
           state,
           sourceNode,
@@ -861,6 +860,10 @@ export function XyFlowReactKieDiagram<
           firstWaypoint,
           edge: oldEdge,
         });
+
+        // Finish edge update atomically.
+        state.xyFlowReactKieDiagram.ongoingConnection = undefined;
+        state.xyFlowReactKieDiagram.edgeIdBeingUpdated = undefined;
       });
     },
     [onEdgeUpdated, xyFlowReactKieDiagramStoreApi]
