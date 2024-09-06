@@ -177,7 +177,8 @@ export const StartEventNode = React.memo(
           </div>
           {/* Creates a div element with the node size to push down the <EditableNodeLabel /> */}
           {<div style={{ height: nodeDimensions.height, flexShrink: 0 }} />}
-          {<div>{startEvent["@_name"]}</div>}
+
+          {startEvent["@_name"] && <NodeLabelAtTheBottom label={startEvent["@_name"]} />}
         </div>
       </>
     );
@@ -275,7 +276,8 @@ export const IntermediateCatchEventNode = React.memo(
           </div>
           {/* Creates a div element with the node size to push down the <EditableNodeLabel /> */}
           {<div style={{ height: nodeDimensions.height, flexShrink: 0 }} />}
-          {<div>{""}</div>}
+
+          {intermediateCatchEvent["@_name"] && <NodeLabelAtTheBottom label={intermediateCatchEvent["@_name"]} />}
         </div>
       </>
     );
@@ -373,7 +375,8 @@ export const IntermediateThrowEventNode = React.memo(
           </div>
           {/* Creates a div element with the node size to push down the <EditableNodeLabel /> */}
           {<div style={{ height: nodeDimensions.height, flexShrink: 0 }} />}
-          {<div>{""}</div>}
+
+          {intermediateThrowEvent["@_name"] && <NodeLabelAtTheBottom label={intermediateThrowEvent["@_name"]} />}
         </div>
       </>
     );
@@ -470,7 +473,8 @@ export const EndEventNode = React.memo(
           </div>
           {/* Creates a div element with the node size to push down the <EditableNodeLabel /> */}
           {<div style={{ height: nodeDimensions.height, flexShrink: 0 }} />}
-          {<div>{""}</div>}
+
+          {endEvent["@_name"] && <NodeLabelAtTheBottom label={endEvent["@_name"]} />}
         </div>
       </>
     );
@@ -812,25 +816,7 @@ export const GatewayNode = React.memo(
           </div>
           {/* Creates a div element with the node size to push down the <EditableNodeLabel /> */}
           {<div style={{ height: nodeDimensions.height, flexShrink: 0 }} />}
-          {gateway["@_name"] && (
-            <div
-              style={{
-                fontSize: "0.8em",
-                marginTop: "10px",
-                borderRadius: "5px",
-                padding: "5px",
-                backgroundColor: "rgba(0,0,0,0.05)",
-                border: "1px solid rgba(0,0,0,0.5)",
-                boxShadow: "rgba(0, 0, 0, 0.4) 2px 2px 6px",
-                backdropFilter: "blur(4px)",
-                textAlign: "center",
-                width: "140%",
-                marginLeft: "-20%",
-              }}
-            >
-              {gateway["@_name"]}
-            </div>
-          )}
+          {gateway["@_name"] && <NodeLabelAtTheBottom label={gateway["@_name"]} />}
         </div>
       </>
     );
@@ -1376,4 +1362,26 @@ export function useActivityIcons(
 
     return icons;
   }, [activity]);
+}
+
+export function NodeLabelAtTheBottom({ label }: { label: string }) {
+  return (
+    <div
+      style={{
+        fontSize: "0.8em",
+        marginTop: "10px",
+        borderRadius: "5px",
+        padding: "5px",
+        backgroundColor: "rgba(0,0,0,0.02)",
+        border: "1px solid rgba(0,0,0,0.2)",
+        boxShadow: "rgba(0, 0, 0, 0.4) 2px 2px 6px",
+        backdropFilter: "blur(4px)",
+        textAlign: "center",
+        width: "140%",
+        marginLeft: "-20%",
+      }}
+    >
+      {label}
+    </div>
+  );
 }
