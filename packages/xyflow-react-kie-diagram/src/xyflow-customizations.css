@@ -153,7 +153,7 @@
   border-radius: 1000px;
 }
 .react-flow__resize-control {
-  z-index: 0;
+  z-index: 10000;
 }
 
 /* This is the rectangle that renders when dragging to select nodes. It shouldn't have any interaction with the mouse, as it messes hoverInfo for nodes. */

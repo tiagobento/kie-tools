@@ -566,15 +566,6 @@ export const TaskNode = React.memo(
 
             <>{task["@_name"]}</>
 
-            <OutgoingStuffNodePanel
-              nodeMapping={bpmnNodesOutgoingStuffNodePanelMapping}
-              edgeMapping={bpmnEdgesOutgoingStuffNodePanelMapping}
-              nodeHref={id}
-              isVisible={!isTargeted && shouldActLikeHovered}
-              nodeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.task].nodes}
-              edgeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.task].edges}
-            />
-
             {shouldActLikeHovered && (
               <NodeResizerHandle
                 nodeType={type as typeof NODE_TYPES.task}
@@ -583,6 +574,15 @@ export const TaskNode = React.memo(
                 MIN_NODE_SIZES={MIN_NODE_SIZES}
               />
             )}
+
+            <OutgoingStuffNodePanel
+              nodeMapping={bpmnNodesOutgoingStuffNodePanelMapping}
+              edgeMapping={bpmnEdgesOutgoingStuffNodePanelMapping}
+              nodeHref={id}
+              isVisible={!isTargeted && shouldActLikeHovered}
+              nodeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.task].nodes}
+              edgeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.task].edges}
+            />
           </div>
         </div>
       </>
@@ -610,6 +610,9 @@ export const SubProcessNode = React.memo(
     const ref = useRef<SVGRectElement>(null);
 
     const enableCustomNodeStyles = useBpmnEditorStore((s) => s.diagram.overlays.enableCustomNodeStyles);
+    const isOnlySelectedNode = useBpmnEditorStore(
+      (s) => s.xyFlowReactKieDiagram._selectedNodes.length === 1 && selected
+    );
     const isHovered = useIsHovered(ref);
     const isResizing = useNodeResizing(id);
     const shouldActLikeHovered = useBpmnEditorStore(
@@ -673,7 +676,7 @@ export const SubProcessNode = React.memo(
           <br /> */}
           <div className={"xyflow-react-kie-diagram--node"}>
             <InfoNodePanel
-              isVisible={!isTargeted && selected && !dragging}
+              isVisible={!isTargeted && isOnlySelectedNode && !dragging}
               onClick={useCallback(() => {
                 bpmnEditorStoreApi.setState((state) => {
                   state.diagram.propertiesPanel.isOpen = true;
@@ -684,16 +687,7 @@ export const SubProcessNode = React.memo(
             {/* FIXME: Tiago: Not actually the way to render this. */}
             <span style={{ position: "absolute", top: "20px", left: "20px" }}>{subProcess["@_name"]}</span>
 
-            <OutgoingStuffNodePanel
-              nodeMapping={bpmnNodesOutgoingStuffNodePanelMapping}
-              edgeMapping={bpmnEdgesOutgoingStuffNodePanelMapping}
-              nodeHref={id}
-              isVisible={!isTargeted && selected && !dragging}
-              nodeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.subProcess].nodes}
-              edgeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.subProcess].edges}
-            />
-
-            {selected && !dragging && (
+            {isOnlySelectedNode && !dragging && (
               <NodeResizerHandle
                 nodeType={type as typeof NODE_TYPES.subProcess}
                 nodeId={id}
@@ -701,6 +695,15 @@ export const SubProcessNode = React.memo(
                 MIN_NODE_SIZES={MIN_NODE_SIZES}
               />
             )}
+
+            <OutgoingStuffNodePanel
+              nodeMapping={bpmnNodesOutgoingStuffNodePanelMapping}
+              edgeMapping={bpmnEdgesOutgoingStuffNodePanelMapping}
+              nodeHref={id}
+              isVisible={!isTargeted && isOnlySelectedNode && !dragging}
+              nodeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.subProcess].nodes}
+              edgeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.subProcess].edges}
+            />
           </div>
         </div>
       </>
@@ -922,15 +925,6 @@ export const DataObjectNode = React.memo(
               }, [bpmnEditorStoreApi])}
             />
 
-            <OutgoingStuffNodePanel
-              nodeMapping={bpmnNodesOutgoingStuffNodePanelMapping}
-              edgeMapping={bpmnEdgesOutgoingStuffNodePanelMapping}
-              nodeHref={id}
-              isVisible={!isTargeted && shouldActLikeHovered}
-              nodeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.dataObject].nodes}
-              edgeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.dataObject].edges}
-            />
-
             {shouldActLikeHovered && (
               <NodeResizerHandle
                 nodeType={type as typeof NODE_TYPES.dataObject}
@@ -939,6 +933,15 @@ export const DataObjectNode = React.memo(
                 MIN_NODE_SIZES={MIN_NODE_SIZES}
               />
             )}
+
+            <OutgoingStuffNodePanel
+              nodeMapping={bpmnNodesOutgoingStuffNodePanelMapping}
+              edgeMapping={bpmnEdgesOutgoingStuffNodePanelMapping}
+              nodeHref={id}
+              isVisible={!isTargeted && shouldActLikeHovered}
+              nodeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.dataObject].nodes}
+              edgeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.dataObject].edges}
+            />
           </div>
           {/* Creates a div element with the node size to push down the <EditableNodeLabel /> */}
           {<div style={{ height: nodeDimensions.height, flexShrink: 0 }} />}
@@ -1035,14 +1038,6 @@ export const GroupNode = React.memo(
         >
           {/* {`render count: ${renderCount.current}`}
           <br /> */}
-          <OutgoingStuffNodePanel
-            nodeMapping={bpmnNodesOutgoingStuffNodePanelMapping}
-            edgeMapping={bpmnEdgesOutgoingStuffNodePanelMapping}
-            nodeHref={id}
-            isVisible={!isTargeted && selected && !dragging}
-            nodeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.group].nodes}
-            edgeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.group].edges}
-          />
 
           {selected && !dragging && (
             <NodeResizerHandle
@@ -1052,6 +1047,15 @@ export const GroupNode = React.memo(
               MIN_NODE_SIZES={MIN_NODE_SIZES}
             />
           )}
+
+          <OutgoingStuffNodePanel
+            nodeMapping={bpmnNodesOutgoingStuffNodePanelMapping}
+            edgeMapping={bpmnEdgesOutgoingStuffNodePanelMapping}
+            nodeHref={id}
+            isVisible={!isTargeted && selected && !dragging}
+            nodeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.group].nodes}
+            edgeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.group].edges}
+          />
         </div>
       </>
     );
@@ -1074,6 +1078,9 @@ export const LaneNode = React.memo(
     const ref = useRef<SVGRectElement>(null);
 
     const enableCustomNodeStyles = useBpmnEditorStore((s) => s.diagram.overlays.enableCustomNodeStyles);
+    const isOnlySelectedNode = useBpmnEditorStore(
+      (s) => s.xyFlowReactKieDiagram._selectedNodes.length === 1 && selected
+    );
     const isHovered = useIsHovered(ref);
     const isResizing = useNodeResizing(id);
     const shouldActLikeHovered = useBpmnEditorStore(
@@ -1122,7 +1129,7 @@ export const LaneNode = React.memo(
           <br /> */}
           <div className={"xyflow-react-kie-diagram--node"}>
             <InfoNodePanel
-              isVisible={!isTargeted && selected && !dragging}
+              isVisible={!isTargeted && isOnlySelectedNode && !dragging}
               onClick={useCallback(() => {
                 bpmnEditorStoreApi.setState((state) => {
                   state.diagram.propertiesPanel.isOpen = true;
@@ -1133,16 +1140,7 @@ export const LaneNode = React.memo(
             {/* FIXME: Tiago */}
             <span style={{ position: "absolute", top: "20px", left: "20px" }}>{lane["@_name"]}</span>
 
-            <OutgoingStuffNodePanel
-              nodeMapping={bpmnNodesOutgoingStuffNodePanelMapping}
-              edgeMapping={bpmnEdgesOutgoingStuffNodePanelMapping}
-              nodeHref={id}
-              isVisible={!isTargeted && selected && !dragging}
-              nodeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.lane].nodes}
-              edgeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.lane].edges}
-            />
-
-            {selected && !dragging && (
+            {isOnlySelectedNode && !dragging && (
               <NodeResizerHandle
                 nodeType={type as typeof NODE_TYPES.lane}
                 nodeId={id}
@@ -1150,6 +1148,15 @@ export const LaneNode = React.memo(
                 MIN_NODE_SIZES={MIN_NODE_SIZES}
               />
             )}
+
+            <OutgoingStuffNodePanel
+              nodeMapping={bpmnNodesOutgoingStuffNodePanelMapping}
+              edgeMapping={bpmnEdgesOutgoingStuffNodePanelMapping}
+              nodeHref={id}
+              isVisible={!isTargeted && isOnlySelectedNode && !dragging}
+              nodeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.lane].nodes}
+              edgeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.lane].edges}
+            />
           </div>
         </div>
       </>
@@ -1233,6 +1240,16 @@ export const TextAnnotationNode = React.memo(
               });
             }, [bpmnEditorStoreApi])}
           />
+
+          {shouldActLikeHovered && (
+            <NodeResizerHandle
+              nodeType={type as typeof NODE_TYPES.textAnnotation}
+              nodeId={id}
+              nodeShapeIndex={shapeIndex}
+              MIN_NODE_SIZES={MIN_NODE_SIZES}
+            />
+          )}
+
           <OutgoingStuffNodePanel
             nodeMapping={bpmnNodesOutgoingStuffNodePanelMapping}
             edgeMapping={bpmnEdgesOutgoingStuffNodePanelMapping}
@@ -1242,14 +1259,6 @@ export const TextAnnotationNode = React.memo(
             edgeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.textAnnotation].edges}
           />
           <div>{String(textAnnotation.text)}</div>
-          {shouldActLikeHovered && (
-            <NodeResizerHandle
-              nodeType={type as typeof NODE_TYPES.textAnnotation}
-              nodeId={id}
-              nodeShapeIndex={shapeIndex}
-              MIN_NODE_SIZES={MIN_NODE_SIZES}
-            />
-          )}
         </div>
       </>
     );
