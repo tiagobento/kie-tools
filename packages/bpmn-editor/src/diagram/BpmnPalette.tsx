@@ -101,6 +101,14 @@ export function BpmnPalette({ pulse }: { pulse: boolean }) {
             <CallActivityIcon />
           </div>
           <div
+            title={"Sub-processes"}
+            className={"kie-bpmn-editor--palette-button dndnode subProcess"}
+            onDragStart={(event) => onDragStart(event, NODE_TYPES.subProcess, "subProcess")}
+            draggable={true}
+          >
+            <SubProcessIcon />
+          </div>
+          <div
             title={"Gateways"}
             className={"kie-bpmn-editor--palette-button dndnode gateway"}
             onDragStart={(event) => onDragStart(event, NODE_TYPES.gateway, "parallelGateway")}
@@ -115,14 +123,6 @@ export function BpmnPalette({ pulse }: { pulse: boolean }) {
             draggable={true}
           >
             <LaneIcon />
-          </div>
-          <div
-            title={"Sub-processes"}
-            className={"kie-bpmn-editor--palette-button dndnode subProcess"}
-            onDragStart={(event) => onDragStart(event, NODE_TYPES.subProcess, "subProcess")}
-            draggable={true}
-          >
-            <SubProcessIcon />
           </div>
         </aside>
         <br />
