@@ -28,6 +28,7 @@ export type XptcComplexTypeBase = {
   isSimpleContent: boolean;
   needsExtensionType: boolean; // That's for sequences decalring <xsd:anyAttribute> or <xsd:any>
   declaredAtRelativeLocation: string;
+  attributes: XptcAttribute[];
   elements: Array<
     {
       isArray: boolean;
@@ -49,11 +50,6 @@ export type XptcComplexTypeBase = {
         }
     )
   >;
-  attributes: Array<{
-    name: string;
-    localTypeRef: string;
-    isOptional: boolean;
-  }>;
 };
 
 export type XptcComplexTypeAnonymous = XptcComplexTypeBase & {
@@ -69,6 +65,18 @@ export type XptcComplexTypeNamed = XptcComplexTypeBase & {
 };
 
 export type XptcComplexType = XptcComplexTypeNamed | XptcComplexTypeAnonymous;
+
+export type XptcAttribute = {
+  name: string;
+  localTypeRef: string;
+  isOptional: boolean;
+  simpleType?: XptcSimpleType;
+};
+
+export type XptcTopLevelAttributeGroup = {
+  name: string;
+  attributes: XptcAttribute[];
+};
 
 export type XptcElement = {
   name: string;
@@ -86,6 +94,9 @@ export type XptcSimpleType = {
   restrictionBase?: string;
   declaredAtRelativeLocation: string;
 } & (
+  | {
+      kind: "string";
+    }
   | {
       kind: "enum";
       values: string[];

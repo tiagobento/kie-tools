@@ -30,6 +30,8 @@ import {
   XptcComplexTypeAnonymous,
   XptcMetaType,
   XptcMetaTypeProperty,
+  XptcAttribute,
+  XptcTopLevelAttributeGroup,
 } from "./types";
 import {
   XsdAttribute,
@@ -143,27 +145,56 @@ async function main() {
 
   // // process <xsd:simpleType>'s
   const __SIMPLE_TYPES: XptcSimpleType[] = Array.from(__XSDS.entries()).flatMap(([location, schema]) =>
-    (schema["xsd:schema"]["xsd:simpleType"] || []).flatMap((s) => {
-      if (s["xsd:union"]) {
-        if (s["xsd:union"]["@_memberTypes"] === "xsd:anyURI") {
+    (schema["xsd:schema"]["xsd:simpleType"] || []).flatMap((xsdSimpleType) => {
+      if (xsdSimpleType["xsd:union"]) {
+        if (xsdSimpleType["xsd:union"]["@_memberTypes"] === "xsd:anyURI") {
           return [
             {
               comment: "xsd:anyURI",
               type: "simple",
               kind: "enum",
-              name: s["@_name"] ?? s["@_name"],
+              name: xsdSimpleType["@_name"]!,
               declaredAtRelativeLocation: location,
               values: [],
             },
           ];
         }
-        return (s["xsd:union"]["xsd:simpleType"] ?? []).flatMap((ss) =>
-          xsdSimpleTypeToXptcSimpleType(ss, location, s["@_name"])
+        return (xsdSimpleType["xsd:union"]["xsd:simpleType"] ?? []).flatMap((ss) =>
+          xsdSimpleTypeToXptcSimpleType(ss, location, xsdSimpleType["@_name"]!)
         );
       } else {
-        return xsdSimpleTypeToXptcSimpleType(s, location, s["@_name"]);
+        return xsdSimpleTypeToXptcSimpleType(xsdSimpleType, location, xsdSimpleType["@_name"]!);
       }
     })
+  );
+
+  const __ATTRIBUTE_GROUPS_BY_QNAME: Map<string, XptcTopLevelAttributeGroup> = new Map(
+    Array.from(__XSDS.entries()).flatMap(([location, schema]) =>
+      (schema["xsd:schema"]["xsd:attributeGroup"] || []).flatMap((xsdAttrGroup) => {
+        const qNamePrefix = Object.keys(schema["xsd:schema"])
+          .find(
+            (key: keyof (typeof schema)["xsd:schema"]) =>
+              key.startsWith("@_xmlns:") && // is a xml namespace declaration
+              schema["xsd:schema"][key] === schema["xsd:schema"]["@_targetNamespace"]
+          )
+          ?.split(":")[1];
+        if (!qNamePrefix) {
+          return [];
+        }
+
+        return [
+          [
+            `${qNamePrefix}:${xsdAttrGroup["@_name"]}`,
+            {
+              name: xsdAttrGroup["@_name"],
+              attributes: (xsdAttrGroup["xsd:attribute"] ?? []).map((xsdAttr) =>
+                xsdAttributeToXptcAttribute(xsdAttr, location)
+              ),
+            },
+          ],
+        ];
+      })
+    )
   );
 
   // // process <xsd:complexType>'s
@@ -186,27 +217,30 @@ async function main() {
         childOf: extensionElement?.["@_base"],
         elements: [
           ...(xsdCt["xsd:all"]?.["xsd:element"] ?? []).map((s) =>
-            xsdElementToXptcElement(xsdCt["@_name"]!, s, location)
+            xsdElementToXptcElement(__ATTRIBUTE_GROUPS_BY_QNAME, xsdCt["@_name"]!, s, location)
           ),
           ...(xsdCt["xsd:sequence"]?.["xsd:element"] ?? []).map((s) =>
-            xsdElementToXptcElement(xsdCt["@_name"]!, s, location)
+            xsdElementToXptcElement(__ATTRIBUTE_GROUPS_BY_QNAME, xsdCt["@_name"]!, s, location)
           ),
           ...(extensionElement?.["xsd:sequence"]?.["xsd:element"] ?? []).map((s) =>
-            xsdElementToXptcElement(xsdCt["@_name"]!, s, location)
+            xsdElementToXptcElement(__ATTRIBUTE_GROUPS_BY_QNAME, xsdCt["@_name"]!, s, location)
           ),
           ...(extensionElement?.["xsd:sequence"]?.["xsd:choice"]?.["xsd:element"] ?? []).map((s) =>
-            xsdElementToXptcElement(xsdCt["@_name"]!, s, location, { forceOptional: true })
+            xsdElementToXptcElement(__ATTRIBUTE_GROUPS_BY_QNAME, xsdCt["@_name"]!, s, location, { forceOptional: true })
           ),
           ...(extensionElement?.["xsd:choice"]?.["xsd:element"] ?? []).map((s) =>
-            xsdElementToXptcElement(xsdCt["@_name"]!, s, location, { forceOptional: true })
+            xsdElementToXptcElement(__ATTRIBUTE_GROUPS_BY_QNAME, xsdCt["@_name"]!, s, location, { forceOptional: true })
           ),
           ...(extensionElement?.["xsd:choice"]?.["xsd:sequence"]?.["xsd:element"] ?? []).map((s) =>
-            xsdElementToXptcElement(xsdCt["@_name"]!, s, location, { forceOptional: true })
+            xsdElementToXptcElement(__ATTRIBUTE_GROUPS_BY_QNAME, xsdCt["@_name"]!, s, location, { forceOptional: true })
           ),
         ],
         attributes: [
-          ...(xsdCt["xsd:attribute"] ?? []).map((a) => xsdAttributeToXptcAttribute(a)),
-          ...(extensionElement?.["xsd:attribute"] ?? []).map((a) => xsdAttributeToXptcAttribute(a)),
+          ...(xsdCt["xsd:attribute"] ?? []).map((a) => xsdAttributeToXptcAttribute(a, location)),
+          ...(extensionElement?.["xsd:attribute"] ?? []).map((a) => xsdAttributeToXptcAttribute(a, location)),
+          ...(xsdCt["xsd:attributeGroup"] ?? []).flatMap(
+            (attrGroup) => __ATTRIBUTE_GROUPS_BY_QNAME.get(attrGroup["@_ref"])?.attributes ?? []
+          ),
         ],
       });
     }
@@ -216,9 +250,15 @@ async function main() {
   const __GLOBAL_ELEMENTS = new Map<string, XptcElement>();
   for (const [location, xsd] of __XSDS.entries()) {
     for (const e of xsd["xsd:schema"]["xsd:element"] || []) {
-      const a = xsdElementToXptcElement("GLOBAL", { ...e, "@_minOccurs": 0, "@_maxOccurs": "unbounded" }, location, {
-        forceOptional: false,
-      });
+      const a = xsdElementToXptcElement(
+        __ATTRIBUTE_GROUPS_BY_QNAME,
+        "GLOBAL",
+        { ...e, "@_minOccurs": 0, "@_maxOccurs": "unbounded" },
+        location,
+        {
+          forceOptional: false,
+        }
+      );
 
       __GLOBAL_ELEMENTS.set(`${location}__${e["@_name"]}`, {
         name: e["@_name"],
@@ -936,32 +976,49 @@ function getTsTypeFromLocalRef(
   };
 }
 
-function xsdSimpleTypeToXptcSimpleType(s: XsdSimpleType, location: string, name: string): XptcSimpleType {
+function xsdSimpleTypeToXptcSimpleType(
+  xsdSimpleType: XsdSimpleType,
+  location: string,
+  nameIfUnnamed: string
+): XptcSimpleType {
   if (
-    (s["xsd:restriction"]?.["@_base"] === "xsd:string" || s["xsd:restriction"]?.["@_base"] === "xsd:token") &&
-    s["xsd:restriction"]["xsd:enumeration"]
+    xsdSimpleType["xsd:restriction"]?.["@_base"] === "xsd:string" ||
+    xsdSimpleType["xsd:restriction"]?.["@_base"] === "xsd:token"
   ) {
-    return {
-      comment: "enum",
-      type: "simple",
-      kind: "enum",
-      name: s["@_name"] ?? name,
-      declaredAtRelativeLocation: location,
-      values: s["xsd:restriction"]["xsd:enumeration"].map((e) => e["@_value"]),
-    };
-  } else if (s["xsd:restriction"]?.["@_base"] === "xsd:int" || s["xsd:restriction"]?.["@_base"] === "xsd:integer") {
+    if (xsdSimpleType["xsd:restriction"]["xsd:enumeration"]) {
+      return {
+        comment: "enum",
+        type: "simple",
+        kind: "enum",
+        name: xsdSimpleType["@_name"] ?? nameIfUnnamed,
+        declaredAtRelativeLocation: location,
+        values: xsdSimpleType["xsd:restriction"]["xsd:enumeration"].map((e) => e["@_value"]),
+      };
+    } else {
+      return {
+        comment: "string",
+        type: "simple",
+        kind: "string",
+        name: xsdSimpleType["@_name"] ?? nameIfUnnamed,
+        declaredAtRelativeLocation: location,
+      };
+    }
+  } else if (
+    xsdSimpleType["xsd:restriction"]?.["@_base"] === "xsd:int" ||
+    xsdSimpleType["xsd:restriction"]?.["@_base"] === "xsd:integer"
+  ) {
     return {
       comment: "int",
       type: "simple",
       kind: "int",
-      restrictionBase: s["xsd:restriction"]["@_base"],
-      name: s["@_name"] ?? name,
+      restrictionBase: xsdSimpleType["xsd:restriction"]["@_base"],
+      name: xsdSimpleType["@_name"] ?? nameIfUnnamed,
       declaredAtRelativeLocation: location,
-      minInclusive: s["xsd:restriction"]["xsd:minInclusive"]?.["@_value"],
-      maxInclusive: s["xsd:restriction"]["xsd:maxInclusive"]?.["@_value"],
+      minInclusive: xsdSimpleType["xsd:restriction"]["xsd:minInclusive"]?.["@_value"],
+      maxInclusive: xsdSimpleType["xsd:restriction"]["xsd:maxInclusive"]?.["@_value"],
     };
   } else {
-    throw new Error(`Unknown xsd:simpleType --> ${JSON.stringify(s, undefined, 2)}`);
+    throw new Error(`Unknown xsd:simpleType --> ${JSON.stringify(xsdSimpleType, undefined, 2)}`);
   }
 }
 
@@ -992,6 +1049,7 @@ function getXptcElementFromLocalElementRef(
 }
 
 function xsdElementToXptcElement(
+  __ATTRIBUTE_GROUPS_BY_QNAME: Map<string, XptcTopLevelAttributeGroup>,
   parentIdentifierForExtensionType: string,
   xsdElement: NonNullable<Unpacked<XsdSequence["xsd:element"]>>,
   location: string,
@@ -1067,6 +1125,7 @@ function xsdElementToXptcElement(
       isArray,
       isOptional,
       anonymousType: xsdComplexTypeToAnonymousXptcComplexType(
+        __ATTRIBUTE_GROUPS_BY_QNAME,
         parentIdentifierForExtensionType,
         xsdElement["xsd:complexType"],
         location,
@@ -1091,15 +1150,19 @@ function xsdElementToXptcElement(
   throw new Error(`Unknown xsd:element structure. ${JSON.stringify(xsdElement)}`);
 }
 
-function xsdAttributeToXptcAttribute(xsdAttribute: XsdAttribute): Unpacked<XptcComplexType["attributes"]> {
+function xsdAttributeToXptcAttribute(xsdAttribute: XsdAttribute, location: string): XptcAttribute {
   return {
     name: xsdAttribute["@_name"],
     localTypeRef: xsdAttribute["@_type"],
     isOptional: xsdAttribute["@_use"] === undefined || xsdAttribute["@_use"] === "optional",
+    simpleType: xsdAttribute["xsd:simpleType"]
+      ? xsdSimpleTypeToXptcSimpleType(xsdAttribute["xsd:simpleType"], location, `${xsdAttribute["@_name"]}simpleType`)
+      : undefined,
   };
 }
 
 function xsdComplexTypeToAnonymousXptcComplexType(
+  __ATTRIBUTE_GROUPS_BY_QNAME: Map<string, XptcTopLevelAttributeGroup>,
   parentIdentifierForExtensionType: string,
   xsdCt: XsdComplexType,
   location: string,
@@ -1117,16 +1180,29 @@ function xsdComplexTypeToAnonymousXptcComplexType(
     childOf: xsdCt["xsd:complexContent"]?.["xsd:extension"]?.["@_base"],
     elements: [
       ...(xsdCt["xsd:sequence"]?.["xsd:element"] ?? []).map((s) =>
-        xsdElementToXptcElement(`${parentIdentifierForExtensionType}__${element}`, s, location)
+        xsdElementToXptcElement(
+          __ATTRIBUTE_GROUPS_BY_QNAME,
+          `${parentIdentifierForExtensionType}__${element}`,
+          s,
+          location
+        )
       ),
       ...(xsdCt["xsd:complexContent"]?.["xsd:extension"]?.["xsd:sequence"]?.["xsd:element"] ?? []).map((s) =>
-        xsdElementToXptcElement(`${parentIdentifierForExtensionType}__${element}`, s, location)
+        xsdElementToXptcElement(
+          __ATTRIBUTE_GROUPS_BY_QNAME,
+          `${parentIdentifierForExtensionType}__${element}`,
+          s,
+          location
+        )
       ),
     ],
     attributes: [
-      ...(xsdCt["xsd:attribute"] ?? []).map((a) => xsdAttributeToXptcAttribute(a)),
+      ...(xsdCt["xsd:attribute"] ?? []).map((a) => xsdAttributeToXptcAttribute(a, location)),
       ...(xsdCt["xsd:complexContent"]?.["xsd:extension"]?.["xsd:attribute"] ?? []).map((a) =>
-        xsdAttributeToXptcAttribute(a)
+        xsdAttributeToXptcAttribute(a, location)
+      ),
+      ...(xsdCt["xsd:attributeGroup"] ?? []).flatMap(
+        (attrGroup) => __ATTRIBUTE_GROUPS_BY_QNAME.get(attrGroup["@_ref"])?.attributes ?? []
       ),
     ],
   };
