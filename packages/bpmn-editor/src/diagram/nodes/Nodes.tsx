@@ -88,6 +88,7 @@ import { useIsHovered } from "@kie-tools/xyflow-react-kie-diagram/dist/reactExt/
 import { BpmnDiagramEdgeData } from "../BpmnDiagramDomain";
 import { bpmnNodesOutgoingStuffNodePanelMapping } from "../BpmnDiagramDomain";
 import { bpmnEdgesOutgoingStuffNodePanelMapping } from "../BpmnDiagramDomain";
+import { parseBpmn20Drools10MetaData } from "@kie-tools/bpmn-marshaller/dist/drools-extension-metaData";
 
 export const StartEventNode = React.memo(
   ({
@@ -1244,7 +1245,9 @@ export const TextAnnotationNode = React.memo(
             nodeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.textAnnotation].nodes}
             edgeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.textAnnotation].edges}
           />
-          <div>{String(textAnnotation.text)}</div>
+          <div>
+            {String(textAnnotation.text?.__$$text) || parseBpmn20Drools10MetaData(textAnnotation).get("elementname")}
+          </div>
         </div>
       </>
     );

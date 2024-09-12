@@ -252,6 +252,8 @@ export function parse(args: {
         const attr = attrs[i];
         const attrPropType = elemMetaType?.[`@_${attr.name}`];
 
+        // TODO: Treat namespaced attributes.
+
         let attrValue: any;
         if (attrPropType?.type === "string") {
           attrValue = attr.value;
@@ -414,6 +416,8 @@ function buildAttrs(json: any) {
   let isEmpty = true;
   let hasText = false;
   let attrs = " ";
+
+  // TODO: Treat namespaced attributes.
 
   // Attributes don't ever need to be serialized in a particular order.
   for (const propName in json) {
