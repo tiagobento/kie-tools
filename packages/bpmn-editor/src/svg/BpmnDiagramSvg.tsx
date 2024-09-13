@@ -66,7 +66,9 @@ export function BpmnDiagramSvg({
               x={node.positionAbsolute!.x}
               y={node.positionAbsolute!.y}
               {...style}
-              isIcon={false}
+              showArrow={false}
+              showFoldedPage={false}
+              isIcon={true}
             />
           )}
           {node.type === NODE_TYPES.task && (

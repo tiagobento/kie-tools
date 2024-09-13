@@ -125,6 +125,8 @@ export function DataObjectIcon(props: { padding?: string; height?: number; viewB
     <RoundSvg padding={props.padding ?? "0px"} height={props.height} viewBox={props.viewBox}>
       <DataObjectNodeSvg
         {...nodeSvgProps}
+        showArrow={false}
+        showFoldedPage={false}
         isIcon={true}
         width={80}
         height={100}
