@@ -93,7 +93,7 @@ export function BpmnPalette({ pulse }: { pulse: boolean }) {
             <TaskIcon />
           </div>
           <div
-            title={"Sub-processes"}
+            title={"Call Activities"}
             className={"kie-bpmn-editor--palette-button dndnode callActivity"}
             onDragStart={(event) => onDragStart(event, NODE_TYPES.task, "callActivity")}
             draggable={true}
