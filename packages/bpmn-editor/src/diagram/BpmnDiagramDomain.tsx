@@ -343,7 +343,6 @@ export interface BpmnDiagramNodeData<T extends BpmnNodeElement = BpmnNodeElement
   bpmnElement: T;
   shape: Normalized<BPMNDI__BPMNShape>;
   shapeIndex: number;
-  index: number;
 }
 
 export interface BpmnDiagramEdgeData extends XyFlowReactKieDiagramEdgeData {
@@ -689,12 +688,12 @@ export const MIN_SIZE_FOR_NODES = (grid: SnapGrid, width = NODE_MIN_WIDTH, heigh
 
 ////
 
-export type BpmnEdgeElement = null | Normalized<
+export type BpmnEdgeElement = Normalized<
   | ElementFilter<Unpacked<NonNullable<BPMN20__tProcess["flowElement"]>>, "sequenceFlow">
   | ElementFilter<Unpacked<NonNullable<BPMN20__tProcess["artifact"]>>, "association">
 >;
 
-export type BpmnNodeElement = null | Normalized<
+export type BpmnNodeElement = Normalized<
   | ElementExclusion<Unpacked<NonNullable<BPMN20__tProcess["flowElement"]>>, "sequenceFlow">
   | ElementExclusion<Unpacked<NonNullable<BPMN20__tProcess["artifact"]>>, "association">
   | (BPMN20__tLane & { __$$element: "lane" })

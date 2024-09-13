@@ -46,11 +46,19 @@ type ElementVisitorArgs = {
 
 /**
  * Recursive method that will visit flowElements and artifacts inside root and/or deeply nested sub processes.
+ *
+ * Returning `false` on the `visitor` callback will abort the visiting. Returning nothing, `undefined`, `true` will proceed normally.
  */
-export function visitFlowElementsAndArtifacts(process: ElementOwner, visitor: (args: ElementVisitorArgs) => void) {
+export function visitFlowElementsAndArtifacts(
+  process: ElementOwner,
+  visitor: (args: ElementVisitorArgs) => boolean | void
+) {
   for (let i = 0; i < (process.flowElement ?? []).length; i++) {
     const f = process.flowElement![i];
-    visitor({ element: f, index: i, owner: process, array: process.flowElement! });
+    const ret = visitor({ element: f, index: i, owner: process, array: process.flowElement! });
+    if (ret === false) {
+      break;
+    }
     if (f.__$$element === "subProcess" || f.__$$element === "adHocSubProcess" || f.__$$element === "transaction") {
       visitFlowElementsAndArtifacts(f, visitor);
     }

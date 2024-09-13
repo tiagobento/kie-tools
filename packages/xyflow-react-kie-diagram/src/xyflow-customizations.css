@@ -43,6 +43,9 @@
 }
 
 /* nodes selection / hover */
+.react-flow__node > div.normal {
+  outline: none !important;
+}
 .react-flow__node:not(.selected):hover > .xyflow-react-kie-diagram--node-shape.normal {
   filter: drop-shadow(2px 2px 2px rgb(127, 127, 127));
 }

@@ -71,19 +71,19 @@
 /* (end) nodes */
 
 /* (begin) data object node */
-.kie-bpmn-editor--selected-data-object-node:before {
+.kie-bpmn-editor--data-object-node-content.selected:before {
   content: "";
   display: block;
   position: absolute;
   pointer-events: none;
   border-radius: 6px;
-  top: -10px;
-  left: -10px;
-  width: calc(100% + 20px);
+  top: -18px;
+  left: -18px;
+  width: calc(100% + 36px);
   height: var(--selected-data-object-node-shape--height);
   backdrop-filter: blur(8px);
 }
-.kie-bpmn-editor--selected-data-object-node:before {
+.kie-bpmn-editor--data-object-node-content.selected:before {
   border: 1px dashed #006ba4;
   background-color: rgb(161 222 255 / 20%); /* Very slightly blue hue */
 }

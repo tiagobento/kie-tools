@@ -47,6 +47,7 @@
   text-align: left;
 }
 .xyflow-react-kie-diagram--editable-node-name-input.top-center input,
+.xyflow-react-kie-diagram--editable-node-name-input.center-bottom input,
 .xyflow-react-kie-diagram--editable-node-name-input.center-center input {
   text-align: center;
 }
@@ -57,6 +58,7 @@
   padding: 0;
   margin: 0;
   background: transparent;
+  pointer-events: all !important;
 }
 
 .xyflow-react-kie-diagram--editable-node-name-input input:focus {

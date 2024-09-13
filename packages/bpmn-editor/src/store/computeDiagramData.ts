@@ -97,6 +97,8 @@ export function computeDiagramData(
         bpmnElement?.__$$element === "exclusiveGateway" ||
         bpmnElement?.__$$element === "inclusiveGateway" ||
         bpmnElement?.__$$element === "parallelGateway" ||
+        // data object
+        bpmnElement?.__$$element === "dataObject" ||
         // lanes
         bpmnElement?.__$$element === "lane" ||
         // artifacts
@@ -192,7 +194,6 @@ export function computeDiagramData(
         data: {
           bpmnElement,
           shape: bpmnShape,
-          index: i,
           shapeIndex: i,
           parentXyFlowNode: undefined,
         },

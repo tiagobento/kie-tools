@@ -17,6 +17,7 @@
  * under the License.
  */
 
+import { parseBpmn20Drools10MetaData } from "@kie-tools/bpmn-marshaller/dist/drools-extension-metaData";
 import {
   BPMN20__tComplexGateway,
   BPMN20__tDataObject,
@@ -34,38 +35,6 @@ import {
   BPMN20__tTask,
   BPMN20__tTextAnnotation,
 } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
-
-import * as React from "react";
-import { useCallback, useEffect, useMemo, useRef } from "react";
-import * as RF from "reactflow";
-import { Normalized } from "../../normalization/normalize";
-import { useBpmnEditorStore, useBpmnEditorStoreApi } from "../../store/StoreContext";
-import {
-  ActivityNodeMarker,
-  BPMN_CONTAINMENT_MAP,
-  BpmnDiagramNodeData,
-  BpmnNodeType,
-  EDGE_TYPES,
-  NODE_TYPES,
-} from "../BpmnDiagramDomain";
-import { BPMN_OUTGOING_STRUCTURE } from "../BpmnDiagramDomain";
-import { MIN_NODE_SIZES } from "../BpmnDiagramDomain";
-import { getNodeLabelPosition, useNodeStyle } from "./NodeStyle";
-import {
-  DataObjectNodeSvg,
-  EndEventNodeSvg,
-  GatewayNodeSvg,
-  GroupNodeSvg,
-  IntermediateCatchEventNodeSvg,
-  IntermediateThrowEventNodeSvg,
-  LaneNodeSvg,
-  StartEventNodeSvg,
-  TaskNodeSvg,
-  TextAnnotationNodeSvg,
-  SubProcessNodeSvg,
-  UnknownNodeSvg,
-} from "./NodeSvgs";
-
 import { getContainmentRelationship } from "@kie-tools/xyflow-react-kie-diagram/dist/maths/DcMaths";
 import { propsHaveSameValuesDeep } from "@kie-tools/xyflow-react-kie-diagram/dist/memoization/memoization";
 import {
@@ -85,14 +54,43 @@ import { InfoNodePanel } from "@kie-tools/xyflow-react-kie-diagram/dist/nodes/In
 import { OutgoingStuffNodePanel } from "@kie-tools/xyflow-react-kie-diagram/dist/nodes/OutgoingStuffNodePanel";
 import { PositionalNodeHandles } from "@kie-tools/xyflow-react-kie-diagram/dist/nodes/PositionalNodeHandles";
 import { useIsHovered } from "@kie-tools/xyflow-react-kie-diagram/dist/reactExt/useIsHovered";
-import { BpmnDiagramEdgeData } from "../BpmnDiagramDomain";
-import { bpmnNodesOutgoingStuffNodePanelMapping } from "../BpmnDiagramDomain";
-import { bpmnEdgesOutgoingStuffNodePanelMapping } from "../BpmnDiagramDomain";
-import { parseBpmn20Drools10MetaData } from "@kie-tools/bpmn-marshaller/dist/drools-extension-metaData";
+import * as React from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
+import * as RF from "reactflow";
+import { Normalized } from "../../normalization/normalize";
+import { useBpmnEditorStore, useBpmnEditorStoreApi } from "../../store/StoreContext";
+import {
+  ActivityNodeMarker,
+  BPMN_OUTGOING_STRUCTURE,
+  BpmnDiagramEdgeData,
+  BpmnDiagramNodeData,
+  bpmnEdgesOutgoingStuffNodePanelMapping,
+  bpmnNodesOutgoingStuffNodePanelMapping,
+  BpmnNodeType,
+  EDGE_TYPES,
+  MIN_NODE_SIZES,
+  NODE_TYPES,
+} from "../BpmnDiagramDomain";
+import { getNodeLabelPosition, useNodeStyle } from "./NodeStyle";
+import {
+  DataObjectNodeSvg,
+  EndEventNodeSvg,
+  GatewayNodeSvg,
+  GroupNodeSvg,
+  IntermediateCatchEventNodeSvg,
+  IntermediateThrowEventNodeSvg,
+  LaneNodeSvg,
+  StartEventNodeSvg,
+  SubProcessNodeSvg,
+  TaskNodeSvg,
+  TextAnnotationNodeSvg,
+  UnknownNodeSvg,
+} from "./NodeSvgs";
+import { renameFlowElement, renameLane, updateTextAnnotation } from "../../mutations/renameNode";
 
 export const StartEventNode = React.memo(
   ({
-    data: { bpmnElement: startEvent, shape, index, shapeIndex },
+    data: { bpmnElement: startEvent, shape, shapeIndex },
     selected,
     dragging,
     zIndex,
@@ -104,7 +102,6 @@ export const StartEventNode = React.memo(
 
     const ref = useRef<HTMLDivElement>(null);
 
-    const enableCustomNodeStyles = useBpmnEditorStore((s) => s.diagram.overlays.enableCustomNodeStyles);
     const isHovered = useIsHovered(ref);
     const isResizing = useNodeResizing(id);
     const shouldActLikeHovered = useBpmnEditorStore(
@@ -123,17 +120,11 @@ export const StartEventNode = React.memo(
     const setName = useCallback<OnEditableNodeLabelChange>(
       (newName: string) => {
         bpmnEditorStoreApi.setState((state) => {
-          // FIXME: Tiago: Mutation (set node name)
-          // renameProcessFlowElement({
+          renameFlowElement({ definitions: state.bpmn.model.definitions, newName, id });
         });
       },
-      [bpmnEditorStoreApi]
+      [bpmnEditorStoreApi, id]
     );
-
-    const { fontCssProperties } = useNodeStyle({
-      nodeType: type as BpmnNodeType,
-      isEnabled: enableCustomNodeStyles,
-    });
 
     return (
       <>
@@ -178,8 +169,23 @@ export const StartEventNode = React.memo(
           </div>
           {/* Creates a div element with the node size to push down the <EditableNodeLabel /> */}
           {<div style={{ height: nodeDimensions.height, flexShrink: 0 }} />}
-
-          {startEvent["@_name"] && <NodeLabelAtTheBottom label={startEvent["@_name"]} />}
+          {(startEvent["@_name"] || isEditingLabel) && (
+            <NodeLabelAtTheBottom>
+              <EditableNodeLabel
+                id={id}
+                name={startEvent["@_name"]}
+                isEditing={isEditingLabel}
+                setEditing={setEditingLabel}
+                position={getNodeLabelPosition({ nodeType: type as BpmnNodeType })}
+                value={startEvent["@_name"]}
+                onChange={setName}
+                validate={() => true} // FIXME: Tiago
+                shouldCommitOnBlur={true}
+                // Keeps the text on top of the selected layer
+                fontCssProperties={{ zIndex: 2000 }}
+              />
+            </NodeLabelAtTheBottom>
+          )}
         </div>
       </>
     );
@@ -189,7 +195,7 @@ export const StartEventNode = React.memo(
 
 export const IntermediateCatchEventNode = React.memo(
   ({
-    data: { bpmnElement: intermediateCatchEvent, shape, index, shapeIndex },
+    data: { bpmnElement: intermediateCatchEvent, shape, shapeIndex },
     selected,
     dragging,
     zIndex,
@@ -203,7 +209,6 @@ export const IntermediateCatchEventNode = React.memo(
 
     const ref = useRef<HTMLDivElement>(null);
 
-    const enableCustomNodeStyles = useBpmnEditorStore((s) => s.diagram.overlays.enableCustomNodeStyles);
     const isHovered = useIsHovered(ref);
     const isResizing = useNodeResizing(id);
     const shouldActLikeHovered = useBpmnEditorStore(
@@ -222,17 +227,11 @@ export const IntermediateCatchEventNode = React.memo(
     const setName = useCallback<OnEditableNodeLabelChange>(
       (newName: string) => {
         bpmnEditorStoreApi.setState((state) => {
-          // FIXME: Tiago: Mutation (set node name)
-          // renameProcessFlowElement({
+          renameFlowElement({ definitions: state.bpmn.model.definitions, newName, id });
         });
       },
-      [bpmnEditorStoreApi]
+      [bpmnEditorStoreApi, id]
     );
-
-    const { fontCssProperties } = useNodeStyle({
-      nodeType: type as BpmnNodeType,
-      isEnabled: enableCustomNodeStyles,
-    });
 
     return (
       <>
@@ -277,8 +276,23 @@ export const IntermediateCatchEventNode = React.memo(
           </div>
           {/* Creates a div element with the node size to push down the <EditableNodeLabel /> */}
           {<div style={{ height: nodeDimensions.height, flexShrink: 0 }} />}
-
-          {intermediateCatchEvent["@_name"] && <NodeLabelAtTheBottom label={intermediateCatchEvent["@_name"]} />}
+          {(intermediateCatchEvent["@_name"] || isEditingLabel) && (
+            <NodeLabelAtTheBottom>
+              <EditableNodeLabel
+                id={id}
+                name={intermediateCatchEvent["@_name"]}
+                isEditing={isEditingLabel}
+                setEditing={setEditingLabel}
+                position={getNodeLabelPosition({ nodeType: type as BpmnNodeType })}
+                value={intermediateCatchEvent["@_name"]}
+                onChange={setName}
+                validate={() => true} // FIXME: Tiago
+                shouldCommitOnBlur={true}
+                // Keeps the text on top of the selected layer
+                fontCssProperties={{ zIndex: 2000 }}
+              />
+            </NodeLabelAtTheBottom>
+          )}
         </div>
       </>
     );
@@ -288,7 +302,7 @@ export const IntermediateCatchEventNode = React.memo(
 
 export const IntermediateThrowEventNode = React.memo(
   ({
-    data: { bpmnElement: intermediateThrowEvent, shape, index, shapeIndex },
+    data: { bpmnElement: intermediateThrowEvent, shape, shapeIndex },
     selected,
     dragging,
     zIndex,
@@ -302,7 +316,6 @@ export const IntermediateThrowEventNode = React.memo(
 
     const ref = useRef<HTMLDivElement>(null);
 
-    const enableCustomNodeStyles = useBpmnEditorStore((s) => s.diagram.overlays.enableCustomNodeStyles);
     const isHovered = useIsHovered(ref);
     const isResizing = useNodeResizing(id);
     const shouldActLikeHovered = useBpmnEditorStore(
@@ -321,17 +334,11 @@ export const IntermediateThrowEventNode = React.memo(
     const setName = useCallback<OnEditableNodeLabelChange>(
       (newName: string) => {
         bpmnEditorStoreApi.setState((state) => {
-          // FIXME: Tiago: Mutation (set node name)
-          // renameProcessFlowElement({
+          renameFlowElement({ definitions: state.bpmn.model.definitions, newName, id });
         });
       },
-      [bpmnEditorStoreApi]
+      [bpmnEditorStoreApi, id]
     );
-
-    const { fontCssProperties } = useNodeStyle({
-      nodeType: type as BpmnNodeType,
-      isEnabled: enableCustomNodeStyles,
-    });
 
     return (
       <>
@@ -376,8 +383,23 @@ export const IntermediateThrowEventNode = React.memo(
           </div>
           {/* Creates a div element with the node size to push down the <EditableNodeLabel /> */}
           {<div style={{ height: nodeDimensions.height, flexShrink: 0 }} />}
-
-          {intermediateThrowEvent["@_name"] && <NodeLabelAtTheBottom label={intermediateThrowEvent["@_name"]} />}
+          {(intermediateThrowEvent["@_name"] || isEditingLabel) && (
+            <NodeLabelAtTheBottom>
+              <EditableNodeLabel
+                id={id}
+                name={intermediateThrowEvent["@_name"]}
+                isEditing={isEditingLabel}
+                setEditing={setEditingLabel}
+                position={getNodeLabelPosition({ nodeType: type as BpmnNodeType })}
+                value={intermediateThrowEvent["@_name"]}
+                onChange={setName}
+                validate={() => true} // FIXME: Tiago
+                shouldCommitOnBlur={true}
+                // Keeps the text on top of the selected layer
+                fontCssProperties={{ zIndex: 2000 }}
+              />
+            </NodeLabelAtTheBottom>
+          )}
         </div>
       </>
     );
@@ -387,7 +409,7 @@ export const IntermediateThrowEventNode = React.memo(
 
 export const EndEventNode = React.memo(
   ({
-    data: { bpmnElement: endEvent, shape, index, shapeIndex },
+    data: { bpmnElement: endEvent, shape, shapeIndex },
     selected,
     dragging,
     zIndex,
@@ -399,7 +421,6 @@ export const EndEventNode = React.memo(
 
     const ref = useRef<HTMLDivElement>(null);
 
-    const enableCustomNodeStyles = useBpmnEditorStore((s) => s.diagram.overlays.enableCustomNodeStyles);
     const isHovered = useIsHovered(ref);
     const isResizing = useNodeResizing(id);
     const shouldActLikeHovered = useBpmnEditorStore(
@@ -418,17 +439,11 @@ export const EndEventNode = React.memo(
     const setName = useCallback<OnEditableNodeLabelChange>(
       (newName: string) => {
         bpmnEditorStoreApi.setState((state) => {
-          // FIXME: Tiago: Mutation (set node name)
-          // renameProcessFlowElement({
+          renameFlowElement({ definitions: state.bpmn.model.definitions, newName, id });
         });
       },
-      [bpmnEditorStoreApi]
+      [bpmnEditorStoreApi, id]
     );
-
-    const { fontCssProperties } = useNodeStyle({
-      nodeType: type as BpmnNodeType,
-      isEnabled: enableCustomNodeStyles,
-    });
 
     return (
       <>
@@ -474,8 +489,23 @@ export const EndEventNode = React.memo(
           </div>
           {/* Creates a div element with the node size to push down the <EditableNodeLabel /> */}
           {<div style={{ height: nodeDimensions.height, flexShrink: 0 }} />}
-
-          {endEvent["@_name"] && <NodeLabelAtTheBottom label={endEvent["@_name"]} />}
+          {(endEvent["@_name"] || isEditingLabel) && (
+            <NodeLabelAtTheBottom>
+              <EditableNodeLabel
+                id={id}
+                name={endEvent["@_name"]}
+                isEditing={isEditingLabel}
+                setEditing={setEditingLabel}
+                position={getNodeLabelPosition({ nodeType: type as BpmnNodeType })}
+                value={endEvent["@_name"]}
+                onChange={setName}
+                validate={() => true} // FIXME: Tiago
+                shouldCommitOnBlur={true}
+                // Keeps the text on top of the selected layer
+                fontCssProperties={{ zIndex: 2000 }}
+              />
+            </NodeLabelAtTheBottom>
+          )}
         </div>
       </>
     );
@@ -485,7 +515,7 @@ export const EndEventNode = React.memo(
 
 export const TaskNode = React.memo(
   ({
-    data: { bpmnElement: task, shape, index, shapeIndex },
+    data: { bpmnElement: task, shape, shapeIndex },
     selected,
     dragging,
     zIndex,
@@ -522,11 +552,10 @@ export const TaskNode = React.memo(
     const setName = useCallback<OnEditableNodeLabelChange>(
       (newName: string) => {
         bpmnEditorStoreApi.setState((state) => {
-          // FIXME: Tiago: Mutation (set node name)
-          // renameProcessFlowElement({
+          renameFlowElement({ definitions: state.bpmn.model.definitions, newName, id });
         });
       },
-      [bpmnEditorStoreApi]
+      [bpmnEditorStoreApi, id]
     );
 
     const { fontCssProperties } = useNodeStyle({
@@ -569,7 +598,19 @@ export const TaskNode = React.memo(
               }, [bpmnEditorStoreApi])}
             />
 
-            <>{task["@_name"]}</>
+            <EditableNodeLabel
+              id={id}
+              name={task["@_name"]}
+              isEditing={isEditingLabel}
+              setEditing={setEditingLabel}
+              position={getNodeLabelPosition({ nodeType: type as BpmnNodeType })}
+              value={task["@_name"]}
+              onChange={setName}
+              validate={() => true} // FIXME: Tiago
+              shouldCommitOnBlur={true}
+              // Keeps the text on top of the selected layer
+              fontCssProperties={{ ...fontCssProperties, zIndex: 2000 }}
+            />
 
             {shouldActLikeHovered && (
               <NodeResizerHandle
@@ -598,7 +639,7 @@ export const TaskNode = React.memo(
 
 export const SubProcessNode = React.memo(
   ({
-    data: { bpmnElement: subProcess, shape, index, shapeIndex },
+    data: { bpmnElement: subProcess, shape, shapeIndex },
     selected,
     dragging,
     zIndex,
@@ -636,11 +677,10 @@ export const SubProcessNode = React.memo(
     const setName = useCallback<OnEditableNodeLabelChange>(
       (newName: string) => {
         bpmnEditorStoreApi.setState((state) => {
-          // FIXME: Tiago: Mutation (set node name)
-          // renameProcessFlowElement({
+          renameFlowElement({ definitions: state.bpmn.model.definitions, newName, id });
         });
       },
-      [bpmnEditorStoreApi]
+      [bpmnEditorStoreApi, id]
     );
 
     const { fontCssProperties } = useNodeStyle({
@@ -689,8 +729,19 @@ export const SubProcessNode = React.memo(
               }, [bpmnEditorStoreApi])}
             />
 
-            {/* FIXME: Tiago: Not actually the way to render this. */}
-            <span style={{ position: "absolute", top: "20px", left: "20px" }}>{subProcess["@_name"]}</span>
+            <EditableNodeLabel
+              id={id}
+              name={subProcess["@_name"]}
+              isEditing={isEditingLabel}
+              setEditing={setEditingLabel}
+              position={getNodeLabelPosition({ nodeType: type as BpmnNodeType })}
+              value={subProcess["@_name"]}
+              onChange={setName}
+              validate={() => true} // FIXME: Tiago
+              shouldCommitOnBlur={true}
+              // Keeps the text on top of the selected layer
+              fontCssProperties={{ ...fontCssProperties, zIndex: 2000 }}
+            />
 
             {isOnlySelectedNode && !dragging && (
               <NodeResizerHandle
@@ -719,7 +770,7 @@ export const SubProcessNode = React.memo(
 
 export const GatewayNode = React.memo(
   ({
-    data: { bpmnElement: gateway, shape, index, shapeIndex },
+    data: { bpmnElement: gateway, shape, shapeIndex },
     selected,
     dragging,
     zIndex,
@@ -748,7 +799,6 @@ export const GatewayNode = React.memo(
 
     const ref = useRef<HTMLDivElement>(null);
 
-    const enableCustomNodeStyles = useBpmnEditorStore((s) => s.diagram.overlays.enableCustomNodeStyles);
     const isHovered = useIsHovered(ref);
     const isResizing = useNodeResizing(id);
     const shouldActLikeHovered = useBpmnEditorStore(
@@ -767,17 +817,11 @@ export const GatewayNode = React.memo(
     const setName = useCallback<OnEditableNodeLabelChange>(
       (newName: string) => {
         bpmnEditorStoreApi.setState((state) => {
-          // FIXME: Tiago: Mutation (set node name)
-          // renameProcessFlowElement({
+          renameFlowElement({ definitions: state.bpmn.model.definitions, newName, id });
         });
       },
-      [bpmnEditorStoreApi]
+      [bpmnEditorStoreApi, id]
     );
-
-    const { fontCssProperties } = useNodeStyle({
-      nodeType: type as BpmnNodeType,
-      isEnabled: enableCustomNodeStyles,
-    });
 
     return (
       <>
@@ -817,7 +861,23 @@ export const GatewayNode = React.memo(
           </div>
           {/* Creates a div element with the node size to push down the <EditableNodeLabel /> */}
           {<div style={{ height: nodeDimensions.height, flexShrink: 0 }} />}
-          {gateway["@_name"] && <NodeLabelAtTheBottom label={gateway["@_name"]} />}
+          {(gateway["@_name"] || isEditingLabel) && (
+            <NodeLabelAtTheBottom>
+              <EditableNodeLabel
+                id={id}
+                name={gateway["@_name"]}
+                isEditing={isEditingLabel}
+                setEditing={setEditingLabel}
+                position={getNodeLabelPosition({ nodeType: type as BpmnNodeType })}
+                value={gateway["@_name"]}
+                onChange={setName}
+                validate={() => true} // FIXME: Tiago
+                shouldCommitOnBlur={true}
+                // Keeps the text on top of the selected layer
+                fontCssProperties={{ zIndex: 2000 }}
+              />
+            </NodeLabelAtTheBottom>
+          )}
         </div>
       </>
     );
@@ -827,7 +887,7 @@ export const GatewayNode = React.memo(
 
 export const DataObjectNode = React.memo(
   ({
-    data: { bpmnElement: dataObject, shape, index, shapeIndex },
+    data: { bpmnElement: dataObject, shape, shapeIndex },
     selected,
     dragging,
     zIndex,
@@ -839,7 +899,6 @@ export const DataObjectNode = React.memo(
 
     const ref = useRef<HTMLDivElement>(null);
 
-    const enableCustomNodeStyles = useBpmnEditorStore((s) => s.diagram.overlays.enableCustomNodeStyles);
     const isHovered = useIsHovered(ref);
     const isResizing = useNodeResizing(id);
     const shouldActLikeHovered = useBpmnEditorStore(
@@ -858,43 +917,36 @@ export const DataObjectNode = React.memo(
     const setName = useCallback<OnEditableNodeLabelChange>(
       (newName: string) => {
         bpmnEditorStoreApi.setState((state) => {
-          // FIXME: Tiago: Mutation (set node name)
-          // renameProcessFlowElement({
+          renameFlowElement({ definitions: state.bpmn.model.definitions, newName, id });
         });
       },
-      [bpmnEditorStoreApi]
+      [bpmnEditorStoreApi, id]
     );
 
-    const { fontCssProperties } = useNodeStyle({
-      nodeType: type as BpmnNodeType,
-      isEnabled: enableCustomNodeStyles,
-    });
-
-    const [alternativeEditableNodeHeight, setAlternativeEditableNodeHeight] = React.useState<number>(0);
-    const alternativeSvgStyle = useMemo<React.CSSProperties>(() => {
-      // This is used to modify a css from a :before element.
-      // The --height is a css var which is used by the kie-bpmn-editor--selected-data-object-node class.
-      return {
+    // This is used to modify a css from a :before element.
+    // The --height is a css var which is used by when this node is selected class
+    const [nodeHeight, setNodeHeight] = React.useState<number>(0);
+    const style = useMemo<React.CSSProperties>(
+      () => ({
         display: "flex",
         flexDirection: "column",
         outline: "none",
-        "--selected-data-object-node-shape--height": `${
-          nodeDimensions.height + 20 + (isEditingLabel ? 20 : alternativeEditableNodeHeight ?? 0)
-        }px`,
-      };
-    }, [nodeDimensions, isEditingLabel, alternativeEditableNodeHeight]);
+        "--selected-data-object-node-shape--height": `${nodeDimensions.height + 20 + 26 + (isEditingLabel ? 20 : nodeHeight ?? 0)}px`,
+      }),
+      [nodeDimensions, isEditingLabel, nodeHeight]
+    );
 
     return (
       <>
         <svg className={`xyflow-react-kie-diagram--node-shape ${className} ${selected ? "selected" : ""}`}>
-          <DataObjectNodeSvg {...nodeDimensions} x={0} y={0} isIcon={false} />
+          <DataObjectNodeSvg {...nodeDimensions} x={0} y={0} showArrow={false} showFoldedPage={true} />
         </svg>
         <PositionalNodeHandles isTargeted={isTargeted && isValidConnectionTarget} nodeId={id} />
         <div
           onDoubleClick={triggerEditing}
           onKeyDown={triggerEditingIfEnter}
-          style={alternativeSvgStyle}
-          className={`kie-bpmn-editor--data-object-node ${className} kie-bpmn-editor--selected-data-object-node`}
+          style={style}
+          className={`kie-bpmn-editor--data-object-node-content ${className} ${selected ? "selected" : ""}`}
           ref={ref}
           tabIndex={-1}
           data-nodehref={id}
@@ -932,7 +984,24 @@ export const DataObjectNode = React.memo(
           </div>
           {/* Creates a div element with the node size to push down the <EditableNodeLabel /> */}
           {<div style={{ height: nodeDimensions.height, flexShrink: 0 }} />}
-          {<div>{dataObject["@_name"]}</div>}
+          {(dataObject["@_name"] || isEditingLabel) && (
+            <NodeLabelAtTheBottom>
+              <EditableNodeLabel
+                id={id}
+                name={dataObject["@_name"]}
+                isEditing={isEditingLabel}
+                setEditing={setEditingLabel}
+                position={getNodeLabelPosition({ nodeType: type as BpmnNodeType })}
+                value={dataObject["@_name"]}
+                onChange={setName}
+                validate={() => true} // FIXME: Tiago
+                shouldCommitOnBlur={true}
+                // Keeps the text on top of the selected layer
+                fontCssProperties={{ zIndex: 2000 }}
+                setLabelHeight={setNodeHeight}
+              />
+            </NodeLabelAtTheBottom>
+          )}
         </div>
       </>
     );
@@ -942,7 +1011,7 @@ export const DataObjectNode = React.memo(
 
 export const GroupNode = React.memo(
   ({
-    data: { bpmnElement: group, shape, index, shapeIndex },
+    data: { bpmnElement: group, shape, shapeIndex },
     selected,
     dragging,
     zIndex,
@@ -954,8 +1023,6 @@ export const GroupNode = React.memo(
 
     const ref = useRef<SVGRectElement>(null);
 
-    const snapGrid = useBpmnEditorStore((s) => s.xyFlowReactKieDiagram.snapGrid);
-    const enableCustomNodeStyles = useBpmnEditorStore((s) => s.diagram.overlays.enableCustomNodeStyles);
     const isHovered = useIsHovered(ref);
     const isResizing = useNodeResizing(id);
     const shouldActLikeHovered = useBpmnEditorStore(
@@ -964,19 +1031,9 @@ export const GroupNode = React.memo(
     const bpmnEditorStoreApi = useBpmnEditorStoreApi();
     const reactFlow = RF.useReactFlow<BpmnDiagramNodeData, BpmnDiagramEdgeData>();
 
-    const { isEditingLabel, setEditingLabel, triggerEditing, triggerEditingIfEnter } = useEditableNodeLabel(id);
     const { isTargeted, isValidConnectionTarget } = useConnectionTargetStatus(id, shouldActLikeHovered);
     const className = useNodeClassName(isValidConnectionTarget, id, NODE_TYPES, EDGE_TYPES, true);
     const nodeDimensions = useNodeDimensions({ shape, nodeType: type as BpmnNodeType, MIN_NODE_SIZES });
-    const setName = useCallback<OnEditableNodeLabelChange>(
-      (newName: string) => {
-        bpmnEditorStoreApi.setState((state) => {
-          // FIXME: Tiago: Mutation (set node name)
-          // renameGroupNode({ definitions: state.bpmn.model.definitions, newName, index });
-        });
-      },
-      [bpmnEditorStoreApi]
-    );
 
     // Select nodes that are visually entirely inside the group.
     useEffect(() => {
@@ -1004,11 +1061,6 @@ export const GroupNode = React.memo(
       };
     }, [bpmnEditorStoreApi, reactFlow, shape]);
 
-    const { fontCssProperties } = useNodeStyle({
-      nodeType: type as BpmnNodeType,
-      isEnabled: enableCustomNodeStyles,
-    });
-
     return (
       <>
         <svg className={`xyflow-react-kie-diagram--node-shape ${className}`}>
@@ -1018,8 +1070,6 @@ export const GroupNode = React.memo(
         <div
           className={`xyflow-react-kie-diagram--node kie-bpmn-editor--group-node ${className}`}
           tabIndex={-1}
-          onDoubleClick={triggerEditing}
-          onKeyDown={triggerEditingIfEnter}
           data-nodehref={id}
           data-nodelabel={id}
         >
@@ -1052,7 +1102,7 @@ export const GroupNode = React.memo(
 
 export const LaneNode = React.memo(
   ({
-    data: { bpmnElement: lane, shape, index, shapeIndex },
+    data: { bpmnElement: lane, shape, shapeIndex },
     selected,
     dragging,
     zIndex,
@@ -1064,7 +1114,6 @@ export const LaneNode = React.memo(
 
     const ref = useRef<SVGRectElement>(null);
 
-    const enableCustomNodeStyles = useBpmnEditorStore((s) => s.diagram.overlays.enableCustomNodeStyles);
     const isOnlySelectedNode = useBpmnEditorStore(
       (s) => s.xyFlowReactKieDiagram._selectedNodes.length === 1 && selected
     );
@@ -1086,17 +1135,11 @@ export const LaneNode = React.memo(
     const setName = useCallback<OnEditableNodeLabelChange>(
       (newName: string) => {
         bpmnEditorStoreApi.setState((state) => {
-          // FIXME: Tiago: Mutation (set node name)
-          // renameProcessFlowElement({
+          renameLane({ definitions: state.bpmn.model.definitions, newName, id });
         });
       },
-      [bpmnEditorStoreApi]
+      [bpmnEditorStoreApi, id]
     );
-
-    const { fontCssProperties } = useNodeStyle({
-      nodeType: type as BpmnNodeType,
-      isEnabled: enableCustomNodeStyles,
-    });
 
     return (
       <>
@@ -1124,8 +1167,19 @@ export const LaneNode = React.memo(
               }, [bpmnEditorStoreApi])}
             />
 
-            {/* FIXME: Tiago */}
-            <span style={{ position: "absolute", top: "20px", left: "20px" }}>{lane["@_name"]}</span>
+            <EditableNodeLabel
+              id={id}
+              name={lane["@_name"]}
+              isEditing={isEditingLabel}
+              setEditing={setEditingLabel}
+              position={getNodeLabelPosition({ nodeType: type as BpmnNodeType })}
+              value={lane["@_name"]}
+              onChange={setName}
+              validate={() => true} // FIXME: Tiago
+              shouldCommitOnBlur={true}
+              // Keeps the text on top of the selected layer
+              fontCssProperties={{ zIndex: 2000 }}
+            />
 
             {isOnlySelectedNode && !dragging && (
               <NodeResizerHandle
@@ -1154,7 +1208,7 @@ export const LaneNode = React.memo(
 
 export const TextAnnotationNode = React.memo(
   ({
-    data: { bpmnElement: textAnnotation, shape, index, shapeIndex },
+    data: { bpmnElement: textAnnotation, shape, shapeIndex },
     selected,
     dragging,
     zIndex,
@@ -1185,20 +1239,24 @@ export const TextAnnotationNode = React.memo(
       shape,
       MIN_NODE_SIZES,
     });
+
     const setText = useCallback(
       (newText: string) => {
         bpmnEditorStoreApi.setState((state) => {
-          // FIXME: Tiago: Mutation (set node name)
-          // updateTextAnnotation({ definitions: state.bpmn.model.definitions, newText, index });
+          updateTextAnnotation({ definitions: state.bpmn.model.definitions, newText, id });
         });
       },
-      [bpmnEditorStoreApi]
+      [bpmnEditorStoreApi, id]
     );
 
     const { fontCssProperties } = useNodeStyle({
       nodeType: type as BpmnNodeType,
       isEnabled: enableCustomNodeStyles,
     });
+
+    const content = useMemo(() => {
+      return String(textAnnotation.text?.__$$text) || parseBpmn20Drools10MetaData(textAnnotation).get("elementname");
+    }, [textAnnotation]);
 
     return (
       <>
@@ -1228,6 +1286,20 @@ export const TextAnnotationNode = React.memo(
             }, [bpmnEditorStoreApi])}
           />
 
+          <EditableNodeLabel
+            id={id}
+            name={content}
+            isEditing={isEditingLabel}
+            setEditing={setEditingLabel}
+            position={getNodeLabelPosition({ nodeType: type as BpmnNodeType })}
+            value={content}
+            onChange={setText}
+            validate={() => true} // FIXME: Tiago
+            shouldCommitOnBlur={true}
+            // Keeps the text on top of the selected layer
+            fontCssProperties={{ ...fontCssProperties, zIndex: 2000 }}
+          />
+
           {shouldActLikeHovered && (
             <NodeResizerHandle
               nodeType={type as typeof NODE_TYPES.textAnnotation}
@@ -1245,9 +1317,6 @@ export const TextAnnotationNode = React.memo(
             nodeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.textAnnotation].nodes}
             edgeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.textAnnotation].edges}
           />
-          <div>
-            {String(textAnnotation.text?.__$$text) || parseBpmn20Drools10MetaData(textAnnotation).get("elementname")}
-          </div>
         </div>
       </>
     );
@@ -1256,7 +1325,7 @@ export const TextAnnotationNode = React.memo(
 );
 
 export const UnknownNode = React.memo(
-  ({ data: { shape, shapeIndex }, selected, dragging, zIndex, type, id }: RF.NodeProps<BpmnDiagramNodeData<null>>) => {
+  ({ data: { shape, shapeIndex }, selected, dragging, zIndex, type, id }: RF.NodeProps<BpmnDiagramNodeData<any>>) => {
     const renderCount = useRef<number>(0);
     renderCount.current++;
 
@@ -1315,14 +1384,6 @@ export const UnknownNode = React.memo(
             validate={useCallback((value) => true, [])}
             shouldCommitOnBlur={true}
           />
-          {selected && !dragging && (
-            <NodeResizerHandle
-              nodeType={type as typeof NODE_TYPES.unknown}
-              nodeId={id}
-              nodeShapeIndex={shapeIndex}
-              MIN_NODE_SIZES={MIN_NODE_SIZES}
-            />
-          )}
         </div>
       </>
     );
@@ -1367,7 +1428,7 @@ export function useActivityIcons(
   }, [activity]);
 }
 
-export function NodeLabelAtTheBottom({ label }: { label: string }) {
+export function NodeLabelAtTheBottom({ children }: React.PropsWithChildren<{}>) {
   return (
     <div
       style={{
@@ -1380,11 +1441,11 @@ export function NodeLabelAtTheBottom({ label }: { label: string }) {
         boxShadow: "rgba(0, 0, 0, 0.4) 2px 2px 6px",
         backdropFilter: "blur(4px)",
         textAlign: "center",
-        width: "140%",
-        marginLeft: "-20%",
+        width: "calc(100% + 20px)",
+        marginLeft: "-10px",
       }}
     >
-      {label}
+      {children}
     </div>
   );
 }

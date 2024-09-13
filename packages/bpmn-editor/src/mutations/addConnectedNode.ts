@@ -99,14 +99,13 @@ export function addConnectedNode({
           {
             "@_id": newBpmnElementId,
             __$$element: "group" as const,
-            "@_name": "New group",
           },
         ],
         [NODE_TYPES.textAnnotation]: [
           {
             "@_id": newBpmnElementId,
             __$$element: "textAnnotation" as const,
-            text: "New text annotation" as any,
+            text: { __$$text: "" },
           },
           {
             "@_id": newEdgeId,

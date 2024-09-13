@@ -30,19 +30,25 @@ import { containerNodeVisibleRectCssClassName } from "@kie-tools/xyflow-react-ki
 import { ActivityNodeMarker, EventVariant, GatewayVariant } from "../BpmnDiagramDomain";
 import { useMemo } from "react";
 
-export function DataObjectNodeSvg(__props: NodeSvgProps & { isIcon: boolean; transform?: string }) {
+export function DataObjectNodeSvg(
+  __props: NodeSvgProps & { isIcon?: boolean; showFoldedPage?: boolean; showArrow?: boolean; transform?: string }
+) {
   const {
     x,
     y,
     width,
     height,
     strokeWidth,
-    props: { isIcon, ...props },
+    props: { isIcon: _isIcon, showFoldedPage: _showFoldedPage, showArrow: _showArrow, ...props },
   } = normalize(__props);
 
   const bevel = 25;
   const arrowStartingX = 6;
   const arrowStartingY = 10;
+
+  const showFoldedPage = _showFoldedPage ?? false;
+  const showArrow = _showArrow ?? false;
+  const isIcon = _isIcon ?? false;
 
   return (
     <>
@@ -55,27 +61,27 @@ export function DataObjectNodeSvg(__props: NodeSvgProps & { isIcon: boolean; tra
         strokeWidth={strokeWidth}
         transform={isIcon ? __props.transform : `translate(${x},${y})`}
       />
-      {isIcon === false && (
-        <>
-          <polygon
-            {...props}
-            points={`${width - bevel},0 ${width - bevel},${bevel} ${width},${bevel}`}
-            fill={DEFAULT_NODE_FILL}
-            stroke={DEFAULT_NODE_STROKE_COLOR}
-            strokeLinejoin={"round"}
-            strokeWidth={strokeWidth}
-            transform={`translate(${x},${y})`}
-          />
-          <polygon
-            {...props}
-            points={`${arrowStartingX},${arrowStartingY} ${arrowStartingX},20 20,20 20,26 30,15 20,4 20,${arrowStartingY} `}
-            fill={DEFAULT_NODE_FILL}
-            stroke={DEFAULT_NODE_STROKE_COLOR}
-            strokeLinejoin={"round"}
-            strokeWidth={strokeWidth}
-            transform={`translate(${x},${y})`}
-          />
-        </>
+      {showFoldedPage === true && (
+        <polygon
+          {...props}
+          points={`${width - bevel},0 ${width - bevel},${bevel} ${width},${bevel}`}
+          fill={DEFAULT_NODE_FILL}
+          stroke={DEFAULT_NODE_STROKE_COLOR}
+          strokeLinejoin={"round"}
+          strokeWidth={strokeWidth}
+          transform={`translate(${x},${y})`}
+        />
+      )}
+      {showArrow === true && (
+        <polygon
+          {...props}
+          points={`${arrowStartingX},${arrowStartingY} ${arrowStartingX},20 20,20 20,26 30,15 20,4 20,${arrowStartingY} `}
+          fill={DEFAULT_NODE_FILL}
+          stroke={DEFAULT_NODE_STROKE_COLOR}
+          strokeLinejoin={"round"}
+          strokeWidth={strokeWidth}
+          transform={`translate(${x},${y})`}
+        />
       )}
     </>
   );

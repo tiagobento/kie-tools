@@ -23,6 +23,12 @@ import { Truncate } from "@patternfly/react-core/dist/js/components/Truncate";
 import { NodeLabelPosition } from "../nodes/NodeSvgs";
 import "./EditableNodeLabel.css";
 
+export const INVALID_NAME_CSS_PROPS = {
+  color: "red",
+  textDecoration: "red dotted underline",
+  textUnderlinePosition: "under",
+};
+
 export type OnEditableNodeLabelChange = (value: string | undefined) => void;
 
 export function EditableNodeLabel({
@@ -177,7 +183,7 @@ export function EditableNodeLabel({
           spellCheck={"false"} // Let's not confuse FEEL name validation with the browser's grammar check.
           style={{
             ...fontCssProperties,
-            ...(isValid ? {} : invalidInlineFeelNameStyle),
+            ...(isValid ? {} : INVALID_NAME_CSS_PROPS),
           }}
           onMouseDownCapture={(e) => e.stopPropagation()} // Make sure mouse events stay inside the node.
           onKeyDown={onKeyDown}
@@ -194,7 +200,7 @@ export function EditableNodeLabel({
           style={{
             whiteSpace: "pre-wrap",
             ...fontCssProperties,
-            ...(isValid ? {} : invalidInlineFeelNameStyle),
+            ...(isValid ? {} : INVALID_NAME_CSS_PROPS),
           }}
         >
           {!displayValue ? (
@@ -209,13 +215,6 @@ export function EditableNodeLabel({
     </div>
   );
 }
-
-// FIXME: Tiago: Not sure why I added this FIXME here.
-export const invalidInlineFeelNameStyle = {
-  color: "red",
-  textDecoration: "red dotted underline",
-  textUnderlinePosition: "under",
-};
 
 export function useEditableNodeLabel(id: string | undefined) {
   const [isEditingLabel, setEditingLabel] = useState(false);
@@ -244,10 +243,8 @@ export function useEditableNodeLabel(id: string | undefined) {
 
 export function EmptyLabel() {
   return (
-    <span style={{ fontFamily: "serif" }}>
-      <i style={{ opacity: 0.8 }}>{`<Empty>`}</i>
-      <br />
-      <i style={{ opacity: 0.5, fontSize: "0.8em", lineHeight: "0.8em" }}>{`Double-click to name`}</i>
+    <span style={{ fontFamily: "serif", paddingTop: "8px" }}>
+      <i style={{ opacity: 0.5, fontSize: "0.8em", lineHeight: "0.8em" }}>{`Double-click to change`}</i>
     </span>
   );
 }

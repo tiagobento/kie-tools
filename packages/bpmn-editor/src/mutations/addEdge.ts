@@ -65,7 +65,6 @@ export function addEdge({
     href: string;
     bounds: DC__Bounds;
     shapeId: string | undefined;
-    index: number;
   };
   __readonly_edge: {
     type: BpmnEdgeType;
