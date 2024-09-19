@@ -27,6 +27,7 @@ import {
   DrawerHead,
   DrawerContent,
   DrawerContentBody,
+  DrawerPanelBody,
 } from "@patternfly/react-core/dist/js/components/Drawer";
 import { original } from "immer";
 import * as React from "react";
@@ -64,6 +65,12 @@ import { BpmnDiagramEdgeData, BpmnDiagramNodeData, BpmnNodeElement, BpmnNodeType
 import "@kie-tools/xyflow-react-kie-diagram/dist/patternfly-customizations.css";
 import "@kie-tools/xyflow-react-kie-diagram/dist/xyflow-customizations.css";
 import "./BpmnEditor.css";
+import { GlobalProperties } from "./propertiesPanel/GlobalProperties";
+import { SingleNodeProperties } from "./propertiesPanel/SingleNodeProperties";
+import { MultipleNodeProperties } from "./propertiesPanel/MultipleNodesProperties";
+import { SingleEdgeProperties } from "./propertiesPanel/SingleEdgeProperties";
+import { MultipleEdgesProperties } from "./propertiesPanel/MultipleEdgesProperties";
+import { MixedNodesAndEdgesProperties } from "./propertiesPanel/MixedNodesAndEdgesProperties";
 
 const ON_MODEL_CHANGE_DEBOUNCE_TIME_IN_MS = 500;
 
@@ -152,7 +159,7 @@ export const BpmnEditorInternal = ({
   onModelDebounceStateChanged,
   forwardRef,
 }: BpmnEditorProps & { forwardRef?: React.Ref<BpmnEditorRef> }) => {
-  const isDiagramPropertiesPanelOpen = useBpmnEditorStore((s) => s.diagram.propertiesPanel.isOpen);
+  const isPropertiesPanelOpen = useBpmnEditorStore((s) => s.propertiesPanel.isOpen);
   const bpmn = useBpmnEditorStore((s) => s.bpmn);
   const isDiagramEditingInProgress = useBpmnEditorStore((s) => s.computed(s).isDiagramEditingInProgress());
   const bpmnEditorStoreApi = useBpmnEditorStoreApi();
@@ -254,7 +261,10 @@ export const BpmnEditorInternal = ({
     };
   }, [isDiagramEditingInProgress, onModelChange, bpmn.model]);
 
-  const diagramPropertiesPanel = useMemo(
+  const selectedNodesById = useBpmnEditorStore((s) => s.computed(s).getDiagramData().selectedNodesById);
+  const selectedEdgesById = useBpmnEditorStore((s) => s.computed(s).getDiagramData().selectedEdgesById);
+
+  const propertiesPanel = useMemo(
     () => (
       <DrawerPanelContent
         data-testid={"kie-tools--bpmn-editor--properties-panel-container"}
@@ -263,34 +273,26 @@ export const BpmnEditorInternal = ({
         defaultSize={"500px"}
         onKeyDown={(e) => e.stopPropagation()} // Prevent ReactFlow KeyboardShortcuts from triggering when editing stuff on Properties Panel
       >
-        <DrawerHead>
-          <Form>
-            <FormSection
-              title={
-                <Button
-                  title={"Close"}
-                  variant={ButtonVariant.plain}
-                  onClick={() => {
-                    bpmnEditorStoreApi.setState((state) => {
-                      state.diagram.propertiesPanel.isOpen = false;
-                    });
-                  }}
-                >
-                  <TimesIcon />
-                </Button>
-              }
-            />
-          </Form>
-        </DrawerHead>
+        <DrawerHead></DrawerHead>
+        <DrawerPanelBody>
+          <>
+            {selectedEdgesById.size <= 0 && selectedNodesById.size <= 0 && <GlobalProperties />}
+            {selectedEdgesById.size <= 0 && selectedNodesById.size === 1 && <SingleNodeProperties />}
+            {selectedEdgesById.size <= 0 && selectedNodesById.size > 1 && <MultipleNodeProperties />}
+            {selectedEdgesById.size === 1 && selectedNodesById.size <= 0 && <SingleEdgeProperties />}
+            {selectedEdgesById.size > 1 && selectedNodesById.size <= 0 && <MultipleEdgesProperties />}
+            {selectedEdgesById.size >= 1 && selectedNodesById.size >= 1 && <MixedNodesAndEdgesProperties />}
+          </>
+        </DrawerPanelBody>
       </DrawerPanelContent>
     ),
-    [bpmnEditorStoreApi]
+    [selectedEdgesById.size, selectedNodesById.size]
   );
 
   return (
     <div ref={bpmnEditorRootElementRef} className={"kie-bpmn-editor--root"}>
-      <Drawer isExpanded={isDiagramPropertiesPanelOpen} isInline={true} position={"right"}>
-        <DrawerContent panelContent={diagramPropertiesPanel}>
+      <Drawer isExpanded={isPropertiesPanelOpen} isInline={true} position={"right"}>
+        <DrawerContent panelContent={propertiesPanel}>
           <DrawerContentBody>
             <div
               className={"kie-bpmn-editor--diagram-container"}

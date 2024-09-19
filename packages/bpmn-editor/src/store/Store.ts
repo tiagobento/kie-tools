@@ -61,14 +61,16 @@ export interface State extends BpmnXyFlowDiagramState {
   bpmn: {
     model: Normalized<BpmnLatestModel>;
   };
+  settings: {
+    isReadOnly: boolean;
+  };
   focus: {
     consumableId: string | undefined;
   };
+  propertiesPanel: {
+    isOpen: boolean;
+  };
   diagram: {
-    propertiesPanel: {
-      isOpen: boolean;
-      elementId: string | undefined;
-    };
     overlaysPanel: {
       isOpen: boolean;
     };
@@ -85,11 +87,13 @@ export const getDefaultStaticState = (): Omit<State, "bpmn" | "computed" | "disp
   focus: {
     consumableId: undefined,
   },
+  settings: {
+    isReadOnly: false,
+  },
+  propertiesPanel: {
+    isOpen: true,
+  },
   diagram: {
-    propertiesPanel: {
-      isOpen: false,
-      elementId: undefined,
-    },
     overlaysPanel: {
       isOpen: false,
     },

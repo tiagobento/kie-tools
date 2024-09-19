@@ -46,6 +46,7 @@ declare module "./schemas/bpmn-2_0/ts-gen/types" {
     "@_drools:packageName"?: Namespaced<DROOLS, string>;
     "@_drools:version"?: Namespaced<DROOLS, string>;
     "@_drools:adHoc"?: Namespaced<DROOLS, string>;
+    "drools:metaData"?: Namespaced<DROOLS, drools__GLOBAL__metaData>[];
   }
 
   export interface BPMN20__tProcess__extensionElements {

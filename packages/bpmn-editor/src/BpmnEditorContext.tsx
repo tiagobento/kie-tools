@@ -21,7 +21,6 @@ import * as React from "react";
 import { useContext, useMemo, useRef } from "react";
 import { BpmnEditorProps } from "./BpmnEditor";
 import { BpmnLatestModel } from "@kie-tools/bpmn-marshaller";
-import { Normalized } from "./normalization/normalize";
 
 export type BpmnEditorContextProviderProps = Pick<
   BpmnEditorProps,

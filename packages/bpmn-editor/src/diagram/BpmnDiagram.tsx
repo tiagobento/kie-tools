@@ -492,7 +492,7 @@ export function BpmnDiagram({
 
   const onEscPressed = useCallback<OnEscPressed>(() => {
     bpmnEditorStoreApi.setState((state) => {
-      state.diagram.propertiesPanel.isOpen = false;
+      state.propertiesPanel.isOpen = false;
       state.diagram.overlaysPanel.isOpen = false;
       state.diagram.openLhsPanel = BpmnDiagramLhsPanel.NONE;
     });
