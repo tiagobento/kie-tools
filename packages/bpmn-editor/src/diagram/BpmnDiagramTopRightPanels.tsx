@@ -34,11 +34,12 @@ export interface TopRightCornerPanelsProps {
 
 export function TopRightCornerPanels({ availableHeight }: TopRightCornerPanelsProps) {
   const diagram = useBpmnEditorStore((s) => s.diagram);
+  const propertiesPanel = useBpmnEditorStore((s) => s.propertiesPanel);
   const bpmnEditorStoreApi = useBpmnEditorStoreApi();
 
   const togglePropertiesPanel = useCallback(() => {
     bpmnEditorStoreApi.setState((state) => {
-      state.diagram.propertiesPanel.isOpen = !state.diagram.propertiesPanel.isOpen;
+      state.propertiesPanel.isOpen = !state.propertiesPanel.isOpen;
     });
   }, [bpmnEditorStoreApi]);
 
@@ -60,7 +61,7 @@ export function TopRightCornerPanels({ availableHeight }: TopRightCornerPanelsPr
       }
       state.diagram.overlaysPanel.isOpen = false;
     });
-  }, [bpmnEditorStoreApi, diagram.propertiesPanel.isOpen]);
+  }, [bpmnEditorStoreApi, propertiesPanel.isOpen]);
 
   return (
     <>
@@ -86,7 +87,7 @@ export function TopRightCornerPanels({ availableHeight }: TopRightCornerPanelsPr
             </button>
           </Popover>
         </aside>
-        {!diagram.propertiesPanel.isOpen && (
+        {!propertiesPanel.isOpen && (
           <aside className={"kie-bpmn-editor--properties-panel-toggle"}>
             <button
               className={"kie-bpmn-editor--properties-panel-toggle-button"}

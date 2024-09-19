@@ -222,7 +222,7 @@ export function BpmnDiagramCommands(props: {}) {
     commandsRef.current.togglePropertiesPanel = async () => {
       console.debug("BPMN DIAGRAM: COMMANDS: Toggle properties panel...");
       bpmnEditorStoreApi.setState((state) => {
-        state.diagram.propertiesPanel.isOpen = !state.diagram.propertiesPanel.isOpen;
+        state.propertiesPanel.isOpen = !state.propertiesPanel.isOpen;
       });
     };
   }, [bpmnEditorStoreApi, commandsRef]);

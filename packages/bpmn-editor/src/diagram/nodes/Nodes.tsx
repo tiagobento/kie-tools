@@ -153,7 +153,7 @@ export const StartEventNode = React.memo(
               isVisible={!isTargeted && shouldActLikeHovered}
               onClick={useCallback(() => {
                 bpmnEditorStoreApi.setState((state) => {
-                  state.diagram.propertiesPanel.isOpen = true;
+                  state.propertiesPanel.isOpen = true;
                 });
               }, [bpmnEditorStoreApi])}
             />
@@ -260,7 +260,7 @@ export const IntermediateCatchEventNode = React.memo(
               isVisible={!isTargeted && shouldActLikeHovered}
               onClick={useCallback(() => {
                 bpmnEditorStoreApi.setState((state) => {
-                  state.diagram.propertiesPanel.isOpen = true;
+                  state.propertiesPanel.isOpen = true;
                 });
               }, [bpmnEditorStoreApi])}
             />
@@ -367,7 +367,7 @@ export const IntermediateThrowEventNode = React.memo(
               isVisible={!isTargeted && shouldActLikeHovered}
               onClick={useCallback(() => {
                 bpmnEditorStoreApi.setState((state) => {
-                  state.diagram.propertiesPanel.isOpen = true;
+                  state.propertiesPanel.isOpen = true;
                 });
               }, [bpmnEditorStoreApi])}
             />
@@ -473,7 +473,7 @@ export const EndEventNode = React.memo(
               isVisible={!isTargeted && shouldActLikeHovered}
               onClick={useCallback(() => {
                 bpmnEditorStoreApi.setState((state) => {
-                  state.diagram.propertiesPanel.isOpen = true;
+                  state.propertiesPanel.isOpen = true;
                 });
               }, [bpmnEditorStoreApi])}
             />
@@ -593,7 +593,7 @@ export const TaskNode = React.memo(
               isVisible={!isTargeted && shouldActLikeHovered}
               onClick={useCallback(() => {
                 bpmnEditorStoreApi.setState((state) => {
-                  state.diagram.propertiesPanel.isOpen = true;
+                  state.propertiesPanel.isOpen = true;
                 });
               }, [bpmnEditorStoreApi])}
             />
@@ -724,7 +724,7 @@ export const SubProcessNode = React.memo(
               isVisible={!isTargeted && isOnlySelectedNode && !dragging}
               onClick={useCallback(() => {
                 bpmnEditorStoreApi.setState((state) => {
-                  state.diagram.propertiesPanel.isOpen = true;
+                  state.propertiesPanel.isOpen = true;
                 });
               }, [bpmnEditorStoreApi])}
             />
@@ -845,7 +845,7 @@ export const GatewayNode = React.memo(
               isVisible={!isTargeted && shouldActLikeHovered}
               onClick={useCallback(() => {
                 bpmnEditorStoreApi.setState((state) => {
-                  state.diagram.propertiesPanel.isOpen = true;
+                  state.propertiesPanel.isOpen = true;
                 });
               }, [bpmnEditorStoreApi])}
             />
@@ -959,7 +959,7 @@ export const DataObjectNode = React.memo(
               isVisible={!isTargeted && shouldActLikeHovered}
               onClick={useCallback(() => {
                 bpmnEditorStoreApi.setState((state) => {
-                  state.diagram.propertiesPanel.isOpen = true;
+                  state.propertiesPanel.isOpen = true;
                 });
               }, [bpmnEditorStoreApi])}
             />
@@ -1162,7 +1162,7 @@ export const LaneNode = React.memo(
               isVisible={!isTargeted && isOnlySelectedNode && !dragging}
               onClick={useCallback(() => {
                 bpmnEditorStoreApi.setState((state) => {
-                  state.diagram.propertiesPanel.isOpen = true;
+                  state.propertiesPanel.isOpen = true;
                 });
               }, [bpmnEditorStoreApi])}
             />
@@ -1281,7 +1281,7 @@ export const TextAnnotationNode = React.memo(
             isVisible={!isTargeted && shouldActLikeHovered}
             onClick={useCallback(() => {
               bpmnEditorStoreApi.setState((state) => {
-                state.diagram.propertiesPanel.isOpen = true;
+                state.propertiesPanel.isOpen = true;
               });
             }, [bpmnEditorStoreApi])}
           />
@@ -1367,7 +1367,7 @@ export const UnknownNode = React.memo(
             isVisible={!isTargeted && shouldActLikeHovered}
             onClick={useCallback(() => {
               bpmnEditorStoreApi.setState((state) => {
-                state.diagram.propertiesPanel.isOpen = true;
+                state.propertiesPanel.isOpen = true;
               });
             }, [bpmnEditorStoreApi])}
           />

@@ -18,9 +18,13 @@
  */
 
 import "./drools-extension";
-import { AllNodesExtensionElements } from "./schemas/bpmn-2_0/ts-gen/types";
+import { AllNodesExtensionElements, BPMN20__tProcess } from "./schemas/bpmn-2_0/ts-gen/types";
 
-export type Bpmn20KnownMetaDataKey = "elementname" | "customTags";
+export type Bpmn20KnownMetaDataKey =
+  | "elementname" // Used for any Flow Element.
+  | "customTags" // Used for Process Variables.
+  | "customDescription" // Used for "Process Instance Description" as a global property.
+  | "customSLADueDate"; // Used for "SLA Due date" as a global property.
 
 /**
  * Helps dealing with objects containing drools:metaData entries.
@@ -29,16 +33,50 @@ export type Bpmn20KnownMetaDataKey = "elementname" | "customTags";
  * @returns A map containing the metaData entries indexed by their name attribute.
  */
 export function parseBpmn20Drools10MetaData(obj: {
-  extensionElements?: Pick<AllNodesExtensionElements, "drools:metaData">;
+  extensionElements?: Pick<AllNodesExtensionElements, "drools:metaData"> | BPMN20__tProcess;
 }): Map<Bpmn20KnownMetaDataKey, string> {
   const metadata = new Map<Bpmn20KnownMetaDataKey, string>();
 
   for (let i = 0; i < (obj.extensionElements?.["drools:metaData"] ?? []).length; i++) {
-    const e = obj.extensionElements!["drools:metaData"]![i];
-    if (e["@_name"] !== undefined) {
-      metadata.set(e["@_name"] as Bpmn20KnownMetaDataKey, e["drools:metaValue"].__$$text);
+    const entry = obj.extensionElements!["drools:metaData"]![i];
+    if (entry["@_name"] !== undefined) {
+      metadata.set(entry["@_name"] as Bpmn20KnownMetaDataKey, entry["drools:metaValue"].__$$text);
     }
   }
 
   return metadata;
+}
+
+/**
+ * Helps changing objects containing drools:metaData entries.
+ *
+ * @param obj The object to extract drools:metaData from.
+ * @param key The drools:metaData entry name.
+ * @param value The drools:metaData entry value.
+ */
+export function setBpmn20Drools10MetaData(
+  obj: {
+    extensionElements?: Pick<AllNodesExtensionElements, "drools:metaData"> | BPMN20__tProcess;
+  },
+  key: Bpmn20KnownMetaDataKey,
+  value: string
+): void {
+  obj.extensionElements ??= { "drools:metaData": [] };
+  obj.extensionElements["drools:metaData"] ??= [];
+
+  let updated = false;
+  for (let i = 0; i < obj.extensionElements["drools:metaData"].length; i++) {
+    const entry = obj.extensionElements["drools:metaData"][i];
+    if (entry["@_name"] === key) {
+      entry["drools:metaValue"] = { __$$text: value };
+      updated = true;
+    }
+  }
+
+  if (!updated) {
+    obj.extensionElements["drools:metaData"].push({
+      "@_name": key,
+      "drools:metaValue": { __$$text: value },
+    });
+  }
 }
