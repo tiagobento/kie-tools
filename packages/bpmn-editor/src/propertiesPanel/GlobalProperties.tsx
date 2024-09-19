@@ -93,7 +93,7 @@ export function GlobalProperties() {
         >
           {isGlobalSectionExpanded && (
             <>
-              <FormSection style={{ paddingLeft: "20px" }}>
+              <FormSection style={{ paddingLeft: "20px", marginTop: "20px" }}>
                 <FormGroup label="Name">
                   <TextInput
                     aria-label={"Name"}
@@ -341,7 +341,7 @@ export function GlobalProperties() {
         >
           {isIdNamespaceSectionExpanded && (
             <>
-              <FormSection style={{ paddingLeft: "20px" }}>
+              <FormSection style={{ paddingLeft: "20px", marginTop: "20px" }}>
                 <FormGroup label="ID">
                   <ClipboardCopy
                     placeholder="Enter an ID..."
@@ -388,7 +388,15 @@ export function GlobalProperties() {
               title={"Process variables"}
             />
           }
-        ></FormSection>
+        >
+          {isProcessVariablesSectionExpanded && (
+            <>
+              <FormSection style={{ paddingLeft: "20px", marginTop: "20px" }}>
+                <></>
+              </FormSection>
+            </>
+          )}
+        </FormSection>
         <FormSection
           title={
             <SectionHeader
@@ -399,7 +407,15 @@ export function GlobalProperties() {
               title={"Collaboration"}
             />
           }
-        ></FormSection>
+        >
+          {isCollaborationSection && (
+            <>
+              <FormSection style={{ paddingLeft: "20px", marginTop: "20px" }}>
+                <></>
+              </FormSection>
+            </>
+          )}
+        </FormSection>
         <FormSection
           title={
             <SectionHeader
@@ -410,7 +426,15 @@ export function GlobalProperties() {
               title={"Metadata"}
             />
           }
-        ></FormSection>
+        >
+          {isMetadataSectionExpanded && (
+            <>
+              <FormSection style={{ paddingLeft: "20px", marginTop: "20px" }}>
+                <></>
+              </FormSection>
+            </>
+          )}
+        </FormSection>
         <FormSection
           title={
             <SectionHeader
@@ -420,7 +444,15 @@ export function GlobalProperties() {
               title={"Misc."}
             />
           }
-        ></FormSection>
+        >
+          {isMiscSectionExpanded && (
+            <>
+              <FormSection style={{ paddingLeft: "20px", marginTop: "20px" }}>
+                <></>
+              </FormSection>
+            </>
+          )}
+        </FormSection>
         <Modal
           aria-labelledby={"Regenerate ID & Namespace"}
           variant={ModalVariant.small}
