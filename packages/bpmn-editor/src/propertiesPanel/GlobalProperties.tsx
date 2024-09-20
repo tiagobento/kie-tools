@@ -36,7 +36,7 @@ import { TagIcon } from "@patternfly/react-icons/dist/js/icons/tag-icon";
 import * as React from "react";
 import { useBpmnEditorStore, useBpmnEditorStoreApi } from "../store/StoreContext";
 import { useState } from "react";
-import { SectionHeader } from "./SectionHeader";
+import { SectionHeader } from "@kie-tools/xyflow-react-kie-diagram/dist/propertiesPanel/SectionHeader";
 import { addOrGetProcessAndDiagramElements } from "../mutations/addOrGetProcessAndDiagramElements";
 import {
   parseBpmn20Drools10MetaData,

@@ -25,7 +25,7 @@ import { Flex } from "@patternfly/react-core/dist/js/layouts/Flex";
 import TimesIcon from "@patternfly/react-icons/dist/js/icons/times-icon";
 import * as React from "react";
 import { useBpmnEditorStore, useBpmnEditorStoreApi } from "../store/StoreContext";
-import { SectionHeader } from "./SectionHeader";
+import { SectionHeader } from "@kie-tools/xyflow-react-kie-diagram/dist/propertiesPanel/SectionHeader";
 
 export function MultipleEdgesProperties() {
   const [isSectionExpanded, setSectionExpanded] = React.useState<boolean>(true);
