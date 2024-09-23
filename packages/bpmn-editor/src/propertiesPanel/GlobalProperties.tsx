@@ -127,27 +127,7 @@ export function GlobalProperties() {
                     }
                   />
                 </FormGroup>
-                <FormGroup
-                  label="Package name"
-                  helperText={"Dot-separated, like Java packages."} // FIXME: Tiago -> Description
-                >
-                  <TextInput
-                    aria-label={"Package name"}
-                    type={"text"}
-                    isDisabled={settings.isReadOnly}
-                    rows={6}
-                    placeholder={"Enter a package name..."}
-                    value={process["@_drools:packageName"]}
-                    onChange={(newPackageName) =>
-                      bpmnEditorStoreApi.setState((s) => {
-                        const { process } = addOrGetProcessAndDiagramElements({
-                          definitions: s.bpmn.model.definitions,
-                        });
-                        process["@_drools:packageName"] = newPackageName;
-                      })
-                    }
-                  />
-                </FormGroup>
+
                 <FormGroup
                   label="Type"
                   helperText={
@@ -182,6 +162,49 @@ export function GlobalProperties() {
                       }}
                     />
                   </ToggleGroup>
+                </FormGroup>
+
+                <FormGroup
+                  fieldId="kie-bpmn-editor--global-properties-panel--executable"
+                  helperText={"Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."} // FIXME: Tiago -> Description
+                >
+                  <Checkbox
+                    label="Executable"
+                    id="kie-bpmn-editor--global-properties-panel--executable"
+                    name="is-executable"
+                    aria-label="Executable"
+                    isChecked={process["@_isExecutable"] ?? true}
+                    onChange={(checked) => {
+                      bpmnEditorStoreApi.setState((s) => {
+                        const { process } = addOrGetProcessAndDiagramElements({
+                          definitions: s.bpmn.model.definitions,
+                        });
+                        process["@_isExecutable"] = checked;
+                      });
+                    }}
+                  />
+                </FormGroup>
+
+                <FormGroup
+                  label="Package name"
+                  helperText={"Dot-separated, like Java packages."} // FIXME: Tiago -> Description
+                >
+                  <TextInput
+                    aria-label={"Package name"}
+                    type={"text"}
+                    isDisabled={settings.isReadOnly}
+                    rows={6}
+                    placeholder={"Enter a package name..."}
+                    value={process["@_drools:packageName"]}
+                    onChange={(newPackageName) =>
+                      bpmnEditorStoreApi.setState((s) => {
+                        const { process } = addOrGetProcessAndDiagramElements({
+                          definitions: s.bpmn.model.definitions,
+                        });
+                        process["@_drools:packageName"] = newPackageName;
+                      })
+                    }
+                  />
                 </FormGroup>
 
                 <FormGroup
@@ -227,20 +250,21 @@ export function GlobalProperties() {
                 </FormGroup>
 
                 <FormGroup
-                  label="Expression language"
-                  //   helperText={
-                  //     "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
-                  //   } // FIXME: Tiago -> Description
+                  label="SLA Due Date"
+                  helperText={"E.g.,: 2024-09-19 19:22:42"} // FIXME: Tiago -> Description
                 >
                   <TextInput
-                    aria-label={"Expression language"}
+                    aria-label={"SLA Due Date"}
                     type={"text"}
                     isDisabled={settings.isReadOnly}
-                    placeholder={"Enter an expression language..."}
-                    value={thisBpmn.model.definitions["@_expressionLanguage"]}
-                    onChange={(newExprLang) =>
-                      bpmnEditorStoreApi.setState((state) => {
-                        state.bpmn.model.definitions["@_expressionLanguage"] = newExprLang;
+                    placeholder={"Enter a date..."}
+                    value={parseBpmn20Drools10MetaData(process).get("customSLADueDate")}
+                    onChange={(newSlaDueDate) =>
+                      bpmnEditorStoreApi.setState((s) => {
+                        const { process } = addOrGetProcessAndDiagramElements({
+                          definitions: s.bpmn.model.definitions,
+                        });
+                        setBpmn20Drools10MetaData(process, "customSLADueDate", newSlaDueDate);
                       })
                     }
                   />
@@ -266,48 +290,6 @@ export function GlobalProperties() {
                           definitions: s.bpmn.model.definitions,
                         });
                         setBpmn20Drools10MetaData(process!, "customDescription", newDescription);
-                      })
-                    }
-                  />
-                </FormGroup>
-
-                <FormGroup
-                  fieldId="kie-bpmn-editor--global-properties-panel--executable"
-                  helperText={"Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."} // FIXME: Tiago -> Description
-                >
-                  <Checkbox
-                    label="Executable"
-                    id="kie-bpmn-editor--global-properties-panel--executable"
-                    name="is-executable"
-                    aria-label="Executable"
-                    isChecked={process["@_isExecutable"] ?? true}
-                    onChange={(checked) => {
-                      bpmnEditorStoreApi.setState((s) => {
-                        const { process } = addOrGetProcessAndDiagramElements({
-                          definitions: s.bpmn.model.definitions,
-                        });
-                        process["@_isExecutable"] = checked;
-                      });
-                    }}
-                  />
-                </FormGroup>
-
-                <FormGroup
-                  label="SLA Due Date"
-                  helperText={"E.g.,: 2024-09-19 19:22:42"} // FIXME: Tiago -> Description
-                >
-                  <TextInput
-                    aria-label={"SLA Due Date"}
-                    type={"text"}
-                    isDisabled={settings.isReadOnly}
-                    placeholder={"Enter a date..."}
-                    value={parseBpmn20Drools10MetaData(process).get("customSLADueDate")}
-                    onChange={(newSlaDueDate) =>
-                      bpmnEditorStoreApi.setState((s) => {
-                        const { process } = addOrGetProcessAndDiagramElements({
-                          definitions: s.bpmn.model.definitions,
-                        });
-                        setBpmn20Drools10MetaData(process, "customSLADueDate", newSlaDueDate);
                       })
                     }
                   />
@@ -448,11 +430,34 @@ export function GlobalProperties() {
           {isMiscSectionExpanded && (
             <>
               <FormSection style={{ paddingLeft: "20px", marginTop: "20px" }}>
-                <></>
+                <FormGroup
+                  label="Expression language"
+                  //   helperText={
+                  //     "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+                  //   } // FIXME: Tiago -> Description
+                >
+                  <TextInput
+                    aria-label={"Expression language"}
+                    type={"text"}
+                    isDisabled={settings.isReadOnly}
+                    placeholder={"Enter an expression language..."}
+                    value={thisBpmn.model.definitions["@_expressionLanguage"]}
+                    onChange={(newExprLang) =>
+                      bpmnEditorStoreApi.setState((state) => {
+                        state.bpmn.model.definitions["@_expressionLanguage"] = newExprLang;
+                      })
+                    }
+                  />
+                </FormGroup>
               </FormSection>
             </>
           )}
         </FormSection>
+
+        <br />
+        <br />
+        <br />
+
         <Modal
           aria-labelledby={"Regenerate ID & Namespace"}
           variant={ModalVariant.small}
