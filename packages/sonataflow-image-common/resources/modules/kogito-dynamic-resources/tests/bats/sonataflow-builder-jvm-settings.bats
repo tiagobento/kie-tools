@@ -25,7 +25,7 @@ export JBOSS_CONTAINER_JAVA_JVM_MODULE=/tmp/container/java/jvm
 mkdir -p "${KOGITO_HOME}"/launch
 mkdir -p "${JBOSS_CONTAINER_JAVA_JVM_MODULE}"
 cp $BATS_TEST_DIRNAME/../../../kogito-logging/added/logging.sh "${KOGITO_HOME}"/launch/
-cp -r $BATS_TEST_DIRNAME/../../added/* "${JBOSS_CONTAINER_JAVA_JVM_MODULE}"/
+cp -R $BATS_TEST_DIRNAME/../../added/* "${JBOSS_CONTAINER_JAVA_JVM_MODULE}"/
 chmod -R +x "${JBOSS_CONTAINER_JAVA_JVM_MODULE}"
 cp $BATS_TEST_DIRNAME/../../../sonataflow/common/scripts/added/jvm-settings.sh "${KOGITO_HOME}"/launch/
 

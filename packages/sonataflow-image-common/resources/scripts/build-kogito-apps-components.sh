@@ -99,7 +99,7 @@ for ctx in ${contextDir}; do
 
     if stat ${HOME}/.m2/repository/ &> /dev/null; then
         echo "Copy current maven repo to maven context local repo ${mvn_local_repo}"
-        cp -r ${HOME}/.m2/repository/* "${mvn_local_repo}"
+        cp -R ${HOME}/.m2/repository/* "${mvn_local_repo}"
     fi
 
     cd ${build_target_dir}

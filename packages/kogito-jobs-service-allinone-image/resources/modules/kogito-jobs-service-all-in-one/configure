@@ -28,7 +28,7 @@ mv "${KOGITO_HOME}"/bin/ephemeral/quarkus-app/lib/* "${KOGITO_HOME}"/bin/shared-
 rm -rf "${KOGITO_HOME}"/bin/ephemeral/quarkus-app/lib
 ln -s "${KOGITO_HOME}"/bin/shared-libs "${KOGITO_HOME}"/bin/ephemeral/quarkus-app/lib
 
-cp -r "${KOGITO_HOME}"/bin/postgresql/quarkus-app/lib/* "${KOGITO_HOME}"/bin/shared-libs/
+cp -R "${KOGITO_HOME}"/bin/postgresql/quarkus-app/lib/* "${KOGITO_HOME}"/bin/shared-libs/
 rm -rf "${KOGITO_HOME}"/bin/postgresql/quarkus-app/lib
 ln -s "${KOGITO_HOME}"/bin/shared-libs "${KOGITO_HOME}"/bin/postgresql/quarkus-app/lib
 
