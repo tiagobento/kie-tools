@@ -32,7 +32,7 @@ import {
   SubProcessNodeSvg,
 } from "./NodeSvgs";
 import { switchExpression } from "@kie-tools-core/switch-expression-ts";
-import { BpmnNodeType } from "../BpmnDiagramDomain";
+import { BpmnNodeType, EventVariant, GatewayVariant, SubProcessVariant, TaskVariant } from "../BpmnDiagramDomain";
 import { NODE_TYPES } from "../BpmnDiagramDomain";
 import { QuestionCircleIcon } from "@patternfly/react-icons/dist/js/icons/question-circle-icon";
 import { nodeSvgProps, RoundSvg } from "@kie-tools/xyflow-react-kie-diagram/dist/nodes/NodeIcons";
@@ -48,42 +48,42 @@ export function NodeIcon({ nodeType }: { nodeType: BpmnNodeType }) {
   });
 }
 
-export function StartEventIcon() {
+export function StartEventIcon({ variant }: { variant?: EventVariant }) {
   return (
     <RoundSvg>
-      <StartEventNodeSvg {...nodeSvgProps} variant={"none"} />
+      <StartEventNodeSvg {...nodeSvgProps} variant={variant ?? "none"} />
     </RoundSvg>
   );
 }
 
-export function IntermediateCatchEventIcon() {
+export function IntermediateCatchEventIcon({ variant }: { variant?: EventVariant }) {
   return (
     <RoundSvg>
-      <IntermediateCatchEventNodeSvg {...nodeSvgProps} rimWidth={40} variant={"none"} />
+      <IntermediateCatchEventNodeSvg {...nodeSvgProps} rimWidth={40} variant={variant ?? "none"} />
     </RoundSvg>
   );
 }
 
-export function IntermediateThrowEventIcon() {
+export function IntermediateThrowEventIcon({ variant }: { variant?: EventVariant }) {
   return (
     <RoundSvg>
-      <IntermediateThrowEventNodeSvg {...nodeSvgProps} rimWidth={40} variant={"none"} />
+      <IntermediateThrowEventNodeSvg {...nodeSvgProps} rimWidth={40} variant={variant ?? "none"} />
     </RoundSvg>
   );
 }
 
-export function EndEventIcon() {
+export function EndEventIcon({ variant }: { variant?: EventVariant }) {
   return (
     <RoundSvg>
-      <EndEventNodeSvg {...nodeSvgProps} variant={"none"} />
+      <EndEventNodeSvg {...nodeSvgProps} variant={variant ?? "none"} />
     </RoundSvg>
   );
 }
 
-export function TaskIcon() {
+export function TaskIcon({ variant }: { variant?: TaskVariant }) {
   return (
     <RoundSvg>
-      <TaskNodeSvg {...nodeSvgProps} />
+      <TaskNodeSvg {...nodeSvgProps} variant={variant ?? "none"} />
     </RoundSvg>
   );
 }
@@ -91,15 +91,15 @@ export function TaskIcon() {
 export function CallActivityIcon() {
   return (
     <RoundSvg>
-      <TaskNodeSvg {...nodeSvgProps} icons={["CallActivityPaletteIcon"]} />
+      <TaskNodeSvg {...nodeSvgProps} markers={["CallActivityPaletteIcon"]} variant={"none"} />
     </RoundSvg>
   );
 }
 
-export function GatewayIcon() {
+export function GatewayIcon({ variant }: { variant?: GatewayVariant }) {
   return (
     <RoundSvg>
-      <GatewayNodeSvg {...nodeSvgProps} width={200} height={200} variant={"none"} />
+      <GatewayNodeSvg {...nodeSvgProps} width={200} height={200} variant={variant ?? "none"} />
     </RoundSvg>
   );
 }
@@ -112,10 +112,16 @@ export function LaneIcon() {
   );
 }
 
-export function SubProcessIcon() {
+export function SubProcessIcon({ variant }: { variant?: SubProcessVariant }) {
   return (
     <RoundSvg>
-      <SubProcessNodeSvg {...nodeSvgProps} strokeWidth={10} rimWidth={20} borderRadius={20} type={"transaction"} />
+      <SubProcessNodeSvg
+        {...nodeSvgProps}
+        strokeWidth={10}
+        rimWidth={20}
+        borderRadius={20}
+        variant={variant ?? "transaction"}
+      />
     </RoundSvg>
   );
 }
@@ -152,6 +158,15 @@ export function TextAnnotationIcon() {
     </RoundSvg>
   );
 }
+
+export function UnknownNodeIcon() {
+  return (
+    <RoundSvg>
+      <QuestionCircleIcon width={"100%"} height={"100%"} />
+    </RoundSvg>
+  );
+}
+
 export function UnknownIcon() {
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>

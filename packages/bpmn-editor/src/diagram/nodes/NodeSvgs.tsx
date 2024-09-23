@@ -27,7 +27,7 @@ import {
   normalize,
 } from "@kie-tools/xyflow-react-kie-diagram/dist/nodes/NodeSvgs";
 import { containerNodeVisibleRectCssClassName } from "@kie-tools/xyflow-react-kie-diagram/dist/nodes/NodeSvgs";
-import { ActivityNodeMarker, EventVariant, GatewayVariant } from "../BpmnDiagramDomain";
+import { ActivityNodeMarker, EventVariant, GatewayVariant, SubProcessVariant, TaskVariant } from "../BpmnDiagramDomain";
 import { useMemo } from "react";
 
 export function DataObjectNodeSvg(
@@ -303,7 +303,12 @@ export function EndEventNodeSvg(__props: NodeSvgProps & { variant: EventVariant 
   );
 }
 
-export function TaskNodeSvg(__props: NodeSvgProps & { icons?: (ActivityNodeMarker | "CallActivityPaletteIcon")[] }) {
+export function TaskNodeSvg(
+  __props: NodeSvgProps & {
+    markers?: (ActivityNodeMarker | "CallActivityPaletteIcon")[];
+    variant?: TaskVariant | "none";
+  }
+) {
   const {
     x,
     y,
@@ -313,9 +318,10 @@ export function TaskNodeSvg(__props: NodeSvgProps & { icons?: (ActivityNodeMarke
     props: { ..._props },
   } = normalize(__props);
 
-  const { icons: _icons, ...props } = { ..._props };
+  const { markers: _markers, variant: _variant, ...props } = { ..._props };
 
-  const icons = useMemo(() => new Set(_icons), [_icons]);
+  const markers = useMemo(() => new Set(_markers), [_markers]);
+  const variant = _variant ?? "none";
 
   return (
     <>
@@ -332,7 +338,7 @@ export function TaskNodeSvg(__props: NodeSvgProps & { icons?: (ActivityNodeMarke
         ry="3"
         {...props}
       />
-      {icons.has("CallActivityPaletteIcon") && (
+      {markers.has("CallActivityPaletteIcon") && (
         <rect
           x={x + (width / 2 - width / 3 / 2)}
           y={y + (height - height / 3)}
@@ -347,7 +353,7 @@ export function TaskNodeSvg(__props: NodeSvgProps & { icons?: (ActivityNodeMarke
           {...props}
         />
       )}
-      <ActivityNodeIcons x={x} y={y} width={width} height={height} icons={icons as Set<ActivityNodeMarker>} />
+      <ActivityNodeIcons x={x} y={y} width={width} height={height} icons={markers as Set<ActivityNodeMarker>} />
     </>
   );
 }
@@ -514,10 +520,16 @@ export const SubProcessNodeSvg = React.forwardRef<
     borderRadius?: number;
     rimWidth?: number;
     icons?: ActivityNodeMarker[];
-    type?: "transaction" | "event" | "other";
+    variant?: SubProcessVariant;
   }
 >((__props, ref) => {
-  const { rimWidth: _rimWidth, borderRadius: _borderRadius, icons: _icons, type: _type, ..._props } = { ...__props };
+  const {
+    rimWidth: _rimWidth,
+    borderRadius: _borderRadius,
+    icons: _icons,
+    variant: _variant,
+    ..._props
+  } = { ...__props };
   const { x, y, width, height, strokeWidth, props } = normalize(_props);
 
   const {
@@ -532,13 +544,13 @@ export const SubProcessNodeSvg = React.forwardRef<
   const { ...interactionRectProps } = _interactionRectProps;
 
   const icons = useMemo(() => new Set(_icons), [_icons]);
-  const type = _type ?? "other";
-  const rimWidth = type === "transaction" ? _rimWidth ?? 5 : 0;
-  const borderRadius = type === "transaction" ? _borderRadius ?? 10 : 2;
+  const variant = _variant ?? "other";
+  const rimWidth = variant === "transaction" ? _rimWidth ?? 5 : 0;
+  const borderRadius = variant === "transaction" ? _borderRadius ?? 10 : 2;
 
   return (
     <>
-      {type === "transaction" && (
+      {variant === "transaction" && (
         <rect
           {...props}
           x={x + rimWidth}
@@ -563,7 +575,7 @@ export const SubProcessNodeSvg = React.forwardRef<
         strokeWidth={strokeWidth}
         fill={"transparent"}
         stroke={DEFAULT_NODE_STROKE_COLOR}
-        strokeDasharray={type === "event" ? "10,5" : undefined}
+        strokeDasharray={variant === "event" ? "10,5" : undefined}
         strokeLinejoin={"round"}
         rx={borderRadius}
         ry={borderRadius}

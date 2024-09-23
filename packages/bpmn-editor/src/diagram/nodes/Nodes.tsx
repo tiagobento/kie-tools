@@ -573,7 +573,7 @@ export const TaskNode = React.memo(
             x={0}
             y={0}
             strokeWidth={task.__$$element === "callActivity" ? 5 : undefined}
-            icons={icons}
+            markers={icons}
           />
         </svg>
         <PositionalNodeHandles isTargeted={isTargeted && isValidConnectionTarget} nodeId={id} />
@@ -699,7 +699,7 @@ export const SubProcessNode = React.memo(
             x={0}
             y={0}
             icons={icons}
-            type={
+            variant={
               subProcess.__$$element === "transaction"
                 ? "transaction"
                 : subProcess["@_triggeredByEvent"]

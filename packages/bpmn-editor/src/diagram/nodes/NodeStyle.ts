@@ -23,6 +23,7 @@ import { NODE_TYPES } from "../BpmnDiagramDomain";
 import { Normalized } from "../../normalization/normalize";
 import { DC__Font } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
 import { NodeLabelPosition } from "@kie-tools/xyflow-react-kie-diagram/dist/nodes/NodeSvgs";
+import { assertUnreachable } from "../../ts-ext/assertUnreachable";
 
 export interface NodeStyle {
   fontCssProperties: React.CSSProperties;
@@ -113,8 +114,4 @@ export function getNodeLabelPosition({ nodeType }: { nodeType: BpmnNodeType }): 
     default:
       assertUnreachable(nodeType);
   }
-}
-
-export function assertUnreachable(_x: never): never {
-  throw new Error("Didn't expect to get here: " + _x);
 }
