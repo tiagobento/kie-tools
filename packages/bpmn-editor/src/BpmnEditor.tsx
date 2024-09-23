@@ -273,7 +273,6 @@ export const BpmnEditorInternal = ({
         defaultSize={"500px"}
         onKeyDown={(e) => e.stopPropagation()} // Prevent ReactFlow KeyboardShortcuts from triggering when editing stuff on Properties Panel
       >
-        <DrawerHead></DrawerHead>
         <DrawerPanelBody>
           <>
             {selectedEdgesById.size <= 0 && selectedNodesById.size <= 0 && <GlobalProperties />}

@@ -18,7 +18,7 @@
  */
 
 import { Button, ButtonVariant } from "@patternfly/react-core/dist/js/components/Button";
-import { Form, FormSection } from "@patternfly/react-core/dist/js/components/Form";
+import { ActionGroup, Form, FormSection } from "@patternfly/react-core/dist/js/components/Form";
 import { Text, TextContent, TextVariants } from "@patternfly/react-core/dist/js/components/Text";
 import { Truncate } from "@patternfly/react-core/dist/js/components/Truncate";
 import { Flex } from "@patternfly/react-core/dist/js/layouts/Flex";
@@ -72,8 +72,35 @@ export function MixedNodesAndEdgesProperties() {
             }
           />
         </FormSection>
-        <FormSection>... // TODO</FormSection>
+        <br />
+        <FormSection style={{ textAlign: "center" }}>
+          {"Can't edit properties when both nodes and edges are selected."}
+        </FormSection>
       </Form>
+      <br />
+      <br />
+      <Flex justifyContent={{ default: "justifyContentSpaceBetween" }}>
+        <Button
+          variant={ButtonVariant.link}
+          onClick={() => {
+            bpmnEditorStoreApi.setState((s) => {
+              s.xyFlowReactKieDiagram._selectedEdges = [];
+            });
+          }}
+        >
+          Select only nodes
+        </Button>
+        <Button
+          variant={ButtonVariant.link}
+          onClick={() => {
+            bpmnEditorStoreApi.setState((s) => {
+              s.xyFlowReactKieDiagram._selectedNodes = [];
+            });
+          }}
+        >
+          Select only edges
+        </Button>
+      </Flex>
     </>
   );
 }
