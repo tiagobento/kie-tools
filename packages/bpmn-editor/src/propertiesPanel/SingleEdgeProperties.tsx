@@ -17,21 +17,87 @@
  * under the License.
  */
 
+import { SectionHeader } from "@kie-tools/xyflow-react-kie-diagram/dist/propertiesPanel/SectionHeader";
 import { Button, ButtonVariant } from "@patternfly/react-core/dist/js/components/Button";
 import { Form, FormSection } from "@patternfly/react-core/dist/js/components/Form";
-import { Text, TextContent, TextVariants } from "@patternfly/react-core/dist/js/components/Text";
-import { Flex } from "@patternfly/react-core/dist/js/layouts/Flex";
 import { TimesIcon } from "@patternfly/react-icons/dist/js/icons/times-icon";
 import * as React from "react";
+import { useMemo } from "react";
+import * as RF from "reactflow";
+import { BpmnDiagramEdgeData } from "../diagram/BpmnDiagramDomain";
+import { AssociationPath, SequenceFlowPath } from "../diagram/edges/EdgeSvgs";
+import { UnknownNodeIcon } from "../diagram/nodes/NodeIcons";
 import { useBpmnEditorStore, useBpmnEditorStoreApi } from "../store/StoreContext";
-import { SectionHeader } from "@kie-tools/xyflow-react-kie-diagram/dist/propertiesPanel/SectionHeader";
+import { assertUnreachable } from "../ts-ext/assertUnreachable";
+import { AssociationProperties } from "./singleEdgeProperties/AssociationProperties";
+import { SequenceFlowProperties } from "./singleEdgeProperties/SequenceFlowProperties";
+
+const handleButtonSize = 34; // That's the size of the button. This is a "magic number", as it was obtained from the rendered page.
+const svgViewboxPadding = Math.sqrt(Math.pow(handleButtonSize, 2) / 2) - handleButtonSize / 2; // This lets us create a square that will perfectly fit inside the button circle.
+const edgeSvgViewboxSize = 25;
+const nodeSvgProps = { width: 100, height: 70, x: 0, y: 15, strokeWidth: 8 };
 
 export function SingleEdgeProperties() {
   const [isSectionExpanded, setSectionExpanded] = React.useState<boolean>(true);
 
   const bpmnEditorStoreApi = useBpmnEditorStoreApi();
 
-  const size = useBpmnEditorStore((s) => s.computed(s).getDiagramData().selectedEdgesById.size);
+  const selectedEdge = useBpmnEditorStore(
+    (s) => [...s.computed(s).getDiagramData().selectedEdgesById.values()][0] as undefined | RF.Edge<BpmnDiagramEdgeData>
+  );
+
+  const { properties, title, icon } = useMemo(() => {
+    const bpmnElement = selectedEdge?.data?.bpmnElement;
+    const e = bpmnElement?.__$$element;
+    switch (e) {
+      // Events
+      case "sequenceFlow":
+        return {
+          properties: <SequenceFlowProperties sequenceFlow={bpmnElement!} />,
+          title: "Sequence Flow",
+          icon: (
+            <svg
+              className={"xyflow-react-kie-diagram--round-svg-container"}
+              viewBox={`0 0 ${edgeSvgViewboxSize} ${edgeSvgViewboxSize}`}
+              style={{ padding: `${svgViewboxPadding}px` }}
+            >
+              <SequenceFlowPath d={`M2,${edgeSvgViewboxSize - 2} L${edgeSvgViewboxSize - 2},0`} {...nodeSvgProps} />
+            </svg>
+          ),
+        };
+      case "association":
+        return {
+          properties: <AssociationProperties association={bpmnElement!} />,
+          title: "Association",
+          icon: (
+            <svg
+              className={"xyflow-react-kie-diagram--round-svg-container"}
+              viewBox={`0 0 ${edgeSvgViewboxSize} ${edgeSvgViewboxSize}`}
+              style={{ padding: `${svgViewboxPadding}px` }}
+            >
+              <AssociationPath
+                d={`M2,${edgeSvgViewboxSize - 2} L${edgeSvgViewboxSize},0`}
+                {...nodeSvgProps}
+                strokeWidth={2}
+              />
+            </svg>
+          ),
+        };
+
+      case undefined:
+        return {
+          properties: (
+            <>
+              <FormSection style={{ textAlign: "center" }}>{"No properties to edit."}</FormSection>
+            </>
+          ),
+          title: "Unsupported",
+          icon: <UnknownNodeIcon />,
+        };
+      default:
+        assertUnreachable(e);
+    }
+  }, [selectedEdge?.data?.bpmnElement]);
 
   return (
     <>
@@ -39,16 +105,11 @@ export function SingleEdgeProperties() {
         <FormSection>
           <SectionHeader
             fixed={true}
+            icon={icon}
+            expands={true}
             isSectionExpanded={isSectionExpanded}
             toogleSectionExpanded={() => setSectionExpanded((prev) => !prev)}
-            title={
-              <Flex justifyContent={{ default: "justifyContentCenter" }}>
-                <TextContent>
-                  {/* FIXME: Tiago -> Display the node name and its icon. */}
-                  <Text component={TextVariants.h4}>Edge</Text>
-                </TextContent>
-              </Flex>
-            }
+            title={title}
             action={
               <Button
                 title={"Close"}
@@ -64,7 +125,7 @@ export function SingleEdgeProperties() {
             }
           />
         </FormSection>
-        <FormSection>... // TODO</FormSection>
+        {properties}
       </Form>
     </>
   );

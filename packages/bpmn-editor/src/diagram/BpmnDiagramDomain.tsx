@@ -479,8 +479,8 @@ export const bpmnNodesOutgoingStuffNodePanelMapping: OutgoingStuffNodePanelNodeM
     icon: (nodeSvgProps) => <TaskNodeSvg {...nodeSvgProps} />,
   },
   [NODE_TYPES.subProcess]: {
-    actionTitle: "Add Sub-Process",
-    icon: (nodeSvgProps) => <TaskNodeSvg {...nodeSvgProps} icons={["CallActivityPaletteIcon"]} />,
+    actionTitle: "Add Sub-process",
+    icon: (nodeSvgProps) => <TaskNodeSvg {...nodeSvgProps} markers={["CallActivityPaletteIcon"]} />,
   },
   [NODE_TYPES.gateway]: {
     actionTitle: "Add Gateway",
@@ -733,6 +733,13 @@ export type EventVariant = ElementFilter<
   | "terminateEventDefinition"
   | "timerEventDefinition"
 >["__$$element"];
+
+export type TaskVariant = ElementFilter<
+  Unpacked<NonNullable<BPMN20__tProcess["flowElement"]>>,
+  "businessRuleTask" | "scriptTask" | "serviceTask" | "userTask"
+>["__$$element"];
+
+export type SubProcessVariant = "transaction" | "event" | "other";
 
 export const elementToNodeType: Record<NonNullable<BpmnNodeElement>["__$$element"], BpmnNodeType> = {
   // lane

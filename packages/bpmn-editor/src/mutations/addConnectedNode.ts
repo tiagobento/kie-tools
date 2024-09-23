@@ -81,7 +81,7 @@ export function addConnectedNode({
           },
           [NODE_TYPES.subProcess]: {
             "@_id": newBpmnElementId,
-            "@_name": "New Sub-Process",
+            "@_name": "New Sub-process",
             __$$element: "subProcess",
           },
           [NODE_TYPES.gateway]: {
