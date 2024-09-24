@@ -17,68 +17,69 @@
  * under the License.
  */
 
-import { BPMN20__tDefinitions } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
+import {
+  BPMN20__tDefinitions,
+  BPMN20__tLane,
+  BPMN20__tProcess,
+  BPMN20__tTextAnnotation,
+} from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
+import { Unpacked } from "@kie-tools/xyflow-react-kie-diagram/dist/tsExt/tsExt";
 import { Normalized } from "../normalization/normalize";
-import { addOrGetProcessAndDiagramElements } from "./addOrGetProcessAndDiagramElements";
 import { visitFlowElementsAndArtifacts } from "./_elementVisitor";
+import { addOrGetProcessAndDiagramElements } from "./addOrGetProcessAndDiagramElements";
 
-export function renameFlowElement({
+export function updateFlowElement({
   definitions,
-  newName,
+  newFlowElement,
   id,
 }: {
   definitions: Normalized<BPMN20__tDefinitions>;
-  newName: string;
+  newFlowElement: Partial<
+    Normalized<Unpacked<NonNullable<BPMN20__tProcess["flowElement"] | BPMN20__tProcess["artifact"]>>>
+  >;
   id: string;
 }) {
   const { process } = addOrGetProcessAndDiagramElements({ definitions });
 
-  visitFlowElementsAndArtifacts(process, ({ element }) => {
+  visitFlowElementsAndArtifacts(process, ({ array, index, owner, element }) => {
     if (element["@_id"] === id) {
-      if (
-        element.__$$element === "association" ||
-        element.__$$element === "group" ||
-        element.__$$element === "textAnnotation"
-      ) {
+      if (array != owner.flowElement) {
         throw new Error(
           `BPMN MUTATION: Element with id ${id} is not a flowElement, but rather a ${element.__$$element}`
         );
       }
 
-      const trimmedNewName = newName.trim();
-      element["@_name"] = trimmedNewName;
+      array[index] = { ...element, ...newFlowElement } as typeof element;
       return false; // Will stop visiting.
     }
   });
 }
 
-export function renameLane({
+export function updateLane({
   definitions,
-  newName,
+  newLane,
   id,
 }: {
   definitions: Normalized<BPMN20__tDefinitions>;
-  newName: string;
+  newLane: Partial<Normalized<BPMN20__tLane>>;
   id: string;
 }) {
   const { process } = addOrGetProcessAndDiagramElements({ definitions });
-
-  const trimmedNewName = newName.trim();
 
   for (let i = 0; i < (process.laneSet ?? []).length; i++) {
     const laneSet = process.laneSet![i];
 
     for (let j = 0; j < (laneSet.lane ?? []).length; j++) {
-      const lane = laneSet.lane![i];
+      const lane = laneSet.lane![j];
       if (lane["@_id"] === id) {
-        lane["@_name"] = trimmedNewName;
+        laneSet.lane![j] = { ...lane, ...newLane };
         break;
       }
 
-      for (let j = 0; j < (lane.childLaneSet?.lane ?? []).length; j++) {
-        const childLane = lane.childLaneSet!.lane![i];
+      for (let k = 0; k < (lane.childLaneSet?.lane ?? []).length; k++) {
+        const childLane = lane.childLaneSet!.lane![k];
         if (childLane["@_id"] === id) {
-          childLane["@_name"] = trimmedNewName;
+          lane.childLaneSet!.lane![k] = { ...childLane, ...newLane };
           break;
         }
       }
@@ -88,16 +89,16 @@ export function renameLane({
 
 export function updateTextAnnotation({
   definitions,
-  newText,
+  newTextAnnotation,
   id,
 }: {
   definitions: Normalized<BPMN20__tDefinitions>;
-  newText: string;
+  newTextAnnotation: Partial<Normalized<BPMN20__tTextAnnotation>>;
   id: string;
 }) {
   const { process } = addOrGetProcessAndDiagramElements({ definitions });
 
-  visitFlowElementsAndArtifacts(process, ({ element }) => {
+  visitFlowElementsAndArtifacts(process, ({ element, array, index }) => {
     if (element["@_id"] === id) {
       if (element.__$$element !== "textAnnotation") {
         throw new Error(
@@ -105,7 +106,7 @@ export function updateTextAnnotation({
         );
       }
 
-      element.text = { __$$text: newText };
+      array[index] = { ...array[index], ...newTextAnnotation };
       return false; // Will stop visiting.
     }
   });
