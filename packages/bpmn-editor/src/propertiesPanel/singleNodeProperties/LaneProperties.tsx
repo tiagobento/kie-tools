@@ -20,7 +20,7 @@
 import { BPMN20__tLane } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
 import { FormSection } from "@patternfly/react-core/dist/js/components/Form";
 import * as React from "react";
-import { renameLane } from "../../mutations/renameNode";
+import { updateLane } from "../../mutations/renameNode";
 import { Normalized } from "../../normalization/normalize";
 import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 
@@ -30,7 +30,7 @@ export function LaneProperties({ lane }: { lane: Normalized<BPMN20__tLane> & { _
   const onNameChanged = React.useCallback(
     (newName: string) => {
       bpmnEditorStoreApi.setState((s) => {
-        renameLane({ definitions: s.bpmn.model.definitions, newName, id: lane["@_id"] });
+        updateLane({ definitions: s.bpmn.model.definitions, newLane: { "@_name": newName.trim() }, id: lane["@_id"] });
       });
     },
     [bpmnEditorStoreApi, lane]
