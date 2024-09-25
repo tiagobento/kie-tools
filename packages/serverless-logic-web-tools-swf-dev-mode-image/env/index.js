@@ -42,7 +42,7 @@ module.exports = composeEnv([rootEnv, require("@kie-tools/serverless-logic-web-t
   }),
   get env() {
     return {
-      slwtSwfDevModeImage: {
+      slwtDevModeImage: {
         baseImageTag: getOrDefault(this.vars.SERVERLESS_LOGIC_WEB_TOOLS_DEVMODE_IMAGE__baseImageTag),
         version: require("../package.json").version,
       },
