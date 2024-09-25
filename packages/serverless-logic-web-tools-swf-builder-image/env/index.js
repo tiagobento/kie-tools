@@ -32,7 +32,7 @@ module.exports = composeEnv([rootEnv, serverlessLogicWebToolsSwfBuilderImageEnv,
   }),
   get env() {
     return {
-      swfBuilderImage: {
+      slwtBuilderImage: {
         baseImageUrl: getOrDefault(this.vars.SERVERLESS_LOGIC_WEB_TOOLS_SWF_BUILDER_IMAGE__baseImageUrl),
       },
     };

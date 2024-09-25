@@ -42,7 +42,7 @@ module.exports = composeEnv([rootEnv], {
   }),
   get env() {
     return {
-      slwtSwfDevModeImageEnv: {
+      slwtDevModeImageEnv: {
         registry: getOrDefault(this.vars.SERVERLESS_LOGIC_WEB_TOOLS__swfDevModeImageRegistry),
         account: getOrDefault(this.vars.SERVERLESS_LOGIC_WEB_TOOLS__swfDevModeImageAccount),
         name: getOrDefault(this.vars.SERVERLESS_LOGIC_WEB_TOOLS__swfDevModeImageName),
