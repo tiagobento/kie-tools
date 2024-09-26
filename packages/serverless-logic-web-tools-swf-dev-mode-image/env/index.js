@@ -45,11 +45,11 @@ module.exports = composeEnv([rootEnv, require("@kie-tools/serverless-logic-web-t
       slwtDevModeImage: {
         baseImageTag: getOrDefault(this.vars.SERVERLESS_LOGIC_WEB_TOOLS_DEVMODE_IMAGE__baseImageTag),
         version: require("../package.json").version,
-      },
-      dev: {
-        mavenM2RepoViaHttpImage: getOrDefault(
-          this.vars.SERVERLESS_LOGIC_WEB_TOOLS_DEVMODE_IMAGE__mavenM2RepoViaHttpImage
-        ),
+        dev: {
+          mavenM2RepoViaHttpImage: getOrDefault(
+            this.vars.SERVERLESS_LOGIC_WEB_TOOLS_DEVMODE_IMAGE__mavenM2RepoViaHttpImage
+          ),
+        },
       },
     };
   },
