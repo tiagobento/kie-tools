@@ -22,4 +22,5 @@ const { setup } = require("@kie-tools/maven-config-setup-helper");
 
 setup(`
     -Drevision=${buildEnv.env.droolsProcessUsertasksQuarkusExample.version}
+    -Dmaven.repo.local.tail=${require(".").tail.join(",")}
 `);

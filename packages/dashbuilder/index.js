@@ -17,10 +17,14 @@
  * under the License.
  */
 
-const buildEnv = require("./env");
-const { setup } = require("@kie-tools/maven-config-setup-helper");
+const { join } = require("path");
 
-setup(`
-    -Drevision=${buildEnv.env.jbpmQuarkusDevuiExtension.version}
-    -Dmaven.repo.local.tail=${require(".").tail.join(",")}
-`);
+const tail = [
+  ...require("@kie-tools/maven-base").chain,
+  join(__dirname, "dist/1st-party-m2/repository"), // This package needs a reference to its own local repository...
+];
+
+module.exports = {
+  chain: [join(__dirname, "dist/1st-party-m2/repository"), ...tail],
+  tail,
+};

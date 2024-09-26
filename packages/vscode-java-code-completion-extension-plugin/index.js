@@ -19,8 +19,13 @@
 
 const nodePath = require("path");
 const nodeFs = require("fs");
+const { join } = require("path");
+
+const tail = [...require("@kie-tools/maven-base").chain];
 
 module.exports = {
+  chain: [join(__dirname, "dist/1st-party-m2/repository"), ...tail],
+  tail,
   path: () => {
     const path = nodePath.join(
       __dirname,

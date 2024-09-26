@@ -18,8 +18,24 @@
  */
 
 const buildEnv = require("./env");
-const { setup } = require("@kie-tools/maven-config-setup-helper");
+const { setup, setPomProperty } = require("@kie-tools/maven-config-setup-helper");
 
-setup(`
+setup(
+  `
+    --batch-mode
+    -Dstyle.color=always
     -Drevision=${buildEnv.env.mavenBase.version}
-`);
+    -Dmaven.repo.local.tail=${require(".").tail.join(",")}
+`,
+  { ignoreDefault: true }
+);
+
+setPomProperty({
+  key: "version.org.kie.kogito",
+  value: buildEnv.env.kogitoRuntime.version,
+});
+
+setPomProperty({
+  key: "quarkus.platform.version",
+  value: buildEnv.env.quarkusPlatform.version,
+});

@@ -24,4 +24,5 @@ setup(`
     -Drevision=${buildEnv.env.extendedServicesJava.version}
     -Dquarkus.http.port=${buildEnv.env.extendedServicesJava.port}
     -Dquarkus.http.host=${buildEnv.env.extendedServicesJava.host}
+    -Dmaven.repo.local.tail=${require(".").tail.join(",")}
 `);

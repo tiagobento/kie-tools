@@ -16,7 +16,8 @@
     "build": "run-script-if --bool \"$(build-env containerImages.build)\" --then \"pnpm image:docker:build\"",
     "build:dev": "pnpm build",
     "build:prod": "pnpm build",
-    "image:docker:build": "kie-tools--image-builder build -r \"$(build-env mavenM2RepoViaHttpImage.registry)\" -a \"$(build-env mavenM2RepoViaHttpImage.account)\" -n \"$(build-env mavenM2RepoViaHttpImage.name)\" -t \"$(build-env mavenM2RepoViaHttpImage.tag)\""
+    "image:docker:build": "kie-tools--image-builder build -r \"$(build-env mavenM2RepoViaHttpImage.registry)\" -a \"$(build-env mavenM2RepoViaHttpImage.account)\" -n \"$(build-env mavenM2RepoViaHttpImage.name)\" -t \"$(build-env mavenM2RepoViaHttpImage.tag)\"",
+    "start": "docker run --name m2-repo-via-http -p 8888:80 -v \"/Users/tiagobento/apache/kie-tools-maven/packages/dev-deployment-kogito-quarkus-blank-app-image/dist/tmp-m2/repository:/var/www/html\" -it --rm \"$(build-env mavenM2RepoViaHttpImage.registry)/$(build-env mavenM2RepoViaHttpImage.account)/$(build-env mavenM2RepoViaHttpImage.name):$(build-env mavenM2RepoViaHttpImage.tag)\""
   },
   "devDependencies": {
     "@kie-tools/image-builder": "workspace:*",

@@ -17,10 +17,16 @@
  * under the License.
  */
 
-const buildEnv = require("./env");
-const { setup } = require("@kie-tools/maven-config-setup-helper");
+const { join } = require("path");
+const { DEFAULT_LOCAL_REPO } = require("@kie-tools/maven-config-setup-helper");
 
-setup(`
-    -Drevision=${buildEnv.env.jbpmQuarkusDevuiExtension.version}
-    -Dmaven.repo.local.tail=${require(".").tail.join(",")}
-`);
+const tail = [
+  ...require("@kie-tools/maven-base").chain,
+  ...require("@kie-tools/yard-model").chain,
+  DEFAULT_LOCAL_REPO, // For some reason, j2cl-maven-plugin needs this here as the last tail.
+];
+
+module.exports = {
+  chain: [join(__dirname, "dist/1st-party-m2/repository"), ...tail],
+  tail,
+};

@@ -117,13 +117,11 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <!-- This still requires docker to run. Uncomment when solved. -->
-    <!-- https://github.com/apache/incubator-kie-issues/issues/1272 -->
-    <!-- <dependency>
+    <dependency>
       <groupId>org.jbpm</groupId>
       <artifactId>jbpm-quarkus-devui</artifactId>
       <version>${project.version}</version>
-    </dependency> -->
+    </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-junit5</artifactId>
@@ -150,6 +148,16 @@
     </resources>
     <pluginManagement>
       <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-install-plugin</artifactId>
+          <executions>
+            <execution>
+              <id>default-install</id>
+              <phase>none</phase>
+            </execution>
+          </executions>
+        </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-site-plugin</artifactId>

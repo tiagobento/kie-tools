@@ -33,18 +33,6 @@
   <name>Kie-Tools Example :: Process with Usertasks Quarkus</name>
   <description>Kogito user tasks orchestration - Quarkus</description>
 
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>org.jbpm</groupId>
-        <artifactId>jbpm-quarkus-devui-bom</artifactId>
-        <version>${project.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
-
   <dependencies>
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -57,10 +45,6 @@
     <dependency>
       <groupId>org.jbpm</groupId>
       <artifactId>jbpm-with-drools-quarkus</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jbpm</groupId>
-      <artifactId>jbpm-quarkus-devui</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -89,6 +73,36 @@
       <artifactId>kie-addons-quarkus-process-svg</artifactId>
     </dependency>
   </dependencies>
+
+  <profiles>
+    <profile>
+      <id>kie-tools--maven-profile--1st-party-dependencies</id>
+      <activation>
+        <property>
+          <name>ignore--kie-tools--maven-profile--1st-party-dependencies</name>
+          <value>!true</value>
+        </property>
+      </activation>
+      <dependencyManagement>
+        <dependencies>
+          <dependency>
+            <groupId>org.jbpm</groupId>
+            <artifactId>jbpm-quarkus-devui-bom</artifactId>
+            <version>${project.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+          </dependency>
+        </dependencies>
+      </dependencyManagement>
+      <dependencies>
+        <dependency>
+          <groupId>org.jbpm</groupId>
+          <artifactId>jbpm-quarkus-devui</artifactId>
+        </dependency>
+      </dependencies>
+    </profile>
+  </profiles>
+
   <build>
     <finalName>${project.artifactId}</finalName>
     <plugins>

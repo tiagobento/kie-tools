@@ -18,8 +18,11 @@
  */
 
 const buildEnv = require("./env");
-const { setup } = require("@kie-tools/maven-config-setup-helper");
+const { setup, installMvnw } = require("@kie-tools/maven-config-setup-helper");
 
 setup(`
     -Drevision=${buildEnv.env.devDeploymentBaseImage.version}
+    -Dmaven.repo.local.tail=${require(".").tail.join(",")}
 `);
+
+installMvnw();

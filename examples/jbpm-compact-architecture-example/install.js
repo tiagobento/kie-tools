@@ -22,6 +22,7 @@ const { setup, setPomProperty } = require("@kie-tools/maven-config-setup-helper"
 
 setup(`
     -Drevision=${buildEnv.env.jbpmCompactArchitectureExample.version}
+    -Dmaven.repo.local.tail=${require(".").tail.join(",")}
 `);
 
 setPomProperty({

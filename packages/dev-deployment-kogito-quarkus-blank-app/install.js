@@ -18,10 +18,18 @@
  */
 
 const buildEnv = require("./env");
-const { setup } = require("@kie-tools/maven-config-setup-helper");
+const { setup, installMvnw } = require("@kie-tools/maven-config-setup-helper");
 
-setup(`
+setup(
+  `
+    --batch-mode
+    -Dstyle.color=always
     -Drevision=${buildEnv.env.devDeploymentQuarkusApp.version}
     -Dquarkus.platform.version=${buildEnv.env.quarkusPlatform.version}
     -Dversion.org.kie.kogito=${buildEnv.env.kogitoRuntime.version}
-`);
+    -Dmaven.repo.local.tail=${require(".").tail.join(",")}
+`,
+  { ignoreDefault: true } // Can't have special <repositories> configuration that only works inside this repo.
+);
+
+installMvnw();
