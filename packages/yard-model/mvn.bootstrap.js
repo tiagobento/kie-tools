@@ -18,8 +18,11 @@
  */
 
 const buildEnv = require("./env");
-const { setup } = require("@kie-tools/maven-config-setup-helper");
+const { setupMavenConfigFile, installMvnw } = require("@kie-tools/maven-config-setup-helper");
 
-setup(`
-    -Drevision=${buildEnv.env.droolsProcessUsertasksQuarkusExample.version}
+setupMavenConfigFile(`
+    -Drevision=${buildEnv.env.yardModel.version}
+    -Dmaven.repo.local.tail=${require("./mvn.tail").join(",")}
 `);
+
+installMvnw();

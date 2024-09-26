@@ -18,18 +18,23 @@
  */
 
 const buildEnv = require("./env");
-const { setup } = require("@kie-tools/maven-config-setup-helper");
+const { setupMavenConfigFile, installMvnw } = require("@kie-tools/maven-config-setup-helper");
+
+const version = buildEnv.env.vscodeJavaCodeCompletionExtensionPlugin.version;
+
+setupMavenConfigFile(`
+  -Drevision=${version}
+  -Dmaven.repo.local.tail=${require("./mvn.tail").join(",")}
+`);
+
+installMvnw();
+
+// Manifest file
+
 const fs = require("fs");
 const path = require("path");
 
 const MANIFEST_FILE = path.resolve("vscode-java-code-completion-extension-plugin-core/META-INF/MANIFEST.MF");
-
-console.info("[vscode-java-code-completion-extension-plugin-install] Updating '.mvn/maven.config'...");
-const version = buildEnv.env.vscodeJavaCodeCompletionExtensionPlugin.version;
-
-setup(`
-    -Drevision=${version}
-`);
 
 console.info("[vscode-java-code-completion-extension-plugin-install] Updating manifest file...");
 const manifestFile = fs.readFileSync(MANIFEST_FILE, "utf-8");

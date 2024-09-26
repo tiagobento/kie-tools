@@ -1457,12 +1457,7 @@
       },
       {
         "source": "@kie-tools/dev-deployment-kogito-quarkus-blank-app",
-        "target": "@kie-tools/maven-config-setup-helper",
-        "weight": 1
-      },
-      {
-        "source": "@kie-tools/dev-deployment-kogito-quarkus-blank-app",
-        "target": "@kie-tools/root-env",
+        "target": "@kie-tools/jbpm-quarkus-devui",
         "weight": 1
       },
       {
@@ -1938,6 +1933,11 @@
       {
         "source": "@kie-tools/sonataflow-operator",
         "target": "@kie/kogito-jobs-service-postgresql-image",
+        "weight": 1
+      },
+      {
+        "source": "@kie-tools/sonataflow-builder-image",
+        "target": "@kie-tools/maven-config-setup-helper",
         "weight": 1
       },
       {

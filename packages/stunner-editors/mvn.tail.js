@@ -17,9 +17,8 @@
  * under the License.
  */
 
-const buildEnv = require("./env");
-const { setupMavenConfigFile } = require("@kie-tools/maven-config-setup-helper");
+const { tailIncludingSelf } = require("@kie-tools/maven-config-setup-helper");
 
-setupMavenConfigFile(`
-    -Drevision=${buildEnv.env.devDeploymentKogitoQuarkusBlankAppImage.version}
-`);
+module.exports = tailIncludingSelf(__dirname, [
+  // empty on purpose. this package doesn't rely on `maven-base`.
+]);

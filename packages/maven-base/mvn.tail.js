@@ -17,4 +17,6 @@
  * under the License.
  */
 
-/** Empty Entrypoint of this module - No TS/JS code here, it just holds DMN files for testing purposes */
+const { tailIncludingSelf } = require("@kie-tools/maven-config-setup-helper");
+
+module.exports = tailIncludingSelf(__dirname, []);

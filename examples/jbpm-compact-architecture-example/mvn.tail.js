@@ -17,11 +17,9 @@
  * under the License.
  */
 
-const buildEnv = require("./env");
-const { setup } = require("@kie-tools/maven-config-setup-helper");
+const { tailIncludingSelf } = require("@kie-tools/maven-config-setup-helper");
 
-setup(`
-    -Drevision=${buildEnv.env.devDeploymentQuarkusApp.version}
-    -Dquarkus.platform.version=${buildEnv.env.quarkusPlatform.version}
-    -Dversion.org.kie.kogito=${buildEnv.env.kogitoRuntime.version}
-`);
+module.exports = tailIncludingSelf(__dirname, [
+  require("@kie-tools/maven-base/mvn.tail"),
+  require("@kie-tools/jbpm-quarkus-devui/mvn.tail"),
+]);

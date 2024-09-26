@@ -3193,6 +3193,10 @@ importers:
         version: 1.1.2
 
   packages/dev-deployment-kogito-quarkus-blank-app:
+    dependencies:
+      '@kie-tools/jbpm-quarkus-devui':
+        specifier: workspace:*
+        version: link:../jbpm-quarkus-devui
     devDependencies:
       '@kie-tools/maven-config-setup-helper':
         specifier: workspace:*
@@ -3212,6 +3216,9 @@ importers:
       '@kie-tools/dev-deployment-kogito-quarkus-blank-app':
         specifier: workspace:*
         version: link:../dev-deployment-kogito-quarkus-blank-app
+      '@kie-tools/jbpm-quarkus-devui':
+        specifier: workspace:*
+        version: link:../jbpm-quarkus-devui
     devDependencies:
       '@kie-tools/image-builder':
         specifier: workspace:*
@@ -10861,6 +10868,9 @@ importers:
       '@kie-tools/image-builder':
         specifier: workspace:*
         version: link:../image-builder
+      '@kie-tools/maven-config-setup-helper':
+        specifier: workspace:*
+        version: link:../maven-config-setup-helper
       '@kie-tools/maven-m2-repo-via-http-image':
         specifier: workspace:*
         version: link:../maven-m2-repo-via-http-image
@@ -11111,6 +11121,9 @@ importers:
       '@kie-tools/image-builder':
         specifier: workspace:*
         version: link:../image-builder
+      '@kie-tools/maven-config-setup-helper':
+        specifier: workspace:*
+        version: link:../maven-config-setup-helper
       '@kie-tools/maven-m2-repo-via-http-image':
         specifier: workspace:*
         version: link:../maven-m2-repo-via-http-image

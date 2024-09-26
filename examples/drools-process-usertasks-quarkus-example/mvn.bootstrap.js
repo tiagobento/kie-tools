@@ -18,10 +18,9 @@
  */
 
 const buildEnv = require("./env");
-const { setup } = require("@kie-tools/maven-config-setup-helper");
+const { setupMavenConfigFile } = require("@kie-tools/maven-config-setup-helper");
 
-setup(`
-    -Drevision=${buildEnv.env.swfDeploymentQuarkusApp.version}
-    -Dquarkus.platform.version=${buildEnv.env.quarkusPlatform.version}
-    -Dversion.org.kie.kogito=${buildEnv.env.kogitoRuntime.version}
+setupMavenConfigFile(`
+    -Drevision=${buildEnv.env.droolsProcessUsertasksQuarkusExample.version}
+    -Dmaven.repo.local.tail=${require("./mvn.tail").join(",")}
 `);

@@ -18,8 +18,19 @@
  */
 
 const buildEnv = require("./env");
-const { setupMavenConfigFile } = require("@kie-tools/maven-config-setup-helper");
+const { setupMavenConfigFile, setPomProperty } = require("@kie-tools/maven-config-setup-helper");
 
 setupMavenConfigFile(`
-    -Drevision=${buildEnv.env.devDeploymentKogitoQuarkusBlankAppImage.version}
+    -Drevision=${buildEnv.env.jbpmCompactArchitectureExample.version}
+    -Dmaven.repo.local.tail=${require("./mvn.tail").join(",")}
 `);
+
+setPomProperty({
+  key: "kogito.management-console.image",
+  value: buildEnv.env.jbpmCompactArchitectureExample.kogitoManagementConsoleImage,
+});
+
+setPomProperty({
+  key: "kogito.task-console.image",
+  value: buildEnv.env.jbpmCompactArchitectureExample.kogitoTaskConsoleImage,
+});

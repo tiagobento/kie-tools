@@ -712,6 +712,18 @@
 
     <pluginManagement>
       <plugins>
+        <!-- (begin) Maven conventions of `kie-tools` -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-install-plugin</artifactId>
+          <executions>
+            <execution>
+              <id>default-install</id>
+              <phase>none</phase>
+            </execution>
+          </executions>
+        </plugin>
+        <!-- (end) Maven conventions of `kie-tools` -->
         <plugin>
           <groupId>org.kie.j2cl.tools</groupId>
           <artifactId>j2cl-maven-plugin</artifactId>

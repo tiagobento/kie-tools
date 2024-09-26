@@ -17,19 +17,6 @@
  * under the License.
  */
 
-const buildEnv = require("./env");
-const { setup, setPomProperty } = require("@kie-tools/maven-config-setup-helper");
+const { tail } = require("@kie-tools/maven-config-setup-helper");
 
-setup(`
-    -Drevision=${buildEnv.env.jbpmCompactArchitectureExample.version}
-`);
-
-setPomProperty({
-  key: "kogito.management-console.image",
-  value: buildEnv.env.jbpmCompactArchitectureExample.kogitoManagementConsoleImage,
-});
-
-setPomProperty({
-  key: "kogito.task-console.image",
-  value: buildEnv.env.jbpmCompactArchitectureExample.kogitoTaskConsoleImage,
-});
+module.exports = tail([require("@kie-tools/sonataflow-quarkus-devui/mvn.tail")]);

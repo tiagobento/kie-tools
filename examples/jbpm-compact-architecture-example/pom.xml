@@ -122,22 +122,13 @@
 
   <profiles>
     <profile>
-      <id>container</id>
-      <properties>
-        <quarkus.profile>container</quarkus.profile>
-      </properties>
-      <dependencies>
-        <dependency>
-          <groupId>io.quarkus</groupId>
-          <artifactId>quarkus-container-image-jib</artifactId>
-        </dependency>
-      </dependencies>
-    </profile>
-    <profile>
-      <id>development</id>
-      <properties>
-        <quarkus.profile>dev</quarkus.profile>
-      </properties>
+      <id>kie-tools--maven-profile--1st-party-dependencies</id>
+      <activation>
+        <property>
+          <name>ignore--kie-tools--maven-profile--1st-party-dependencies</name>
+          <value>!true</value>
+        </property>
+      </activation>
       <dependencyManagement>
         <dependencies>
           <dependency>
@@ -156,15 +147,39 @@
         </dependency>
       </dependencies>
     </profile>
+    <profile>
+      <id>container</id>
+      <properties>
+        <quarkus.profile>container</quarkus.profile>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>io.quarkus</groupId>
+          <artifactId>quarkus-container-image-jib</artifactId>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>development</id>
+      <properties>
+        <quarkus.profile>dev</quarkus.profile>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>org.jbpm</groupId>
+          <artifactId>jbpm-quarkus-devui</artifactId>
+        </dependency>
+      </dependencies>
+    </profile>
   </profiles>
 
   <build>
     <finalName>${project.artifactId}</finalName>
     <plugins>
       <plugin>
-        <groupId>${quarkus.platform.group-id}</groupId>
+        <groupId>io.quarkus</groupId>
         <artifactId>quarkus-maven-plugin</artifactId>
-        <version>${quarkus-plugin.version}</version>
+        <version>${quarkus.platform.version}</version>
         <executions>
           <execution>
             <goals>

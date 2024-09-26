@@ -17,9 +17,10 @@
  * under the License.
  */
 
-const buildEnv = require("./env");
-const { setupMavenConfigFile } = require("@kie-tools/maven-config-setup-helper");
+const { tailIncludingSelf, DEFAULT_LOCAL_REPO } = require("@kie-tools/maven-config-setup-helper");
 
-setupMavenConfigFile(`
-    -Drevision=${buildEnv.env.devDeploymentKogitoQuarkusBlankAppImage.version}
-`);
+module.exports = tailIncludingSelf(__dirname, [
+  require("@kie-tools/maven-base/mvn.tail"),
+  require("@kie-tools/yard-model/mvn.tail"),
+  [DEFAULT_LOCAL_REPO], // For some reason, j2cl-maven-plugin needs this here as the last tail.
+]);

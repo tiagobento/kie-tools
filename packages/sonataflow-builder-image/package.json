@@ -43,6 +43,7 @@
   },
   "devDependencies": {
     "@kie-tools/image-builder": "workspace:*",
+    "@kie-tools/maven-config-setup-helper": "workspace:*",
     "@kie-tools/maven-m2-repo-via-http-image": "workspace:*",
     "@kie-tools/python-venv": "workspace:*",
     "@kie-tools/root-env": "workspace:*",

@@ -18,8 +18,9 @@
  */
 
 const buildEnv = require("./env");
-const { setup } = require("@kie-tools/maven-config-setup-helper");
+const { setupMavenConfigFile } = require("@kie-tools/maven-config-setup-helper");
 
-setup(`
-    -Drevision=${buildEnv.env.yardModel.version}
+setupMavenConfigFile(`
+    -Drevision=${buildEnv.env.sonataflowQuarkusDevuiExtension.version}
+    -Dmaven.repo.local.tail=${require("./mvn.tail").join(",")}
 `);

@@ -7,7 +7,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,8 +18,24 @@
  */
 
 const buildEnv = require("./env");
-const { setup } = require("@kie-tools/maven-config-setup-helper");
+const { setupMavenConfigFile, setPomProperty } = require("@kie-tools/maven-config-setup-helper");
 
-setup(`
-    -Drevision=${buildEnv.env.swfDiagramEditor.version}
-`);
+setupMavenConfigFile(
+  `
+    --batch-mode
+    -Dstyle.color=always
+    -Drevision=${buildEnv.env.mavenBase.version}
+    -Dmaven.repo.local.tail=${require("./mvn.tail").join(",")}
+`,
+  { ignoreDefault: true }
+);
+
+setPomProperty({
+  key: "version.org.kie.kogito",
+  value: buildEnv.env.kogitoRuntime.version,
+});
+
+setPomProperty({
+  key: "quarkus.platform.version",
+  value: buildEnv.env.quarkusPlatform.version,
+});
