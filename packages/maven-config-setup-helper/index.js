@@ -79,7 +79,7 @@ module.exports = {
    * @param tmpM2Dir Relative path of this new Maven repository directory. It will be deleted and recreated for each invocation.
    * @param tail A list of paths representing additional Maven repository directories, to be concatenated the default one (I.e, `maven.repo.local`)
    *  */
-  prepareM2FromTail: (tmpM2Dir, tail) => {
+  prepareHardLinkedM2FromTail: (tmpM2Dir, tail) => {
     const resolvedTmpM2Dir = path.resolve(tmpM2Dir);
     if (fs.existsSync(resolvedTmpM2Dir)) {
       fs.rmSync(resolvedTmpM2Dir, { recursive: true, force: true });
