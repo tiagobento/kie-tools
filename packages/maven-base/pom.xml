@@ -267,7 +267,6 @@
             <goals>
               <goal>deploy</goal>
             </goals>
-            <inherited>false</inherited>
             <configuration>
               <skip>false</skip>
               <deployAtEnd>true</deployAtEnd>
