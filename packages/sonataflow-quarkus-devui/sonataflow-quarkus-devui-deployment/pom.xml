@@ -128,7 +128,6 @@
       </plugin>
       <plugin>
         <artifactId>maven-resources-plugin</artifactId>
-        <version>${version.resources.plugin}</version>
         <executions>
           <execution>
             <id>copy-webapp</id>
