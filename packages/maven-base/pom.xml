@@ -96,23 +96,31 @@
   </mailingLists>
 
   <properties>
-    <project.build.outputTimestamp>2024-01-12T00:00:00Z</project.build.outputTimestamp>
-    <version.maven.artifact.plugin>3.4.1</version.maven.artifact.plugin>
     <maven.compiler.source>17</maven.compiler.source>
     <maven.compiler.target>17</maven.compiler.target>
-    <maven.compiler.parameters>true</maven.compiler.parameters>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <compiler-plugin.version>3.13.0</compiler-plugin.version>
-    <version.resources.plugin>3.2.0</version.resources.plugin>
-    <version.flatten.plugin>1.6.0</version.flatten.plugin>
+
+    <!-- Config -->
+    <project.build.outputTimestamp>2024-01-12T00:00:00Z</project.build.outputTimestamp>
+    <maven.compiler.parameters>true</maven.compiler.parameters>
+
+    <!-- Maven versions -->
+    <version.maven.artifact.plugin>3.4.1</version.maven.artifact.plugin>
+    <version.maven.compiler.plugin>3.13.0</version.maven.compiler.plugin>
+    <version.maven.resources.plugin>3.2.0</version.maven.resources.plugin>
+    <version.maven.failsafe.plugin>3.0.0-M7</version.maven.failsafe.plugin>
+    <version.maven.surefire.plugin>3.5.0</version.maven.surefire.plugin>
+    <version.maven.deploy.plugin>3.1.2</version.maven.deploy.plugin>
+    <version.maven.dependency.plugin>3.6.1</version.maven.dependency.plugin>
+    <version.maven.clean.plugin>3.4.0</version.maven.clean.plugin>
+    <version.codehaus.flatten.plugin>1.6.0</version.codehaus.flatten.plugin>
+
+    <!-- 3rd party dependencies -->
     <version.junit>4.13.2</version.junit>
-    <surefire-plugin.version>3.5.0</surefire-plugin.version>
     <quarkus.platform.version>3.8.6</quarkus.platform.version>
+    <!-- TODO: Tiago -> Rename to `version.quarkus` -->
     <version.org.kie.kogito>999-20240912-SNAPSHOT</version.org.kie.kogito>
-    <quarkus-plugin.version>${quarkus.platform.version}</quarkus-plugin.version>
-    <quarkus.platform.group-id>io.quarkus</quarkus.platform.group-id>
-    <version.failsafe.plugin>3.0.0-M7</version.failsafe.plugin>
   </properties>
 
   <dependencyManagement>
@@ -163,53 +171,70 @@
   <build>
     <pluginManagement>
       <plugins>
+        <!--
+          This configuration overrides the list of issues registered in the plugin to enable the `maven-flatten-plugin`
+          TODO: remove as a part of: https://github.com/apache/incubator-kie-issues/issues/1371
+        -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-artifact-plugin</artifactId>
           <version>${version.maven.artifact.plugin}</version>
           <configuration>
             <outputTimestamp>${project.build.outputTimestamp}</outputTimestamp>
-            <!--
-            This configuration overrides the list of issues registered in the plugin to enable the `maven-flatten-plugin`
-            TODO: remove as a part of: https://github.com/apache/incubator-kie-issues/issues/1371
-            -->
             <pluginIssues
             >${session.executionRootDirectory}/node_modules/@kie-tools/maven-base/not-reproducible-plugins.properties</pluginIssues>
           </configuration>
         </plugin>
+        <!--  -->
+        <!-- This installs JARs in the `maven.repo.local` directory -->
+        <!-- We skip it to prevent undeclared access to previously built files. -->
+        <!--  -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-install-plugin</artifactId>
-          <executions>
-            <execution>
-              <!-- This installs JARs in the `maven.repo.local` directory -->
-              <id>default-install</id>
-              <phase>none</phase>
-              <!-- We skip it to prevent undeclared access to previously built files. -->
-            </execution>
-          </executions>
+          <configuration>
+            <skip>true</skip>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>${version.maven.deploy.plugin}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-dependency-plugin</artifactId>
-          <version>3.6.1</version>
+          <version>${version.maven.dependency.plugin}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.13.0</version>
+          <version>${version.maven.compiler.plugin}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>${version.maven.clean.plugin}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>3.2.5</version>
+          <version>${version.maven.surefire.plugin}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>flatten-maven-plugin</artifactId>
+          <version>${version.codehaus.flatten.plugin}</version>
         </plugin>
       </plugins>
     </pluginManagement>
+
     <plugins>
+      <!--  -->
+      <!-- Removes the local Maven repository from the `dist` folder. -->
+      <!--  -->
       <plugin>
         <artifactId>maven-clean-plugin</artifactId>
-        <version>3.3.2</version>
         <configuration>
           <filesets>
             <fileset>
@@ -230,28 +255,34 @@
           </execution>
         </executions>
       </plugin>
+      <!--  -->
+      <!-- This execution makes modules installed in the `dist` directory of packages. -->
+      <!--  -->
       <plugin>
-        <!-- This plugin makes modules installed in the `dist` directory of packages. -->
         <artifactId>maven-deploy-plugin</artifactId>
-        <version>3.1.2</version>
-        <configuration>
-          <altDeploymentRepository>
-            kie-tools--dist-1st-party-m2-repository::file://${maven.multiModuleProjectDirectory}/dist/1st-party-m2/repository
-          </altDeploymentRepository>
-        </configuration>
         <executions>
           <execution>
+            <id>deploy-to-local-dist-1st-party-m2</id>
             <phase>install</phase>
             <goals>
               <goal>deploy</goal>
             </goals>
+            <inherited>false</inherited>
+            <configuration>
+              <skip>false</skip>
+              <deployAtEnd>true</deployAtEnd>
+              <altDeploymentRepository
+              >kie-tools--local-dist-1st-party-m2::file://${maven.multiModuleProjectDirectory}/dist/1st-party-m2/repository</altDeploymentRepository>
+            </configuration>
           </execution>
         </executions>
       </plugin>
+      <!-- Necessary for CI friendly versions -->
+      <!-- See https://maven.apache.org/maven-ci-friendly.html -->
+      <!-- Won't be necessary on Maven 4. -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>flatten-maven-plugin</artifactId>
-        <version>${version.flatten.plugin}</version>
         <configuration>
           <updatePomFile>true</updatePomFile>
           <flattenMode>resolveCiFriendliesOnly</flattenMode>
@@ -273,8 +304,10 @@
           </execution>
         </executions>
       </plugin>
+      <!--  -->
+      <!-- Good practice to always include sources on releases -->
+      <!--  -->
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
         <executions>
           <execution>
@@ -295,6 +328,7 @@
   </build>
 
   <profiles>
+    <!-- TODO: Add explanation -->
     <profile>
       <id>reproducible-build</id>
       <activation>
@@ -306,7 +340,6 @@
       <build>
         <plugins>
           <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-artifact-plugin</artifactId>
             <configuration />
             <executions>
@@ -315,8 +348,11 @@
                 <goals>
                   <goal>check-buildplan</goal>
                 </goals>
-                <!-- The execution's configuration is part of the pluginManagement. This piece here only makes sure the
-                     execution is enabled (by specifying a phase) for full profile builds. -->
+                <!-- 
+                  The execution's configuration is part of the pluginManagement.
+                  This piece here only makes sure the execution is enabled (by specifying a phase)
+                  for builds with the 'reproducible' profile enabled.
+                -->
                 <phase>validate</phase>
               </execution>
               <execution>
@@ -324,8 +360,11 @@
                 <goals>
                   <goal>compare</goal>
                 </goals>
-                <!-- The execution's configuration is part of the pluginManagement. This piece here only makes sure the
-                     execution is enabled (by specifying a phase) for full profile builds. -->
+                <!--
+                  The execution's configuration is part of the pluginManagement.
+                  This piece here only makes sure the execution is enabled (by specifying a phase)
+                  for builds with the 'reproducible' profile enabled.
+                -->
                 <phase>install</phase>
               </execution>
             </executions>

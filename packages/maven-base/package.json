@@ -17,9 +17,9 @@
     "build:dev:darwin:linux": "mvn clean install -DskipTests -P'!kie-tools--maven-profile--1st-party-dependencies' --settings=node_modules/@kie-tools/maven-config-setup-helper/bootstrap-settings.xml",
     "build:dev:win32": "pnpm powershell \"mvn clean install `-DskipTests `-P'!kie-tools--maven-profile--1st-party-dependencies' `--settings=node_modules/@kie-tools/maven-config-setup-helper/bootstrap-settings.xml\"",
     "build:prod": "pnpm lint && run-script-os",
-    "build:prod:darwin:linux": "mvn clean deploy -DdeployAtEnd -DskipTests=$(build-env tests.run --not) -Dmaven.test.failure.ignore=$(build-env tests.ignoreFailures) -Dmaven.deploy.skip=$(build-env maven.deploy.skip) -P'!kie-tools--maven-profile--1st-party-dependencies' --settings=node_modules/@kie-tools/maven-config-setup-helper/bootstrap-settings.xml",
-    "build:prod:win32": "pnpm powershell \"mvn clean deploy `-DdeployAtEnd `-DskipTests `-Dmaven.test.failure.ignore=$(build-env tests.ignoreFailures) `-Dmaven.deploy.skip=$(build-env maven.deploy.skip) `-P'!kie-tools--maven-profile--1st-party-dependencies' `--settings=node_modules/@kie-tools/maven-config-setup-helper/bootstrap-settings.xml\"",
-    "install": "node install.js && pnpm build:dev",
+    "build:prod:darwin:linux": "mvn clean deploy -DskipTests=$(build-env tests.run --not) -Dmaven.test.failure.ignore=$(build-env tests.ignoreFailures) -Dmaven.deploy.skip=$(build-env maven.deploy.skip) -P'!kie-tools--maven-profile--1st-party-dependencies' --settings=node_modules/@kie-tools/maven-config-setup-helper/bootstrap-settings.xml -Dreproducible",
+    "build:prod:win32": "pnpm powershell \"mvn clean deploy `-DskipTests `-Dmaven.test.failure.ignore=$(build-env tests.ignoreFailures) `-Dmaven.deploy.skip=$(build-env maven.deploy.skip) `-P'!kie-tools--maven-profile--1st-party-dependencies' `--settings=node_modules/@kie-tools/maven-config-setup-helper/bootstrap-settings.xml `-Dreproducible\"",
+    "install": "node mvn.bootstrap.js && pnpm build:dev",
     "lint": "echo 'Linting'",
     "powershell": "@powershell -NoProfile -ExecutionPolicy Unrestricted -Command"
   },

@@ -57,7 +57,7 @@ module.exports = {
   BOOTSTRAP_CLI_ARGS,
 
   /**
-   * An absolute path for an empty POM, in case someone needs to run `mvn` scripts.
+   * An absolute path for an empty POM, in case someone needs to run `mvn` scripts without having a pom.xml file.
    */
   EMPTY_POM_XML_PATH,
 
@@ -71,6 +71,18 @@ module.exports = {
       stdio: "inherit",
     });
     console.timeEnd(`[maven-config-setup-helper] Installing mvnw...`);
+  },
+
+  /**
+   * Helps setting up an array of absolute paths that will be used to configure `-Dmaven.repo.local.tail`.
+   *
+   * @param selfDirname The absolute path of a directory that will contain the `dist/1st-party-m2/repository` directory.
+   * @param tail An array of absolute paths of other local Maven repositories.
+   *
+   * @returns A flat list of absolute paths of local Maven repositories.
+   */
+  tailIncludingSelf: (selfDirname, tail) => {
+    return [path.join(selfDirname, "dist/1st-party-m2/repository"), ...new Set(tail.flatMap((t) => t))];
   },
 
   /**
@@ -126,7 +138,7 @@ module.exports = {
    * @param mavenConfigString New-line-separated string containing arguments to the `mvn` command.
    * @param args An object with a `ignoreDefault: boolean` property.
    */
-  setup: (mavenConfigString, args) => {
+  setupMavenConfigFile: (mavenConfigString, args) => {
     console.info(`[maven-config-setup-helper] Configuring Maven through .mvn/maven.config...`);
     console.time(`[maven-config-setup-helper] Configuring Maven through .mvn/maven.config...`);
     let originalMvnConfigString;

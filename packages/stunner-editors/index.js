@@ -19,15 +19,8 @@
 
 const nodePath = require("path");
 const nodeFs = require("fs");
-const { join } = require("path");
-
-const tail = [
-  // empty on purpose. this package doesn't rely on `maven-base`.
-];
 
 module.exports = {
-  chain: [join(__dirname, "dist/1st-party-m2/repository"), ...tail],
-  tail,
   dmnEditorPath: () => {
     const path = nodePath.resolve(__dirname, "dist", "dmn");
 
