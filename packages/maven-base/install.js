@@ -25,7 +25,7 @@ setup(
     --batch-mode
     -Dstyle.color=always
     -Drevision=${buildEnv.env.mavenBase.version}
-    -Dmaven.repo.local.tail=${require(".").tail.join(",")}
+    -Dmaven.repo.local.tail=${require(".").chain.join(",")}
 `,
   { ignoreDefault: true }
 );

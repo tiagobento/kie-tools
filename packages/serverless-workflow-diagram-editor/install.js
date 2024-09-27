@@ -25,7 +25,7 @@ setup(
     --batch-mode
     -Dstyle.color=always
     -Drevision=${buildEnv.env.swfDiagramEditor.version}
-    -Dmaven.repo.local.tail=${require(".").tail.join(",")}
+    -Dmaven.repo.local.tail=${require(".").chain.join(",")}
     `,
   { ignoreDefault: true }
 ); // Default <repositories> configuration doesn't work for this module. Since this module is not going to last long, we rely on this workaround for a while.

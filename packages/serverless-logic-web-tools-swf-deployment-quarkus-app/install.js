@@ -27,7 +27,7 @@ setup(
     -Drevision=${buildEnv.env.swfDeploymentQuarkusApp.version}
     -Dquarkus.platform.version=${buildEnv.env.quarkusPlatform.version}
     -Dversion.org.kie.kogito=${buildEnv.env.kogitoRuntime.version}
-    -Dmaven.repo.local.tail=${require(".").tail.join(",")}
+    -Dmaven.repo.local.tail=${require(".").chain.join(",")}
 `,
   { ignoreDefault: true } // Can't have special <repositories> configuration that only works inside this repo.
 );

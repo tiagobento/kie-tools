@@ -22,6 +22,6 @@ const { setup, installMvnw } = require("@kie-tools/maven-config-setup-helper");
 
 setup(`
     -Drevision=${buildEnv.env.yardValidator.version}
-    -Dmaven.repo.local.tail=${require(".").tail.join(",")}`);
+    -Dmaven.repo.local.tail=${require(".").chain.join(",")}`);
 
 installMvnw();

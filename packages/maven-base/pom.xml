@@ -182,9 +182,10 @@
           <artifactId>maven-install-plugin</artifactId>
           <executions>
             <execution>
+              <!-- This installs JARs in the `maven.repo.local` directory -->
               <id>default-install</id>
               <phase>none</phase>
-              <!-- This installs JARs in the `maven.repo.local` directory -->
+              <!-- We skip it to prevent undeclared access to previously built files. -->
             </execution>
           </executions>
         </plugin>

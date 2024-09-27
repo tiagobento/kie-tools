@@ -24,7 +24,7 @@ const version = buildEnv.env.vscodeJavaCodeCompletionExtensionPlugin.version;
 
 setup(`
   -Drevision=${version}
-  -Dmaven.repo.local.tail=${require(".").tail.join(",")}
+  -Dmaven.repo.local.tail=${require(".").chain.join(",")}
 `);
 
 installMvnw();
