@@ -18,7 +18,7 @@
  */
 
 import { Button, ButtonVariant } from "@patternfly/react-core/dist/js/components/Button";
-import { Form, FormSection } from "@patternfly/react-core/dist/js/components/Form";
+import { Form, FormGroup, FormSection } from "@patternfly/react-core/dist/js/components/Form";
 import { Text, TextContent, TextVariants } from "@patternfly/react-core/dist/js/components/Text";
 import { Truncate } from "@patternfly/react-core/dist/js/components/Truncate";
 import { Flex } from "@patternfly/react-core/dist/js/layouts/Flex";
@@ -37,40 +37,45 @@ export function MultipleNodeProperties() {
   return (
     <>
       <Form>
-        <FormSection>
-          <SectionHeader
-            fixed={true}
-            isSectionExpanded={isSectionExpanded}
-            toogleSectionExpanded={() => setSectionExpanded((prev) => !prev)}
-            title={
-              <Flex justifyContent={{ default: "justifyContentCenter" }}>
-                <TextContent>
-                  <Text component={TextVariants.h4}>
-                    <Truncate
-                      content={`Multiple nodes selected (${size})`}
-                      position={"middle"}
-                      trailingNumChars={size.toString().length + 3}
-                    />
-                  </Text>
-                </TextContent>
-              </Flex>
-            }
-            action={
-              <Button
-                title={"Close"}
-                variant={ButtonVariant.plain}
-                onClick={() => {
-                  bpmnEditorStoreApi.setState((state) => {
-                    state.propertiesPanel.isOpen = false;
-                  });
-                }}
-              >
-                <TimesIcon />
-              </Button>
-            }
-          />
+        <FormSection
+          title={
+            <SectionHeader
+              fixed={true}
+              isSectionExpanded={isSectionExpanded}
+              toogleSectionExpanded={() => setSectionExpanded((prev) => !prev)}
+              title={
+                <Flex justifyContent={{ default: "justifyContentCenter" }}>
+                  <TextContent>
+                    <Text component={TextVariants.h4}>
+                      <Truncate
+                        content={`Multiple nodes selected (${size})`}
+                        position={"middle"}
+                        trailingNumChars={size.toString().length + 3}
+                      />
+                    </Text>
+                  </TextContent>
+                </Flex>
+              }
+              action={
+                <Button
+                  title={"Close"}
+                  variant={ButtonVariant.plain}
+                  onClick={() => {
+                    bpmnEditorStoreApi.setState((state) => {
+                      state.propertiesPanel.isOpen = false;
+                    });
+                  }}
+                >
+                  <TimesIcon />
+                </Button>
+              }
+            />
+          }
+        >
+          <FormSection>
+            <FormGroup>... // TODO</FormGroup>
+          </FormSection>
         </FormSection>
-        <FormSection>... // TODO</FormSection>
       </Form>
     </>
   );

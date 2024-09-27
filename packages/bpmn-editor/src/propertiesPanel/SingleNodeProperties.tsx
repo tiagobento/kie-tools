@@ -268,30 +268,33 @@ export function SingleNodeProperties() {
   return (
     <>
       <Form>
-        <FormSection>
-          <SectionHeader
-            fixed={true}
-            icon={icon}
-            expands={true}
-            isSectionExpanded={isSectionExpanded}
-            toogleSectionExpanded={() => setSectionExpanded((prev) => !prev)}
-            title={title}
-            action={
-              <Button
-                title={"Close"}
-                variant={ButtonVariant.plain}
-                onClick={() => {
-                  bpmnEditorStoreApi.setState((state) => {
-                    state.propertiesPanel.isOpen = false;
-                  });
-                }}
-              >
-                <TimesIcon />
-              </Button>
-            }
-          />
+        <FormSection
+          title={
+            <SectionHeader
+              icon={icon}
+              fixed={true}
+              expands={true}
+              isSectionExpanded={isSectionExpanded}
+              toogleSectionExpanded={() => setSectionExpanded((prev) => !prev)}
+              title={title}
+              action={
+                <Button
+                  title={"Close"}
+                  variant={ButtonVariant.plain}
+                  onClick={() => {
+                    bpmnEditorStoreApi.setState((state) => {
+                      state.propertiesPanel.isOpen = false;
+                    });
+                  }}
+                >
+                  <TimesIcon />
+                </Button>
+              }
+            />
+          }
+        >
+          {isSectionExpanded && properties}
         </FormSection>
-        {properties}
       </Form>
     </>
   );
