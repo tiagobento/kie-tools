@@ -18,7 +18,7 @@
  */
 
 import { Button, ButtonVariant } from "@patternfly/react-core/dist/js/components/Button";
-import { Form, FormSection } from "@patternfly/react-core/dist/js/components/Form";
+import { Form, FormGroup, FormSection } from "@patternfly/react-core/dist/js/components/Form";
 import { Text, TextContent, TextVariants } from "@patternfly/react-core/dist/js/components/Text";
 import { Truncate } from "@patternfly/react-core/dist/js/components/Truncate";
 import { Flex } from "@patternfly/react-core/dist/js/layouts/Flex";
@@ -69,8 +69,11 @@ export function MultipleEdgesProperties() {
               </Button>
             }
           />
+
+          <FormSection>
+            <FormGroup>... // TODO</FormGroup>
+          </FormSection>
         </FormSection>
-        <FormSection>... // TODO</FormSection>
       </Form>
     </>
   );

@@ -36,7 +36,7 @@ export function TextAnnotationProperties({
   const settings = useBpmnEditorStore((s) => s.settings);
 
   return (
-    <>
+    <FormSection>
       <FormGroup label="Format">
         <TextInput
           aria-label={"Format"}
@@ -95,6 +95,6 @@ export function TextAnnotationProperties({
           {textAnnotation["@_id"]}
         </ClipboardCopy>
       </FormGroup>
-    </>
+    </FormSection>
   );
 }

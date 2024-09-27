@@ -53,12 +53,12 @@ export function GlobalProperties() {
   );
 
   const settings = useBpmnEditorStore((s) => s.settings);
-  const [isGlobalSectionExpanded, setGlobalSectionExpanded] = useState<boolean>(true);
-  const [isIdNamespaceSectionExpanded, setIdNamespaceSectionExpanded] = useState<boolean>(true);
-  const [isProcessVariablesSectionExpanded, setProcessVariablesSectionExpanded] = useState<boolean>(true);
-  const [isCollaborationSection, setCollaborationSection] = useState<boolean>(true);
-  const [isMetadataSectionExpanded, setMetadataSectionExpanded] = useState<boolean>(true);
-  const [isMiscSectionExpanded, setMiscSectionExpanded] = useState<boolean>(true);
+  const [isGlobalSectionExpanded, setGlobalSectionExpanded] = useState<boolean>(false);
+  const [isIdNamespaceSectionExpanded, setIdNamespaceSectionExpanded] = useState<boolean>(false);
+  const [isProcessVariablesSectionExpanded, setProcessVariablesSectionExpanded] = useState<boolean>(false);
+  const [isCollaborationSection, setCollaborationSection] = useState<boolean>(false);
+  const [isMetadataSectionExpanded, setMetadataSectionExpanded] = useState<boolean>(false);
+  const [isMiscSectionExpanded, setMiscSectionExpanded] = useState<boolean>(false);
 
   const bpmnEditorStoreApi = useBpmnEditorStoreApi();
 
@@ -74,7 +74,7 @@ export function GlobalProperties() {
               isSectionExpanded={isGlobalSectionExpanded}
               toogleSectionExpanded={() => setGlobalSectionExpanded((prev) => !prev)}
               icon={<DataSourceIcon width={16} height={36} style={{ marginLeft: "12px" }} />}
-              title={"Global properties"}
+              title={"Process"}
               action={
                 <Button
                   title={"Close"}
@@ -303,6 +303,26 @@ export function GlobalProperties() {
           title={
             <SectionHeader
               expands={true}
+              isSectionExpanded={isProcessVariablesSectionExpanded}
+              toogleSectionExpanded={() => setProcessVariablesSectionExpanded((prev) => !prev)}
+              icon={<DomainIcon width={16} height={36} style={{ marginLeft: "12px" }} />}
+              title={"Process variables"}
+            />
+          }
+        >
+          {isProcessVariablesSectionExpanded && (
+            <>
+              <FormSection style={{ paddingLeft: "20px", marginTop: "20px" }}>
+                <></>
+              </FormSection>
+            </>
+          )}
+        </FormSection>
+
+        <FormSection
+          title={
+            <SectionHeader
+              expands={true}
               isSectionExpanded={isIdNamespaceSectionExpanded}
               toogleSectionExpanded={() => setIdNamespaceSectionExpanded((prev) => !prev)}
               icon={<TagIcon width={16} height={36} style={{ marginLeft: "12px" }} />}
@@ -364,25 +384,6 @@ export function GlobalProperties() {
           title={
             <SectionHeader
               expands={true}
-              isSectionExpanded={isProcessVariablesSectionExpanded}
-              toogleSectionExpanded={() => setProcessVariablesSectionExpanded((prev) => !prev)}
-              icon={<DomainIcon width={16} height={36} style={{ marginLeft: "12px" }} />}
-              title={"Process variables"}
-            />
-          }
-        >
-          {isProcessVariablesSectionExpanded && (
-            <>
-              <FormSection style={{ paddingLeft: "20px", marginTop: "20px" }}>
-                <></>
-              </FormSection>
-            </>
-          )}
-        </FormSection>
-        <FormSection
-          title={
-            <SectionHeader
-              expands={true}
               isSectionExpanded={isCollaborationSection}
               toogleSectionExpanded={() => setCollaborationSection((prev) => !prev)}
               icon={<PeopleCarryIcon width={16} height={36} style={{ marginLeft: "12px" }} />}
@@ -398,6 +399,7 @@ export function GlobalProperties() {
             </>
           )}
         </FormSection>
+
         <FormSection
           title={
             <SectionHeader
@@ -417,6 +419,7 @@ export function GlobalProperties() {
             </>
           )}
         </FormSection>
+
         <FormSection
           title={
             <SectionHeader
