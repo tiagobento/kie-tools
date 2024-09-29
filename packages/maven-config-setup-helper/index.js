@@ -96,7 +96,7 @@ module.exports = {
     if (fs.existsSync(resolvedTmpM2Dir)) {
       fs.rmSync(resolvedTmpM2Dir, { recursive: true, force: true });
     }
-    fs.mkdirSync(resolvedTmpM2Dir);
+    fs.mkdirSync(resolvedTmpM2Dir, { recursive: true });
 
     // head
     execSync(`cp -nal ${DEFAULT_LOCAL_REPO}/* ${resolvedTmpM2Dir}`, { stdio: "inherit" });
