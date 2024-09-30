@@ -18,14 +18,18 @@
  */
 
 const buildEnv = require("./env");
-const { setupMavenConfigFile } = require("@kie-tools/maven-config-setup-helper");
+const {
+  setupMavenConfigFile,
+  buildTailFromPackageJson,
+  DEFAULT_LOCAL_REPO,
+} = require("@kie-tools/maven-config-setup-helper");
 
 setupMavenConfigFile(
   `
     --batch-mode
     -Dstyle.color=always
     -Drevision=${buildEnv.env.swfDiagramEditor.version}
-    -Dmaven.repo.local.tail=${require("./mvn.tail").join(",")}
-    `,
+    -Dmaven.repo.local.tail=${buildTailFromPackageJson()},${DEFAULT_LOCAL_REPO} 
+    `, // For some reason, j2cl-maven-plugin needs the DEFAULT_LOCAL_REPO here as the last tail too.
   { ignoreDefault: true } // Default <repositories> configuration doesn't work for this module. Since this module is not going to last long, we rely on this workaround for a while.
 );

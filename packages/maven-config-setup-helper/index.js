@@ -44,7 +44,7 @@ const DEFAULT_LOCAL_REPO = String(
   })
 ).trim();
 
-const BOOTSTRAP_CLI_ARGS = `-P'!kie-tools--maven-profile--1st-party-dependencies' --settings=${BOOTSTRAP_SETTINGS_XML_PATH}`;
+const BOOTSTRAP_CLI_ARGS = `--settings=${BOOTSTRAP_SETTINGS_XML_PATH}`;
 
 module.exports = {
   /**
@@ -77,37 +77,23 @@ module.exports = {
   /**
    * Helps setting up an array of absolute paths that will be used to configure `-Dmaven.repo.local.tail`.
    *
-   * @param selfDirname The absolute path of a directory that will contain the `dist/1st-party-m2/repository` directory.
-   * @param tail An array of absolute paths of other local Maven repositories.
+   * @param dirname Where to locate the first package.json.
    *
-   * @returns A flat list of absolute paths of local Maven repositories.
+   * @returns A comma-separated string containing a flat list of absolute paths of local Maven repositories.
    */
-  tailIncludingSelf: (selfDirname, tail) => {
-    return [path.join(selfDirname, "dist/1st-party-m2/repository"), ...new Set(tail.flatMap((t) => t))];
-  },
-
-  /**
-   * Helps setting up an array of absolute paths that will be used to configure `-Dmaven.repo.local.tail`.
-   *
-   * @param tail An array of absolute paths of other local Maven repositories.
-   *
-   * @returns A flat list of absolute paths of local Maven repositories.
-   */
-  tail: (tail) => {
-    return [...new Set(tail.flatMap((t) => t))];
-  },
-
-  buildTailFromPackageJson: () => {
-    // TODO:
+  buildTailFromPackageJson: (dirname) => {
+    const packageJson = require(path.resolve(dirname ?? ".", "package.json"));
+    const tail = deepResolveMavenLocalRepoTail(path.resolve("."), packageJson.name).join(",");
+    return tail;
   },
 
   /**
    * Builds a single Maven repository directory out of multiple local Maven repositories using hard links.
    *
    * @param tmpM2Dir Relative path of this new Maven repository directory. It will be deleted and recreated for each invocation.
-   * @param tail A list of paths representing additional Maven repository directories, to be concatenated the default one (I.e, `maven.repo.local`)
+   * @param dirname A list of paths representing additional Maven repository directories, to be concatenated the default one (I.e, `maven.repo.local`)
    *  */
-  prepareHardLinkedM2FromTail: (tmpM2Dir, tail) => {
+  prepareHardLinkedM2ForPackage: (tmpM2Dir, relativePackagePath) => {
     const resolvedTmpM2Dir = path.resolve(tmpM2Dir);
     if (fs.existsSync(resolvedTmpM2Dir)) {
       fs.rmSync(resolvedTmpM2Dir, { recursive: true, force: true });
@@ -116,6 +102,10 @@ module.exports = {
 
     // head
     execSync(`cp -nal ${DEFAULT_LOCAL_REPO}/* ${resolvedTmpM2Dir}`, { stdio: "inherit" });
+
+    const cwd = path.resolve(".", relativePackagePath);
+    const packageName = require(path.resolve(cwd, "package.json")).name;
+    const tail = deepResolveMavenLocalRepoTail(cwd, packageName);
 
     // tail
     for (const t of tail) {
@@ -200,3 +190,17 @@ ${DEFAULT_MAVEN_CONFIG}`;
     console.timeEnd(`[maven-config-setup-helper] Configuring Maven through .mvn/maven.config...`);
   },
 };
+
+function deepResolveMavenLocalRepoTail(cwd, packageName) {
+  const packageJsonDependencies = require(path.resolve(cwd, "package.json")).dependencies ?? {};
+  return [
+    ...new Set([
+      path.resolve(fs.realpathSync(cwd), "dist/1st-party-m2/repository"),
+      ...Object.entries(packageJsonDependencies).flatMap(([depName, depVersion]) =>
+        depVersion === "workspace:*" // It's an internal package.
+          ? deepResolveMavenLocalRepoTail(fs.realpathSync(cwd + "/node_modules/" + packageName), depName)
+          : []
+      ),
+    ]),
+  ];
+}
