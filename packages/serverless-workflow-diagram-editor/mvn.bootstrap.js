@@ -22,7 +22,7 @@ const {
   setupMavenConfigFile,
   buildTailFromPackageJsonDependencies,
   DEFAULT_LOCAL_REPO,
-} = require("@kie-tools/maven-config-setup-helper");
+} = require("@kie-tools/maven-base");
 
 setupMavenConfigFile(
   `

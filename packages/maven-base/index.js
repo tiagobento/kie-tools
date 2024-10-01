@@ -17,7 +17,6 @@
  * under the License.
  */
 
-const { execSync } = require("child_process");
 const fs = require("fs");
 const path = require("path");
 
@@ -28,23 +27,22 @@ const MVN_CONFIG_FILE_PATH = path.join(".mvn", "maven.config");
 // This package's constants.
 const MVNW_VERSION = "3.3.0";
 const EMPTY_POM_XML_PATH = path.join(__dirname, "empty-pom.xml");
-const BUILD_SETTINGS_XML_PATH = path.join(__dirname, "build-settings.xml");
-const BOOTSTRAP_SETTINGS_XML_PATH = path.join(__dirname, "bootstrap-settings.xml");
+const SETTINGS_XML_PATH = path.join(__dirname, "settings.xml");
 
 const DEFAULT_MAVEN_CONFIG = `
 -Dstyle.color=always
 --batch-mode
---settings=${BUILD_SETTINGS_XML_PATH}
+--settings=${SETTINGS_XML_PATH}
 `.trim();
 
 const DEFAULT_LOCAL_REPO = String(
-  execSync(`mvn help:evaluate -Dexpression=settings.localRepository -q -DforceStdout -f ${EMPTY_POM_XML_PATH}`, {
+  fs.execSync(`mvn help:evaluate -Dexpression=settings.localRepository -q -DforceStdout -f ${EMPTY_POM_XML_PATH}`, {
     stdio: "pipe",
     encoding: "utf-8",
   })
 ).trim();
 
-const BOOTSTRAP_CLI_ARGS = `-P'!kie-tools--maven-profile--1st-party-dependencies' --settings=${BOOTSTRAP_SETTINGS_XML_PATH}`;
+const BOOTSTRAP_CLI_ARGS = `-P'!kie-tools--maven-profile--1st-party-dependencies' --settings=${SETTINGS_XML_PATH}`;
 
 module.exports = {
   /**
@@ -66,12 +64,12 @@ module.exports = {
    * Installs `mvnw` on the same directory of invocation.
    *  */
   installMvnw: () => {
-    console.info(`[maven-config-setup-helper] Installing mvnw...`);
-    console.time(`[maven-config-setup-helper] Installing mvnw...`);
-    execSync(`mvn -e org.apache.maven.plugins:maven-wrapper-plugin:${MVNW_VERSION}:wrapper ${BOOTSTRAP_CLI_ARGS}`, {
+    console.info(`[maven-base] Installing mvnw...`);
+    console.time(`[maven-base] Installing mvnw...`);
+    fs.execSync(`mvn -e org.apache.maven.plugins:maven-wrapper-plugin:${MVNW_VERSION}:wrapper ${BOOTSTRAP_CLI_ARGS}`, {
       stdio: "inherit",
     });
-    console.timeEnd(`[maven-config-setup-helper] Installing mvnw...`);
+    console.timeEnd(`[maven-base] Installing mvnw...`);
   },
 
   /**
@@ -99,7 +97,7 @@ module.exports = {
     fs.mkdirSync(resolvedTmpM2Dir, { recursive: true });
 
     // head
-    execSync(`cp -nal ${DEFAULT_LOCAL_REPO}/* ${resolvedTmpM2Dir}`, { stdio: "inherit" });
+    fs.execSync(`cp -nal ${DEFAULT_LOCAL_REPO}/* ${resolvedTmpM2Dir}`, { stdio: "inherit" });
 
     const cwd = path.resolve(".", relativePackagePath);
     const packageName = require(path.resolve(cwd, "package.json")).name;
@@ -107,7 +105,9 @@ module.exports = {
 
     // tail
     for (const t of tail) {
-      execSync(`cp -al ${path.resolve(t)}/* ${resolvedTmpM2Dir}`, { stdio: "inherit" });
+      if (fs.existsSync(path.resolve(t))) {
+        fs.execSync(`cp -al ${path.resolve(t)}/* ${resolvedTmpM2Dir}`, { stdio: "inherit" });
+      }
     }
   },
 
@@ -117,23 +117,23 @@ module.exports = {
    * @param entry An object with `key` and `value` properties
    */
   setPomProperty: ({ key, value }) => {
-    if (!key || !value) {
-      console.error("[maven-config-setup-helper] Wrong values provided");
+    if (!key || value === undefined) {
+      console.error("[maven-base] Can't set a POM property without proper `key` and `value`.");
       process.exit(1);
     }
 
-    console.info(`[maven-config-setup-helper] Setting property '${key}' with value '${value}'...`);
-    console.time(`[maven-config-setup-helper] Setting property '${key}' with value '${value}'...`);
+    console.info(`[maven-base] Setting property '${key}' with value '${value}'...`);
+    console.time(`[maven-base] Setting property '${key}' with value '${value}'...`);
 
     const cmd = `mvn versions:set-property -Dproperty=${key} -DnewVersion=${value} -DgenerateBackupPoms=false ${BOOTSTRAP_CLI_ARGS}`;
 
     if (process.platform === "win32") {
-      execSync(cmd.replaceAll(" -", " `-"), { stdio: "inherit", shell: "powershell.exe" });
+      fs.execSync(cmd.replaceAll(" -", " `-"), { stdio: "inherit", shell: "powershell.exe" });
     } else {
-      execSync(cmd, { stdio: "inherit" });
+      fs.execSync(cmd, { stdio: "inherit" });
     }
 
-    console.timeEnd(`[maven-config-setup-helper] Setting property '${key}' with value '${value}'...`);
+    console.timeEnd(`[maven-base] Setting property '${key}' with value '${value}'...`);
   },
 
   /**
@@ -143,23 +143,24 @@ module.exports = {
    * @param args An object with a `ignoreDefault: boolean` property.
    */
   setupMavenConfigFile: (mavenConfigString, args) => {
-    console.info(`[maven-config-setup-helper] Configuring Maven through .mvn/maven.config...`);
-    console.time(`[maven-config-setup-helper] Configuring Maven through .mvn/maven.config...`);
+    console.info(`[maven-base] Configuring Maven through .mvn/maven.config...`);
+    console.time(`[maven-base] Configuring Maven through .mvn/maven.config...`);
+
     let originalMvnConfigString;
     if (fs.existsSync(MVN_CONFIG_ORIGINAL_FILE_PATH)) {
-      console.info(`[maven-config-setup-helper] Found '${MVN_CONFIG_ORIGINAL_FILE_PATH}'.`);
+      console.info(`[maven-base] Found '${MVN_CONFIG_ORIGINAL_FILE_PATH}'.`);
       originalMvnConfigString = fs.readFileSync(MVN_CONFIG_ORIGINAL_FILE_PATH, "utf-8");
     } else if (fs.existsSync(MVN_CONFIG_FILE_PATH)) {
-      console.info(`[maven-config-setup-helper] Found '${MVN_CONFIG_FILE_PATH}'.`);
+      console.info(`[maven-base] Found '${MVN_CONFIG_FILE_PATH}'.`);
       originalMvnConfigString = fs.readFileSync(MVN_CONFIG_FILE_PATH, "utf-8");
     } else {
-      console.info(`[maven-config-setup-helper] No previous config found.`);
+      console.info(`[maven-base] No previous config found.`);
       originalMvnConfigString = "";
     }
 
     fs.mkdirSync(".mvn", { recursive: true });
 
-    console.info(`[maven-config-setup-helper] Writing '${MVN_CONFIG_ORIGINAL_FILE_PATH}'...`);
+    console.info(`[maven-base] Writing '${MVN_CONFIG_ORIGINAL_FILE_PATH}'...`);
     console.info(`${originalMvnConfigString}` || "<empty>");
     fs.writeFileSync(MVN_CONFIG_ORIGINAL_FILE_PATH, originalMvnConfigString);
 
@@ -172,7 +173,7 @@ module.exports = {
     const newMavenConfigString = `${originalMvnConfigString ? `\n${originalMvnConfigString}\n` : ``}
 ${trimmedMavenConfigString.trim()}`;
 
-    console.info(`[maven-config-setup-helper] Writing '${MVN_CONFIG_FILE_PATH}'...`);
+    console.info(`[maven-base] Writing '${MVN_CONFIG_FILE_PATH}'...`);
     console.info(newMavenConfigString);
 
     const defaultMavenConfigString = args?.ignoreDefault
@@ -182,9 +183,11 @@ ${trimmedMavenConfigString.trim()}`;
 ${DEFAULT_MAVEN_CONFIG}`;
 
     fs.writeFileSync(MVN_CONFIG_FILE_PATH, `${newMavenConfigString}${defaultMavenConfigString}`);
-    console.timeEnd(`[maven-config-setup-helper] Configuring Maven through .mvn/maven.config...`);
+    console.timeEnd(`[maven-base] Configuring Maven through .mvn/maven.config...`);
   },
 };
+
+// private functions
 
 function deepResolveMavenLocalRepoTail(cwd) {
   const packageJsonDependencies = require(path.resolve(cwd, "package.json")).dependencies ?? {};

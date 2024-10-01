@@ -26,6 +26,6 @@
 
   <!-- Used to query default maven properties -->
   <groupId>org.apache.kie</groupId>
-  <artifactId>kie-tools-maven-config-setup-helper-empty-pom</artifactId>
+  <artifactId>kie-tools-maven-base-empty-pom</artifactId>
   <version>0.0.0-SNAPSHOT</version>
 </project>

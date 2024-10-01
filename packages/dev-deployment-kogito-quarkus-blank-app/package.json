@@ -27,10 +27,10 @@
     "quarkus:dev:win32": "mvn clean package quarkus:dev `-DskipTests"
   },
   "dependencies": {
-    "@kie-tools/jbpm-quarkus-devui": "workspace:*"
+    "@kie-tools/jbpm-quarkus-devui": "workspace:*",
+    "@kie-tools/maven-base": "workspace:*"
   },
   "devDependencies": {
-    "@kie-tools/maven-config-setup-helper": "workspace:*",
     "@kie-tools/root-env": "workspace:*",
     "run-script-os": "^1.1.6"
   },

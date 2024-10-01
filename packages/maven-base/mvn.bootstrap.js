@@ -18,17 +18,10 @@
  */
 
 const buildEnv = require("./env");
-const {
-  setupMavenConfigFile,
-  setPomProperty,
-  buildTailFromPackageJsonDependencies,
-} = require("@kie-tools/maven-config-setup-helper");
+const { setupMavenConfigFile, setPomProperty, buildTailFromPackageJsonDependencies } = require(".");
 
 setupMavenConfigFile(
   `
-    --batch-mode
-    -Dstyle.color=always
-    -Drevision=${buildEnv.env.mavenBase.version}
     -Dmaven.repo.local.tail=${buildTailFromPackageJsonDependencies()}
 `,
   { ignoreDefault: true }

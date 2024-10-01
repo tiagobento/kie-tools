@@ -18,7 +18,7 @@
  */
 
 const buildEnv = require("./env");
-const { setupMavenConfigFile } = require("@kie-tools/maven-config-setup-helper");
+const { setupMavenConfigFile } = require("@kie-tools/maven-base");
 
 setupMavenConfigFile(`
     -Drevision=${buildEnv.env.slwtDevModeImage.version}

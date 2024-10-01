@@ -3,12 +3,6 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd"
 >
-  <!-- Everything should've already be downloaded by on the "bootstrap" phase, BUT... -->
-  <!-- <offline>true</offline> -->
-
-  <!-- Allow downloading stuff since pluginDependencies and dynamic dependencies can't be downloaded during bootstrap... -->
-  <offline>false</offline>
-
   <mirrors>
     <mirror>
       <id>apache-public-repository-group-mirror-to-central</id>
