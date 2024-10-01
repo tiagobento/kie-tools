@@ -17,16 +17,16 @@
  * under the License.
  */
 
-const buildEnv = require("./env");
+const { env } = require("./env");
 const { setupMavenConfigFile, installMvnw, buildTailFromPackageJsonDependencies } = require("@kie-tools/maven-base");
 
 setupMavenConfigFile(
   `
     --batch-mode
     -Dstyle.color=always
-    -Drevision=${buildEnv.env.devDeploymentQuarkusApp.version}
-    -Dquarkus.platform.version=${buildEnv.env.quarkusPlatform.version}
-    -Dversion.org.kie.kogito=${buildEnv.env.kogitoRuntime.version}
+    -Drevision=${env.devDeploymentQuarkusApp.version}
+    -Dquarkus.platform.version=${env.quarkusPlatform.version}
+    -Dversion.org.kie.kogito=${env.kogitoRuntime.version}
     -Dmaven.repo.local.tail=${buildTailFromPackageJsonDependencies()}
 `,
   { ignoreDefault: true } // Can't have special <repositories> configuration that only works inside this repo.

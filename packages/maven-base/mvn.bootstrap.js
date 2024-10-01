@@ -17,22 +17,22 @@
  * under the License.
  */
 
-const buildEnv = require("./env");
+const { env } = require("./env");
 const { setupMavenConfigFile, setPomProperty, buildTailFromPackageJsonDependencies } = require(".");
 
 setupMavenConfigFile(
   `
-    -Drevision=${buildEnv.env.mavenBase.version}
+    -Drevision=${env.mavenBase.version}
     -Dmaven.repo.local.tail=${buildTailFromPackageJsonDependencies()}
 `
 );
 
 setPomProperty({
   key: "version.org.kie.kogito",
-  value: buildEnv.env.kogitoRuntime.version,
+  value: env.kogitoRuntime.version,
 });
 
 setPomProperty({
   key: "quarkus.platform.version",
-  value: buildEnv.env.quarkusPlatform.version,
+  value: env.quarkusPlatform.version,
 });

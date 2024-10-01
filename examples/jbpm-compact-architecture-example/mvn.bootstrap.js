@@ -17,20 +17,20 @@
  * under the License.
  */
 
-const buildEnv = require("./env");
+const { env } = require("./env");
 const { setupMavenConfigFile, setPomProperty, buildTailFromPackageJsonDependencies } = require("@kie-tools/maven-base");
 
 setupMavenConfigFile(`
-    -Drevision=${buildEnv.env.jbpmCompactArchitectureExample.version}
+    -Drevision=${env.jbpmCompactArchitectureExample.version}
     -Dmaven.repo.local.tail=${buildTailFromPackageJsonDependencies()}
 `);
 
 setPomProperty({
   key: "kogito.management-console.image",
-  value: buildEnv.env.jbpmCompactArchitectureExample.kogitoManagementConsoleImage,
+  value: env.jbpmCompactArchitectureExample.kogitoManagementConsoleImage,
 });
 
 setPomProperty({
   key: "kogito.task-console.image",
-  value: buildEnv.env.jbpmCompactArchitectureExample.kogitoTaskConsoleImage,
+  value: env.jbpmCompactArchitectureExample.kogitoTaskConsoleImage,
 });

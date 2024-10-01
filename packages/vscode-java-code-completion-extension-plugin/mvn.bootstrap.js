@@ -17,10 +17,10 @@
  * under the License.
  */
 
-const buildEnv = require("./env");
+const { env } = require("./env");
 const { setupMavenConfigFile, installMvnw, buildTailFromPackageJsonDependencies } = require("@kie-tools/maven-base");
 
-const version = buildEnv.env.vscodeJavaCodeCompletionExtensionPlugin.version;
+const version = env.vscodeJavaCodeCompletionExtensionPlugin.version;
 
 setupMavenConfigFile(`
   -Drevision=${version}

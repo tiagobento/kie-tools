@@ -37,7 +37,7 @@ import HtmlReplaceWebpackPlugin from "html-replace-webpack-plugin";
 import { env } from "./env";
 const buildEnv: any = env; // build-env is not typed
 
-export default async (env: any, argv: any) => {
+export default async (webpackEnv: any, webpackArgv: any) => {
   const buildInfo = getBuildInfo();
   const [
     extendedServices_linuxDownloadUrl,
@@ -56,7 +56,7 @@ export default async (env: any, argv: any) => {
   }
 
   return [
-    merge(common(env), {
+    merge(common(webpackEnv), {
       entry: {
         "workspace/worker/sharedWorker": "./src/workspace/worker/sharedWorker.ts",
       },
@@ -77,7 +77,7 @@ export default async (env: any, argv: any) => {
       ],
     }),
     {
-      ...merge(common(env), {
+      ...merge(common(webpackEnv), {
         entry: {
           index: "./src/index.tsx",
           "bpmn-envelope": "./src/envelope/BpmnEditorEnvelopeApp.ts",

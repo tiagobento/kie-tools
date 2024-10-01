@@ -17,12 +17,12 @@
  * under the License.
  */
 
-const buildEnv = require("./env");
+const { env } = require("./env");
 const { setupMavenConfigFile, buildTailFromPackageJsonDependencies } = require("@kie-tools/maven-base");
 
 setupMavenConfigFile(`
-    -Drevision=${buildEnv.env.extendedServicesJava.version}
-    -Dquarkus.http.port=${buildEnv.env.extendedServicesJava.port}
-    -Dquarkus.http.host=${buildEnv.env.extendedServicesJava.host}
+    -Drevision=${env.extendedServicesJava.version}
+    -Dquarkus.http.port=${env.extendedServicesJava.port}
+    -Dquarkus.http.host=${env.extendedServicesJava.host}
     -Dmaven.repo.local.tail=${buildTailFromPackageJsonDependencies()}
 `);

@@ -36,8 +36,7 @@
   },
   "dependencies": {
     "@kie-tools/dev-deployment-base-image": "workspace:*",
-    "@kie-tools/dev-deployment-kogito-quarkus-blank-app": "workspace:*",
-    "@kie-tools/jbpm-quarkus-devui": "workspace:*"
+    "@kie-tools/dev-deployment-kogito-quarkus-blank-app": "workspace:*"
   },
   "devDependencies": {
     "@kie-tools/image-builder": "workspace:*",

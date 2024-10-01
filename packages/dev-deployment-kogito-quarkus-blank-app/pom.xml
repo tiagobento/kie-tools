@@ -176,6 +176,31 @@
         </dependency>
       </dependencies>
     </profile>
+    <!--  -->
+    <!-- See `@kie-tools/maven-base` pom.xml for full details on this profile. -->
+    <!--  -->
+    <profile>
+      <id>use-maven-repo-local-tail</id>
+      <activation>
+        <property>
+          <name>kieTools.do-not-use-this-property.ignoreMavenRepoLocalTail</name>
+          <value>!true</value>
+        </property>
+      </activation>
+      <build>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-install-plugin</artifactId>
+              <configuration>
+                <skip>true</skip>
+              </configuration>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+      </build>
+    </profile>
   </profiles>
 
   <build>
@@ -186,19 +211,6 @@
     </resources>
     <pluginManagement>
       <plugins>
-        <!-- (begin) Maven conventions of `kie-tools` -->
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-install-plugin</artifactId>
-          <version>${version.maven.install.plugin}</version>
-          <executions>
-            <execution>
-              <id>default-install</id>
-              <phase>none</phase>
-            </execution>
-          </executions>
-        </plugin>
-        <!-- (end) Maven conventions of `kie-tools` -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-site-plugin</artifactId>

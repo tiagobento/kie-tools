@@ -17,7 +17,7 @@
  * under the License.
  */
 
-const buildEnv = require("./env");
+const { env } = require("./env");
 const {
   setupMavenConfigFile,
   installMvnw,
@@ -26,7 +26,7 @@ const {
 } = require("@kie-tools/maven-base");
 
 setupMavenConfigFile(`
-    -Drevision=${buildEnv.env.yardValidator.version}
+    -Drevision=${env.yardValidator.version}
     -Dmaven.repo.local.tail=${buildTailFromPackageJsonDependencies()},${DEFAULT_LOCAL_REPO}
 `); // For some reason, j2cl-maven-plugin needs the DEFAULT_LOCAL_REPO here as the last tail too.
 

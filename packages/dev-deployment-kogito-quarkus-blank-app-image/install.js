@@ -17,9 +17,9 @@
  * under the License.
  */
 
-const buildEnv = require("./env");
+const { env } = require("./env");
 const { setupMavenConfigFile } = require("@kie-tools/maven-base");
 
 setupMavenConfigFile(`
-    -Drevision=${buildEnv.env.devDeploymentKogitoQuarkusBlankAppImage.version}
+    -Drevision=${env.devDeploymentKogitoQuarkusBlankAppImage.version}
 `);

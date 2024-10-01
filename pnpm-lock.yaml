@@ -3201,9 +3201,6 @@ importers:
       '@kie-tools/dev-deployment-kogito-quarkus-blank-app':
         specifier: workspace:*
         version: link:../dev-deployment-kogito-quarkus-blank-app
-      '@kie-tools/jbpm-quarkus-devui':
-        specifier: workspace:*
-        version: link:../jbpm-quarkus-devui
     devDependencies:
       '@kie-tools/image-builder':
         specifier: workspace:*
@@ -9635,13 +9632,13 @@ importers:
 
   packages/serverless-logic-web-tools-swf-deployment-quarkus-app:
     dependencies:
+      '@kie-tools/maven-base':
+        specifier: workspace:*
+        version: link:../maven-base
       '@kie-tools/sonataflow-quarkus-devui':
         specifier: workspace:*
         version: link:../sonataflow-quarkus-devui
     devDependencies:
-      '@kie-tools/maven-base':
-        specifier: workspace:*
-        version: link:../maven-base
       '@kie-tools/root-env':
         specifier: workspace:*
         version: link:../root-env

@@ -183,12 +183,17 @@ func WriteMavenConfigFileWithTailDirs(projectDir string) {
         }
     }
 
-	absolutePath, err := filepath.Abs("../../../node_modules/@kie-tools/sonataflow-quarkus-devui/dist/1st-party-m2/repository")
-    if err != nil {
-		fmt.Printf("Failed to resolve absolute path for sonataflow-quarkus-devui package. %v", err)
+	jbpmQuarkusDevUiM2, err := filepath.Abs("../../../node_modules/@kie-tools/sonataflow-quarkus-devui/dist/1st-party-m2/repository")
+	if err != nil {
+		fmt.Printf("Failed to resolve absolute path for `@kie-tools/sonataflow-quarkus-devui` package. %v", err)
 		os.Exit(1)
     }
-    err = os.WriteFile(filepath.Join(projectDir, ".mvn", "maven.config"), []byte("-Dmaven.repo.local.tail=" + absolutePath + "\n"), 0644)
+	mavenBaseM2, err := filepath.Abs("../../../node_modules/@kie-tools/maven-base/dist/1st-party-m2/repository")
+    if err != nil {
+		fmt.Printf("Failed to resolve absolute path for `@kie-tools/maven-base` package. %v", err)
+		os.Exit(1)
+    }
+    err = os.WriteFile(filepath.Join(projectDir, ".mvn", "maven.config"), []byte("-Dmaven.repo.local.tail="+ mavenBaseM2 + "," + jbpmQuarkusDevUiM2 + "\n"), 0644)
 	if err != nil {
 		fmt.Printf("Failed to create .mvn/maven.config file: %v", err)
 		os.Exit(1)
