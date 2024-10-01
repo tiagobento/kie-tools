@@ -13359,6 +13359,9 @@ importers:
       '@kie-tools/maven-base':
         specifier: workspace:*
         version: link:../maven-base
+      '@kie-tools/yard-model':
+        specifier: workspace:*
+        version: link:../yard-model
     devDependencies:
       '@kie-tools/maven-config-setup-helper':
         specifier: workspace:*
@@ -13366,9 +13369,6 @@ importers:
       '@kie-tools/root-env':
         specifier: workspace:*
         version: link:../root-env
-      '@kie-tools/yard-model':
-        specifier: workspace:*
-        version: link:../yard-model
       copyfiles:
         specifier: ^2.4.1
         version: 2.4.1
