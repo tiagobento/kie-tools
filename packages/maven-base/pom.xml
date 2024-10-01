@@ -363,6 +363,7 @@
                   <goal>deploy</goal>
                 </goals>
                 <configuration>
+                  <skip>false</skip>
                   <altDeploymentRepository
                   >kie-tools--local-dist-1st-party-m2::file://${maven.multiModuleProjectDirectory}/dist/1st-party-m2/repository</altDeploymentRepository>
                 </configuration>
