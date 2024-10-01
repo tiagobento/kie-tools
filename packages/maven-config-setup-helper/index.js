@@ -81,7 +81,7 @@ module.exports = {
    *
    * @returns A comma-separated string containing a flat list of absolute paths of local Maven repositories.
    */
-  buildTailFromPackageJson: (dirname) => {
+  buildTailFromPackageJsonDependencies: (dirname) => {
     return deepResolveMavenLocalRepoTail(path.resolve(dirname ?? ".")).join(",");
   },
 

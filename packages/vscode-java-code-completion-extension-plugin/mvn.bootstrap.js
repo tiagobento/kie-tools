@@ -18,13 +18,17 @@
  */
 
 const buildEnv = require("./env");
-const { setupMavenConfigFile, installMvnw, buildTailFromPackageJson } = require("@kie-tools/maven-config-setup-helper");
+const {
+  setupMavenConfigFile,
+  installMvnw,
+  buildTailFromPackageJsonDependencies,
+} = require("@kie-tools/maven-config-setup-helper");
 
 const version = buildEnv.env.vscodeJavaCodeCompletionExtensionPlugin.version;
 
 setupMavenConfigFile(`
   -Drevision=${version}
-  -Dmaven.repo.local.tail=${buildTailFromPackageJson()}
+  -Dmaven.repo.local.tail=${buildTailFromPackageJsonDependencies()}
 `);
 
 installMvnw();

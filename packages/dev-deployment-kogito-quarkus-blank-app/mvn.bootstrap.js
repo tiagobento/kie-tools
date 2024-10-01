@@ -18,7 +18,11 @@
  */
 
 const buildEnv = require("./env");
-const { setupMavenConfigFile, installMvnw, buildTailFromPackageJson } = require("@kie-tools/maven-config-setup-helper");
+const {
+  setupMavenConfigFile,
+  installMvnw,
+  buildTailFromPackageJsonDependencies,
+} = require("@kie-tools/maven-config-setup-helper");
 
 setupMavenConfigFile(
   `
@@ -27,7 +31,7 @@ setupMavenConfigFile(
     -Drevision=${buildEnv.env.devDeploymentQuarkusApp.version}
     -Dquarkus.platform.version=${buildEnv.env.quarkusPlatform.version}
     -Dversion.org.kie.kogito=${buildEnv.env.kogitoRuntime.version}
-    -Dmaven.repo.local.tail=${buildTailFromPackageJson()}
+    -Dmaven.repo.local.tail=${buildTailFromPackageJsonDependencies()}
 `,
   { ignoreDefault: true } // Can't have special <repositories> configuration that only works inside this repo.
 );
