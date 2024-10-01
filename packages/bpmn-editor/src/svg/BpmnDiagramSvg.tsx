@@ -221,6 +221,18 @@ export function getNodeLabelSvgTextAlignmentProps(
         transform: `translate(${tlTx},${tlTy})`,
         width: tlWidth,
       } as const;
+
+    case "bottom-left-vertical":
+      const clvTx = n.position.x! + SVG_NODE_LABEL_TEXT_PADDING_ALL;
+      const clvTy = n.position.y! / 2;
+      const clvWidth = n.height!;
+      return {
+        verticalAnchor: "start",
+        textAnchor: "middle",
+        transform: `translate(${clvTx},${clvTy})`,
+        width: clvWidth,
+      } as const;
+
     default:
       assertUnreachable(labelPosition);
   }

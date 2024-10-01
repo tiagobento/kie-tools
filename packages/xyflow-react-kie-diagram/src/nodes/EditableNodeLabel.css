@@ -46,6 +46,14 @@
   align-items: center;
   text-align: left;
 }
+.xyflow-react-kie-diagram--editable-node-name-input.bottom-left-vertical {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  transform: rotate(-90deg);
+  transform-origin: left bottom;
+  margin: 24px;
+}
 .xyflow-react-kie-diagram--editable-node-name-input.top-center input,
 .xyflow-react-kie-diagram--editable-node-name-input.center-bottom input,
 .xyflow-react-kie-diagram--editable-node-name-input.center-center input {
