@@ -116,10 +116,10 @@
   </build>
   <profiles>
     <profile>
-      <id>kie-tools--maven-profile--1st-party-dependencies</id>
+      <id>include-1st-party-dependencies</id>
       <activation>
         <property>
-          <name>ignore--kie-tools--maven-profile--1st-party-dependencies</name>
+          <name>kieTools.do-not-use-this-property.ignore1stPartyDependencies</name>
           <value>!true</value>
         </property>
       </activation>

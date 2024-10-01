@@ -31,6 +31,8 @@
   </parent>
 
   <artifactId>jbpm-compact-architecture-quarkus-example</artifactId>
+  <version>${revision}</version>
+
   <name>Kie-Tools Example :: jBPM Compact Architecture Quarkus Example</name>
 
   <properties>

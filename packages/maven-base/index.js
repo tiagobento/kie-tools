@@ -20,13 +20,13 @@
 const cp = require("child_process");
 const fs = require("fs");
 const path = require("path");
+const { env } = require("./env");
 
 // Constants relative to consumer packages.
 const MVN_CONFIG_ORIGINAL_FILE_PATH = path.join(".mvn", "maven.config.original");
 const MVN_CONFIG_FILE_PATH = path.join(".mvn", "maven.config");
 
 // This package's constants.
-const MVNW_VERSION = "3.3.0";
 const EMPTY_POM_XML_PATH = path.join(__dirname, "empty-pom.xml");
 const SETTINGS_XML_PATH = path.join(__dirname, "settings.xml");
 
@@ -43,7 +43,7 @@ const DEFAULT_LOCAL_REPO = String(
   })
 ).trim();
 
-const BOOTSTRAP_CLI_ARGS = `-P'!kie-tools--maven-profile--1st-party-dependencies' --settings=${SETTINGS_XML_PATH}`;
+const BOOTSTRAP_CLI_ARGS = `-P-include-1st-party-dependencies --settings=${SETTINGS_XML_PATH}`;
 
 module.exports = {
   /**
@@ -67,9 +67,15 @@ module.exports = {
   installMvnw: () => {
     console.info(`[maven-base] Installing mvnw...`);
     console.time(`[maven-base] Installing mvnw...`);
-    cp.execSync(`mvn -e org.apache.maven.plugins:maven-wrapper-plugin:${MVNW_VERSION}:wrapper ${BOOTSTRAP_CLI_ARGS}`, {
-      stdio: "inherit",
-    });
+
+    const cmd = `mvn -e org.apache.maven.plugins:maven-wrapper-plugin:${env.mvnw.version}:wrapper ${BOOTSTRAP_CLI_ARGS}`;
+
+    if (process.platform === "win32") {
+      cp.execSync(cmd.replaceAll(" -", " `-"), { stdio: "inherit", shell: "powershell.exe" });
+    } else {
+      cp.execSync(cmd, { stdio: "inherit" });
+    }
+
     console.timeEnd(`[maven-base] Installing mvnw...`);
   },
 

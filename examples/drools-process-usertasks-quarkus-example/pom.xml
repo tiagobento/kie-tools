@@ -29,7 +29,10 @@
     <version>${revision}</version>
     <relativePath>./node_modules/@kie-tools/maven-base/pom.xml</relativePath>
   </parent>
+
   <artifactId>drools-process-usertasks-quarkus-example</artifactId>
+  <version>${revision}</version>
+
   <name>Kie-Tools Example :: Process with Usertasks Quarkus</name>
   <description>Kogito user tasks orchestration - Quarkus</description>
 
@@ -76,10 +79,10 @@
 
   <profiles>
     <profile>
-      <id>kie-tools--maven-profile--1st-party-dependencies</id>
+      <id>include-1st-party-dependencies</id>
       <activation>
         <property>
-          <name>ignore--kie-tools--maven-profile--1st-party-dependencies</name>
+          <name>kieTools.do-not-use-this-property.ignore1stPartyDependencies</name>
           <value>!true</value>
         </property>
       </activation>
