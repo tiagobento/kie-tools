@@ -44,7 +44,7 @@ const DEFAULT_LOCAL_REPO = String(
   })
 ).trim();
 
-const BOOTSTRAP_CLI_ARGS = `--settings=${BOOTSTRAP_SETTINGS_XML_PATH}`;
+const BOOTSTRAP_CLI_ARGS = `-P'!kie-tools--maven-profile--1st-party-dependencies' --settings=${BOOTSTRAP_SETTINGS_XML_PATH}`;
 
 module.exports = {
   /**
@@ -82,9 +82,7 @@ module.exports = {
    * @returns A comma-separated string containing a flat list of absolute paths of local Maven repositories.
    */
   buildTailFromPackageJson: (dirname) => {
-    const packageJson = require(path.resolve(dirname ?? ".", "package.json"));
-    const tail = deepResolveMavenLocalRepoTail(path.resolve("."), packageJson.name).join(",");
-    return tail;
+    return deepResolveMavenLocalRepoTail(path.resolve(dirname ?? ".")).join(",");
   },
 
   /**
@@ -171,9 +169,7 @@ module.exports = {
       .map((l) => l.trim())
       .join("\n");
 
-    const newMavenConfigString = `### Package-specific configuration${
-      originalMvnConfigString ? `\n${originalMvnConfigString}\n` : ``
-    }
+    const newMavenConfigString = `${originalMvnConfigString ? `\n${originalMvnConfigString}\n` : ``}
 ${trimmedMavenConfigString.trim()}`;
 
     console.info(`[maven-config-setup-helper] Writing '${MVN_CONFIG_FILE_PATH}'...`);
@@ -183,7 +179,6 @@ ${trimmedMavenConfigString.trim()}`;
       ? ""
       : `
 
-#### Default configuration
 ${DEFAULT_MAVEN_CONFIG}`;
 
     fs.writeFileSync(MVN_CONFIG_FILE_PATH, `${newMavenConfigString}${defaultMavenConfigString}`);
@@ -191,14 +186,14 @@ ${DEFAULT_MAVEN_CONFIG}`;
   },
 };
 
-function deepResolveMavenLocalRepoTail(cwd, packageName) {
+function deepResolveMavenLocalRepoTail(cwd) {
   const packageJsonDependencies = require(path.resolve(cwd, "package.json")).dependencies ?? {};
   return [
     ...new Set([
       path.resolve(fs.realpathSync(cwd), "dist/1st-party-m2/repository"),
       ...Object.entries(packageJsonDependencies).flatMap(([depName, depVersion]) =>
         depVersion === "workspace:*" // It's an internal package.
-          ? deepResolveMavenLocalRepoTail(fs.realpathSync(cwd + "/node_modules/" + packageName), depName)
+          ? deepResolveMavenLocalRepoTail(cwd + "/node_modules/" + depName)
           : []
       ),
     ]),

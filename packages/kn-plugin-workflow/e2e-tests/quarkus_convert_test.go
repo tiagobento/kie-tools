@@ -101,11 +101,12 @@ func RunQuarkusConvertTest(t *testing.T, cfgTestInputCreateConvert CfgTestInputC
 	projectName := GetCreateProjectName(t, cfgTestInputCreateConvert)
 	projectDir := filepath.Join(TempTestsPath, projectName)
 
-	// Create the project
-	RunCreateTest(t, cfgTestInputCreateConvert)
-
 	err = os.Chdir(projectDir)
 	require.NoErrorf(t, err, "Expected nil error, got %v", err)
+	WriteMavenConfigFileWithTailDirs(projectDir)
+
+	// Create the project
+	RunCreateTest(t, cfgTestInputCreateConvert)
 
 	// Run `quarkus convert` command
 	_, err = ExecuteKnWorkflowQuarkus(transformQuarkusConvertCmdCfgToArgs(t, test.input)...)
