@@ -22,9 +22,9 @@ const { setupMavenConfigFile, setPomProperty, buildTailFromPackageJsonDependenci
 
 setupMavenConfigFile(
   `
+    -Drevision=${buildEnv.env.mavenBase.version}
     -Dmaven.repo.local.tail=${buildTailFromPackageJsonDependencies()}
-`,
-  { ignoreDefault: true }
+`
 );
 
 setPomProperty({
