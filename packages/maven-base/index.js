@@ -17,6 +17,7 @@
  * under the License.
  */
 
+const cp = require("child_process");
 const fs = require("fs");
 const path = require("path");
 
@@ -36,7 +37,7 @@ const DEFAULT_MAVEN_CONFIG = `
 `.trim();
 
 const DEFAULT_LOCAL_REPO = String(
-  fs.execSync(`mvn help:evaluate -Dexpression=settings.localRepository -q -DforceStdout -f ${EMPTY_POM_XML_PATH}`, {
+  cp.execSync(`mvn help:evaluate -Dexpression=settings.localRepository -q -DforceStdout -f ${EMPTY_POM_XML_PATH}`, {
     stdio: "pipe",
     encoding: "utf-8",
   })
@@ -66,7 +67,7 @@ module.exports = {
   installMvnw: () => {
     console.info(`[maven-base] Installing mvnw...`);
     console.time(`[maven-base] Installing mvnw...`);
-    fs.execSync(`mvn -e org.apache.maven.plugins:maven-wrapper-plugin:${MVNW_VERSION}:wrapper ${BOOTSTRAP_CLI_ARGS}`, {
+    cp.execSync(`mvn -e org.apache.maven.plugins:maven-wrapper-plugin:${MVNW_VERSION}:wrapper ${BOOTSTRAP_CLI_ARGS}`, {
       stdio: "inherit",
     });
     console.timeEnd(`[maven-base] Installing mvnw...`);
@@ -97,7 +98,7 @@ module.exports = {
     fs.mkdirSync(resolvedTmpM2Dir, { recursive: true });
 
     // head
-    fs.execSync(`cp -nal ${DEFAULT_LOCAL_REPO}/* ${resolvedTmpM2Dir}`, { stdio: "inherit" });
+    cp.execSync(`cp -nal ${DEFAULT_LOCAL_REPO}/* ${resolvedTmpM2Dir}`, { stdio: "inherit" });
 
     const cwd = path.resolve(".", relativePackagePath);
     const packageName = require(path.resolve(cwd, "package.json")).name;
@@ -106,7 +107,7 @@ module.exports = {
     // tail
     for (const t of tail) {
       if (fs.existsSync(path.resolve(t))) {
-        fs.execSync(`cp -al ${path.resolve(t)}/* ${resolvedTmpM2Dir}`, { stdio: "inherit" });
+        cp.execSync(`cp -al ${path.resolve(t)}/* ${resolvedTmpM2Dir}`, { stdio: "inherit" });
       }
     }
   },
@@ -128,9 +129,9 @@ module.exports = {
     const cmd = `mvn versions:set-property -Dproperty=${key} -DnewVersion=${value} -DgenerateBackupPoms=false ${BOOTSTRAP_CLI_ARGS}`;
 
     if (process.platform === "win32") {
-      fs.execSync(cmd.replaceAll(" -", " `-"), { stdio: "inherit", shell: "powershell.exe" });
+      cp.execSync(cmd.replaceAll(" -", " `-"), { stdio: "inherit", shell: "powershell.exe" });
     } else {
-      fs.execSync(cmd, { stdio: "inherit" });
+      cp.execSync(cmd, { stdio: "inherit" });
     }
 
     console.timeEnd(`[maven-base] Setting property '${key}' with value '${value}'...`);
