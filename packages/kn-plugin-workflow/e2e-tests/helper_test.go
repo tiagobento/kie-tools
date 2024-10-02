@@ -25,6 +25,8 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"io/fs"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -175,28 +177,55 @@ func CleanUpAndChdirTemp(t *testing.T) {
 
 func WriteMavenConfigFileWithTailDirs(projectDir string) {
 	dirPath := filepath.Join(projectDir, ".mvn")
-    if _, err := os.Stat(dirPath); os.IsNotExist(err) {
-        err := os.Mkdir(dirPath, 0755) // Permissions: owner=rwx, group=rx, others=rx
-        if err != nil {
+	if _, err := os.Stat(dirPath); os.IsNotExist(err) {
+		err := os.Mkdir(dirPath, 0755) // Permissions: owner=rwx, group=rx, others=rx
+		if err != nil {
 			fmt.Printf("Error creating .mvn directory. %v", err)
 			os.Exit(1)
-        }
-    }
+		}
+	}
 
-	jbpmQuarkusDevUiM2, err := filepath.Abs("../../../node_modules/@kie-tools/sonataflow-quarkus-devui/dist/1st-party-m2/repository")
+	sonataflowQuarkusDevUiM2, err := filepath.Abs("../../../node_modules/@kie-tools/sonataflow-quarkus-devui/dist/1st-party-m2/repository")
 	if err != nil {
 		fmt.Printf("Failed to resolve absolute path for `@kie-tools/sonataflow-quarkus-devui` package. %v", err)
 		os.Exit(1)
-    }
+	}
 	mavenBaseM2, err := filepath.Abs("../../../node_modules/@kie-tools/maven-base/dist/1st-party-m2/repository")
-    if err != nil {
+	if err != nil {
 		fmt.Printf("Failed to resolve absolute path for `@kie-tools/maven-base` package. %v", err)
 		os.Exit(1)
-    }
-    err = os.WriteFile(filepath.Join(projectDir, ".mvn", "maven.config"), []byte("-Dmaven.repo.local.tail="+ mavenBaseM2 + "," + jbpmQuarkusDevUiM2 + "\n"), 0644)
+	}
+
+	tail := mavenBaseM2 + "," + sonataflowQuarkusDevUiM2 + "\n"
+	fmt.Printf("Tail:" + tail)
+
+	ListDirRecursively(mavenBaseM2)
+	ListDirRecursively(sonataflowQuarkusDevUiM2)
+
+	err = os.WriteFile(filepath.Join(projectDir, ".mvn", "maven.config"), []byte("-Dmaven.repo.local.tail="+tail), 0644)
 	if err != nil {
 		fmt.Printf("Failed to create .mvn/maven.config file: %v", err)
 		os.Exit(1)
+	}
+}
+
+func ListDirRecursively(absolutePath string) {
+	if _, err := os.Stat(absolutePath); os.IsNotExist(err) {
+		fmt.Println("Dir doesn't exist. " + absolutePath)
+		return
+	}
+
+	// Walk through the directory and list files and directories
+	err := filepath.WalkDir(absolutePath, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		fmt.Println(path)
+		return nil
+	})
+
+	if err != nil {
+		log.Fatal(err)
 	}
 }
 

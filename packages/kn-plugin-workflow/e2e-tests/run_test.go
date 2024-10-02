@@ -86,6 +86,7 @@ func RunRunTest(t *testing.T, cfgTestInputPrepareCreate CfgTestInputCreate, test
 
 	projectName := GetCreateProjectName(t, cfgTestInputPrepareCreateRun)
 	projectDir := filepath.Join(TempTestsPath, projectName)
+
 	err = os.Chdir(projectDir)
 	require.NoErrorf(t, err, "Expected nil error, got %v", err)
 	WriteMavenConfigFileWithTailDirs(projectDir)
