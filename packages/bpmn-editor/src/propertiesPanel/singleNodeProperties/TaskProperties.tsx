@@ -85,7 +85,7 @@ export function TaskProperties({ task }: { task: Normalized<BPMN20__tTask> & { _
           }}
           placeholder={"Enter documentation..."}
           style={{ resize: "vertical", minHeight: "40px" }}
-          rows={6}
+          rows={3}
         />
       </FormGroup>
 

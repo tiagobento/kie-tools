@@ -44,12 +44,14 @@ import {
 } from "@kie-tools/bpmn-marshaller/dist/drools-extension-metaData";
 import { BPMN20__tProcess } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
 import { Normalized } from "../normalization/normalize";
+import { Metadata } from "./metadata/Metadata";
+import { ProcessVariables } from "./processVariables/ProcessVariables";
 
 export function GlobalProperties() {
   const thisBpmn = useBpmnEditorStore((s) => s.bpmn);
 
-  const process: Normalized<BPMN20__tProcess> = useBpmnEditorStore(
-    (s) => s.bpmn.model.definitions.rootElement?.find((s) => s.__$$element === "process") ?? { "@_id": generateUuid() }
+  const process: undefined | Normalized<BPMN20__tProcess> = useBpmnEditorStore((s) =>
+    s.bpmn.model.definitions.rootElement?.find((s) => s.__$$element === "process")
   );
 
   const settings = useBpmnEditorStore((s) => s.settings);
@@ -117,7 +119,7 @@ export function GlobalProperties() {
                     type={"text"}
                     isDisabled={settings.isReadOnly}
                     style={{ resize: "vertical", minHeight: "40px" }}
-                    rows={6}
+                    rows={3}
                     placeholder={"Enter documentation..."}
                     value={""} // FIXME: Tiago
                     onChange={(newDocumentation) =>
@@ -130,15 +132,15 @@ export function GlobalProperties() {
 
                 <FormGroup
                   label="Type"
-                  helperText={
-                    "Consectetur adipiscing elit. Lorem ipsum dolor sit amet, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
-                  } // FIXME: Tiago -> Description
+                  // helperText={
+                  //   "Consectetur adipiscing elit. Lorem ipsum dolor sit amet, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+                  // } // FIXME: Tiago -> Description
                 >
                   <ToggleGroup isCompact aria-label="Process type">
                     <ToggleGroupItem
                       text="Private"
                       isDisabled={settings.isReadOnly}
-                      isSelected={process["@_processType"] === "Private"}
+                      isSelected={process?.["@_processType"] === "Private"}
                       onChange={() => {
                         bpmnEditorStoreApi.setState((s) => {
                           const { process } = addOrGetProcessAndDiagramElements({
@@ -151,7 +153,7 @@ export function GlobalProperties() {
                     <ToggleGroupItem
                       text="Public"
                       isDisabled={settings.isReadOnly}
-                      isSelected={process["@_processType"] === "Public"}
+                      isSelected={process?.["@_processType"] === "Public"}
                       onChange={() => {
                         bpmnEditorStoreApi.setState((s) => {
                           const { process } = addOrGetProcessAndDiagramElements({
@@ -166,14 +168,14 @@ export function GlobalProperties() {
 
                 <FormGroup
                   fieldId="kie-bpmn-editor--global-properties-panel--executable"
-                  helperText={"Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."} // FIXME: Tiago -> Description
+                  // helperText={"Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."} // FIXME: Tiago -> Description
                 >
                   <Checkbox
                     label="Executable"
                     id="kie-bpmn-editor--global-properties-panel--executable"
                     name="is-executable"
                     aria-label="Executable"
-                    isChecked={process["@_isExecutable"] ?? true}
+                    isChecked={process?.["@_isExecutable"] ?? true}
                     onChange={(checked) => {
                       bpmnEditorStoreApi.setState((s) => {
                         const { process } = addOrGetProcessAndDiagramElements({
@@ -187,15 +189,15 @@ export function GlobalProperties() {
 
                 <FormGroup
                   label="Package name"
-                  helperText={"Dot-separated, like Java packages."} // FIXME: Tiago -> Description
+                  // helperText={"Dot-separated, like Java packages."} // FIXME: Tiago -> Description
                 >
                   <TextInput
                     aria-label={"Package name"}
                     type={"text"}
                     isDisabled={settings.isReadOnly}
-                    rows={6}
+                    rows={3}
                     placeholder={"Enter a package name..."}
-                    value={process["@_drools:packageName"]}
+                    value={process?.["@_drools:packageName"]}
                     onChange={(newPackageName) =>
                       bpmnEditorStoreApi.setState((s) => {
                         const { process } = addOrGetProcessAndDiagramElements({
@@ -209,14 +211,14 @@ export function GlobalProperties() {
 
                 <FormGroup
                   label="Version"
-                  helperText={"E.g., 0.0.1"} // FIXME: Tiago -> Description
+                  // helperText={"E.g., 0.0.1"} // FIXME: Tiago -> Description
                 >
                   <TextInput
                     aria-label={"Version"}
                     type={"text"}
                     isDisabled={settings.isReadOnly}
                     placeholder={"Enter a version..."}
-                    value={process["@_drools:version"]}
+                    value={process?.["@_drools:version"]}
                     onChange={(newVersion) =>
                       bpmnEditorStoreApi.setState((s) => {
                         const { process } = addOrGetProcessAndDiagramElements({
@@ -230,7 +232,7 @@ export function GlobalProperties() {
 
                 <FormGroup
                   fieldId="kie-bpmn-editor--global-properties-panel--adhoc"
-                  helperText={"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod."} // FIXME: Tiago -> Description
+                  // helperText={"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod."} // FIXME: Tiago -> Description
                 >
                   <Checkbox
                     label="Ad-hoc"
@@ -251,7 +253,7 @@ export function GlobalProperties() {
 
                 <FormGroup
                   label="SLA Due Date"
-                  helperText={"E.g.,: 2024-09-19 19:22:42"} // FIXME: Tiago -> Description
+                  // helperText={"E.g.,: 2024-09-19 19:22:42"} // FIXME: Tiago -> Description
                 >
                   <TextInput
                     aria-label={"SLA Due Date"}
@@ -281,15 +283,15 @@ export function GlobalProperties() {
                     type={"text"}
                     isDisabled={settings.isReadOnly}
                     style={{ resize: "vertical", minHeight: "40px" }}
-                    rows={6}
+                    rows={3}
                     placeholder={"Enter a description..."}
-                    value={parseBpmn20Drools10MetaData(process!).get("customDescription")} // FIXME: Tiago
+                    value={parseBpmn20Drools10MetaData(process).get("customDescription")} // FIXME: Tiago
                     onChange={(newDescription) =>
                       bpmnEditorStoreApi.setState((s) => {
                         const { process } = addOrGetProcessAndDiagramElements({
                           definitions: s.bpmn.model.definitions,
                         });
-                        setBpmn20Drools10MetaData(process!, "customDescription", newDescription);
+                        setBpmn20Drools10MetaData(process, "customDescription", newDescription);
                       })
                     }
                   />
@@ -312,8 +314,8 @@ export function GlobalProperties() {
         >
           {isProcessVariablesSectionExpanded && (
             <>
-              <FormSection style={{ paddingLeft: "20px", marginTop: "20px" }}>
-                <></>
+              <FormSection style={{ paddingLeft: "20px", marginTop: "20px", gap: 0 }}>
+                <ProcessVariables p={process} />
               </FormSection>
             </>
           )}
@@ -413,8 +415,8 @@ export function GlobalProperties() {
         >
           {isMetadataSectionExpanded && (
             <>
-              <FormSection style={{ paddingLeft: "20px", marginTop: "20px" }}>
-                <></>
+              <FormSection style={{ paddingLeft: "20px", marginTop: "20px", gap: 0 }}>
+                <Metadata obj={process} />
               </FormSection>
             </>
           )}

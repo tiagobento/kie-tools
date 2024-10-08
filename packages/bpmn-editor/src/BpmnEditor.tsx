@@ -71,6 +71,7 @@ import { MultipleNodeProperties } from "./propertiesPanel/MultipleNodesPropertie
 import { SingleEdgeProperties } from "./propertiesPanel/SingleEdgeProperties";
 import { MultipleEdgesProperties } from "./propertiesPanel/MultipleEdgesProperties";
 import { MixedNodesAndEdgesProperties } from "./propertiesPanel/MixedNodesAndEdgesProperties";
+import { PropertiesPanel } from "./propertiesPanel/PropertiesPanel";
 
 const ON_MODEL_CHANGE_DEBOUNCE_TIME_IN_MS = 500;
 
@@ -261,32 +262,7 @@ export const BpmnEditorInternal = ({
     };
   }, [isDiagramEditingInProgress, onModelChange, bpmn.model]);
 
-  const selectedNodesById = useBpmnEditorStore((s) => s.computed(s).getDiagramData().selectedNodesById);
-  const selectedEdgesById = useBpmnEditorStore((s) => s.computed(s).getDiagramData().selectedEdgesById);
-
-  const propertiesPanel = useMemo(
-    () => (
-      <DrawerPanelContent
-        data-testid={"kie-tools--bpmn-editor--properties-panel-container"}
-        isResizable={true}
-        minSize={"300px"}
-        defaultSize={"500px"}
-        onKeyDown={(e) => e.stopPropagation()} // Prevent ReactFlow KeyboardShortcuts from triggering when editing stuff on Properties Panel
-      >
-        <DrawerPanelBody>
-          <>
-            {selectedEdgesById.size <= 0 && selectedNodesById.size <= 0 && <GlobalProperties />}
-            {selectedEdgesById.size <= 0 && selectedNodesById.size === 1 && <SingleNodeProperties />}
-            {selectedEdgesById.size <= 0 && selectedNodesById.size > 1 && <MultipleNodeProperties />}
-            {selectedEdgesById.size === 1 && selectedNodesById.size <= 0 && <SingleEdgeProperties />}
-            {selectedEdgesById.size > 1 && selectedNodesById.size <= 0 && <MultipleEdgesProperties />}
-            {selectedEdgesById.size >= 1 && selectedNodesById.size >= 1 && <MixedNodesAndEdgesProperties />}
-          </>
-        </DrawerPanelBody>
-      </DrawerPanelContent>
-    ),
-    [selectedEdgesById.size, selectedNodesById.size]
-  );
+  const propertiesPanel = useMemo(() => <PropertiesPanel />, []);
 
   return (
     <div ref={bpmnEditorRootElementRef} className={"kie-bpmn-editor--root"}>
