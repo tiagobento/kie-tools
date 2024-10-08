@@ -23,6 +23,7 @@ import * as React from "react";
 import { updateFlowElement } from "../../mutations/renameNode";
 import { Normalized } from "../../normalization/normalize";
 import { useBpmnEditorStoreApi } from "../../store/StoreContext";
+import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
 
 export function EndEventProperties({
   endEvent,
@@ -31,17 +32,9 @@ export function EndEventProperties({
 }) {
   const bpmnEditorStoreApi = useBpmnEditorStoreApi();
 
-  const onNameChanged = React.useCallback(
-    (newName: string) => {
-      bpmnEditorStoreApi.setState((s) => {
-        updateFlowElement({
-          definitions: s.bpmn.model.definitions,
-          newFlowElement: { "@_name": newName.trim() },
-          id: endEvent["@_id"],
-        });
-      });
-    },
-    [endEvent, bpmnEditorStoreApi]
+  return (
+    <FormSection>
+      <NameDocumentationAndId element={endEvent} />
+    </FormSection>
   );
-  return <FormSection>EndEventProperties</FormSection>;
 }

@@ -19,11 +19,7 @@
 
 import "@kie-tools/bpmn-marshaller/dist/drools-extension";
 import {
-  Bpmn20KnownMetaDataKey,
-  addBpmn20Drools10MetaData,
-  deleteBpmn20Drools10MetaDataEntry,
   parseBpmn20Drools10MetaData,
-  renameBpmn20Drools10MetaDataEntry,
   setBpmn20Drools10MetaData,
 } from "@kie-tools/bpmn-marshaller/dist/drools-extension-metaData";
 import { Button, ButtonVariant } from "@patternfly/react-core/dist/js/components/Button/Button";
@@ -35,12 +31,12 @@ import { useMemo, useState } from "react";
 import { addOrGetProcessAndDiagramElements } from "../../mutations/addOrGetProcessAndDiagramElements";
 import { useBpmnEditorStore, useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { PropertiesPanelListEmptyState } from "../emptyState/PropertiesPanelListEmptyState";
-import "./ProcessVariables.css";
 import { Normalized } from "../../normalization/normalize";
 import { BPMN20__tProcess } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
 import { generateUuid } from "@kie-tools/xyflow-react-kie-diagram/dist/uuid/uuid";
+import "./Variables.css";
 
-export function ProcessVariables({ p }: { p: undefined | Normalized<BPMN20__tProcess> }) {
+export function Variables({ p }: { p: undefined | Normalized<BPMN20__tProcess> }) {
   const bpmnEditorStoreApi = useBpmnEditorStoreApi();
 
   const isReadOnly = useBpmnEditorStore((s) => s.settings.isReadOnly);
@@ -49,6 +45,7 @@ export function ProcessVariables({ p }: { p: undefined | Normalized<BPMN20__tPro
     () => (
       <Button
         variant={ButtonVariant.plain}
+        style={{ paddingLeft: 0 }}
         onClick={() => {
           bpmnEditorStoreApi.setState((s) => {
             const { process } = addOrGetProcessAndDiagramElements({ definitions: s.bpmn.model.definitions });
@@ -68,11 +65,9 @@ export function ProcessVariables({ p }: { p: undefined | Normalized<BPMN20__tPro
   );
 
   const entryColumnStyle = {
-    border: 0,
     padding: "4px",
     margin: "8px",
-    width: "100%",
-    borderRight: "1px solid gray",
+    width: "calc(100% - 2 * 4px - 2 * 8px)",
   };
 
   const [hoveredIndex, setHoveredIndex] = useState<number | undefined>(undefined);
@@ -82,38 +77,38 @@ export function ProcessVariables({ p }: { p: undefined | Normalized<BPMN20__tPro
       {((p?.property?.length ?? 0) > 0 && (
         <>
           <div style={{ padding: "0 8px" }}>
-            <Grid hasGutter md={6} style={{ alignItems: "center" }}>
+            <Grid md={6} style={{ alignItems: "center" }}>
               <GridItem span={4}>
-                <div style={{ ...entryColumnStyle, borderRight: "none" }}>
+                <div style={entryColumnStyle}>
                   <b>Name</b>
                 </div>
               </GridItem>
               <GridItem span={4}>
-                <div style={{ ...entryColumnStyle, borderRight: "none" }}>
+                <div style={entryColumnStyle}>
                   <b>Data type</b>
                 </div>
               </GridItem>
               <GridItem span={3}>
-                <div style={{ ...entryColumnStyle, borderRight: "none" }}>
+                <div style={entryColumnStyle}>
                   <b>Tags</b>
                 </div>
               </GridItem>
               <GridItem span={1}>
-                <div style={{ textAlign: "center" }}>{!isReadOnly && addButton}</div>
+                <div style={{ textAlign: "right" }}>{!isReadOnly && addButton}</div>
               </GridItem>
             </Grid>
           </div>
           {p?.property?.map((entry, i) => (
             <div key={i} style={{ padding: "0 8px" }}>
               <Grid
-                hasGutter
                 md={6}
-                className={"kie-bpmn-editor--properties-panel--process-variables-entry"}
+                className={"kie-bpmn-editor--properties-panel--variables-entry"}
                 onMouseEnter={() => setHoveredIndex(i)}
                 onMouseLeave={() => setHoveredIndex(undefined)}
               >
                 <GridItem span={4}>
                   <input
+                    autoFocus={true}
                     style={entryColumnStyle}
                     type="text"
                     placeholder="Name..."
@@ -152,7 +147,7 @@ export function ProcessVariables({ p }: { p: undefined | Normalized<BPMN20__tPro
                 </GridItem>
                 <GridItem span={3}>
                   <input
-                    style={{ ...entryColumnStyle, borderRight: "none" }}
+                    style={entryColumnStyle}
                     type="text"
                     placeholder="Tags..."
                     value={parseBpmn20Drools10MetaData(p.property?.[i]).get("customTags")}
@@ -171,10 +166,12 @@ export function ProcessVariables({ p }: { p: undefined | Normalized<BPMN20__tPro
                     }
                   />
                 </GridItem>
-                <GridItem span={1} style={{ textAlign: "center" }}>
+                <GridItem span={1} style={{ textAlign: "right" }}>
                   {hoveredIndex === i && (
                     <Button
+                      tabIndex={9999} // Prevent tab from going to this button
                       variant={ButtonVariant.plain}
+                      style={{ paddingLeft: 0 }}
                       onClick={() => {
                         bpmnEditorStoreApi.setState((s) => {
                           const { process } = addOrGetProcessAndDiagramElements({

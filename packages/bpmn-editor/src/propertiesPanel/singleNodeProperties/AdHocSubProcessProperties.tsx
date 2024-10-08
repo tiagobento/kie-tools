@@ -23,6 +23,7 @@ import * as React from "react";
 import { updateFlowElement } from "../../mutations/renameNode";
 import { Normalized } from "../../normalization/normalize";
 import { useBpmnEditorStoreApi } from "../../store/StoreContext";
+import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
 
 export function AdHocSubProcessProperties({
   adHocSubProcess,
@@ -31,18 +32,9 @@ export function AdHocSubProcessProperties({
 }) {
   const bpmnEditorStoreApi = useBpmnEditorStoreApi();
 
-  const onNameChanged = React.useCallback(
-    (newName: string) => {
-      bpmnEditorStoreApi.setState((s) => {
-        updateFlowElement({
-          definitions: s.bpmn.model.definitions,
-          newFlowElement: { "@_name": newName.trim() },
-          id: adHocSubProcess["@_id"],
-        });
-      });
-    },
-    [adHocSubProcess, bpmnEditorStoreApi]
+  return (
+    <FormSection>
+      <NameDocumentationAndId element={adHocSubProcess} />
+    </FormSection>
   );
-
-  return <FormSection>AdHocSubProcessProperties</FormSection>;
 }

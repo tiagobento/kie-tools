@@ -17,11 +17,33 @@
  * under the License.
  */
 
-.kie-bpmn-editor--properties-panel--process-variables-entry {
+.kie-bpmn-editor--correlations--modal {
+  height: 80%;
+  position: relative;
+}
+
+.kie-bpmn-editor--correlations--empty-state {
+  padding: 10px;
+  background: #eee;
+  border-radius: 10px;
+  text-align: center;
+  height: 100%;
+}
+
+.kie-bpmn-editor--properties-panel--correlation-entry {
   align-items: center;
   border-radius: 10px;
 }
 
-.kie-bpmn-editor--properties-panel--process-variables:hover {
+.kie-bpmn-editor--properties-panel--correlation-entry:hover,
+.kie-bpmn-editor--properties-panel--correlation-entry:focus-within {
   background: #eee;
+}
+
+.kie-bpmn-editor--properties-panel--correlation-entry div > input {
+  border: 0;
+}
+
+.kie-bpmn-editor--properties-panel--correlation-entry div:not(:nth-last-child(2)) > input {
+  border-right: 1px dotted black;
 }

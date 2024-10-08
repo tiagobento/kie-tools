@@ -46,6 +46,7 @@ export function Metadata({ obj }: { obj: undefined | { "@_id": string; extension
     () => (
       <Button
         variant={ButtonVariant.plain}
+        style={{ paddingLeft: 0 }}
         onClick={() => {
           bpmnEditorStoreApi.setState((s) => {
             const { process } = addOrGetProcessAndDiagramElements({ definitions: s.bpmn.model.definitions });
@@ -73,11 +74,9 @@ export function Metadata({ obj }: { obj: undefined | { "@_id": string; extension
   );
 
   const entryStyle = {
-    border: 0,
     padding: "4px",
     margin: "8px",
-    width: "100%",
-    borderRight: "1px solid gray",
+    width: "calc(100% - 2 * 4px - 2 * 8px)",
   };
 
   const [hoveredIndex, setHoveredIndex] = useState<number | undefined>(undefined);
@@ -87,26 +86,25 @@ export function Metadata({ obj }: { obj: undefined | { "@_id": string; extension
       {((obj?.extensionElements?.["drools:metaData"]?.length ?? 0) > 0 && (
         <>
           <div style={{ padding: "0 8px" }}>
-            <Grid hasGutter md={6} style={{ alignItems: "center" }}>
+            <Grid md={6} style={{ alignItems: "center" }}>
               <GridItem span={5}>
-                <div style={{ ...entryStyle, borderRight: "none" }}>
+                <div style={entryStyle}>
                   <b>Name</b>
                 </div>
               </GridItem>
-              <GridItem span={5}>
-                <div style={{ ...entryStyle, borderRight: "none" }}>
+              <GridItem span={6}>
+                <div style={entryStyle}>
                   <b>Value</b>
                 </div>
               </GridItem>
-              <GridItem span={2}>
-                <div style={{ textAlign: "center" }}>{!isReadOnly && addButton}</div>
+              <GridItem span={1}>
+                <div style={{ textAlign: "right" }}>{!isReadOnly && addButton}</div>
               </GridItem>
             </Grid>
           </div>
           {obj?.extensionElements?.["drools:metaData"]?.map((entry, i) => (
             <div key={i} style={{ padding: "0 8px" }}>
               <Grid
-                hasGutter
                 md={6}
                 className={"kie-bpmn-editor--properties-panel--metadata-entry"}
                 onMouseEnter={() => setHoveredIndex(i)}
@@ -114,6 +112,7 @@ export function Metadata({ obj }: { obj: undefined | { "@_id": string; extension
               >
                 <GridItem span={5}>
                   <input
+                    autoFocus={true}
                     style={entryStyle}
                     type="text"
                     placeholder="Name..."
@@ -141,9 +140,9 @@ export function Metadata({ obj }: { obj: undefined | { "@_id": string; extension
                     }
                   />
                 </GridItem>
-                <GridItem span={5}>
+                <GridItem span={6}>
                   <input
-                    style={{ ...entryStyle, borderRight: "none" }}
+                    style={entryStyle}
                     type="text"
                     placeholder="Value..."
                     value={entry["drools:metaValue"].__$$text}
@@ -170,10 +169,12 @@ export function Metadata({ obj }: { obj: undefined | { "@_id": string; extension
                     }
                   />
                 </GridItem>
-                <GridItem span={2} style={{ textAlign: "center" }}>
+                <GridItem span={1} style={{ textAlign: "right" }}>
                   {hoveredIndex === i && (
                     <Button
+                      tabIndex={9999} // Prevent tab from going to this button
                       variant={ButtonVariant.plain}
+                      style={{ paddingLeft: 0 }}
                       onClick={() => {
                         bpmnEditorStoreApi.setState((s) => {
                           const { process } = addOrGetProcessAndDiagramElements({
