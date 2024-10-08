@@ -73,7 +73,7 @@ export function Correlations({ isOpen, onClose }: { isOpen: boolean; onClose: ()
   const addButton = useMemo(
     () => (
       <Button variant={ButtonVariant.plain} style={{ paddingLeft: 0 }} onClick={addAtEnd}>
-        <PlusCircleIcon />
+        <PlusCircleIcon color="var(--pf-c-button--m-primary--BackgroundColor)" />
       </Button>
     ),
     [addAtEnd]
