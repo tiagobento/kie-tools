@@ -17,20 +17,20 @@
  * under the License.
  */
 
-.kie-bpmn-editor--properties-panel--metadata-entry {
+.kie-bpmn-editor--properties-panel--import-entry {
   align-items: center;
   border-radius: 10px;
 }
 
-.kie-bpmn-editor--properties-panel--metadata-entry:hover,
-.kie-bpmn-editor--properties-panel--metadata-entry:focus-within {
+.kie-bpmn-editor--properties-panel--import-entry:hover,
+.kie-bpmn-editor--properties-panel--import-entry:focus-within {
   background: #eee;
 }
 
-.kie-bpmn-editor--properties-panel--metadata-entry div > input {
+.kie-bpmn-editor--properties-panel--import-entry div > input {
   border: 0;
 }
 
-.kie-bpmn-editor--properties-panel--metadata-entry div:not(:nth-last-child(2)) > input {
+.kie-bpmn-editor--properties-panel--import-entry div:not(:nth-last-child(2)) > input {
   border-right: 1px dotted black;
 }
