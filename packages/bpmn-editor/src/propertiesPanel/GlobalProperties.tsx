@@ -62,6 +62,9 @@ export function GlobalProperties() {
   );
 
   const correlationCount = process?.correlationSubscription?.length ?? 0;
+  const importsCount = process?.extensionElements?.["drools:import"]?.length ?? 0;
+  const variablesCount = process?.property?.length ?? 0;
+  const metadataEntriesCount = process?.extensionElements?.["drools:metaData"]?.length ?? 0;
 
   const [isGlobalSectionExpanded, setGlobalSectionExpanded] = useState<boolean>(true);
   const [isImportsSectionExpanded, setImportsSectionExpanded] = useState<boolean>(false);
@@ -196,7 +199,7 @@ export function GlobalProperties() {
               isSectionExpanded={isImportsSectionExpanded}
               toogleSectionExpanded={() => setImportsSectionExpanded((prev) => !prev)}
               icon={<ImportIcon width={16} height={36} style={{ marginLeft: "12px" }} />}
-              title={"Imports"}
+              title={"Imports" + (importsCount > 0 ? ` (${importsCount})` : "")}
             />
           }
         >
@@ -216,7 +219,7 @@ export function GlobalProperties() {
               isSectionExpanded={isVariablesSectionExpanded}
               toogleSectionExpanded={() => setVariablesSectionExpanded((prev) => !prev)}
               icon={<DomainIcon width={16} height={36} style={{ marginLeft: "12px" }} />}
-              title={"Variables"}
+              title={"Variables" + (variablesCount > 0 ? ` (${variablesCount})` : "")}
             />
           }
         >
@@ -257,7 +260,7 @@ export function GlobalProperties() {
               isSectionExpanded={isMetadataSectionExpanded}
               toogleSectionExpanded={() => setMetadataSectionExpanded((prev) => !prev)}
               icon={<ColumnsIcon width={16} height={36} style={{ marginLeft: "12px" }} />}
-              title={"Metadata"}
+              title={"Metadata" + (metadataEntriesCount > 0 ? ` (${metadataEntriesCount})` : "")}
             />
           }
         >
