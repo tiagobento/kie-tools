@@ -73,7 +73,7 @@ export function TextAnnotationProperties({
           }}
           placeholder={"Enter text..."}
           style={{ resize: "vertical", minHeight: "40px" }}
-          rows={6}
+          rows={3}
         />
       </FormGroup>
 

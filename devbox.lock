@@ -151,9 +151,15 @@
       }
     },
     "python@3.12.2": {
+<<<<<<< HEAD
       "last_modified": "2024-04-02T02:53:36Z",
       "plugin_version": "0.0.4",
       "resolved": "github:NixOS/nixpkgs/080a4a27f206d07724b88da096e27ef63401a504#python312",
+=======
+      "last_modified": "2024-03-22T11:26:23Z",
+      "plugin_version": "0.0.4",
+      "resolved": "github:NixOS/nixpkgs/a3ed7406349a9335cb4c2a71369b697cecd9d351#python312",
+>>>>>>> ed5ebc2309e (Metadata and Process Variables)
       "source": "devbox-search",
       "version": "3.12.2",
       "systems": {
