@@ -210,6 +210,8 @@ export function getNodeLabelSvgTextAlignmentProps(
         width: clWidth,
       } as const;
 
+    case "center-left-vertical":
+
     case "top-left":
       const tlTx = n.position.x! + SVG_NODE_LABEL_TEXT_PADDING_ALL + SVG_NODE_LABEL_TEXT_ADDITIONAL_PADDING_TOP_LEFT;
       const tlTy = n.position.y! + SVG_NODE_LABEL_TEXT_PADDING_ALL + SVG_NODE_LABEL_TEXT_ADDITIONAL_PADDING_TOP_LEFT;
@@ -220,17 +222,6 @@ export function getNodeLabelSvgTextAlignmentProps(
         textAnchor: "start",
         transform: `translate(${tlTx},${tlTy})`,
         width: tlWidth,
-      } as const;
-
-    case "bottom-left-vertical":
-      const clvTx = n.position.x! + SVG_NODE_LABEL_TEXT_PADDING_ALL;
-      const clvTy = n.position.y! / 2;
-      const clvWidth = n.height!;
-      return {
-        verticalAnchor: "start",
-        textAnchor: "middle",
-        transform: `translate(${clvTx},${clvTy})`,
-        width: clvWidth,
       } as const;
 
     default:

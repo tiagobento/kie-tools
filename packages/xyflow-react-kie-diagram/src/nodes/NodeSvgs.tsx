@@ -26,7 +26,7 @@ export type NodeLabelPosition =
   | "top-center"
   | "center-left"
   | "top-left"
-  | "bottom-left-vertical";
+  | "center-left-vertical";
 
 export type NodeSvgProps = RF.Dimensions &
   RF.XYPosition & {
