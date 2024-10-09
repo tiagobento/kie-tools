@@ -22,7 +22,7 @@ import { Button, ButtonVariant } from "@patternfly/react-core/dist/js/components
 import { Form, FormSection } from "@patternfly/react-core/dist/js/components/Form";
 import { TimesIcon } from "@patternfly/react-icons/dist/js/icons/times-icon";
 import * as React from "react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import * as RF from "reactflow";
 import { BpmnDiagramEdgeData } from "../diagram/BpmnDiagramDomain";
 import { AssociationPath, SequenceFlowPath } from "../diagram/edges/EdgeSvgs";
@@ -31,6 +31,8 @@ import { useBpmnEditorStore, useBpmnEditorStoreApi } from "../store/StoreContext
 import { assertUnreachable } from "../ts-ext/assertUnreachable";
 import { AssociationProperties } from "./singleEdgeProperties/AssociationProperties";
 import { SequenceFlowProperties } from "./singleEdgeProperties/SequenceFlowProperties";
+import ColumnsIcon from "@patternfly/react-icons/dist/js/icons/columns-icon";
+import { Metadata } from "./metadata/Metadata";
 
 const handleButtonSize = 34; // That's the size of the button. This is a "magic number", as it was obtained from the rendered page.
 const svgViewboxPadding = Math.sqrt(Math.pow(handleButtonSize, 2) / 2) - handleButtonSize / 2; // This lets us create a square that will perfectly fit inside the button circle.
@@ -99,34 +101,59 @@ export function SingleEdgeProperties() {
     }
   }, [selectedEdge?.data?.bpmnElement]);
 
+  const [isMetadataSectionExpanded, setMetadataSectionExpanded] = useState<boolean>(false);
+
   return (
     <>
       <Form>
-        <FormSection>
-          <SectionHeader
-            fixed={true}
-            icon={icon}
-            expands={true}
-            isSectionExpanded={isSectionExpanded}
-            toogleSectionExpanded={() => setSectionExpanded((prev) => !prev)}
-            title={title}
-            action={
-              <Button
-                title={"Close"}
-                variant={ButtonVariant.plain}
-                onClick={() => {
-                  bpmnEditorStoreApi.setState((state) => {
-                    state.propertiesPanel.isOpen = false;
-                  });
-                }}
-              >
-                <TimesIcon />
-              </Button>
-            }
-          />
+        <FormSection
+          title={
+            <SectionHeader
+              icon={icon}
+              fixed={true}
+              expands={true}
+              isSectionExpanded={isSectionExpanded}
+              toogleSectionExpanded={() => setSectionExpanded((prev) => !prev)}
+              title={title}
+              action={
+                <Button
+                  title={"Close"}
+                  variant={ButtonVariant.plain}
+                  onClick={() => {
+                    bpmnEditorStoreApi.setState((state) => {
+                      state.propertiesPanel.isOpen = false;
+                    });
+                  }}
+                >
+                  <TimesIcon />
+                </Button>
+              }
+            />
+          }
+        >
+          {isSectionExpanded && properties}
         </FormSection>
-        {properties}
       </Form>
+
+      <FormSection
+        title={
+          <SectionHeader
+            expands={true}
+            isSectionExpanded={isMetadataSectionExpanded}
+            toogleSectionExpanded={() => setMetadataSectionExpanded((prev) => !prev)}
+            icon={<ColumnsIcon width={16} height={36} style={{ marginLeft: "12px" }} />}
+            title={"Metadata"}
+          />
+        }
+      >
+        {isMetadataSectionExpanded && (
+          <>
+            <FormSection style={{ paddingLeft: "20px", marginTop: "20px", gap: 0 }}>
+              <Metadata obj={selectedEdge?.data?.bpmnEdge} />
+            </FormSection>
+          </>
+        )}
+      </FormSection>
     </>
   );
 }

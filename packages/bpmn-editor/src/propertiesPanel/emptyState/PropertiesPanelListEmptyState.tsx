@@ -17,24 +17,14 @@
  * under the License.
  */
 
-import { BPMN20__tExclusiveGateway } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
-import { FormSection } from "@patternfly/react-core/dist/js/components/Form";
 import * as React from "react";
-import { updateFlowElement } from "../../mutations/renameNode";
-import { Normalized } from "../../normalization/normalize";
-import { useBpmnEditorStoreApi } from "../../store/StoreContext";
-import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
+import { useBpmnEditorStore } from "../../store/StoreContext";
+import "./PropertiesPanelListEmptyState.css";
 
-export function ExclusiveGatewayProperties({
-  exclusiveGateway,
-}: {
-  exclusiveGateway: Normalized<BPMN20__tExclusiveGateway> & { __$$element: "exclusiveGateway" };
-}) {
-  const bpmnEditorStoreApi = useBpmnEditorStoreApi();
+export function PropertiesPanelListEmptyState() {
+  const isReadOnly = useBpmnEditorStore((s) => s.settings.isReadOnly);
 
   return (
-    <FormSection>
-      <NameDocumentationAndId element={exclusiveGateway} />
-    </FormSection>
+    <div className={"kie-bpmn-editor--properties-panel-list--empty-state"}>{isReadOnly ? "None" : "None yet"}</div>
   );
 }

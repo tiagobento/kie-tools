@@ -57,6 +57,7 @@ import { useIsHovered } from "@kie-tools/xyflow-react-kie-diagram/dist/reactExt/
 import * as React from "react";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import * as RF from "reactflow";
+import { updateFlowElement, updateLane, updateTextAnnotation } from "../../mutations/renameNode";
 import { Normalized } from "../../normalization/normalize";
 import { useBpmnEditorStore, useBpmnEditorStoreApi } from "../../store/StoreContext";
 import {
@@ -86,7 +87,6 @@ import {
   TextAnnotationNodeSvg,
   UnknownNodeSvg,
 } from "./NodeSvgs";
-import { renameFlowElement, renameLane, updateTextAnnotation } from "../../mutations/renameNode";
 
 export const StartEventNode = React.memo(
   ({
@@ -120,7 +120,11 @@ export const StartEventNode = React.memo(
     const setName = useCallback<OnEditableNodeLabelChange>(
       (newName: string) => {
         bpmnEditorStoreApi.setState((state) => {
-          renameFlowElement({ definitions: state.bpmn.model.definitions, newName, id });
+          updateFlowElement({
+            definitions: state.bpmn.model.definitions,
+            newFlowElement: { "@_name": newName.trim() },
+            id,
+          });
         });
       },
       [bpmnEditorStoreApi, id]
@@ -227,7 +231,11 @@ export const IntermediateCatchEventNode = React.memo(
     const setName = useCallback<OnEditableNodeLabelChange>(
       (newName: string) => {
         bpmnEditorStoreApi.setState((state) => {
-          renameFlowElement({ definitions: state.bpmn.model.definitions, newName, id });
+          updateFlowElement({
+            definitions: state.bpmn.model.definitions,
+            newFlowElement: { "@_name": newName.trim() },
+            id,
+          });
         });
       },
       [bpmnEditorStoreApi, id]
@@ -334,7 +342,11 @@ export const IntermediateThrowEventNode = React.memo(
     const setName = useCallback<OnEditableNodeLabelChange>(
       (newName: string) => {
         bpmnEditorStoreApi.setState((state) => {
-          renameFlowElement({ definitions: state.bpmn.model.definitions, newName, id });
+          updateFlowElement({
+            definitions: state.bpmn.model.definitions,
+            newFlowElement: { "@_name": newName.trim() },
+            id,
+          });
         });
       },
       [bpmnEditorStoreApi, id]
@@ -439,7 +451,11 @@ export const EndEventNode = React.memo(
     const setName = useCallback<OnEditableNodeLabelChange>(
       (newName: string) => {
         bpmnEditorStoreApi.setState((state) => {
-          renameFlowElement({ definitions: state.bpmn.model.definitions, newName, id });
+          updateFlowElement({
+            definitions: state.bpmn.model.definitions,
+            newFlowElement: { "@_name": newName.trim() },
+            id,
+          });
         });
       },
       [bpmnEditorStoreApi, id]
@@ -552,7 +568,11 @@ export const TaskNode = React.memo(
     const setName = useCallback<OnEditableNodeLabelChange>(
       (newName: string) => {
         bpmnEditorStoreApi.setState((state) => {
-          renameFlowElement({ definitions: state.bpmn.model.definitions, newName, id });
+          updateFlowElement({
+            definitions: state.bpmn.model.definitions,
+            newFlowElement: { "@_name": newName.trim() },
+            id,
+          });
         });
       },
       [bpmnEditorStoreApi, id]
@@ -677,7 +697,11 @@ export const SubProcessNode = React.memo(
     const setName = useCallback<OnEditableNodeLabelChange>(
       (newName: string) => {
         bpmnEditorStoreApi.setState((state) => {
-          renameFlowElement({ definitions: state.bpmn.model.definitions, newName, id });
+          updateFlowElement({
+            definitions: state.bpmn.model.definitions,
+            newFlowElement: { "@_name": newName.trim() },
+            id,
+          });
         });
       },
       [bpmnEditorStoreApi, id]
@@ -817,7 +841,11 @@ export const GatewayNode = React.memo(
     const setName = useCallback<OnEditableNodeLabelChange>(
       (newName: string) => {
         bpmnEditorStoreApi.setState((state) => {
-          renameFlowElement({ definitions: state.bpmn.model.definitions, newName, id });
+          updateFlowElement({
+            definitions: state.bpmn.model.definitions,
+            newFlowElement: { "@_name": newName.trim() },
+            id,
+          });
         });
       },
       [bpmnEditorStoreApi, id]
@@ -917,7 +945,11 @@ export const DataObjectNode = React.memo(
     const setName = useCallback<OnEditableNodeLabelChange>(
       (newName: string) => {
         bpmnEditorStoreApi.setState((state) => {
-          renameFlowElement({ definitions: state.bpmn.model.definitions, newName, id });
+          updateFlowElement({
+            definitions: state.bpmn.model.definitions,
+            newFlowElement: { "@_name": newName.trim() },
+            id,
+          });
         });
       },
       [bpmnEditorStoreApi, id]
@@ -1135,7 +1167,7 @@ export const LaneNode = React.memo(
     const setName = useCallback<OnEditableNodeLabelChange>(
       (newName: string) => {
         bpmnEditorStoreApi.setState((state) => {
-          renameLane({ definitions: state.bpmn.model.definitions, newName, id });
+          updateLane({ definitions: state.bpmn.model.definitions, newLane: { "@_name": newName.trim() }, id });
         });
       },
       [bpmnEditorStoreApi, id]
@@ -1243,7 +1275,11 @@ export const TextAnnotationNode = React.memo(
     const setText = useCallback(
       (newText: string) => {
         bpmnEditorStoreApi.setState((state) => {
-          updateTextAnnotation({ definitions: state.bpmn.model.definitions, newText, id });
+          updateTextAnnotation({
+            definitions: state.bpmn.model.definitions,
+            id,
+            newTextAnnotation: { text: { __$$text: newText } },
+          });
         });
       },
       [bpmnEditorStoreApi, id]

@@ -20,9 +20,10 @@
 import { BPMN20__tComplexGateway } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
 import { FormSection } from "@patternfly/react-core/dist/js/components/Form";
 import * as React from "react";
-import { renameFlowElement } from "../../mutations/renameNode";
+import { updateFlowElement } from "../../mutations/renameNode";
 import { Normalized } from "../../normalization/normalize";
 import { useBpmnEditorStoreApi } from "../../store/StoreContext";
+import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
 
 export function ComplexGatewayProperties({
   complexGateway,
@@ -31,14 +32,9 @@ export function ComplexGatewayProperties({
 }) {
   const bpmnEditorStoreApi = useBpmnEditorStoreApi();
 
-  const onNameChanged = React.useCallback(
-    (newName: string) => {
-      bpmnEditorStoreApi.setState((s) => {
-        renameFlowElement({ definitions: s.bpmn.model.definitions, newName, id: complexGateway["@_id"] });
-      });
-    },
-    [complexGateway, bpmnEditorStoreApi]
+  return (
+    <FormSection>
+      <NameDocumentationAndId element={complexGateway} />
+    </FormSection>
   );
-
-  return <FormSection>ComplexGatewayProperties</FormSection>;
 }

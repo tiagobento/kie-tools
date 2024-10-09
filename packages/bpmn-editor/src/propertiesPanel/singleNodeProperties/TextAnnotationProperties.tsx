@@ -18,11 +18,14 @@
  */
 
 import { BPMN20__tTextAnnotation } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
-import { FormSection } from "@patternfly/react-core/dist/js/components/Form";
+import { FormGroup, FormSection } from "@patternfly/react-core/dist/js/components/Form";
 import * as React from "react";
 import { updateTextAnnotation } from "../../mutations/renameNode";
 import { Normalized } from "../../normalization/normalize";
-import { useBpmnEditorStoreApi } from "../../store/StoreContext";
+import { useBpmnEditorStore, useBpmnEditorStoreApi } from "../../store/StoreContext";
+import { TextInput } from "@patternfly/react-core/dist/js/components/TextInput";
+import { TextArea } from "@patternfly/react-core/dist/js/components/TextArea";
+import { ClipboardCopy } from "@patternfly/react-core/dist/js/components/ClipboardCopy";
 
 export function TextAnnotationProperties({
   textAnnotation,
@@ -30,15 +33,68 @@ export function TextAnnotationProperties({
   textAnnotation: Normalized<BPMN20__tTextAnnotation> & { __$$element: "textAnnotation" };
 }) {
   const bpmnEditorStoreApi = useBpmnEditorStoreApi();
+  const settings = useBpmnEditorStore((s) => s.settings);
 
-  const onTextChanged = React.useCallback(
-    (newText: string) => {
-      bpmnEditorStoreApi.setState((s) => {
-        updateTextAnnotation({ definitions: s.bpmn.model.definitions, newText, id: textAnnotation["@_id"]! });
-      });
-    },
-    [textAnnotation, bpmnEditorStoreApi]
+  return (
+    <FormSection>
+      <FormGroup label="Format">
+        <TextInput
+          aria-label={"Format"}
+          type={"text"}
+          isDisabled={settings.isReadOnly}
+          value={textAnnotation["@_textFormat"]}
+          placeholder={"Enter a text format..."}
+          onChange={(newTextFormat) => {
+            bpmnEditorStoreApi.setState((s) => {
+              updateTextAnnotation({
+                definitions: s.bpmn.model.definitions,
+                newTextAnnotation: { "@_textFormat": newTextFormat },
+                id: textAnnotation["@_id"]!,
+              });
+            });
+          }}
+        />
+      </FormGroup>
+
+      <FormGroup label="Text">
+        <TextArea
+          aria-label={"Text"}
+          type={"text"}
+          isDisabled={settings.isReadOnly}
+          value={textAnnotation.text?.__$$text}
+          onChange={(newText) => {
+            bpmnEditorStoreApi.setState((s) => {
+              updateTextAnnotation({
+                definitions: s.bpmn.model.definitions,
+                newTextAnnotation: { text: { __$$text: newText } },
+                id: textAnnotation["@_id"]!,
+              });
+            });
+          }}
+          placeholder={"Enter text..."}
+          style={{ resize: "vertical", minHeight: "40px" }}
+          rows={3}
+        />
+      </FormGroup>
+
+      <FormGroup label="ID">
+        <ClipboardCopy
+          isReadOnly={settings.isReadOnly}
+          hoverTip="Copy"
+          clickTip="Copied"
+          onChange={(newId: string) => {
+            bpmnEditorStoreApi.setState((s) => {
+              updateTextAnnotation({
+                definitions: s.bpmn.model.definitions,
+                newTextAnnotation: { "@_id": newId },
+                id: textAnnotation["@_id"]!,
+              });
+            });
+          }}
+        >
+          {textAnnotation["@_id"]}
+        </ClipboardCopy>
+      </FormGroup>
+    </FormSection>
   );
-
-  return <FormSection>TextAnnotationProperties</FormSection>;
 }

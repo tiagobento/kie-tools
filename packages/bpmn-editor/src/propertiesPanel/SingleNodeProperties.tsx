@@ -66,6 +66,8 @@ import { TaskProperties } from "./singleNodeProperties/TaskProperties";
 import { TextAnnotationProperties } from "./singleNodeProperties/TextAnnotationProperties";
 import { TransactionProperties } from "./singleNodeProperties/TransactionProperties";
 import { UserTaskProperties } from "./singleNodeProperties/UserTaskProperties";
+import ColumnsIcon from "@patternfly/react-icons/dist/js/icons/columns-icon";
+import { Metadata } from "./metadata/Metadata";
 
 export function SingleNodeProperties() {
   const [isSectionExpanded, setSectionExpanded] = React.useState<boolean>(true);
@@ -238,17 +240,17 @@ export function SingleNodeProperties() {
       // Unsupported
       //// events
       case "event":
-      case "implicitThrowEvent":
+      // case "implicitThrowEvent":
       //// data
-      case "dataObjectReference":
-      case "dataStoreReference":
+      // case "dataObjectReference":
+      // case "dataStoreReference":
       //// choreography
-      case "manualTask":
-      case "sendTask":
-      case "receiveTask":
-      case "callChoreography":
-      case "choreographyTask":
-      case "subChoreography":
+      // case "manualTask":
+      // case "sendTask":
+      // case "receiveTask":
+      // case "callChoreography":
+      // case "choreographyTask":
+      // case "subChoreography":
       // undefined
       case undefined:
         return {
@@ -265,33 +267,58 @@ export function SingleNodeProperties() {
     }
   }, [selectedNode?.data.bpmnElement]);
 
+  const [isMetadataSectionExpanded, setMetadataSectionExpanded] = React.useState<boolean>(false);
+
   return (
     <>
       <Form>
-        <FormSection>
-          <SectionHeader
-            fixed={true}
-            icon={icon}
-            expands={true}
-            isSectionExpanded={isSectionExpanded}
-            toogleSectionExpanded={() => setSectionExpanded((prev) => !prev)}
-            title={title}
-            action={
-              <Button
-                title={"Close"}
-                variant={ButtonVariant.plain}
-                onClick={() => {
-                  bpmnEditorStoreApi.setState((state) => {
-                    state.propertiesPanel.isOpen = false;
-                  });
-                }}
-              >
-                <TimesIcon />
-              </Button>
-            }
-          />
+        <FormSection
+          title={
+            <SectionHeader
+              icon={icon}
+              fixed={true}
+              expands={true}
+              isSectionExpanded={isSectionExpanded}
+              toogleSectionExpanded={() => setSectionExpanded((prev) => !prev)}
+              title={title}
+              action={
+                <Button
+                  title={"Close"}
+                  variant={ButtonVariant.plain}
+                  onClick={() => {
+                    bpmnEditorStoreApi.setState((state) => {
+                      state.propertiesPanel.isOpen = false;
+                    });
+                  }}
+                >
+                  <TimesIcon />
+                </Button>
+              }
+            />
+          }
+        >
+          {isSectionExpanded && properties}
         </FormSection>
-        {properties}
+
+        <FormSection
+          title={
+            <SectionHeader
+              expands={true}
+              isSectionExpanded={isMetadataSectionExpanded}
+              toogleSectionExpanded={() => setMetadataSectionExpanded((prev) => !prev)}
+              icon={<ColumnsIcon width={16} height={36} style={{ marginLeft: "12px" }} />}
+              title={"Metadata"}
+            />
+          }
+        >
+          {isMetadataSectionExpanded && (
+            <>
+              <FormSection style={{ paddingLeft: "20px", marginTop: "20px", gap: 0 }}>
+                <Metadata obj={selectedNode?.data?.bpmnElement} />
+              </FormSection>
+            </>
+          )}
+        </FormSection>
       </Form>
     </>
   );

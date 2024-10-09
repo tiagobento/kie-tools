@@ -39,42 +39,45 @@ export function MixedNodesAndEdgesProperties() {
   return (
     <>
       <Form>
-        <FormSection>
-          <SectionHeader
-            fixed={true}
-            isSectionExpanded={isSectionExpanded}
-            toogleSectionExpanded={() => setSectionExpanded((prev) => !prev)}
-            title={
-              <Flex justifyContent={{ default: "justifyContentCenter" }}>
-                <TextContent>
-                  <Text component={TextVariants.h4}>
-                    <Truncate
-                      content={`Edges and nodes selected (${size})`}
-                      position={"middle"}
-                      trailingNumChars={size.toString().length + 3}
-                    />
-                  </Text>
-                </TextContent>
-              </Flex>
-            }
-            action={
-              <Button
-                title={"Close"}
-                variant={ButtonVariant.plain}
-                onClick={() => {
-                  bpmnEditorStoreApi.setState((state) => {
-                    state.propertiesPanel.isOpen = false;
-                  });
-                }}
-              >
-                <TimesIcon />
-              </Button>
-            }
-          />
-        </FormSection>
-        <br />
-        <FormSection style={{ textAlign: "center" }}>
-          {"Can't edit properties when both nodes and edges are selected."}
+        <FormSection
+          title={
+            <SectionHeader
+              fixed={true}
+              isSectionExpanded={isSectionExpanded}
+              toogleSectionExpanded={() => setSectionExpanded((prev) => !prev)}
+              title={
+                <Flex justifyContent={{ default: "justifyContentCenter" }}>
+                  <TextContent>
+                    <Text component={TextVariants.h4}>
+                      <Truncate
+                        content={`Edges and nodes selected (${size})`}
+                        position={"middle"}
+                        trailingNumChars={size.toString().length + 3}
+                      />
+                    </Text>
+                  </TextContent>
+                </Flex>
+              }
+              action={
+                <Button
+                  title={"Close"}
+                  variant={ButtonVariant.plain}
+                  onClick={() => {
+                    bpmnEditorStoreApi.setState((state) => {
+                      state.propertiesPanel.isOpen = false;
+                    });
+                  }}
+                >
+                  <TimesIcon />
+                </Button>
+              }
+            />
+          }
+        >
+          <br />
+          <FormSection style={{ textAlign: "center" }}>
+            {"Can't edit properties when both nodes and edges are selected."}
+          </FormSection>
         </FormSection>
       </Form>
       <br />

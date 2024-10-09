@@ -20,25 +20,19 @@
 import { BPMN20__tSubProcess } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
 import { FormSection } from "@patternfly/react-core/dist/js/components/Form";
 import * as React from "react";
-import { renameFlowElement } from "../../mutations/renameNode";
+import { updateFlowElement } from "../../mutations/renameNode";
 import { Normalized } from "../../normalization/normalize";
 import { useBpmnEditorStoreApi } from "../../store/StoreContext";
+import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
 
 export function EventSubProcessProperties({
   eventSubProcess,
 }: {
   eventSubProcess: Normalized<BPMN20__tSubProcess> & { __$$element: "subProcess" };
 }) {
-  const bpmnEditorStoreApi = useBpmnEditorStoreApi();
-
-  const onNameChanged = React.useCallback(
-    (newName: string) => {
-      bpmnEditorStoreApi.setState((s) => {
-        renameFlowElement({ definitions: s.bpmn.model.definitions, newName, id: eventSubProcess["@_id"] });
-      });
-    },
-    [eventSubProcess, bpmnEditorStoreApi]
+  return (
+    <FormSection>
+      <NameDocumentationAndId element={eventSubProcess} />
+    </FormSection>
   );
-
-  return <FormSection>EventSubProcessProperties</FormSection>;
 }

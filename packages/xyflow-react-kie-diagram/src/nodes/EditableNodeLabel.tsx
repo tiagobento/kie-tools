@@ -244,7 +244,7 @@ export function useEditableNodeLabel(id: string | undefined) {
 export function EmptyLabel() {
   return (
     <span style={{ fontFamily: "serif", paddingTop: "8px" }}>
-      <i style={{ opacity: 0.5, fontSize: "0.8em", lineHeight: "0.8em" }}>{`Double-click to change`}</i>
+      <i style={{ opacity: 0.5, fontSize: "0.8em", lineHeight: "0.8em" }}>{`Double-click here to change`}</i>
     </span>
   );
 }

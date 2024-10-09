@@ -20,9 +20,10 @@
 import { BPMN20__tServiceTask } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
 import { FormSection } from "@patternfly/react-core/dist/js/components/Form";
 import * as React from "react";
-import { renameFlowElement } from "../../mutations/renameNode";
+import { updateFlowElement } from "../../mutations/renameNode";
 import { Normalized } from "../../normalization/normalize";
 import { useBpmnEditorStoreApi } from "../../store/StoreContext";
+import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
 
 export function ServiceTaskProperties({
   serviceTask,
@@ -31,14 +32,9 @@ export function ServiceTaskProperties({
 }) {
   const bpmnEditorStoreApi = useBpmnEditorStoreApi();
 
-  const onNameChanged = React.useCallback(
-    (newName: string) => {
-      bpmnEditorStoreApi.setState((s) => {
-        renameFlowElement({ definitions: s.bpmn.model.definitions, newName, id: serviceTask["@_id"] });
-      });
-    },
-    [serviceTask, bpmnEditorStoreApi]
+  return (
+    <FormSection>
+      <NameDocumentationAndId element={serviceTask} />
+    </FormSection>
   );
-
-  return <FormSection>ServiceTaskProperties</FormSection>;
 }

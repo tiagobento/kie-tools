@@ -28,7 +28,7 @@ import "./SectionHeader.css";
 export function SectionHeader(props: {
   icon?: React.ReactNode;
   title: string | React.ReactNode;
-  expands?: boolean;
+  expands?: boolean | "modal";
   fixed?: boolean;
   isSectionExpanded?: boolean;
   toogleSectionExpanded?: () => void;
@@ -49,7 +49,10 @@ export function SectionHeader(props: {
     <div className={propertiesPanelHeaderClass}>
       <div className={"kie-dmn-editor--properties-panel-header-items"}>
         {props.expands && (
-          <div className={"kie-dmn-editor--properties-panel-header-toogle-expanded"}>
+          <div
+            className={"kie-dmn-editor--properties-panel-header-toogle-expanded"}
+            style={props.expands === "modal" ? { visibility: "hidden" } : {}}
+          >
             <Button
               title={`Expand / collapse ${props.title}`}
               variant={ButtonVariant.plain}

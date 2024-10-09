@@ -18,7 +18,7 @@
  */
 
 import "./drools-extension";
-import { AllNodesExtensionElements, BPMN20__tProcess } from "./schemas/bpmn-2_0/ts-gen/types";
+import { WithMetaData } from "./schemas/bpmn-2_0/ts-gen/types";
 
 export type Bpmn20KnownMetaDataKey =
   | "elementname" // Used for any Flow Element.
@@ -26,19 +26,28 @@ export type Bpmn20KnownMetaDataKey =
   | "customDescription" // Used for "Process Instance Description" as a global property.
   | "customSLADueDate"; // Used for "SLA Due date" as a global property.
 
+export type Bpmn20ProcessVariableTags =
+  | "internal" // TODO: Used for?
+  | "required" // TODO: Used for?
+  | "readonly" // TODO: Used for?
+  | "input" // TODO: Used for?
+  | "output" // TODO: Used for?
+  | "business_relevant" // TODO: Used for?
+  | "tracked"; // TODO: Used for?
+
 /**
- * Helps dealing with objects containing drools:metaData entries.
+ * Helps reading drools:metaData entries.
  *
- * @param obj The object to extract drools:metaData from.
+ * @param obj The object to extract drools:metaData from. No-op if undefined.
  * @returns A map containing the metaData entries indexed by their name attribute.
  */
-export function parseBpmn20Drools10MetaData(obj: {
-  extensionElements?: Pick<AllNodesExtensionElements, "drools:metaData"> | BPMN20__tProcess;
-}): Map<Bpmn20KnownMetaDataKey, string> {
+export function parseBpmn20Drools10MetaData(
+  obj: undefined | { extensionElements?: WithMetaData }
+): Map<Bpmn20KnownMetaDataKey, string> {
   const metadata = new Map<Bpmn20KnownMetaDataKey, string>();
 
-  for (let i = 0; i < (obj.extensionElements?.["drools:metaData"] ?? []).length; i++) {
-    const entry = obj.extensionElements!["drools:metaData"]![i];
+  for (let i = 0; i < (obj?.extensionElements?.["drools:metaData"] ?? []).length; i++) {
+    const entry = obj!.extensionElements!["drools:metaData"]![i];
     if (entry["@_name"] !== undefined) {
       metadata.set(entry["@_name"] as Bpmn20KnownMetaDataKey, entry["drools:metaValue"].__$$text);
     }
@@ -48,35 +57,98 @@ export function parseBpmn20Drools10MetaData(obj: {
 }
 
 /**
- * Helps changing objects containing drools:metaData entries.
+ * Helps changing drools:metaData entries.
  *
- * @param obj The object to extract drools:metaData from.
+ * @param obj The object to extract drools:metaData from. No-op if undefined.
  * @param key The drools:metaData entry name.
  * @param value The drools:metaData entry value.
  */
 export function setBpmn20Drools10MetaData(
-  obj: {
-    extensionElements?: Pick<AllNodesExtensionElements, "drools:metaData"> | BPMN20__tProcess;
-  },
+  obj: undefined | { extensionElements?: WithMetaData },
+  keyOrIndex: Bpmn20KnownMetaDataKey | number,
+  value: string
+): void {
+  if (obj) {
+    obj.extensionElements ??= { "drools:metaData": [] };
+    obj.extensionElements["drools:metaData"] ??= [];
+  }
+
+  if (typeof keyOrIndex === "number") {
+    if (obj?.extensionElements?.["drools:metaData"]?.[keyOrIndex]) {
+      obj.extensionElements["drools:metaData"][keyOrIndex]["drools:metaValue"] = { __$$text: value };
+    } else {
+      // nothing to do.
+    }
+  } else {
+    let updated = false;
+    for (let i = 0; i < (obj?.extensionElements?.["drools:metaData"]?.length ?? 0); i++) {
+      const entry = obj!.extensionElements!["drools:metaData"]![i]!;
+      if (entry["@_name"] === keyOrIndex) {
+        if (updated) {
+          break;
+        }
+        entry["drools:metaValue"] = { __$$text: value };
+        updated = true;
+      }
+    }
+
+    if (!updated) {
+      obj?.extensionElements?.["drools:metaData"]?.push({
+        "@_name": keyOrIndex,
+        "drools:metaValue": { __$$text: value },
+      });
+    }
+  }
+}
+
+/**
+ * Helps adding drools:metaData entries to objects.
+ *
+ * @param obj The object to extract drools:metaData from. No-op if undefined.
+ * @param key The drools:metaData entry name.
+ * @param value The drools:metaData entry value.
+ */
+export function addBpmn20Drools10MetaData(
+  obj: undefined | { extensionElements?: WithMetaData },
   key: Bpmn20KnownMetaDataKey,
   value: string
 ): void {
-  obj.extensionElements ??= { "drools:metaData": [] };
-  obj.extensionElements["drools:metaData"] ??= [];
-
-  let updated = false;
-  for (let i = 0; i < obj.extensionElements["drools:metaData"].length; i++) {
-    const entry = obj.extensionElements["drools:metaData"][i];
-    if (entry["@_name"] === key) {
-      entry["drools:metaValue"] = { __$$text: value };
-      updated = true;
-    }
-  }
-
-  if (!updated) {
-    obj.extensionElements["drools:metaData"].push({
+  if (obj) {
+    obj.extensionElements ??= { "drools:metaData": [] };
+    obj.extensionElements["drools:metaData"] ??= [];
+    obj.extensionElements["drools:metaData"]?.push({
       "@_name": key,
       "drools:metaValue": { __$$text: value },
     });
   }
+}
+
+/**
+ * Helps renaming drools:metaData entries.
+ *
+ * @param obj The object to extract drools:metaData from. No-op if undefined.
+ * @param index The drools:metaData entry index.
+ * @param newKeyName The new drools:metaData entry name.
+ */
+export function renameBpmn20Drools10MetaDataEntry(
+  obj: undefined | { extensionElements?: WithMetaData },
+  index: number,
+  newKeyName: string
+): void {
+  if (obj?.extensionElements?.["drools:metaData"]?.[index]) {
+    obj.extensionElements["drools:metaData"][index]["@_name"] = newKeyName;
+  }
+}
+
+/**
+ * Helps deleting drools:metaData entries.
+ *
+ * @param obj The object to extract drools:metaData from. No-op if undefined.
+ * @param index The drools:metaData entry name.
+ */
+export function deleteBpmn20Drools10MetaDataEntry(
+  obj: undefined | { extensionElements?: WithMetaData },
+  index: number
+): void {
+  obj?.extensionElements?.["drools:metaData"]?.splice(index, 1);
 }

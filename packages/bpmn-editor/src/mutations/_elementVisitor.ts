@@ -17,7 +17,11 @@
  * under the License.
  */
 
-import { BPMN20__tDefinitions, BPMN20__tProcess } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
+import {
+  BPMN20__tDefinitions,
+  BPMN20__tLane,
+  BPMN20__tProcess,
+} from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
 import { ElementFilter } from "@kie-tools/xml-parser-ts/dist/elementFilter";
 import { Unpacked } from "@kie-tools/xyflow-react-kie-diagram/dist/tsExt/tsExt";
 import { Normalized } from "../normalization/normalize";
@@ -44,6 +48,17 @@ type ElementVisitorArgs = {
   owner: ElementOwner;
 };
 
+type LaneOwner = Normalized<
+  Unpacked<ElementFilter<Unpacked<NonNullable<BPMN20__tDefinitions["rootElement"]>>, "process">["laneSet"]>
+>;
+
+type LaneVisitorArgs = {
+  lane: BPMN20__tLane;
+  index: number;
+  array: LaneVisitorArgs["lane"][];
+  owner: LaneOwner;
+};
+
 /**
  * Recursive method that will visit flowElements and artifacts inside root and/or deeply nested sub processes.
  *
@@ -66,5 +81,17 @@ export function visitFlowElementsAndArtifacts(
 
   for (let i = 0; i < (process.artifact ?? []).length; i++) {
     visitor({ element: process.artifact![i], index: i, owner: process, array: process.artifact! });
+  }
+}
+
+export function visitLanes(process: ElementOwner, visitor: (args: LaneVisitorArgs) => boolean | void) {
+  for (let i = 0; i < (process.laneSet ?? []).length; i++) {
+    const f = process.laneSet![i];
+    for (let j = 0; j < (f.lane ?? []).length; j++) {
+      const ret = visitor({ lane: f!.lane![j], index: i, owner: f, array: f.lane! });
+      if (ret === false) {
+        break;
+      }
+    }
   }
 }

@@ -694,7 +694,19 @@ export type BpmnEdgeElement = Normalized<
 >;
 
 export type BpmnNodeElement = Normalized<
-  | ElementExclusion<Unpacked<NonNullable<BPMN20__tProcess["flowElement"]>>, "sequenceFlow">
+  | ElementExclusion<
+      Unpacked<NonNullable<BPMN20__tProcess["flowElement"]>>,
+      | "sequenceFlow"
+      | "callChoreography"
+      | "choreographyTask"
+      | "dataObjectReference"
+      | "dataStoreReference"
+      | "implicitThrowEvent"
+      | "manualTask"
+      | "receiveTask"
+      | "sendTask"
+      | "subChoreography"
+    >
   | ElementExclusion<Unpacked<NonNullable<BPMN20__tProcess["artifact"]>>, "association">
   | (BPMN20__tLane & { __$$element: "lane" })
 >;
@@ -776,16 +788,16 @@ export const elementToNodeType: Record<NonNullable<BpmnNodeElement>["__$$element
   // unknown
   //
   event: NODE_TYPES.unknown,
-  manualTask: NODE_TYPES.unknown,
-  sendTask: NODE_TYPES.unknown,
-  receiveTask: NODE_TYPES.unknown,
-  callChoreography: NODE_TYPES.unknown,
-  choreographyTask: NODE_TYPES.unknown,
-  implicitThrowEvent: NODE_TYPES.unknown,
-  subChoreography: NODE_TYPES.unknown,
+  // manualTask: NODE_TYPES.unknown,
+  // sendTask: NODE_TYPES.unknown,
+  // receiveTask: NODE_TYPES.unknown,
+  // callChoreography: NODE_TYPES.unknown,
+  // choreographyTask: NODE_TYPES.unknown,
+  // implicitThrowEvent: NODE_TYPES.unknown,
+  // subChoreography: NODE_TYPES.unknown,
   // edges (ignore)
-  dataObjectReference: NODE_TYPES.unknown,
-  dataStoreReference: NODE_TYPES.unknown,
+  // dataObjectReference: NODE_TYPES.unknown,
+  // dataStoreReference: NODE_TYPES.unknown,
 } as const;
 
 export const elementToEdgeType: Record<NonNullable<BpmnEdgeElement>["__$$element"], BpmnEdgeType> = {

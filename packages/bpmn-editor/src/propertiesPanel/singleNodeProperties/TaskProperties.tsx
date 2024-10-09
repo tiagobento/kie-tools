@@ -18,22 +18,19 @@
  */
 
 import { BPMN20__tTask } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
-import { FormSection } from "@patternfly/react-core/dist/js/components/Form";
+import { FormGroup, FormSection } from "@patternfly/react-core/dist/js/components/Form";
 import * as React from "react";
-import { renameFlowElement } from "../../mutations/renameNode";
 import { Normalized } from "../../normalization/normalize";
-import { useBpmnEditorStoreApi } from "../../store/StoreContext";
+import { useBpmnEditorStore, useBpmnEditorStoreApi } from "../../store/StoreContext";
+import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
 
 export function TaskProperties({ task }: { task: Normalized<BPMN20__tTask> & { __$$element: "task" } }) {
   const bpmnEditorStoreApi = useBpmnEditorStoreApi();
+  const settings = useBpmnEditorStore((s) => s.settings);
 
-  const onNameChanged = React.useCallback(
-    (newName: string) => {
-      bpmnEditorStoreApi.setState((s) => {
-        renameFlowElement({ definitions: s.bpmn.model.definitions, newName, id: task["@_id"] });
-      });
-    },
-    [task, bpmnEditorStoreApi]
+  return (
+    <FormSection>
+      <NameDocumentationAndId element={task} />
+    </FormSection>
   );
-  return <FormSection>TaskProperties</FormSection>;
 }

@@ -42,14 +42,17 @@ export { Namespaced };
 ///////////////////////////
 
 declare module "./schemas/bpmn-2_0/ts-gen/types" {
+  type WithMetaData = {
+    "drools:metaData"?: Namespaced<DROOLS, drools__GLOBAL__metaData>[];
+  };
+
   export interface BPMN20__tProcess {
     "@_drools:packageName"?: Namespaced<DROOLS, string>;
     "@_drools:version"?: Namespaced<DROOLS, string>;
     "@_drools:adHoc"?: Namespaced<DROOLS, string>;
-    "drools:metaData"?: Namespaced<DROOLS, drools__GLOBAL__metaData>[];
   }
 
-  export interface BPMN20__tProcess__extensionElements {
+  export interface BPMN20__tProcess__extensionElements extends WithMetaData {
     "drools:import"?: Namespaced<DROOLS, drools__GLOBAL__import>[];
     "drools:global"?: Namespaced<DROOLS, drools__GLOBAL__global>[];
   }
@@ -58,8 +61,7 @@ declare module "./schemas/bpmn-2_0/ts-gen/types" {
     "@_drools:ruleFlowGroup"?: Namespaced<DROOLS, string>;
   }
 
-  type AllNodesExtensionElements = {
-    "drools:metaData"?: Namespaced<DROOLS, drools__GLOBAL__metaData>[];
+  type WithEntryAndExitScripts = {
     "drools:onEntry-script"?: Namespaced<DROOLS, drools__GLOBAL__onEntry_script>;
     "drools:onExit-script"?: Namespaced<DROOLS, drools__GLOBAL__onExit_script>;
   };
@@ -71,40 +73,44 @@ declare module "./schemas/bpmn-2_0/ts-gen/types" {
   //
   // ***************************************************************************************************************
 
-  export interface BPMN20__tAdHocSubProcess__extensionElements extends AllNodesExtensionElements {}
-  export interface BPMN20__tBoundaryEvent__extensionElements extends AllNodesExtensionElements {}
-  export interface BPMN20__tBusinessRuleTask__extensionElements extends AllNodesExtensionElements {}
-  export interface BPMN20__tCallActivity__extensionElements extends AllNodesExtensionElements {}
-  // export interface BPMN20__tCallChoreography__extensionElements extends AllNodesExtensionElements {}
-  // export interface BPMN20__tChoreographyTask__extensionElements extends AllNodesExtensionElements {}
-  export interface BPMN20__tComplexGateway__extensionElements extends AllNodesExtensionElements {}
-  export interface BPMN20__tDataObject__extensionElements extends AllNodesExtensionElements {}
-  // export interface BPMN20__tDataObjectReference__extensionElements extends AllNodesExtensionElements {}
-  // export interface BPMN20__tDataStoreReference__extensionElements extends AllNodesExtensionElements {}
-  export interface BPMN20__tEndEvent__extensionElements extends AllNodesExtensionElements {}
-  export interface BPMN20__tEvent__extensionElements extends AllNodesExtensionElements {}
-  export interface BPMN20__tEventBasedGateway__extensionElements extends AllNodesExtensionElements {}
-  export interface BPMN20__tExclusiveGateway__extensionElements extends AllNodesExtensionElements {}
-  // export interface BPMN20__tImplicitThrowEvent__extensionElements extends AllNodesExtensionElements {}
-  export interface BPMN20__tInclusiveGateway__extensionElements extends AllNodesExtensionElements {}
-  export interface BPMN20__tIntermediateCatchEvent__extensionElements extends AllNodesExtensionElements {}
-  export interface BPMN20__tIntermediateThrowEvent__extensionElements extends AllNodesExtensionElements {}
-  // export interface BPMN20__tManualTask__extensionElements extends AllNodesExtensionElements {}
-  export interface BPMN20__tParallelGateway__extensionElements extends AllNodesExtensionElements {}
-  // export interface BPMN20__tReceiveTask__extensionElements extends AllNodesExtensionElements {}
-  export interface BPMN20__tScriptTask__extensionElements extends AllNodesExtensionElements {}
-  // export interface BPMN20__tSendTask__extensionElements extends AllNodesExtensionElements {}
-  export interface BPMN20__tSequenceFlow__extensionElements extends AllNodesExtensionElements {}
-  export interface BPMN20__tServiceTask__extensionElements extends AllNodesExtensionElements {}
-  export interface BPMN20__tStartEvent__extensionElements extends AllNodesExtensionElements {}
-  // export interface BPMN20__tSubChoreography__extensionElements extends AllNodesExtensionElements {}
-  export interface BPMN20__tSubProcess__extensionElements extends AllNodesExtensionElements {}
-  export interface BPMN20__tTask__extensionElements extends AllNodesExtensionElements {}
-  export interface BPMN20__tTransaction__extensionElements extends AllNodesExtensionElements {}
-  export interface BPMN20__tUserTask__extensionElements extends AllNodesExtensionElements {}
-  export interface BPMN20__tAssociation__extensionElements extends AllNodesExtensionElements {}
-  export interface BPMN20__tGroup__extensionElements extends AllNodesExtensionElements {}
-  export interface BPMN20__tTextAnnotation__extensionElements extends AllNodesExtensionElements {}
+  export interface BPMN20__tAdHocSubProcess__extensionElements extends WithEntryAndExitScripts, WithMetaData {}
+  export interface BPMN20__tBoundaryEvent__extensionElements extends WithEntryAndExitScripts, WithMetaData {}
+  export interface BPMN20__tBusinessRuleTask__extensionElements extends WithEntryAndExitScripts, WithMetaData {}
+  export interface BPMN20__tCallActivity__extensionElements extends WithEntryAndExitScripts, WithMetaData {}
+  // export interface BPMN20__tCallChoreography__extensionElements extends WithEntryAndExitScripts, WithMetaData {}
+  // export interface BPMN20__tChoreographyTask__extensionElements extends WithEntryAndExitScripts, WithMetaData {}
+  export interface BPMN20__tComplexGateway__extensionElements extends WithEntryAndExitScripts, WithMetaData {}
+  export interface BPMN20__tDataObject__extensionElements extends WithEntryAndExitScripts, WithMetaData {}
+  // export interface BPMN20__tDataObjectReference__extensionElements extends WithEntryAndExitScripts, WithMetaData {}
+  // export interface BPMN20__tDataStoreReference__extensionElements extends WithEntryAndExitScripts, WithMetaData {}
+  export interface BPMN20__tEndEvent__extensionElements extends WithEntryAndExitScripts, WithMetaData {}
+  export interface BPMN20__tEvent__extensionElements extends WithEntryAndExitScripts, WithMetaData {}
+  export interface BPMN20__tEventBasedGateway__extensionElements extends WithEntryAndExitScripts, WithMetaData {}
+  export interface BPMN20__tExclusiveGateway__extensionElements extends WithEntryAndExitScripts, WithMetaData {}
+  // export interface BPMN20__tImplicitThrowEvent__extensionElements extends WithEntryAndExitScripts, WithMetaData {}
+  export interface BPMN20__tInclusiveGateway__extensionElements extends WithEntryAndExitScripts, WithMetaData {}
+  export interface BPMN20__tIntermediateCatchEvent__extensionElements extends WithEntryAndExitScripts, WithMetaData {}
+  export interface BPMN20__tIntermediateThrowEvent__extensionElements extends WithEntryAndExitScripts, WithMetaData {}
+  // export interface BPMN20__tManualTask__extensionElements extends WithEntryAndExitScripts, WithMetaData {}
+  export interface BPMN20__tParallelGateway__extensionElements extends WithEntryAndExitScripts, WithMetaData {}
+  // export interface BPMN20__tReceiveTask__extensionElements extends WithEntryAndExitScripts, WithMetaData {}
+  export interface BPMN20__tScriptTask__extensionElements extends WithEntryAndExitScripts, WithMetaData {}
+  // export interface BPMN20__tSendTask__extensionElements extends WithEntryAndExitScripts, WithMetaData {}
+  export interface BPMN20__tSequenceFlow__extensionElements extends WithEntryAndExitScripts, WithMetaData {}
+  export interface BPMN20__tServiceTask__extensionElements extends WithEntryAndExitScripts, WithMetaData {}
+  export interface BPMN20__tStartEvent__extensionElements extends WithEntryAndExitScripts, WithMetaData {}
+  // export interface BPMN20__tSubChoreography__extensionElements extends WithEntryAndExitScripts, WithMetaData {}
+  export interface BPMN20__tSubProcess__extensionElements extends WithEntryAndExitScripts, WithMetaData {}
+  export interface BPMN20__tTask__extensionElements extends WithEntryAndExitScripts, WithMetaData {}
+  export interface BPMN20__tTransaction__extensionElements extends WithEntryAndExitScripts, WithMetaData {}
+  export interface BPMN20__tUserTask__extensionElements extends WithEntryAndExitScripts, WithMetaData {}
+  export interface BPMN20__tAssociation__extensionElements extends WithEntryAndExitScripts, WithMetaData {}
+  export interface BPMN20__tGroup__extensionElements extends WithEntryAndExitScripts, WithMetaData {}
+  export interface BPMN20__tTextAnnotation__extensionElements extends WithEntryAndExitScripts, WithMetaData {}
+
+  // Other
+  export interface BPMN20__tProperty__extensionElements extends WithMetaData {}
+  export interface BPMN20__tLane__extensionElements extends WithMetaData {}
 }
 
 bpmn20ns.set(DROOLS_NS, drools10ns.get("")!);
@@ -154,62 +160,83 @@ mergeMetas(bpmn20meta, [[DROOLS_NS, drools10meta]]);
   fromType: "BPMN20__tBusinessRuleTask",
 };
 
-// All nodes
-const assignAllNodesExtensionElementsMeta = (type: keyof typeof bpmn20meta) => {
-  (bpmn20meta[type] as any)["drools:metaData"] = {
-    type: "drools__GLOBAL__metaData",
-    isArray: true,
-    xsdType: "// local type",
-    fromType: type,
-  };
-  (bpmn20meta[type] as any)["drools:onEntry-script"] = {
-    type: "drools__GLOBAL__onEntry_script",
-    isArray: false,
-    xsdType: "// local type",
-    fromType: type,
-  };
-  (bpmn20meta[type] as any)["drools:onExit-script"] = {
-    type: "drools__GLOBAL__onExit_script",
-    isArray: false,
-    xsdType: "// local type",
-    fromType: type,
-  };
-};
+class MetaType {
+  public static of(typeName: keyof typeof bpmn20meta) {
+    return new MetaType(typeName);
+  }
+
+  private constructor(private readonly typeName: keyof typeof bpmn20meta) {}
+
+  public hasMetadata() {
+    (bpmn20meta[this.typeName] as any)["drools:metaData"] = {
+      type: "drools__GLOBAL__metaData",
+      isArray: true,
+      xsdType: "// local type",
+      fromType: this.typeName,
+    };
+    return this;
+  }
+
+  public hasEntryAndExitScripts() {
+    (bpmn20meta[this.typeName] as any)["drools:onEntry-script"] = {
+      type: "drools__GLOBAL__onEntry_script",
+      isArray: false,
+      xsdType: "// local type",
+      fromType: this.typeName,
+    };
+    (bpmn20meta[this.typeName] as any)["drools:onExit-script"] = {
+      type: "drools__GLOBAL__onExit_script",
+      isArray: false,
+      xsdType: "// local type",
+      fromType: this.typeName,
+    };
+    return this;
+  }
+}
 
 //
-// See some of those are commented above.
+// See some of those are commented above too.
 //
-assignAllNodesExtensionElementsMeta("BPMN20__tAdHocSubProcess__extensionElements");
-assignAllNodesExtensionElementsMeta("BPMN20__tBoundaryEvent__extensionElements");
-assignAllNodesExtensionElementsMeta("BPMN20__tBusinessRuleTask__extensionElements");
-assignAllNodesExtensionElementsMeta("BPMN20__tCallActivity__extensionElements");
-// assignAllNodesExtensionElementsMeta("BPMN20__tCallChoreography__extensionElements");
-// assignAllNodesExtensionElementsMeta("BPMN20__tChoreographyTask__extensionElements");
-assignAllNodesExtensionElementsMeta("BPMN20__tComplexGateway__extensionElements");
-assignAllNodesExtensionElementsMeta("BPMN20__tDataObject__extensionElements");
-// assignAllNodesExtensionElementsMeta("BPMN20__tDataObjectReference__extensionElements");
-// assignAllNodesExtensionElementsMeta("BPMN20__tDataStoreReference__extensionElements");
-assignAllNodesExtensionElementsMeta("BPMN20__tEndEvent__extensionElements");
-assignAllNodesExtensionElementsMeta("BPMN20__tEvent__extensionElements");
-assignAllNodesExtensionElementsMeta("BPMN20__tEventBasedGateway__extensionElements");
-assignAllNodesExtensionElementsMeta("BPMN20__tExclusiveGateway__extensionElements");
-// assignAllNodesExtensionElementsMeta("BPMN20__tImplicitThrowEvent__extensionElements");
-assignAllNodesExtensionElementsMeta("BPMN20__tInclusiveGateway__extensionElements");
-assignAllNodesExtensionElementsMeta("BPMN20__tIntermediateCatchEvent__extensionElements");
-assignAllNodesExtensionElementsMeta("BPMN20__tIntermediateThrowEvent__extensionElements");
-// assignAllNodesExtensionElementsMeta("BPMN20__tManualTask__extensionElements");
-assignAllNodesExtensionElementsMeta("BPMN20__tParallelGateway__extensionElements");
-// assignAllNodesExtensionElementsMeta("BPMN20__tReceiveTask__extensionElements");
-assignAllNodesExtensionElementsMeta("BPMN20__tScriptTask__extensionElements");
-// assignAllNodesExtensionElementsMeta("BPMN20__tSendTask__extensionElements");
-assignAllNodesExtensionElementsMeta("BPMN20__tSequenceFlow__extensionElements");
-assignAllNodesExtensionElementsMeta("BPMN20__tServiceTask__extensionElements");
-assignAllNodesExtensionElementsMeta("BPMN20__tStartEvent__extensionElements");
-// assignAllNodesExtensionElementsMeta("BPMN20__tSubChoreography__extensionElements");
-assignAllNodesExtensionElementsMeta("BPMN20__tSubProcess__extensionElements");
-assignAllNodesExtensionElementsMeta("BPMN20__tTask__extensionElements");
-assignAllNodesExtensionElementsMeta("BPMN20__tTransaction__extensionElements");
-assignAllNodesExtensionElementsMeta("BPMN20__tUserTask__extensionElements");
-assignAllNodesExtensionElementsMeta("BPMN20__tAssociation__extensionElements");
-assignAllNodesExtensionElementsMeta("BPMN20__tGroup__extensionElements");
-assignAllNodesExtensionElementsMeta("BPMN20__tTextAnnotation__extensionElements");
+MetaType.of("BPMN20__tAdHocSubProcess__extensionElements").hasEntryAndExitScripts().hasMetadata();
+MetaType.of("BPMN20__tBoundaryEvent__extensionElements").hasEntryAndExitScripts().hasMetadata();
+MetaType.of("BPMN20__tBusinessRuleTask__extensionElements").hasEntryAndExitScripts().hasMetadata();
+MetaType.of("BPMN20__tCallActivity__extensionElements").hasEntryAndExitScripts().hasMetadata();
+// MetaType.of("BPMN20__tCallChoreography__extensionElements").hasEntryAndExitScripts().hasMetadata();
+// MetaType.of("BPMN20__tChoreographyTask__extensionElements").hasEntryAndExitScripts().hasMetadata();
+MetaType.of("BPMN20__tComplexGateway__extensionElements").hasEntryAndExitScripts().hasMetadata();
+MetaType.of("BPMN20__tDataObject__extensionElements").hasEntryAndExitScripts().hasMetadata();
+// MetaType.of("BPMN20__tDataObjectReference__extensionElements").hasEntryAndExitScripts().hasMetadata();
+// MetaType.of("BPMN20__tDataStoreReference__extensionElements").hasEntryAndExitScripts().hasMetadata();
+MetaType.of("BPMN20__tEndEvent__extensionElements").hasEntryAndExitScripts().hasMetadata();
+MetaType.of("BPMN20__tEvent__extensionElements").hasEntryAndExitScripts().hasMetadata();
+MetaType.of("BPMN20__tEventBasedGateway__extensionElements").hasEntryAndExitScripts().hasMetadata();
+MetaType.of("BPMN20__tExclusiveGateway__extensionElements").hasEntryAndExitScripts().hasMetadata();
+// MetaType.of("BPMN20__tImplicitThrowEvent__extensionElements").hasEntryAndExitScripts().hasMetadata();
+MetaType.of("BPMN20__tInclusiveGateway__extensionElements").hasEntryAndExitScripts().hasMetadata();
+MetaType.of("BPMN20__tIntermediateCatchEvent__extensionElements").hasEntryAndExitScripts().hasMetadata();
+MetaType.of("BPMN20__tIntermediateThrowEvent__extensionElements").hasEntryAndExitScripts().hasMetadata();
+// MetaType.of("BPMN20__tManualTask__extensionElements").hasEntryAndExitScripts().hasMetadata();
+MetaType.of("BPMN20__tParallelGateway__extensionElements").hasEntryAndExitScripts().hasMetadata();
+// MetaType.of("BPMN20__tReceiveTask__extensionElements").hasEntryAndExitScripts().hasMetadata();
+MetaType.of("BPMN20__tScriptTask__extensionElements").hasEntryAndExitScripts().hasMetadata();
+// MetaType.of("BPMN20__tSendTask__extensionElements").hasEntryAndExitScripts().hasMetadata();
+MetaType.of("BPMN20__tSequenceFlow__extensionElements").hasEntryAndExitScripts().hasMetadata();
+MetaType.of("BPMN20__tServiceTask__extensionElements").hasEntryAndExitScripts().hasMetadata();
+MetaType.of("BPMN20__tStartEvent__extensionElements").hasEntryAndExitScripts().hasMetadata();
+// MetaType.of("BPMN20__tSubChoreography__extensionElements").hasEntryAndExitScripts().hasMetadata();
+MetaType.of("BPMN20__tSubProcess__extensionElements").hasEntryAndExitScripts().hasMetadata();
+MetaType.of("BPMN20__tTask__extensionElements").hasEntryAndExitScripts().hasMetadata();
+MetaType.of("BPMN20__tTransaction__extensionElements").hasEntryAndExitScripts().hasMetadata();
+MetaType.of("BPMN20__tUserTask__extensionElements").hasEntryAndExitScripts().hasMetadata();
+MetaType.of("BPMN20__tAssociation__extensionElements").hasEntryAndExitScripts().hasMetadata();
+MetaType.of("BPMN20__tGroup__extensionElements").hasEntryAndExitScripts().hasMetadata();
+MetaType.of("BPMN20__tTextAnnotation__extensionElements").hasEntryAndExitScripts().hasMetadata();
+
+// Process
+MetaType.of("BPMN20__tProcess__extensionElements").hasMetadata();
+
+// Property
+MetaType.of("BPMN20__tProperty__extensionElements").hasMetadata();
+
+// Lane
+MetaType.of("BPMN20__tLane__extensionElements").hasMetadata();

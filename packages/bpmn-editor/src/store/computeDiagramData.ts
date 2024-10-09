@@ -120,7 +120,21 @@ export function computeDiagramData(
               parentIdsById.set(flowElement["@_id"], bpmnElement["@_id"]);
             }
             if (flowElement.__$$element !== "sequenceFlow") {
-              nodeBpmnElementsById.set(flowElement["@_id"], flowElement);
+              if (
+                flowElement.__$$element !== "callChoreography" &&
+                flowElement.__$$element !== "choreographyTask" &&
+                flowElement.__$$element !== "dataObjectReference" &&
+                flowElement.__$$element !== "dataStoreReference" &&
+                flowElement.__$$element !== "implicitThrowEvent" &&
+                flowElement.__$$element !== "manualTask" &&
+                flowElement.__$$element !== "receiveTask" &&
+                flowElement.__$$element !== "sendTask" &&
+                flowElement.__$$element !== "subChoreography"
+              ) {
+                nodeBpmnElementsById.set(flowElement["@_id"], flowElement);
+              } else {
+                // ignore on purpose. those flowElements are not nodes.
+              }
             } else {
               edgeBpmnElementsById.set(flowElement["@_id"], flowElement);
             }
