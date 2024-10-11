@@ -70,10 +70,6 @@ import ColumnsIcon from "@patternfly/react-icons/dist/js/icons/columns-icon";
 import { Metadata } from "./metadata/Metadata";
 
 export function SingleNodeProperties() {
-  const [isSectionExpanded, setSectionExpanded] = React.useState<boolean>(true);
-
-  const bpmnEditorStoreApi = useBpmnEditorStoreApi();
-
   const selectedNode = useBpmnEditorStore(
     (s) =>
       [...s.computed(s).getDiagramData().selectedNodesById.values()][0] as
@@ -81,7 +77,7 @@ export function SingleNodeProperties() {
         | RF.Node<BpmnDiagramNodeData, BpmnNodeType>
   );
 
-  const { properties, title, icon } = useMemo(() => {
+  const { properties } = useMemo(() => {
     const bpmnElement = selectedNode?.data.bpmnElement;
     const e = bpmnElement?.__$$element;
     switch (e) {
@@ -89,153 +85,105 @@ export function SingleNodeProperties() {
       case "startEvent":
         return {
           properties: <StartEventProperties startEvent={bpmnElement!} />,
-          title: "Start Event",
-          icon: <StartEventIcon variant={bpmnElement?.eventDefinition?.[0].__$$element} />,
         };
       case "endEvent":
         return {
           properties: <EndEventProperties endEvent={bpmnElement!} />,
-          title: "End Event",
-          icon: <EndEventIcon variant={bpmnElement?.eventDefinition?.[0].__$$element} />,
         };
       case "intermediateCatchEvent":
         return {
           properties: <IntermediateCatchEventProperties intermediateCatchEvent={bpmnElement!} />,
-          title: "Intermediate Catch Event",
-          icon: <IntermediateCatchEventIcon variant={bpmnElement?.eventDefinition?.[0].__$$element} />,
         };
       case "intermediateThrowEvent":
         return {
           properties: <IntermediateThrowEventProperties intermediateThrowEvent={bpmnElement!} />,
-          title: "Intermediate Throw Event",
-          icon: <IntermediateThrowEventIcon variant={bpmnElement?.eventDefinition?.[0].__$$element} />,
         };
       case "boundaryEvent":
         return {
           properties: <BoundaryEventProperties boundaryEvent={bpmnElement!} />,
-          title: "Boundary Event",
-          icon: <IntermediateCatchEventIcon variant={bpmnElement?.eventDefinition?.[0].__$$element} />,
         };
       // Gateways
       case "complexGateway":
         return {
           properties: <ComplexGatewayProperties complexGateway={bpmnElement!} />,
-          title: "Complex Gateway",
-          icon: <GatewayIcon variant={e} />,
         };
       case "eventBasedGateway":
         return {
           properties: <EventBasedGatewayProperties eventBasedGateway={bpmnElement!} />,
-          title: "Event-based Gateway",
-          icon: <GatewayIcon variant={e} />,
         };
       case "exclusiveGateway":
         return {
           properties: <ExclusiveGatewayProperties exclusiveGateway={bpmnElement!} />,
-          title: "Exclusive Gateway",
-          icon: <GatewayIcon variant={e} />,
         };
       case "inclusiveGateway":
         return {
           properties: <InclusiveGatewayProperties inclusiveGateway={bpmnElement!} />,
-          title: "Inclusive Gateway",
-          icon: <GatewayIcon variant={e} />,
         };
       case "parallelGateway":
         return {
           properties: <ParallelGatewayProperties parallelGateway={bpmnElement!} />,
-          title: "Parallel Gateway",
-          icon: <GatewayIcon variant={e} />,
         };
       // Tasks
       case "task":
         return {
           properties: <TaskProperties task={bpmnElement!} />,
-          title: "Task",
-          icon: <TaskIcon />,
         };
       case "businessRuleTask":
         return {
           properties: <BusinessRuleTaskProperties businessRuleTask={bpmnElement!} />,
-          title: "Business Rule Task",
-          icon: <TaskIcon variant={e} />,
         };
 
       case "scriptTask":
         return {
           properties: <ScriptTaskProperties scriptTask={bpmnElement!} />,
-          title: "Script Task",
-          icon: <TaskIcon variant={e} />,
         };
       case "serviceTask":
         return {
           properties: <ServiceTaskProperties serviceTask={bpmnElement!} />,
-          title: "Service Task",
-          icon: <TaskIcon variant={e} />,
         };
       case "userTask":
         return {
           properties: <UserTaskProperties userTask={bpmnElement!} />,
-          title: "User Task",
-          icon: <TaskIcon variant={e} />,
         };
       case "callActivity":
         return {
           properties: <CallActivityProperties callActivity={bpmnElement!} />,
-          title: "Call Activity",
-          icon: <CallActivityIcon />,
         };
       // Sub-processes
       case "subProcess":
         if (bpmnElement?.["@_triggeredByEvent"]) {
           return {
             properties: <EventSubProcessProperties eventSubProcess={bpmnElement!} />,
-            title: "Event Sub-process",
-            icon: <SubProcessIcon variant={"event"} />,
           };
         } else {
           return {
             properties: <SubProcessProperties subProcess={bpmnElement!} />,
-            title: "Sub-process",
-            icon: <SubProcessIcon variant={"other"} />,
           };
         }
       case "adHocSubProcess":
         return {
           properties: <AdHocSubProcessProperties adHocSubProcess={bpmnElement!} />,
-          title: "Ad-hoc Sub-process",
-          icon: <SubProcessIcon variant={"other"} />,
         };
       case "transaction":
         return {
           properties: <TransactionProperties transaction={bpmnElement!} />,
-          title: "Transaction",
-          icon: <SubProcessIcon variant={"other"} />,
         };
       // Misc.
       case "dataObject":
         return {
           properties: <DataObjectProperties dataObject={bpmnElement!} />,
-          title: "Data Object",
-          icon: <DataObjectIcon />,
         };
       case "textAnnotation":
         return {
           properties: <TextAnnotationProperties textAnnotation={bpmnElement!} />,
-          title: "Text Annotation",
-          icon: <TextAnnotationIcon />,
         };
       case "group":
         return {
           properties: <GroupProperties group={bpmnElement!} />,
-          title: "Group",
-          icon: <GroupIcon />,
         };
       case "lane":
         return {
           properties: <LaneProperties lane={bpmnElement!} />,
-          title: "Lane",
-          icon: <LaneIcon />,
         };
       // Unsupported
       //// events
@@ -259,8 +207,6 @@ export function SingleNodeProperties() {
               <FormSection style={{ textAlign: "center" }}>{"No properties to edit."}</FormSection>
             </>
           ),
-          title: "Unsupported",
-          icon: <UnknownNodeIcon />,
         };
       default:
         assertUnreachable(e);
@@ -272,33 +218,7 @@ export function SingleNodeProperties() {
   return (
     <>
       <Form>
-        <FormSection
-          title={
-            <SectionHeader
-              icon={icon}
-              fixed={true}
-              expands={true}
-              isSectionExpanded={isSectionExpanded}
-              toogleSectionExpanded={() => setSectionExpanded((prev) => !prev)}
-              title={title}
-              action={
-                <Button
-                  title={"Close"}
-                  variant={ButtonVariant.plain}
-                  onClick={() => {
-                    bpmnEditorStoreApi.setState((state) => {
-                      state.propertiesPanel.isOpen = false;
-                    });
-                  }}
-                >
-                  <TimesIcon />
-                </Button>
-              }
-            />
-          }
-        >
-          {isSectionExpanded && properties}
-        </FormSection>
+        {properties}
 
         <FormSection
           title={

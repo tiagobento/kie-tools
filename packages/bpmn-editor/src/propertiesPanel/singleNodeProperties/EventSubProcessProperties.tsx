@@ -24,6 +24,8 @@ import { updateFlowElement } from "../../mutations/renameNode";
 import { Normalized } from "../../normalization/normalize";
 import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
+import { SubProcessIcon } from "../../diagram/nodes/NodeIcons";
+import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
 
 export function EventSubProcessProperties({
   eventSubProcess,
@@ -31,8 +33,11 @@ export function EventSubProcessProperties({
   eventSubProcess: Normalized<BPMN20__tSubProcess> & { __$$element: "subProcess" };
 }) {
   return (
-    <FormSection>
+    <PropertiesPanelHeaderFormSection
+      title={eventSubProcess["@_name"] ?? "Event sub-process"}
+      icon={<SubProcessIcon variant={"event"} />}
+    >
       <NameDocumentationAndId element={eventSubProcess} />
-    </FormSection>
+    </PropertiesPanelHeaderFormSection>
   );
 }

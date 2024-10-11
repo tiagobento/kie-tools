@@ -26,6 +26,8 @@ import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
 import { BidirectionalAssignmentsFormSection } from "../assignments/AssignmentsFormSection";
 import { OnEntryAndExitScriptsFormSection } from "../onEntryAndExitScripts/OnEntryAndExitScriptsFormSection";
+import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
+import { TaskIcon } from "../../diagram/nodes/NodeIcons";
 
 export function ScriptTaskProperties({
   scriptTask,
@@ -36,9 +38,12 @@ export function ScriptTaskProperties({
 
   return (
     <>
-      <FormSection>
+      <PropertiesPanelHeaderFormSection
+        title={scriptTask["@_name"] ?? "Script task"}
+        icon={<TaskIcon variant={scriptTask.__$$element} />}
+      >
         <NameDocumentationAndId element={scriptTask} />
-      </FormSection>
+      </PropertiesPanelHeaderFormSection>
 
       <BidirectionalAssignmentsFormSection element={scriptTask} />
 

@@ -25,6 +25,8 @@ import { Normalized } from "../../normalization/normalize";
 import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
 import { OnEntryAndExitScriptsFormSection } from "../onEntryAndExitScripts/OnEntryAndExitScriptsFormSection";
+import { SubProcessIcon } from "../../diagram/nodes/NodeIcons";
+import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
 
 export function SubProcessProperties({
   subProcess,
@@ -35,9 +37,12 @@ export function SubProcessProperties({
 
   return (
     <>
-      <FormSection>
+      <PropertiesPanelHeaderFormSection
+        title={subProcess["@_name"] ?? "Sub-process"}
+        icon={<SubProcessIcon variant={"other"} />}
+      >
         <NameDocumentationAndId element={subProcess} />
-      </FormSection>
+      </PropertiesPanelHeaderFormSection>
 
       <OnEntryAndExitScriptsFormSection element={subProcess} />
     </>

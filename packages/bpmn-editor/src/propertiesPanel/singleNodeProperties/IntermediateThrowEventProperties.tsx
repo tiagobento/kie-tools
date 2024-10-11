@@ -26,6 +26,8 @@ import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
 import { InputOnlyAssociationFormSection } from "../assignments/AssignmentsFormSection";
 import { EventDefinitionProperties } from "../eventDefinition/EventDefinitionProperties";
+import { IntermediateThrowEventIcon } from "../../diagram/nodes/NodeIcons";
+import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
 
 export function IntermediateThrowEventProperties({
   intermediateThrowEvent,
@@ -36,11 +38,14 @@ export function IntermediateThrowEventProperties({
 
   return (
     <>
-      <FormSection>
+      <PropertiesPanelHeaderFormSection
+        title={intermediateThrowEvent["@_name"] ?? "Intermediate throw event"}
+        icon={<IntermediateThrowEventIcon variant={intermediateThrowEvent.eventDefinition?.[0]?.__$$element} />}
+      >
         <NameDocumentationAndId element={intermediateThrowEvent} />
-      </FormSection>
 
-      <EventDefinitionProperties event={intermediateThrowEvent} />
+        <EventDefinitionProperties event={intermediateThrowEvent} />
+      </PropertiesPanelHeaderFormSection>
 
       <InputOnlyAssociationFormSection element={intermediateThrowEvent} />
     </>

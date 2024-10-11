@@ -234,7 +234,7 @@ export function GlobalProperties() {
               }
             />
           }
-        ></FormSection>
+        />
 
         <FormSection
           title={

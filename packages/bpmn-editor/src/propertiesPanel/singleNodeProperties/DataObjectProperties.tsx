@@ -25,6 +25,8 @@ import { Normalized } from "../../normalization/normalize";
 import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
 import { DataTypeSelector } from "../dataTypeSelector/DataTypeSelector";
+import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
+import { DataObjectIcon } from "../../diagram/nodes/NodeIcons";
 
 export function DataObjectProperties({
   dataObject,
@@ -34,10 +36,10 @@ export function DataObjectProperties({
   const bpmnEditorStoreApi = useBpmnEditorStoreApi();
 
   return (
-    <FormSection>
+    <PropertiesPanelHeaderFormSection title={dataObject["@_name"] ?? "Data object"} icon={<DataObjectIcon />}>
       <NameDocumentationAndId element={dataObject} />
 
       <DataTypeSelector element={dataObject} />
-    </FormSection>
+    </PropertiesPanelHeaderFormSection>
   );
 }

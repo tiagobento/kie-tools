@@ -24,6 +24,8 @@ import { updateFlowElement } from "../../mutations/renameNode";
 import { Normalized } from "../../normalization/normalize";
 import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
+import { GatewayIcon } from "../../diagram/nodes/NodeIcons";
+import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
 
 export function ComplexGatewayProperties({
   complexGateway,
@@ -33,8 +35,11 @@ export function ComplexGatewayProperties({
   const bpmnEditorStoreApi = useBpmnEditorStoreApi();
 
   return (
-    <FormSection>
+    <PropertiesPanelHeaderFormSection
+      title={complexGateway["@_name"] ?? "Complex gateway"}
+      icon={<GatewayIcon variant={"complexGateway"} />}
+    >
       <NameDocumentationAndId element={complexGateway} />
-    </FormSection>
+    </PropertiesPanelHeaderFormSection>
   );
 }

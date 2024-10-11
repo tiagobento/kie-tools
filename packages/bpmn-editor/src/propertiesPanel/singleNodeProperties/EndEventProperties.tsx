@@ -26,6 +26,8 @@ import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
 import { InputOnlyAssociationFormSection } from "../assignments/AssignmentsFormSection";
 import { EventDefinitionProperties } from "../eventDefinition/EventDefinitionProperties";
+import { EndEventIcon } from "../../diagram/nodes/NodeIcons";
+import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
 
 export function EndEventProperties({
   endEvent,
@@ -36,11 +38,14 @@ export function EndEventProperties({
 
   return (
     <>
-      <FormSection>
+      <PropertiesPanelHeaderFormSection
+        title={endEvent["@_name"] ?? "End event"}
+        icon={<EndEventIcon variant={endEvent.eventDefinition?.[0]?.__$$element} />}
+      >
         <NameDocumentationAndId element={endEvent} />
-      </FormSection>
 
-      <EventDefinitionProperties event={endEvent} />
+        <EventDefinitionProperties event={endEvent} />
+      </PropertiesPanelHeaderFormSection>
 
       <InputOnlyAssociationFormSection element={endEvent} />
     </>

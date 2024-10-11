@@ -25,6 +25,8 @@ import { Normalized } from "../../normalization/normalize";
 import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
 import { OnEntryAndExitScriptsFormSection } from "../onEntryAndExitScripts/OnEntryAndExitScriptsFormSection";
+import { SubProcessIcon } from "../../diagram/nodes/NodeIcons";
+import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
 
 export function TransactionProperties({
   transaction,
@@ -35,9 +37,12 @@ export function TransactionProperties({
 
   return (
     <>
-      <FormSection>
+      <PropertiesPanelHeaderFormSection
+        title={transaction["@_name"] ?? "Transaction"}
+        icon={<SubProcessIcon variant={"transaction"} />}
+      >
         <NameDocumentationAndId element={transaction} />
-      </FormSection>
+      </PropertiesPanelHeaderFormSection>
 
       <OnEntryAndExitScriptsFormSection element={transaction} />
     </>

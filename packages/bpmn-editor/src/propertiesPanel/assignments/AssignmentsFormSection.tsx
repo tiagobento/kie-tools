@@ -65,7 +65,7 @@ export type WithInputAssignments = Normalized<
   ElementFilter<Unpacked<NonNullable<BPMN20__tProcess["flowElement"]>>, "endEvent" | "intermediateThrowEvent">
 >;
 
-export function CommonFormSection({ sectionLabel, children }: React.PropsWithChildren<{ sectionLabel: string }>) {
+export function AssignmentsFormSection({ sectionLabel, children }: React.PropsWithChildren<{ sectionLabel: string }>) {
   const isReadOnly = useBpmnEditorStore((s) => s.settings.isReadOnly);
 
   const [showAssignmentsModal, setShowAssignmentsModal] = useState(false);
@@ -84,7 +84,7 @@ export function CommonFormSection({ sectionLabel, children }: React.PropsWithChi
                 title={"Manage"}
                 variant={ButtonVariant.plain}
                 onClick={() => setShowAssignmentsModal(true)}
-                style={{ paddingBottom: 0, paddingTop: 0 }}
+                // style={{ paddingBottom: 0, paddingTop: 0 }}
               >
                 {isReadOnly ? <EyeIcon /> : <EditIcon />}
               </Button>
@@ -122,14 +122,14 @@ export function BidirectionalAssignmentsFormSection({ element }: { element: With
   }, [inputCount, outputCount]);
 
   return (
-    <CommonFormSection sectionLabel={sectionLabel}>
+    <AssignmentsFormSection sectionLabel={sectionLabel}>
       <div className="kie-bpmn-editor--assignments--modal-section" style={{ height: "50%" }}>
         <AssignmentList section={"input"} element={element} />
       </div>
       <div className="kie-bpmn-editor--assignments--modal-section" style={{ height: "50%" }}>
         <AssignmentList section={"output"} element={element} />
       </div>
-    </CommonFormSection>
+    </AssignmentsFormSection>
   );
 }
 
@@ -144,11 +144,11 @@ export function InputOnlyAssociationFormSection({ element }: { element: WithInpu
   }, [inputCount]);
 
   return (
-    <CommonFormSection sectionLabel={sectionLabel}>
+    <AssignmentsFormSection sectionLabel={sectionLabel}>
       <div className="kie-bpmn-editor--assignments--modal-section" style={{ height: "100%" }}>
         <AssignmentList section={"input"} element={element} />
       </div>
-    </CommonFormSection>
+    </AssignmentsFormSection>
   );
 }
 
@@ -163,11 +163,11 @@ export function OutputOnlyAssociationFormSection({ element }: { element: WithOut
   }, [outputCount]);
 
   return (
-    <CommonFormSection sectionLabel={sectionLabel}>
+    <AssignmentsFormSection sectionLabel={sectionLabel}>
       <div className="kie-bpmn-editor--assignments--modal-section" style={{ height: "100%" }}>
         <AssignmentList section={"output"} element={element} />
       </div>
-    </CommonFormSection>
+    </AssignmentsFormSection>
   );
 }
 
