@@ -22,7 +22,7 @@ import { Form, FormGroup, FormSection } from "@patternfly/react-core/dist/js/com
 import { Text, TextContent, TextVariants } from "@patternfly/react-core/dist/js/components/Text";
 import { Truncate } from "@patternfly/react-core/dist/js/components/Truncate";
 import { Flex } from "@patternfly/react-core/dist/js/layouts/Flex";
-import TimesIcon from "@patternfly/react-icons/dist/js/icons/times-icon";
+import { TimesIcon } from "@patternfly/react-icons/dist/js/icons/times-icon";
 import * as React from "react";
 import { useBpmnEditorStore, useBpmnEditorStoreApi } from "../store/StoreContext";
 import { SectionHeader } from "@kie-tools/xyflow-react-kie-diagram/dist/propertiesPanel/SectionHeader";

@@ -27,6 +27,7 @@ import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentat
 import { OnEntryAndExitScriptsFormSection } from "../onEntryAndExitScripts/OnEntryAndExitScriptsFormSection";
 import { SubProcessIcon } from "../../diagram/nodes/NodeIcons";
 import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
+import { VariablesFormSection } from "../variables/VariablesFormSection";
 
 export function TransactionProperties({
   transaction,
@@ -43,6 +44,8 @@ export function TransactionProperties({
       >
         <NameDocumentationAndId element={transaction} />
       </PropertiesPanelHeaderFormSection>
+
+      <VariablesFormSection p={transaction} />
 
       <OnEntryAndExitScriptsFormSection element={transaction} />
     </>

@@ -36,11 +36,11 @@ import { EmptyState, EmptyStateIcon, EmptyStateBody } from "@patternfly/react-co
 import { Title } from "@patternfly/react-core/dist/js/components/Title";
 import { Bullseye } from "@patternfly/react-core/dist/js/layouts/Bullseye";
 import { Grid, GridItem } from "@patternfly/react-core/dist/js/layouts/Grid";
-import CubesIcon from "@patternfly/react-icons/dist/js/icons/cubes-icon";
-import TimesIcon from "@patternfly/react-icons/dist/js/icons/times-icon";
-import EyeIcon from "@patternfly/react-icons/dist/js/icons/eye-icon";
+import { CubesIcon } from "@patternfly/react-icons/dist/js/icons/cubes-icon";
+import { TimesIcon } from "@patternfly/react-icons/dist/js/icons/times-icon";
+import { EyeIcon } from "@patternfly/react-icons/dist/js/icons/eye-icon";
 import { addOrGetProcessAndDiagramElements } from "../../mutations/addOrGetProcessAndDiagramElements";
-import PlusCircleIcon from "@patternfly/react-icons/dist/js/icons/plus-circle-icon";
+import { PlusCircleIcon } from "@patternfly/react-icons/dist/js/icons/plus-circle-icon";
 import { visitFlowElementsAndArtifacts } from "../../mutations/_elementVisitor";
 import { ElementFilter } from "@kie-tools/xml-parser-ts/dist/elementFilter";
 import { Unpacked } from "@kie-tools/xyflow-react-kie-diagram/dist/tsExt/tsExt";

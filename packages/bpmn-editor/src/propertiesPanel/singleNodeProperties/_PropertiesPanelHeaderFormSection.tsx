@@ -21,7 +21,7 @@ import { FormSection } from "@patternfly/react-core/dist/js/components/Form";
 import { SectionHeader } from "@kie-tools/xyflow-react-kie-diagram/dist/propertiesPanel/SectionHeader";
 import * as React from "react";
 import { Button, ButtonVariant } from "@patternfly/react-core/dist/js/components/Button";
-import TimesIcon from "@patternfly/react-icons/dist/js/icons/times-icon";
+import { TimesIcon } from "@patternfly/react-icons/dist/js/icons/times-icon";
 import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 
 export function PropertiesPanelHeaderFormSection({
