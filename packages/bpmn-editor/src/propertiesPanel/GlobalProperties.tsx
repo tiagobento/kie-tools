@@ -30,12 +30,9 @@ import { TimesIcon } from "@patternfly/react-icons/dist/js/icons/times-icon";
 import { SyncAltIcon } from "@patternfly/react-icons/dist/js/icons/sync-alt-icon";
 import { DataSourceIcon } from "@patternfly/react-icons/dist/js/icons/data-source-icon";
 import { PeopleCarryIcon } from "@patternfly/react-icons/dist/js/icons/people-carry-icon";
-import { DomainIcon } from "@patternfly/react-icons/dist/js/icons/domain-icon";
 import { ColumnsIcon } from "@patternfly/react-icons/dist/js/icons/columns-icon";
 import { TagIcon } from "@patternfly/react-icons/dist/js/icons/tag-icon";
 import { ImportIcon } from "@patternfly/react-icons/dist/js/icons/import-icon";
-import { EditAltIcon } from "@patternfly/react-icons/dist/js/icons/edit-alt-icon";
-import { UserEditIcon } from "@patternfly/react-icons/dist/js/icons/user-edit-icon";
 import { EditIcon } from "@patternfly/react-icons/dist/js/icons/edit-icon";
 import * as React from "react";
 import { useBpmnEditorStore, useBpmnEditorStoreApi } from "../store/StoreContext";
@@ -46,14 +43,12 @@ import {
   parseBpmn20Drools10MetaData,
   setBpmn20Drools10MetaData,
 } from "@kie-tools/bpmn-marshaller/dist/drools-extension-metaData";
-import { BPMN20__tProcess } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
-import { Normalized } from "../normalization/normalize";
 import { Metadata } from "./metadata/Metadata";
-import { Variables } from "./variables/Variables";
 import { Imports } from "./imports/Imports";
 import { Correlations } from "./correlations/Correlations";
 import { SlaDueDateInput } from "./slaDueDate/SlaDueDateInput";
 import { VariablesFormSection } from "./variables/VariablesFormSection";
+import { Divider } from "@patternfly/react-core/dist/js/components/Divider";
 
 export function GlobalProperties() {
   const thisBpmn = useBpmnEditorStore((s) => s.bpmn);
@@ -145,6 +140,8 @@ export function GlobalProperties() {
                     }
                   />
                 </FormGroup>
+
+                <Divider inset={{ default: "insetXs" }} />
 
                 <FormGroup
                   fieldId="kie-bpmn-editor--global-properties-panel--adhoc"

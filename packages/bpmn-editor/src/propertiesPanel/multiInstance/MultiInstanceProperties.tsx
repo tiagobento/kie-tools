@@ -24,13 +24,16 @@ import { ElementFilter } from "@kie-tools/xml-parser-ts/dist/elementFilter";
 import { Unpacked } from "@kie-tools/xyflow-react-kie-diagram/dist/tsExt/tsExt";
 import { FormGroup } from "@patternfly/react-core/dist/js/components/Form";
 import { CodeInput } from "../codeInput/CodeInput";
-import "./MultipleInstanceProperties.css";
+import "./MultiInstanceProperties.css";
 
-export type WithMultipleInstanceProperties = Normalized<
-  ElementFilter<Unpacked<NonNullable<BPMN20__tProcess["flowElement"]>>, "callActivity" | "subProcess">
+export type WithMultiInstanceProperties = Normalized<
+  ElementFilter<
+    Unpacked<NonNullable<BPMN20__tProcess["flowElement"]>>,
+    "callActivity" | "subProcess" | "userTask" | "serviceTask"
+  >
 >;
 
-export function MultipleInstanceProperties({ element }: { element: WithMultipleInstanceProperties }) {
+export function MultiInstanceProperties({ element }: { element: WithMultiInstanceProperties }) {
   return (
     <>
       <FormGroup label={"Execution mode"}></FormGroup>

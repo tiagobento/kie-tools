@@ -27,18 +27,18 @@ import { SubProcessIcon } from "../../diagram/nodes/NodeIcons";
 import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
 import { VariablesFormSection } from "../variables/VariablesFormSection";
 import { Divider } from "@patternfly/react-core/dist/js/components/Divider";
-import { SubProcessProperties } from "../subProcess/SubProcessProperties";
 import { FormGroup } from "@patternfly/react-core/dist/js/components/Form";
 import { CodeInput } from "../codeInput/CodeInput";
 import { FormSelect, FormSelectOption } from "@patternfly/react-core/dist/js/components/FormSelect";
-import { Checkbox } from "@patternfly/react-core/dist/js/components/Checkbox/Checkbox";
 import { visitFlowElementsAndArtifacts } from "../../mutations/_elementVisitor";
 import { addOrGetProcessAndDiagramElements } from "../../mutations/addOrGetProcessAndDiagramElements";
 import {
   parseBpmn20Drools10MetaData,
   setBpmn20Drools10MetaData,
 } from "@kie-tools/bpmn-marshaller/dist/drools-extension-metaData";
-import { AdhocAutostartCheckbox } from "../adhocAutostart/AdhocAutostartCheckbox";
+import { AdhocAutostartCheckbox } from "../adhocAutostartCheckbox/AdhocAutostartCheckbox";
+import { SlaDueDateInput } from "../slaDueDate/SlaDueDateInput";
+import { AsyncCheckbox } from "../asyncCheckbox/AsyncCheckbox";
 
 export function AdHocSubProcessProperties({
   adHocSubProcess,
@@ -59,7 +59,9 @@ export function AdHocSubProcessProperties({
 
         <Divider inset={{ default: "insetXs" }} />
 
-        <SubProcessProperties p={adHocSubProcess} />
+        <SlaDueDateInput element={adHocSubProcess} />
+
+        <AsyncCheckbox element={adHocSubProcess} />
 
         <Divider inset={{ default: "insetXs" }} />
 

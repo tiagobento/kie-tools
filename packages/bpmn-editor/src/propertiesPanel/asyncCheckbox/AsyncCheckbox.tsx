@@ -17,12 +17,13 @@
  * under the License.
  */
 
-import { BPMN20__tProcess } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
 import * as React from "react";
+import { useBpmnEditorStore, useBpmnEditorStoreApi } from "../../store/StoreContext";
+import { FormGroup } from "@patternfly/react-core/dist/js/components/Form";
 import { Normalized } from "../../normalization/normalize";
+import { BPMN20__tProcess } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
 import { ElementFilter } from "@kie-tools/xml-parser-ts/dist/elementFilter";
 import { Unpacked } from "@kie-tools/xyflow-react-kie-diagram/dist/tsExt/tsExt";
-import { FormGroup } from "@patternfly/react-core/dist/js/components/Form";
 import {
   parseBpmn20Drools10MetaData,
   setBpmn20Drools10MetaData,
@@ -30,48 +31,51 @@ import {
 import { Checkbox } from "@patternfly/react-core/dist/js/components/Checkbox";
 import { visitFlowElementsAndArtifacts } from "../../mutations/_elementVisitor";
 import { addOrGetProcessAndDiagramElements } from "../../mutations/addOrGetProcessAndDiagramElements";
-import { useBpmnEditorStoreApi } from "../../store/StoreContext";
-import "./SubProcessProperties.css";
-import { SlaDueDateInput } from "../slaDueDate/SlaDueDateInput";
+import "./AsyncCheckbox.css";
 
-export type WithSubProcessProperties = Normalized<
+export type WithAsync = Normalized<
   ElementFilter<
     Unpacked<NonNullable<BPMN20__tProcess["flowElement"]>>,
-    "callActivity" | "subProcess" | "transaction" | "adHocSubProcess"
+    | "businessRuleTask"
+    | "adHocSubProcess"
+    | "userTask"
+    | "scriptTask"
+    | "subProcess"
+    | "transaction"
+    | "callActivity"
+    | "serviceTask"
   >
 >;
 
-export function SubProcessProperties({ p }: { p: WithSubProcessProperties }) {
+export function AsyncCheckbox({ element }: { element: WithAsync }) {
+  const isReadOnly = useBpmnEditorStore((s) => s.settings.isReadOnly);
+
   const bpmnEditorStoreApi = useBpmnEditorStoreApi();
 
   return (
-    <>
-      <SlaDueDateInput element={p} />
-
-      <FormGroup
-        fieldId="kie-bpmn-editor--properties-panel--async"
-        // helperText={"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod."} // FIXME: Tiago -> Description
-      >
-        <Checkbox
-          label="Async"
-          id="kie-bpmn-editor--properties-panel--async"
-          name="is-async"
-          aria-label="Async"
-          isChecked={(parseBpmn20Drools10MetaData(p).get("customAsync") ?? "false") === "true"}
-          onChange={(checked) => {
-            bpmnEditorStoreApi.setState((s) => {
-              const { process } = addOrGetProcessAndDiagramElements({
-                definitions: s.bpmn.model.definitions,
-              });
-              visitFlowElementsAndArtifacts(process, ({ element }) => {
-                if (element["@_id"] === p["@_id"] && element.__$$element === p.__$$element) {
-                  setBpmn20Drools10MetaData(element, "customAsync", `${checked}`);
-                }
-              });
+    <FormGroup
+      fieldId="kie-bpmn-editor--properties-panel--async"
+      // helperText={"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod."} // FIXME: Tiago -> Description
+    >
+      <Checkbox
+        label="Async"
+        id="kie-bpmn-editor--properties-panel--async"
+        name="is-async"
+        aria-label="Async"
+        isChecked={(parseBpmn20Drools10MetaData(element).get("customAsync") ?? "false") === "true"}
+        onChange={(checked) => {
+          bpmnEditorStoreApi.setState((s) => {
+            const { process } = addOrGetProcessAndDiagramElements({
+              definitions: s.bpmn.model.definitions,
             });
-          }}
-        />
-      </FormGroup>
-    </>
+            visitFlowElementsAndArtifacts(process, ({ element: e }) => {
+              if (e["@_id"] === element["@_id"] && e.__$$element === element.__$$element) {
+                setBpmn20Drools10MetaData(e, "customAsync", `${checked}`);
+              }
+            });
+          });
+        }}
+      />
+    </FormGroup>
   );
 }

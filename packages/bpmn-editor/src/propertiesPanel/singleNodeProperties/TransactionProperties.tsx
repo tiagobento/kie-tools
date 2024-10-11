@@ -25,8 +25,9 @@ import { OnEntryAndExitScriptsFormSection } from "../onEntryAndExitScripts/OnEnt
 import { SubProcessIcon } from "../../diagram/nodes/NodeIcons";
 import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
 import { VariablesFormSection } from "../variables/VariablesFormSection";
-import { SubProcessProperties } from "../subProcess/SubProcessProperties";
 import { Divider } from "@patternfly/react-core/dist/js/components/Divider";
+import { SlaDueDateInput } from "../slaDueDate/SlaDueDateInput";
+import { AsyncCheckbox } from "../asyncCheckbox/AsyncCheckbox";
 
 export function TransactionProperties({
   transaction,
@@ -43,7 +44,9 @@ export function TransactionProperties({
 
         <Divider inset={{ default: "insetXs" }} />
 
-        <SubProcessProperties p={transaction} />
+        <SlaDueDateInput element={transaction} />
+
+        <AsyncCheckbox element={transaction} />
       </PropertiesPanelHeaderFormSection>
 
       <VariablesFormSection p={transaction} />

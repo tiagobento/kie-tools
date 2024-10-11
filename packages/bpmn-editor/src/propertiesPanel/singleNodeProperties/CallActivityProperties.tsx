@@ -28,7 +28,7 @@ import { OnEntryAndExitScriptsFormSection } from "../onEntryAndExitScripts/OnEnt
 import { CallActivityIcon } from "../../diagram/nodes/NodeIcons";
 import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
 import { CalledElementSelector } from "../calledElementSelector/CalledElementSelector";
-import { MultipleInstanceProperties } from "../multipleInstance/MultipleInstanceProperties";
+import { MultiInstanceProperties } from "../multiInstance/MultiInstanceProperties";
 import { Checkbox } from "@patternfly/react-core/dist/js/components/Checkbox";
 import { visitFlowElementsAndArtifacts } from "../../mutations/_elementVisitor";
 import { addOrGetProcessAndDiagramElements } from "../../mutations/addOrGetProcessAndDiagramElements";
@@ -37,8 +37,10 @@ import {
   parseBpmn20Drools10MetaData,
   setBpmn20Drools10MetaData,
 } from "@kie-tools/bpmn-marshaller/dist/drools-extension-metaData";
-import { SubProcessProperties } from "../subProcess/SubProcessProperties";
 import { Divider } from "@patternfly/react-core/dist/js/components/Divider";
+import { AsyncCheckbox } from "../asyncCheckbox/AsyncCheckbox";
+import { SlaDueDateInput } from "../slaDueDate/SlaDueDateInput";
+import { MultiInstanceCheckbox } from "../multiInstanceCheckbox/MultiInstanceCheckbox";
 
 export function CallActivityProperties({
   callActivity,
@@ -51,10 +53,6 @@ export function CallActivityProperties({
     <>
       <PropertiesPanelHeaderFormSection title={callActivity["@_name"] || "Call activity"} icon={<CallActivityIcon />}>
         <NameDocumentationAndId element={callActivity} />
-
-        <Divider inset={{ default: "insetXs" }} />
-
-        <SubProcessProperties p={callActivity} />
 
         <Divider inset={{ default: "insetXs" }} />
 
@@ -139,40 +137,16 @@ export function CallActivityProperties({
 
         <Divider inset={{ default: "insetXs" }} />
 
-        <FormGroup
-          fieldId="kie-bpmn-editor--properties-panel--call-activity--multiple-instance"
-          // helperText={"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod."} // FIXME: Tiago -> Description
-        >
-          <Checkbox
-            label="Multiple instance"
-            id="kie-bpmn-editor--properties-panel--call-activity--multiple-instance"
-            name="is-multiple-instance"
-            aria-label="Multiple instance"
-            isChecked={callActivity.loopCharacteristics?.__$$element === "multiInstanceLoopCharacteristics"}
-            onChange={(checked) => {
-              bpmnEditorStoreApi.setState((s) => {
-                const { process } = addOrGetProcessAndDiagramElements({
-                  definitions: s.bpmn.model.definitions,
-                });
-                visitFlowElementsAndArtifacts(process, ({ element }) => {
-                  if (element["@_id"] === callActivity["@_id"] && element.__$$element === callActivity.__$$element) {
-                    if (checked) {
-                      element.loopCharacteristics = {
-                        "@_id": generateUuid(),
-                        __$$element: "multiInstanceLoopCharacteristics",
-                      };
-                    } else {
-                      element.loopCharacteristics = undefined;
-                    }
-                  }
-                });
-              });
-            }}
-          />
-        </FormGroup>
+        <SlaDueDateInput element={callActivity} />
+
+        <AsyncCheckbox element={callActivity} />
+
+        <Divider inset={{ default: "insetXs" }} />
+
+        <MultiInstanceCheckbox element={callActivity} />
 
         {callActivity.loopCharacteristics?.__$$element === "multiInstanceLoopCharacteristics" && (
-          <MultipleInstanceProperties element={callActivity} />
+          <MultiInstanceProperties element={callActivity} />
         )}
       </PropertiesPanelHeaderFormSection>
 

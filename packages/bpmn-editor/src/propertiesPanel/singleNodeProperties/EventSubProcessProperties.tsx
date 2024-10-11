@@ -25,7 +25,8 @@ import { SubProcessIcon } from "../../diagram/nodes/NodeIcons";
 import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
 import { VariablesFormSection } from "../variables/VariablesFormSection";
 import { Divider } from "@patternfly/react-core/dist/js/components/Divider";
-import { SubProcessProperties } from "../subProcess/SubProcessProperties";
+import { AsyncCheckbox } from "../asyncCheckbox/AsyncCheckbox";
+import { SlaDueDateInput } from "../slaDueDate/SlaDueDateInput";
 
 export function EventSubProcessProperties({
   eventSubProcess,
@@ -42,7 +43,9 @@ export function EventSubProcessProperties({
 
         <Divider inset={{ default: "insetXs" }} />
 
-        <SubProcessProperties p={eventSubProcess} />
+        <SlaDueDateInput element={eventSubProcess} />
+
+        <AsyncCheckbox element={eventSubProcess} />
       </PropertiesPanelHeaderFormSection>
 
       <VariablesFormSection p={eventSubProcess} />

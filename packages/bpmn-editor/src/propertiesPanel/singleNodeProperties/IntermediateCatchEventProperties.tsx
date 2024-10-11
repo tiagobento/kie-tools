@@ -25,6 +25,7 @@ import { OutputOnlyAssociationFormSection } from "../assignments/AssignmentsForm
 import { EventDefinitionProperties } from "../eventDefinition/EventDefinitionProperties";
 import { IntermediateCatchEventIcon } from "../../diagram/nodes/NodeIcons";
 import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
+import { Divider } from "@patternfly/react-core/dist/js/components/Divider";
 
 export function IntermediateCatchEventProperties({
   intermediateCatchEvent,
@@ -38,6 +39,8 @@ export function IntermediateCatchEventProperties({
         icon={<IntermediateCatchEventIcon variant={intermediateCatchEvent.eventDefinition?.[0]?.__$$element} />}
       >
         <NameDocumentationAndId element={intermediateCatchEvent} />
+
+        <Divider inset={{ default: "insetXs" }} />
 
         <EventDefinitionProperties event={intermediateCatchEvent} />
       </PropertiesPanelHeaderFormSection>

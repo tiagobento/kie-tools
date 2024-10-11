@@ -25,6 +25,10 @@ import { BidirectionalAssignmentsFormSection } from "../assignments/AssignmentsF
 import { OnEntryAndExitScriptsFormSection } from "../onEntryAndExitScripts/OnEntryAndExitScriptsFormSection";
 import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
 import { TaskIcon } from "../../diagram/nodes/NodeIcons";
+import { Divider } from "@patternfly/react-core/dist/js/components/Divider";
+import { CodeInput } from "../codeInput/CodeInput";
+import { AdhocAutostartCheckbox } from "../adhocAutostartCheckbox/AdhocAutostartCheckbox";
+import { AsyncCheckbox } from "../asyncCheckbox/AsyncCheckbox";
 
 export function ScriptTaskProperties({
   scriptTask,
@@ -38,11 +42,22 @@ export function ScriptTaskProperties({
         icon={<TaskIcon variant={scriptTask.__$$element} />}
       >
         <NameDocumentationAndId element={scriptTask} />
+
+        <Divider inset={{ default: "insetXs" }} />
+
+        <CodeInput
+          label={"Script"}
+          languages={["Java"]}
+          value={""} // FIXME: Tiago
+          onChange={(newScript) => {
+            // FIXME: Tiago
+          }}
+        />
+
+        <AsyncCheckbox element={scriptTask} />
+
+        <AdhocAutostartCheckbox element={scriptTask} />
       </PropertiesPanelHeaderFormSection>
-
-      <BidirectionalAssignmentsFormSection element={scriptTask} />
-
-      <OnEntryAndExitScriptsFormSection element={scriptTask} />
     </>
   );
 }

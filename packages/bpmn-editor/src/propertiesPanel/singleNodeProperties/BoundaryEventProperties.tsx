@@ -26,6 +26,7 @@ import { EventDefinitionProperties } from "../eventDefinition/EventDefinitionPro
 import { OutputOnlyAssociationFormSection } from "../assignments/AssignmentsFormSection";
 import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
 import { IntermediateCatchEventIcon } from "../../diagram/nodes/NodeIcons";
+import { Divider } from "@patternfly/react-core/dist/js/components/Divider";
 
 export function BoundaryEventProperties({
   boundaryEvent,
@@ -41,6 +42,8 @@ export function BoundaryEventProperties({
         icon={<IntermediateCatchEventIcon variant={boundaryEvent.eventDefinition?.[0]?.__$$element} />}
       >
         <NameDocumentationAndId element={boundaryEvent} />
+
+        <Divider inset={{ default: "insetXs" }} />
 
         <EventDefinitionProperties event={boundaryEvent} />
       </PropertiesPanelHeaderFormSection>

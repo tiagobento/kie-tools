@@ -34,7 +34,10 @@ import { addOrGetProcessAndDiagramElements } from "../../mutations/addOrGetProce
 import "./AdhocAutostartCheckbox.css";
 
 export type WithAdhocAutostart = Normalized<
-  ElementFilter<Unpacked<NonNullable<BPMN20__tProcess["flowElement"]>>, "adHocSubProcess" | "userTask">
+  ElementFilter<
+    Unpacked<NonNullable<BPMN20__tProcess["flowElement"]>>,
+    "adHocSubProcess" | "userTask" | "scriptTask" | "businessRuleTask" | "serviceTask"
+  >
 >;
 
 export function AdhocAutostartCheckbox({ element }: { element: WithAdhocAutostart }) {
