@@ -24,6 +24,8 @@ import { updateFlowElement } from "../../mutations/renameNode";
 import { Normalized } from "../../normalization/normalize";
 import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
+import { InputOnlyAssociationFormSection } from "../assignments/AssignmentsFormSection";
+import { EventDefinitionProperties } from "../eventDefinition/EventDefinitionProperties";
 
 export function EndEventProperties({
   endEvent,
@@ -33,8 +35,14 @@ export function EndEventProperties({
   const bpmnEditorStoreApi = useBpmnEditorStoreApi();
 
   return (
-    <FormSection>
-      <NameDocumentationAndId element={endEvent} />
-    </FormSection>
+    <>
+      <FormSection>
+        <NameDocumentationAndId element={endEvent} />
+      </FormSection>
+
+      <EventDefinitionProperties event={endEvent} />
+
+      <InputOnlyAssociationFormSection element={endEvent} />
+    </>
   );
 }

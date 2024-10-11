@@ -19,15 +19,14 @@
 
 import * as React from "react";
 import { useBpmnEditorStore, useBpmnEditorStoreApi } from "../../store/StoreContext";
-import { FormGroup, FormSection } from "@patternfly/react-core/dist/js/components/Form";
-import { FormSelect, FormSelectOption } from "@patternfly/react-core/dist/js/components/FormSelect";
+import { FormSection } from "@patternfly/react-core/dist/js/components/Form";
 import { SectionHeader } from "@kie-tools/xyflow-react-kie-diagram/dist/propertiesPanel/SectionHeader";
 import { Button, ButtonVariant } from "@patternfly/react-core/dist/js/components/Button";
 import { EditIcon } from "@patternfly/react-icons/dist/js/icons/edit-icon";
 import { useMemo, useState } from "react";
 import {
-  BPMN20__tCallActivity,
-  BPMN20__tDefinitions,
+  BPMN20__tDataInputAssociation,
+  BPMN20__tDataOutputAssociation,
   BPMN20__tProcess,
 } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
 import { Modal, ModalVariant } from "@patternfly/react-core/dist/js/components/Modal/Modal";
@@ -39,7 +38,6 @@ import { Bullseye } from "@patternfly/react-core/dist/js/layouts/Bullseye";
 import { Grid, GridItem } from "@patternfly/react-core/dist/js/layouts/Grid";
 import CubesIcon from "@patternfly/react-icons/dist/js/icons/cubes-icon";
 import TimesIcon from "@patternfly/react-icons/dist/js/icons/times-icon";
-import { Stack, StackItem } from "@patternfly/react-core/dist/js/layouts/Stack";
 import EyeIcon from "@patternfly/react-icons/dist/js/icons/eye-icon";
 import { addOrGetProcessAndDiagramElements } from "../../mutations/addOrGetProcessAndDiagramElements";
 import PlusCircleIcon from "@patternfly/react-icons/dist/js/icons/plus-circle-icon";
@@ -56,25 +54,21 @@ export type WithAssignments = Normalized<
   >
 >;
 
-export function AssignmentsFormSection({ element }: { element: WithAssignments }) {
+export type WithOutputAssignments = Normalized<
+  ElementFilter<
+    Unpacked<NonNullable<BPMN20__tProcess["flowElement"]>>,
+    "startEvent" | "intermediateCatchEvent" | "boundaryEvent"
+  >
+>;
+
+export type WithInputAssignments = Normalized<
+  ElementFilter<Unpacked<NonNullable<BPMN20__tProcess["flowElement"]>>, "endEvent" | "intermediateThrowEvent">
+>;
+
+export function CommonFormSection({ sectionLabel, children }: React.PropsWithChildren<{ sectionLabel: string }>) {
   const isReadOnly = useBpmnEditorStore((s) => s.settings.isReadOnly);
 
   const [showAssignmentsModal, setShowAssignmentsModal] = useState(false);
-
-  const inputCount = element.dataInputAssociation?.length ?? 0;
-  const outputCount = element.dataOutputAssociation?.length ?? 0;
-
-  const sectionLabel = useMemo(() => {
-    if (inputCount > 0 && outputCount > 0) {
-      return ` (in: ${inputCount}, out: ${outputCount})`;
-    } else if (inputCount > 0) {
-      return ` (in: ${inputCount}, out: -)`;
-    } else if (outputCount > 0) {
-      return ` (in: -, out: ${outputCount})`;
-    } else {
-      return "";
-    }
-  }, [inputCount, outputCount]);
 
   return (
     <>
@@ -98,7 +92,6 @@ export function AssignmentsFormSection({ element }: { element: WithAssignments }
           />
         }
       />
-
       <Modal
         title="Assignments"
         className={"kie-bpmn-editor--assignments--modal"}
@@ -107,18 +100,89 @@ export function AssignmentsFormSection({ element }: { element: WithAssignments }
         isOpen={showAssignmentsModal}
         onClose={() => setShowAssignmentsModal(false)}
       >
-        <div className="kie-bpmn-editor--assignments--modal-section">
-          <AssignmentList section={"input"} element={element} />
-        </div>
-        <div className="kie-bpmn-editor--assignments--modal-section">
-          <AssignmentList section={"output"} element={element} />
-        </div>
+        {children}
       </Modal>
     </>
   );
 }
 
-export function AssignmentList({ section, element }: { section: "input" | "output"; element: WithAssignments }) {
+export function BidirectionalAssignmentsFormSection({ element }: { element: WithAssignments }) {
+  const inputCount = element.dataInputAssociation?.length ?? 0;
+  const outputCount = element.dataOutputAssociation?.length ?? 0;
+  const sectionLabel = useMemo(() => {
+    if (inputCount > 0 && outputCount > 0) {
+      return ` (in: ${inputCount}, out: ${outputCount})`;
+    } else if (inputCount > 0) {
+      return ` (in: ${inputCount}, out: -)`;
+    } else if (outputCount > 0) {
+      return ` (in: -, out: ${outputCount})`;
+    } else {
+      return "";
+    }
+  }, [inputCount, outputCount]);
+
+  return (
+    <CommonFormSection sectionLabel={sectionLabel}>
+      <div className="kie-bpmn-editor--assignments--modal-section" style={{ height: "50%" }}>
+        <AssignmentList section={"input"} element={element} />
+      </div>
+      <div className="kie-bpmn-editor--assignments--modal-section" style={{ height: "50%" }}>
+        <AssignmentList section={"output"} element={element} />
+      </div>
+    </CommonFormSection>
+  );
+}
+
+export function InputOnlyAssociationFormSection({ element }: { element: WithInputAssignments }) {
+  const inputCount = element.dataInputAssociation?.length ?? 0;
+  const sectionLabel = useMemo(() => {
+    if (inputCount > 0) {
+      return ` (in: ${inputCount})`;
+    } else {
+      return ` (in: -)`;
+    }
+  }, [inputCount]);
+
+  return (
+    <CommonFormSection sectionLabel={sectionLabel}>
+      <div className="kie-bpmn-editor--assignments--modal-section" style={{ height: "100%" }}>
+        <AssignmentList section={"input"} element={element} />
+      </div>
+    </CommonFormSection>
+  );
+}
+
+export function OutputOnlyAssociationFormSection({ element }: { element: WithOutputAssignments }) {
+  const outputCount = element.dataOutputAssociation?.length ?? 0;
+  const sectionLabel = useMemo(() => {
+    if (outputCount > 0) {
+      return ` (out: ${outputCount})`;
+    } else {
+      return ` (out: -)`;
+    }
+  }, [outputCount]);
+
+  return (
+    <CommonFormSection sectionLabel={sectionLabel}>
+      <div className="kie-bpmn-editor--assignments--modal-section" style={{ height: "100%" }}>
+        <AssignmentList section={"output"} element={element} />
+      </div>
+    </CommonFormSection>
+  );
+}
+
+export function AssignmentList({
+  section,
+  element,
+}:
+  | {
+      section: "input";
+      element: WithAssignments | (WithInputAssignments & { dataOutputAssociation?: BPMN20__tDataOutputAssociation[] });
+    }
+  | {
+      section: "output";
+      element: WithAssignments | (WithOutputAssignments & { dataInputAssociation?: BPMN20__tDataInputAssociation[] });
+    }) {
   const bpmnEditorStoreApi = useBpmnEditorStoreApi();
 
   const isReadOnly = useBpmnEditorStore((s) => s.settings.isReadOnly);
@@ -149,8 +213,8 @@ export function AssignmentList({ section, element }: { section: "input" | "outpu
       const { process } = addOrGetProcessAndDiagramElements({ definitions: s.bpmn.model.definitions });
       visitFlowElementsAndArtifacts(process, ({ element: e }) => {
         if (e["@_id"] === element["@_id"] && e.__$$element === element.__$$element) {
-          e[associationsPropName] ??= [];
-          e[associationsPropName]?.push({
+          (e as typeof element)[associationsPropName] ??= [];
+          (e as typeof element)[associationsPropName]?.push({
             "@_id": generateUuid(),
             targetRef: { __$$text: "" },
           });
@@ -273,7 +337,7 @@ export function AssignmentList({ section, element }: { section: "input" | "outpu
                           });
                           visitFlowElementsAndArtifacts(process, ({ element: e }) => {
                             if (e["@_id"] === element["@_id"] && e.__$$element === element.__$$element) {
-                              e[associationsPropName]?.splice(i, 1);
+                              (e as typeof element)[associationsPropName]?.splice(i, 1);
                             }
                           });
                         });

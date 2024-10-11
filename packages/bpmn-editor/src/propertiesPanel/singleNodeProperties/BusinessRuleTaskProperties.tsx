@@ -24,7 +24,7 @@ import { updateFlowElement } from "../../mutations/renameNode";
 import { Normalized } from "../../normalization/normalize";
 import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
-import { AssignmentsFormSection } from "../assignments/AssignmentsFormSection";
+import { BidirectionalAssignmentsFormSection } from "../assignments/AssignmentsFormSection";
 import { OnEntryAndExitScriptsFormSection } from "../onEntryAndExitScripts/OnEntryAndExitScriptsFormSection";
 
 export function BusinessRuleTaskProperties({
@@ -40,7 +40,7 @@ export function BusinessRuleTaskProperties({
         <NameDocumentationAndId element={businessRuleTask} />
       </FormSection>
 
-      <AssignmentsFormSection element={businessRuleTask} />
+      <BidirectionalAssignmentsFormSection element={businessRuleTask} />
 
       <OnEntryAndExitScriptsFormSection element={businessRuleTask} />
     </>

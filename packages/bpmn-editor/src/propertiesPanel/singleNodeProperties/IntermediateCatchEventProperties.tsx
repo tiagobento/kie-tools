@@ -26,6 +26,8 @@ import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
 import { SlaDueDateInput } from "../slaDueDate/SlaDueDateInput";
 import { CodeInput } from "../codeInput/CodeInput";
+import { OutputOnlyAssociationFormSection } from "../assignments/AssignmentsFormSection";
+import { EventDefinitionProperties } from "../eventDefinition/EventDefinitionProperties";
 
 export function IntermediateCatchEventProperties({
   intermediateCatchEvent,
@@ -40,20 +42,9 @@ export function IntermediateCatchEventProperties({
         <NameDocumentationAndId element={intermediateCatchEvent} />
       </FormSection>
 
-      {intermediateCatchEvent.eventDefinition?.[0].__$$element !== "linkEventDefinition" && (
-        <SlaDueDateInput element={intermediateCatchEvent} />
-      )}
+      <EventDefinitionProperties event={intermediateCatchEvent} />
 
-      {intermediateCatchEvent.eventDefinition?.[0].__$$element === "conditionalEventDefinition" && (
-        <CodeInput
-          label={"Condition"}
-          languages={["Drools"]}
-          value={""}
-          onChange={(newScript) => {
-            // TODO: Tiago
-          }}
-        />
-      )}
+      <OutputOnlyAssociationFormSection element={intermediateCatchEvent} />
     </>
   );
 }
