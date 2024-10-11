@@ -23,7 +23,7 @@ import * as React from "react";
 import { Normalized } from "../../normalization/normalize";
 import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
-import { AssignmentsFormSection } from "../assignments/AssignmentsFormSection";
+import { BidirectionalAssignmentsFormSection } from "../assignments/AssignmentsFormSection";
 import { OnEntryAndExitScriptsFormSection } from "../onEntryAndExitScripts/OnEntryAndExitScriptsFormSection";
 
 export function CallActivityProperties({
@@ -39,7 +39,7 @@ export function CallActivityProperties({
         <NameDocumentationAndId element={callActivity} />
       </FormSection>
 
-      <AssignmentsFormSection element={callActivity} />
+      <BidirectionalAssignmentsFormSection element={callActivity} />
 
       <OnEntryAndExitScriptsFormSection element={callActivity} />
     </>

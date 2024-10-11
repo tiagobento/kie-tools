@@ -18,14 +18,13 @@
  */
 
 .kie-bpmn-editor--assignments--modal {
-  height: 100%;
+  height: 80%;
   width: 80%;
   position: relative;
 }
 
 .kie-bpmn-editor--assignments--modal-section {
   padding-bottom: 16px;
-  height: 50%;
   overflow-y: scroll;
   display: flex;
   flex-direction: column;

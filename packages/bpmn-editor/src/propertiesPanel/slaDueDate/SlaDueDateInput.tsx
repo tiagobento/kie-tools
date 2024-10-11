@@ -36,7 +36,10 @@ export type WithSlaDueDate =
   | undefined
   | Normalized<
       | ElementFilter<Unpacked<NonNullable<BPMN20__tDefinitions["rootElement"]>>, "process">
-      | ElementFilter<Unpacked<NonNullable<BPMN20__tProcess["flowElement"]>>, "startEvent" | "intermediateCatchEvent">
+      | ElementFilter<
+          Unpacked<NonNullable<BPMN20__tProcess["flowElement"]>>,
+          "startEvent" | "intermediateCatchEvent" | "boundaryEvent"
+        >
     >;
 
 export function SlaDueDateInput({ element }: { element: WithSlaDueDate }) {

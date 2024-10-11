@@ -24,7 +24,7 @@ import { updateFlowElement } from "../../mutations/renameNode";
 import { Normalized } from "../../normalization/normalize";
 import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
-import { AssignmentsFormSection } from "../assignments/AssignmentsFormSection";
+import { BidirectionalAssignmentsFormSection } from "../assignments/AssignmentsFormSection";
 import { OnEntryAndExitScriptsFormSection } from "../onEntryAndExitScripts/OnEntryAndExitScriptsFormSection";
 
 export function UserTaskProperties({
@@ -40,7 +40,7 @@ export function UserTaskProperties({
         <NameDocumentationAndId element={userTask} />
       </FormSection>
 
-      <AssignmentsFormSection element={userTask} />
+      <BidirectionalAssignmentsFormSection element={userTask} />
 
       <OnEntryAndExitScriptsFormSection element={userTask} />
     </>

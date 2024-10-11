@@ -24,6 +24,8 @@ import { updateFlowElement } from "../../mutations/renameNode";
 import { Normalized } from "../../normalization/normalize";
 import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
+import { InputOnlyAssociationFormSection } from "../assignments/AssignmentsFormSection";
+import { EventDefinitionProperties } from "../eventDefinition/EventDefinitionProperties";
 
 export function IntermediateThrowEventProperties({
   intermediateThrowEvent,
@@ -33,8 +35,14 @@ export function IntermediateThrowEventProperties({
   const bpmnEditorStoreApi = useBpmnEditorStoreApi();
 
   return (
-    <FormSection>
-      <NameDocumentationAndId element={intermediateThrowEvent} />
-    </FormSection>
+    <>
+      <FormSection>
+        <NameDocumentationAndId element={intermediateThrowEvent} />
+      </FormSection>
+
+      <EventDefinitionProperties event={intermediateThrowEvent} />
+
+      <InputOnlyAssociationFormSection element={intermediateThrowEvent} />
+    </>
   );
 }

@@ -20,40 +20,25 @@
 import { BPMN20__tStartEvent } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
 import { FormSection } from "@patternfly/react-core/dist/js/components/Form";
 import * as React from "react";
-import { updateFlowElement } from "../../mutations/renameNode";
 import { Normalized } from "../../normalization/normalize";
-import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
-import { SlaDueDateInput } from "../slaDueDate/SlaDueDateInput";
-import { CodeInput } from "../codeInput/CodeInput";
+import { OutputOnlyAssociationFormSection } from "../assignments/AssignmentsFormSection";
+import { EventDefinitionProperties } from "../eventDefinition/EventDefinitionProperties";
 
 export function StartEventProperties({
   startEvent,
 }: {
   startEvent: Normalized<BPMN20__tStartEvent> & { __$$element: "startEvent" };
 }) {
-  const bpmnEditorStoreApi = useBpmnEditorStoreApi();
-
   return (
     <>
       <FormSection>
         <NameDocumentationAndId element={startEvent} />
       </FormSection>
 
-      {startEvent.eventDefinition?.[0].__$$element !== "linkEventDefinition" && (
-        <SlaDueDateInput element={startEvent} />
-      )}
+      <EventDefinitionProperties event={startEvent} />
 
-      {startEvent.eventDefinition?.[0].__$$element === "conditionalEventDefinition" && (
-        <CodeInput
-          label={"Condition"}
-          languages={["Drools"]}
-          value={""}
-          onChange={(newScript) => {
-            // TODO: Tiago
-          }}
-        />
-      )}
+      <OutputOnlyAssociationFormSection element={startEvent} />
     </>
   );
 }
