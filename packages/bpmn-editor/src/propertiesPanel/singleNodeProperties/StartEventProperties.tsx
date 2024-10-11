@@ -24,6 +24,8 @@ import { Normalized } from "../../normalization/normalize";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
 import { OutputOnlyAssociationFormSection } from "../assignments/AssignmentsFormSection";
 import { EventDefinitionProperties } from "../eventDefinition/EventDefinitionProperties";
+import { StartEventIcon } from "../../diagram/nodes/NodeIcons";
+import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
 
 export function StartEventProperties({
   startEvent,
@@ -32,11 +34,14 @@ export function StartEventProperties({
 }) {
   return (
     <>
-      <FormSection>
+      <PropertiesPanelHeaderFormSection
+        title={startEvent["@_name"] ?? "Start event"}
+        icon={<StartEventIcon variant={startEvent.eventDefinition?.[0]?.__$$element} />}
+      >
         <NameDocumentationAndId element={startEvent} />
-      </FormSection>
 
-      <EventDefinitionProperties event={startEvent} />
+        <EventDefinitionProperties event={startEvent} />
+      </PropertiesPanelHeaderFormSection>
 
       <OutputOnlyAssociationFormSection element={startEvent} />
     </>

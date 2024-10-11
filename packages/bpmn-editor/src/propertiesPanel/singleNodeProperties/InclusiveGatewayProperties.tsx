@@ -25,6 +25,8 @@ import { Normalized } from "../../normalization/normalize";
 import { useBpmnEditorStore, useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
 import { DefaultRouteSelector } from "../defaultRouteSelector/DefaultRouteSelector";
+import { GatewayIcon } from "../../diagram/nodes/NodeIcons";
+import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
 
 export function InclusiveGatewayProperties({
   inclusiveGateway,
@@ -36,10 +38,13 @@ export function InclusiveGatewayProperties({
   const isReadOnly = useBpmnEditorStore((s) => s.settings.isReadOnly);
 
   return (
-    <FormSection>
+    <PropertiesPanelHeaderFormSection
+      title={inclusiveGateway["@_name"] ?? "Inclusive gateway"}
+      icon={<GatewayIcon variant={inclusiveGateway.__$$element} />}
+    >
       <NameDocumentationAndId element={inclusiveGateway} />
 
       <DefaultRouteSelector gateway={inclusiveGateway} />
-    </FormSection>
+    </PropertiesPanelHeaderFormSection>
   );
 }

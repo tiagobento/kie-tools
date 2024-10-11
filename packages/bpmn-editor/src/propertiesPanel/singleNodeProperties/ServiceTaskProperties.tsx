@@ -26,6 +26,8 @@ import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
 import { BidirectionalAssignmentsFormSection } from "../assignments/AssignmentsFormSection";
 import { OnEntryAndExitScriptsFormSection } from "../onEntryAndExitScripts/OnEntryAndExitScriptsFormSection";
+import { TaskIcon } from "../../diagram/nodes/NodeIcons";
+import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
 
 export function ServiceTaskProperties({
   serviceTask,
@@ -36,9 +38,12 @@ export function ServiceTaskProperties({
 
   return (
     <>
-      <FormSection>
+      <PropertiesPanelHeaderFormSection
+        title={serviceTask["@_name"] ?? "Service task"}
+        icon={<TaskIcon variant={serviceTask.__$$element} />}
+      >
         <NameDocumentationAndId element={serviceTask} />
-      </FormSection>
+      </PropertiesPanelHeaderFormSection>
 
       <BidirectionalAssignmentsFormSection element={serviceTask} />
 

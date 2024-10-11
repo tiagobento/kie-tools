@@ -24,6 +24,8 @@ import { updateFlowElement } from "../../mutations/renameNode";
 import { Normalized } from "../../normalization/normalize";
 import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
+import { GatewayIcon } from "../../diagram/nodes/NodeIcons";
+import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
 
 export function ParallelGatewayProperties({
   parallelGateway,
@@ -33,8 +35,11 @@ export function ParallelGatewayProperties({
   const bpmnEditorStoreApi = useBpmnEditorStoreApi();
 
   return (
-    <FormSection>
+    <PropertiesPanelHeaderFormSection
+      title={parallelGateway["@_name"] ?? "Parallel gateway"}
+      icon={<GatewayIcon variant={parallelGateway.__$$element} />}
+    >
       <NameDocumentationAndId element={parallelGateway} />
-    </FormSection>
+    </PropertiesPanelHeaderFormSection>
   );
 }

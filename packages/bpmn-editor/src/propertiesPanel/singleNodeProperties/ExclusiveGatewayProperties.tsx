@@ -25,6 +25,8 @@ import { Normalized } from "../../normalization/normalize";
 import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
 import { DefaultRouteSelector } from "../defaultRouteSelector/DefaultRouteSelector";
+import { GatewayIcon } from "../../diagram/nodes/NodeIcons";
+import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
 
 export function ExclusiveGatewayProperties({
   exclusiveGateway,
@@ -34,9 +36,12 @@ export function ExclusiveGatewayProperties({
   const bpmnEditorStoreApi = useBpmnEditorStoreApi();
 
   return (
-    <FormSection>
+    <PropertiesPanelHeaderFormSection
+      title={exclusiveGateway["@_name"] ?? "Exclusive gateway"}
+      icon={<GatewayIcon variant={exclusiveGateway.__$$element} />}
+    >
       <NameDocumentationAndId element={exclusiveGateway} />
       <DefaultRouteSelector gateway={exclusiveGateway} />
-    </FormSection>
+    </PropertiesPanelHeaderFormSection>
   );
 }

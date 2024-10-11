@@ -26,6 +26,8 @@ import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
 import { BidirectionalAssignmentsFormSection } from "../assignments/AssignmentsFormSection";
 import { OnEntryAndExitScriptsFormSection } from "../onEntryAndExitScripts/OnEntryAndExitScriptsFormSection";
+import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
+import { TaskIcon } from "../../diagram/nodes/NodeIcons";
 
 export function BusinessRuleTaskProperties({
   businessRuleTask,
@@ -36,9 +38,9 @@ export function BusinessRuleTaskProperties({
 
   return (
     <>
-      <FormSection>
+      <PropertiesPanelHeaderFormSection title={businessRuleTask["@_name"] ?? "Business rule task"} icon={<TaskIcon />}>
         <NameDocumentationAndId element={businessRuleTask} />
-      </FormSection>
+      </PropertiesPanelHeaderFormSection>
 
       <BidirectionalAssignmentsFormSection element={businessRuleTask} />
 

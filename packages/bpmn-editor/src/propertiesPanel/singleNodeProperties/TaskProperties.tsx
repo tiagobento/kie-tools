@@ -23,14 +23,18 @@ import * as React from "react";
 import { Normalized } from "../../normalization/normalize";
 import { useBpmnEditorStore, useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
+import { TaskIcon } from "../../diagram/nodes/NodeIcons";
+import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
 
 export function TaskProperties({ task }: { task: Normalized<BPMN20__tTask> & { __$$element: "task" } }) {
   const bpmnEditorStoreApi = useBpmnEditorStoreApi();
   const settings = useBpmnEditorStore((s) => s.settings);
 
   return (
-    <FormSection>
-      <NameDocumentationAndId element={task} />
-    </FormSection>
+    <>
+      <PropertiesPanelHeaderFormSection title={task["@_name"] ?? "Task"} icon={<TaskIcon />}>
+        <NameDocumentationAndId element={task} />
+      </PropertiesPanelHeaderFormSection>
+    </>
   );
 }

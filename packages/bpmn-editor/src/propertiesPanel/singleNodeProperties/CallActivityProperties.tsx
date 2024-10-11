@@ -25,6 +25,8 @@ import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
 import { BidirectionalAssignmentsFormSection } from "../assignments/AssignmentsFormSection";
 import { OnEntryAndExitScriptsFormSection } from "../onEntryAndExitScripts/OnEntryAndExitScriptsFormSection";
+import { CallActivityIcon } from "../../diagram/nodes/NodeIcons";
+import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
 
 export function CallActivityProperties({
   callActivity,
@@ -35,9 +37,9 @@ export function CallActivityProperties({
 
   return (
     <>
-      <FormSection>
+      <PropertiesPanelHeaderFormSection title={callActivity["@_name"] ?? "Call activity"} icon={<CallActivityIcon />}>
         <NameDocumentationAndId element={callActivity} />
-      </FormSection>
+      </PropertiesPanelHeaderFormSection>
 
       <BidirectionalAssignmentsFormSection element={callActivity} />
 

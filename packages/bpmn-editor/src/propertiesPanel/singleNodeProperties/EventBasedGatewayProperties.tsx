@@ -24,6 +24,8 @@ import { updateFlowElement } from "../../mutations/renameNode";
 import { Normalized } from "../../normalization/normalize";
 import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
+import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
+import { GatewayIcon } from "../../diagram/nodes/NodeIcons";
 
 export function EventBasedGatewayProperties({
   eventBasedGateway,
@@ -33,8 +35,11 @@ export function EventBasedGatewayProperties({
   const bpmnEditorStoreApi = useBpmnEditorStoreApi();
 
   return (
-    <FormSection>
+    <PropertiesPanelHeaderFormSection
+      title={eventBasedGateway["@_name"] ?? "Event-based gateway"}
+      icon={<GatewayIcon variant={eventBasedGateway.__$$element} />}
+    >
       <NameDocumentationAndId element={eventBasedGateway} />
-    </FormSection>
+    </PropertiesPanelHeaderFormSection>
   );
 }

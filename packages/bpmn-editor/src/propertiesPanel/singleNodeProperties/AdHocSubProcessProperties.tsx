@@ -25,6 +25,8 @@ import { Normalized } from "../../normalization/normalize";
 import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
 import { OnEntryAndExitScriptsFormSection } from "../onEntryAndExitScripts/OnEntryAndExitScriptsFormSection";
+import { SubProcessIcon } from "../../diagram/nodes/NodeIcons";
+import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
 
 export function AdHocSubProcessProperties({
   adHocSubProcess,
@@ -35,9 +37,12 @@ export function AdHocSubProcessProperties({
 
   return (
     <>
-      <FormSection>
+      <PropertiesPanelHeaderFormSection
+        title={adHocSubProcess["@_name"] ?? "Ad-hoc sub-process"}
+        icon={<SubProcessIcon />}
+      >
         <NameDocumentationAndId element={adHocSubProcess} />
-      </FormSection>
+      </PropertiesPanelHeaderFormSection>
 
       <OnEntryAndExitScriptsFormSection element={adHocSubProcess} />
     </>

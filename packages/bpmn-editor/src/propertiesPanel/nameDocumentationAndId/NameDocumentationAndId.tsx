@@ -61,6 +61,7 @@ export function NameDocumentationAndId({
           id={element["@_id"]}
           name={element["@_name"]}
           value={element["@_name"]}
+          placeholder={"Enter a name..."}
           onChange={onNameChanged}
         />
       </FormGroup>

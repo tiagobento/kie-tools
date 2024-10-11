@@ -26,6 +26,8 @@ import { useBpmnEditorStore, useBpmnEditorStoreApi } from "../../store/StoreCont
 import { TextInput } from "@patternfly/react-core/dist/js/components/TextInput";
 import { TextArea } from "@patternfly/react-core/dist/js/components/TextArea";
 import { ClipboardCopy } from "@patternfly/react-core/dist/js/components/ClipboardCopy";
+import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
+import { TextAnnotationIcon } from "../../diagram/nodes/NodeIcons";
 
 export function TextAnnotationProperties({
   textAnnotation,
@@ -36,7 +38,7 @@ export function TextAnnotationProperties({
   const settings = useBpmnEditorStore((s) => s.settings);
 
   return (
-    <FormSection>
+    <PropertiesPanelHeaderFormSection title={"Text Annotation"} icon={<TextAnnotationIcon />}>
       <FormGroup label="Format">
         <TextInput
           aria-label={"Format"}
@@ -95,6 +97,6 @@ export function TextAnnotationProperties({
           {textAnnotation["@_id"]}
         </ClipboardCopy>
       </FormGroup>
-    </FormSection>
+    </PropertiesPanelHeaderFormSection>
   );
 }

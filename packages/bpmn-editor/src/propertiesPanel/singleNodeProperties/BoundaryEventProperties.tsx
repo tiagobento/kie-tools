@@ -26,6 +26,8 @@ import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
 import { EventDefinitionProperties } from "../eventDefinition/EventDefinitionProperties";
 import { OutputOnlyAssociationFormSection } from "../assignments/AssignmentsFormSection";
+import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
+import { IntermediateCatchEventIcon } from "../../diagram/nodes/NodeIcons";
 
 export function BoundaryEventProperties({
   boundaryEvent,
@@ -36,11 +38,14 @@ export function BoundaryEventProperties({
 
   return (
     <>
-      <FormSection>
+      <PropertiesPanelHeaderFormSection
+        title={boundaryEvent["@_name"] ?? "Boundary event"}
+        icon={<IntermediateCatchEventIcon variant={boundaryEvent.eventDefinition?.[0]?.__$$element} />}
+      >
         <NameDocumentationAndId element={boundaryEvent} />
-      </FormSection>
 
-      <EventDefinitionProperties event={boundaryEvent} />
+        <EventDefinitionProperties event={boundaryEvent} />
+      </PropertiesPanelHeaderFormSection>
 
       <OutputOnlyAssociationFormSection element={boundaryEvent} />
     </>

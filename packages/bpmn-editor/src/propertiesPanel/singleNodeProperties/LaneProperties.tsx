@@ -23,13 +23,15 @@ import * as React from "react";
 import { Normalized } from "../../normalization/normalize";
 import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
+import { LaneIcon } from "../../diagram/nodes/NodeIcons";
+import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
 
 export function LaneProperties({ lane }: { lane: Normalized<BPMN20__tLane> & { __$$element: "lane" } }) {
   const bpmnEditorStoreApi = useBpmnEditorStoreApi();
 
   return (
-    <FormSection>
+    <PropertiesPanelHeaderFormSection title={lane["@_name"] ?? "Lane"} icon={<LaneIcon />}>
       <NameDocumentationAndId element={lane} />
-    </FormSection>
+    </PropertiesPanelHeaderFormSection>
   );
 }

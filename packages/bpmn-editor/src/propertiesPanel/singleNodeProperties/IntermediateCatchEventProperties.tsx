@@ -28,6 +28,8 @@ import { SlaDueDateInput } from "../slaDueDate/SlaDueDateInput";
 import { CodeInput } from "../codeInput/CodeInput";
 import { OutputOnlyAssociationFormSection } from "../assignments/AssignmentsFormSection";
 import { EventDefinitionProperties } from "../eventDefinition/EventDefinitionProperties";
+import { IntermediateCatchEventIcon } from "../../diagram/nodes/NodeIcons";
+import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
 
 export function IntermediateCatchEventProperties({
   intermediateCatchEvent,
@@ -38,11 +40,14 @@ export function IntermediateCatchEventProperties({
 
   return (
     <>
-      <FormSection>
+      <PropertiesPanelHeaderFormSection
+        title={intermediateCatchEvent["@_name"] ?? "Intermediate catch event"}
+        icon={<IntermediateCatchEventIcon variant={intermediateCatchEvent.eventDefinition?.[0]?.__$$element} />}
+      >
         <NameDocumentationAndId element={intermediateCatchEvent} />
-      </FormSection>
 
-      <EventDefinitionProperties event={intermediateCatchEvent} />
+        <EventDefinitionProperties event={intermediateCatchEvent} />
+      </PropertiesPanelHeaderFormSection>
 
       <OutputOnlyAssociationFormSection element={intermediateCatchEvent} />
     </>
