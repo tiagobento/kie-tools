@@ -25,9 +25,10 @@ import { OnEntryAndExitScriptsFormSection } from "../onEntryAndExitScripts/OnEnt
 import { SubProcessIcon } from "../../diagram/nodes/NodeIcons";
 import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
 import { VariablesFormSection } from "../variables/VariablesFormSection";
-import { MultipleInstanceProperties } from "../multipleInstance/MultipleInstanceProperties";
+import { MultiInstanceProperties } from "../multiInstance/MultiInstanceProperties";
 import { Divider } from "@patternfly/react-core/dist/js/components/Divider";
-import { SubProcessProperties as __SubProcessProperties } from "../subProcess/SubProcessProperties";
+import { AsyncCheckbox } from "../asyncCheckbox/AsyncCheckbox";
+import { SlaDueDateInput } from "../slaDueDate/SlaDueDateInput";
 
 export function SubProcessProperties({
   subProcess,
@@ -44,12 +45,14 @@ export function SubProcessProperties({
 
         <Divider inset={{ default: "insetXs" }} />
 
-        <__SubProcessProperties p={subProcess} />
+        <SlaDueDateInput element={subProcess} />
+
+        <AsyncCheckbox element={subProcess} />
 
         {subProcess.loopCharacteristics?.__$$element === "multiInstanceLoopCharacteristics" && (
           <>
             <Divider inset={{ default: "insetXs" }} />
-            <MultipleInstanceProperties element={subProcess} />
+            <MultiInstanceProperties element={subProcess} />
           </>
         )}
       </PropertiesPanelHeaderFormSection>

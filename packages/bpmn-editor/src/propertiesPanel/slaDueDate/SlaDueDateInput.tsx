@@ -45,6 +45,9 @@ export type WithSlaDueDate =
           | "subProcess"
           | "adHocSubProcess"
           | "transaction"
+          | "userTask"
+          | "serviceTask"
+          | "businessRuleTask"
         >
     >;
 

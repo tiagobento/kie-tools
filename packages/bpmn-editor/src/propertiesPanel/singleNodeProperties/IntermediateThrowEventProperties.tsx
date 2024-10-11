@@ -25,6 +25,7 @@ import { InputOnlyAssociationFormSection } from "../assignments/AssignmentsFormS
 import { EventDefinitionProperties } from "../eventDefinition/EventDefinitionProperties";
 import { IntermediateThrowEventIcon } from "../../diagram/nodes/NodeIcons";
 import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
+import { Divider } from "@patternfly/react-core/dist/js/components/Divider";
 
 export function IntermediateThrowEventProperties({
   intermediateThrowEvent,
@@ -38,6 +39,8 @@ export function IntermediateThrowEventProperties({
         icon={<IntermediateThrowEventIcon variant={intermediateThrowEvent.eventDefinition?.[0]?.__$$element} />}
       >
         <NameDocumentationAndId element={intermediateThrowEvent} />
+
+        <Divider inset={{ default: "insetXs" }} />
 
         <EventDefinitionProperties event={intermediateThrowEvent} />
       </PropertiesPanelHeaderFormSection>

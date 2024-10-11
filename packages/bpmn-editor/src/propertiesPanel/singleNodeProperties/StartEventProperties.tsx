@@ -25,6 +25,7 @@ import { OutputOnlyAssociationFormSection } from "../assignments/AssignmentsForm
 import { EventDefinitionProperties } from "../eventDefinition/EventDefinitionProperties";
 import { StartEventIcon } from "../../diagram/nodes/NodeIcons";
 import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
+import { Divider } from "@patternfly/react-core/dist/js/components/Divider";
 
 export function StartEventProperties({
   startEvent,
@@ -38,6 +39,8 @@ export function StartEventProperties({
         icon={<StartEventIcon variant={startEvent.eventDefinition?.[0]?.__$$element} />}
       >
         <NameDocumentationAndId element={startEvent} />
+
+        <Divider inset={{ default: "insetXs" }} />
 
         <EventDefinitionProperties event={startEvent} />
       </PropertiesPanelHeaderFormSection>

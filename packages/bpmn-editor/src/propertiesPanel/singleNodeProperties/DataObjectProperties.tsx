@@ -25,6 +25,7 @@ import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentat
 import { DataTypeSelector } from "../dataTypeSelector/DataTypeSelector";
 import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
 import { DataObjectIcon } from "../../diagram/nodes/NodeIcons";
+import { Divider } from "@patternfly/react-core/dist/js/components/Divider";
 
 export function DataObjectProperties({
   dataObject,
@@ -34,6 +35,8 @@ export function DataObjectProperties({
   return (
     <PropertiesPanelHeaderFormSection title={dataObject["@_name"] || "Data object"} icon={<DataObjectIcon />}>
       <NameDocumentationAndId element={dataObject} />
+
+      <Divider inset={{ default: "insetXs" }} />
 
       <DataTypeSelector element={dataObject} />
     </PropertiesPanelHeaderFormSection>

@@ -25,6 +25,13 @@ import { BidirectionalAssignmentsFormSection } from "../assignments/AssignmentsF
 import { OnEntryAndExitScriptsFormSection } from "../onEntryAndExitScripts/OnEntryAndExitScriptsFormSection";
 import { TaskIcon } from "../../diagram/nodes/NodeIcons";
 import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
+import { Divider } from "@patternfly/react-core/dist/js/components/Divider";
+import { AsyncCheckbox } from "../asyncCheckbox/AsyncCheckbox";
+import { SlaDueDateInput } from "../slaDueDate/SlaDueDateInput";
+import { MultiInstanceCheckbox } from "../multiInstanceCheckbox/MultiInstanceCheckbox";
+import { MultiInstanceProperties } from "../multiInstance/MultiInstanceProperties";
+import { AdhocAutostartCheckbox } from "../adhocAutostartCheckbox/AdhocAutostartCheckbox";
+import { FormGroup } from "@patternfly/react-core/dist/js/components/Form";
 
 export function UserTaskProperties({
   userTask,
@@ -38,6 +45,38 @@ export function UserTaskProperties({
         icon={<TaskIcon variant={userTask.__$$element} />}
       >
         <NameDocumentationAndId element={userTask} />
+
+        <Divider inset={{ default: "insetXs" }} />
+
+        <FormGroup label={"Task"}></FormGroup>
+        <FormGroup label={"Subject"}></FormGroup>
+        <FormGroup label={"Content"}></FormGroup>
+        <FormGroup label={"Priority"}></FormGroup>
+        <FormGroup label={"Skippable"}></FormGroup>
+
+        <Divider inset={{ default: "insetXs" }} />
+
+        <FormGroup label={"Actors"}></FormGroup>
+        <FormGroup label={"Groups"}></FormGroup>
+        <FormGroup label={"Created by"}></FormGroup>
+
+        <Divider inset={{ default: "insetXs" }} />
+
+        <FormGroup label={"Reassignments"}></FormGroup>
+        <FormGroup label={"Notifications"}></FormGroup>
+
+        <Divider inset={{ default: "insetXs" }} />
+
+        <SlaDueDateInput element={userTask} />
+        <AsyncCheckbox element={userTask} />
+        <AdhocAutostartCheckbox element={userTask} />
+
+        <Divider inset={{ default: "insetXs" }} />
+
+        <MultiInstanceCheckbox element={userTask} />
+        {userTask.loopCharacteristics?.__$$element === "multiInstanceLoopCharacteristics" && (
+          <MultiInstanceProperties element={userTask} />
+        )}
       </PropertiesPanelHeaderFormSection>
 
       <BidirectionalAssignmentsFormSection element={userTask} />

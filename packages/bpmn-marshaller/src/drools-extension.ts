@@ -37,6 +37,15 @@ export type DROOLS = "drools";
 
 export { Namespaced };
 
+export const BUSINESS_RULE_TASK_IMPLEMENTATIONS = {
+  drools: "http://www.jboss.org/drools/rule",
+  dmn: "http://www.jboss.org/drools/dmn",
+};
+export const SERVICE_TASK_IMPLEMENTATIONS = {
+  java: "Java",
+  webService: "WebService",
+};
+
 ///////////////////////////
 ///       BPMN 2.0      ///
 ///////////////////////////
@@ -117,6 +126,13 @@ declare module "./schemas/bpmn-2_0/ts-gen/types" {
     "@_drools:independent"?: Namespaced<DROOLS, boolean>;
     "@_drools:waitForCompletion"?: Namespaced<DROOLS, boolean>;
   }
+
+  // Service task
+  export interface BPMN20__tServiceTask {
+    "@_drools:serviceimplementation"?: Namespaced<DROOLS, string>;
+    "@_drools:serviceinterface"?: Namespaced<DROOLS, string>;
+    "@_drools:serviceoperation"?: Namespaced<DROOLS, string>;
+  }
 }
 
 bpmn20ns.set(DROOLS_NS, drools10ns.get("")!);
@@ -178,6 +194,26 @@ mergeMetas(bpmn20meta, [[DROOLS_NS, drools10meta]]);
   isArray: false,
   xsdType: "xsd:boolean",
   fromType: "BPMN20__tCallActivity",
+};
+
+// Service Task attrs
+(bpmn20meta["BPMN20__tServiceTask"] as any)["@_drools:serviceimplementation"] = {
+  type: "string",
+  isArray: false,
+  xsdType: "xsd:string",
+  fromType: "BPMN20__tServiceTask",
+};
+(bpmn20meta["BPMN20__tServiceTask"] as any)["@_drools:serviceinterface"] = {
+  type: "string",
+  isArray: false,
+  xsdType: "xsd:string",
+  fromType: "BPMN20__tServiceTask",
+};
+(bpmn20meta["BPMN20__tServiceTask"] as any)["@_drools:serviceoperation"] = {
+  type: "string",
+  isArray: false,
+  xsdType: "xsd:string",
+  fromType: "BPMN20__tServiceTask",
 };
 
 class MetaType {

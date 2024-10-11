@@ -25,6 +25,7 @@ import { InputOnlyAssociationFormSection } from "../assignments/AssignmentsFormS
 import { EventDefinitionProperties } from "../eventDefinition/EventDefinitionProperties";
 import { EndEventIcon } from "../../diagram/nodes/NodeIcons";
 import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
+import { Divider } from "@patternfly/react-core/dist/js/components/Divider";
 
 export function EndEventProperties({
   endEvent,
@@ -38,6 +39,8 @@ export function EndEventProperties({
         icon={<EndEventIcon variant={endEvent.eventDefinition?.[0]?.__$$element} />}
       >
         <NameDocumentationAndId element={endEvent} />
+
+        <Divider inset={{ default: "insetXs" }} />
 
         <EventDefinitionProperties event={endEvent} />
       </PropertiesPanelHeaderFormSection>

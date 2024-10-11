@@ -24,6 +24,7 @@ import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentat
 import { DefaultRouteSelector } from "../defaultRouteSelector/DefaultRouteSelector";
 import { GatewayIcon } from "../../diagram/nodes/NodeIcons";
 import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
+import { Divider } from "@patternfly/react-core/dist/js/components/Divider";
 
 export function ExclusiveGatewayProperties({
   exclusiveGateway,
@@ -36,6 +37,9 @@ export function ExclusiveGatewayProperties({
       icon={<GatewayIcon variant={exclusiveGateway.__$$element} />}
     >
       <NameDocumentationAndId element={exclusiveGateway} />
+
+      <Divider inset={{ default: "insetXs" }} />
+
       <DefaultRouteSelector gateway={exclusiveGateway} />
     </PropertiesPanelHeaderFormSection>
   );
