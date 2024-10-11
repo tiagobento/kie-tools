@@ -17,34 +17,20 @@
  * under the License.
  */
 
-.kie-bpmn-editor--correlations--modal {
-  height: 100%;
-  width: 80%;
-  position: relative;
-}
+import * as React from "react";
+import { useBpmnEditorStore } from "../../store/StoreContext";
+import { FormGroup, FormSection } from "@patternfly/react-core/dist/js/components/Form";
+import { FormSelect, FormSelectOption } from "@patternfly/react-core/dist/js/components/FormSelect";
+import "./DefaultRouteSelector.css";
 
-.kie-bpmn-editor--correlations--empty-state {
-  padding: 10px;
-  background: #eee;
-  border-radius: 10px;
-  text-align: center;
-  height: 100%;
-}
+export function DefaultRouteSelector({ gateway }: { gateway: any }) {
+  const isReadOnly = useBpmnEditorStore((s) => s.settings.isReadOnly);
 
-.kie-bpmn-editor--properties-panel--correlation-entry {
-  align-items: center;
-  border-radius: 10px;
-}
-
-.kie-bpmn-editor--properties-panel--correlation-entry:hover,
-.kie-bpmn-editor--properties-panel--correlation-entry:focus-within {
-  background: #eee;
-}
-
-.kie-bpmn-editor--properties-panel--correlation-entry div > input {
-  border: 0;
-}
-
-.kie-bpmn-editor--properties-panel--correlation-entry div:not(:nth-last-child(2)) > input {
-  border-right: 1px dotted black;
+  return (
+    <FormGroup label="Default route">
+      <FormSelect value={undefined}>
+        <FormSelectOption isPlaceholder={true} label={"-- None --"} />
+      </FormSelect>
+    </FormGroup>
+  );
 }

@@ -46,6 +46,7 @@
   flex-flow: row;
   width: 100%;
   align-items: center;
+  user-select: none;
 }
 
 .kie-dmn-editor--properties-panel-header-toogle-expanded {
@@ -58,6 +59,14 @@
   height: 40px;
   margin-right: 0px;
   flex-shrink: 0;
+}
+
+.kie-dmn-editor--properties-panel-header-items:hover {
+  opacity: 0.6;
+}
+
+.kie-dmn-editor--properties-panel-header-items:active {
+  opacity: 0.8;
 }
 
 .kie-dmn-editor--properties-panel-header-title {

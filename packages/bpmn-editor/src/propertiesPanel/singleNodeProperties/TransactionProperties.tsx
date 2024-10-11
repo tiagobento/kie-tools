@@ -24,6 +24,7 @@ import { updateFlowElement } from "../../mutations/renameNode";
 import { Normalized } from "../../normalization/normalize";
 import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
+import { OnEntryAndExitScriptsFormSection } from "../onEntryAndExitScripts/OnEntryAndExitScriptsFormSection";
 
 export function TransactionProperties({
   transaction,
@@ -33,8 +34,12 @@ export function TransactionProperties({
   const bpmnEditorStoreApi = useBpmnEditorStoreApi();
 
   return (
-    <FormSection>
-      <NameDocumentationAndId element={transaction} />
-    </FormSection>
+    <>
+      <FormSection>
+        <NameDocumentationAndId element={transaction} />
+      </FormSection>
+
+      <OnEntryAndExitScriptsFormSection element={transaction} />
+    </>
   );
 }

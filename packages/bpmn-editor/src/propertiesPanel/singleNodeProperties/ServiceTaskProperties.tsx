@@ -24,6 +24,8 @@ import { updateFlowElement } from "../../mutations/renameNode";
 import { Normalized } from "../../normalization/normalize";
 import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
+import { AssignmentsFormSection } from "../assignments/AssignmentsFormSection";
+import { OnEntryAndExitScriptsFormSection } from "../onEntryAndExitScripts/OnEntryAndExitScriptsFormSection";
 
 export function ServiceTaskProperties({
   serviceTask,
@@ -33,8 +35,14 @@ export function ServiceTaskProperties({
   const bpmnEditorStoreApi = useBpmnEditorStoreApi();
 
   return (
-    <FormSection>
-      <NameDocumentationAndId element={serviceTask} />
-    </FormSection>
+    <>
+      <FormSection>
+        <NameDocumentationAndId element={serviceTask} />
+      </FormSection>
+
+      <AssignmentsFormSection element={serviceTask} />
+
+      <OnEntryAndExitScriptsFormSection element={serviceTask} />
+    </>
   );
 }

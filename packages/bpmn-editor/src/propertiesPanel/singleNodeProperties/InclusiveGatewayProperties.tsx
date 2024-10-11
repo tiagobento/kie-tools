@@ -18,12 +18,13 @@
  */
 
 import { BPMN20__tInclusiveGateway } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
-import { FormSection } from "@patternfly/react-core/dist/js/components/Form";
+import { FormGroup, FormSection } from "@patternfly/react-core/dist/js/components/Form";
 import * as React from "react";
 import { updateFlowElement } from "../../mutations/renameNode";
 import { Normalized } from "../../normalization/normalize";
-import { useBpmnEditorStoreApi } from "../../store/StoreContext";
+import { useBpmnEditorStore, useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
+import { DefaultRouteSelector } from "../defaultRouteSelector/DefaultRouteSelector";
 
 export function InclusiveGatewayProperties({
   inclusiveGateway,
@@ -32,9 +33,13 @@ export function InclusiveGatewayProperties({
 }) {
   const bpmnEditorStoreApi = useBpmnEditorStoreApi();
 
+  const isReadOnly = useBpmnEditorStore((s) => s.settings.isReadOnly);
+
   return (
     <FormSection>
       <NameDocumentationAndId element={inclusiveGateway} />
+
+      <DefaultRouteSelector gateway={inclusiveGateway} />
     </FormSection>
   );
 }

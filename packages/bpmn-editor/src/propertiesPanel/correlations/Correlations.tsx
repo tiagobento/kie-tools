@@ -104,7 +104,7 @@ export function Correlations({ isOpen, onClose }: { isOpen: boolean; onClose: ()
     >
       {(correlationCount > 0 && (
         <>
-          <div style={{ padding: "0 8px", position: "sticky", top: "-16px", background: "white" }}>
+          <div style={{ padding: "0 8px", position: "sticky", top: "-16px", backdropFilter: "blur(8px)" }}>
             <Grid md={6} style={{ alignItems: "center" }}>
               <GridItem span={2}>
                 <div style={entryStyle}>

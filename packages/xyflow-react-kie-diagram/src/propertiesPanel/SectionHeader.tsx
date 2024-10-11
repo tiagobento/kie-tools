@@ -63,8 +63,20 @@ export function SectionHeader(props: {
             </Button>
           </div>
         )}
-        {props.icon && <div className={"kie-dmn-editor--properties-panel-header-icon"}>{props.icon}</div>}
-        <div className={"kie-dmn-editor--properties-panel-header-title"}>
+        {props.icon && (
+          <div
+            className={"kie-dmn-editor--properties-panel-header-icon"}
+            onClick={() => props.toogleSectionExpanded?.()}
+            style={{ cursor: "pointer" }}
+          >
+            {props.icon}
+          </div>
+        )}
+        <div
+          className={"kie-dmn-editor--properties-panel-header-title"}
+          onClick={() => props.toogleSectionExpanded?.()}
+          style={{ cursor: "pointer" }}
+        >
           {typeof props.title === "string" ? <Truncate content={props.title} /> : props.title}
         </div>
         {props.action && <div className={"kie-dmn-editor--properties-panel-header-action"}>{props.action}</div>}

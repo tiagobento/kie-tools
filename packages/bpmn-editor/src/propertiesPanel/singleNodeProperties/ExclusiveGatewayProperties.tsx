@@ -24,6 +24,7 @@ import { updateFlowElement } from "../../mutations/renameNode";
 import { Normalized } from "../../normalization/normalize";
 import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
+import { DefaultRouteSelector } from "../defaultRouteSelector/DefaultRouteSelector";
 
 export function ExclusiveGatewayProperties({
   exclusiveGateway,
@@ -35,6 +36,7 @@ export function ExclusiveGatewayProperties({
   return (
     <FormSection>
       <NameDocumentationAndId element={exclusiveGateway} />
+      <DefaultRouteSelector gateway={exclusiveGateway} />
     </FormSection>
   );
 }

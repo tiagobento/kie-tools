@@ -24,6 +24,8 @@ import { updateFlowElement } from "../../mutations/renameNode";
 import { Normalized } from "../../normalization/normalize";
 import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
+import { AssignmentsFormSection } from "../assignments/AssignmentsFormSection";
+import { OnEntryAndExitScriptsFormSection } from "../onEntryAndExitScripts/OnEntryAndExitScriptsFormSection";
 
 export function BusinessRuleTaskProperties({
   businessRuleTask,
@@ -33,8 +35,14 @@ export function BusinessRuleTaskProperties({
   const bpmnEditorStoreApi = useBpmnEditorStoreApi();
 
   return (
-    <FormSection>
-      <NameDocumentationAndId element={businessRuleTask} />
-    </FormSection>
+    <>
+      <FormSection>
+        <NameDocumentationAndId element={businessRuleTask} />
+      </FormSection>
+
+      <AssignmentsFormSection element={businessRuleTask} />
+
+      <OnEntryAndExitScriptsFormSection element={businessRuleTask} />
+    </>
   );
 }

@@ -52,12 +52,13 @@ import { Metadata } from "./metadata/Metadata";
 import { Variables } from "./variables/Variables";
 import { Imports } from "./imports/Imports";
 import { Correlations } from "./correlations/Correlations";
+import { SlaDueDateInput } from "./slaDueDate/SlaDueDateInput";
 
 export function GlobalProperties() {
   const thisBpmn = useBpmnEditorStore((s) => s.bpmn);
   const settings = useBpmnEditorStore((s) => s.settings);
 
-  const process: undefined | Normalized<BPMN20__tProcess> = useBpmnEditorStore((s) =>
+  const process = useBpmnEditorStore((s) =>
     s.bpmn.model.definitions.rootElement?.find((s) => s.__$$element === "process")
   );
 
@@ -167,26 +168,7 @@ export function GlobalProperties() {
                   />
                 </FormGroup>
 
-                <FormGroup
-                  label="SLA Due Date"
-                  // helperText={"E.g.,: 2024-09-19 19:22:42"} // FIXME: Tiago -> Description
-                >
-                  <TextInput
-                    aria-label={"SLA Due Date"}
-                    type={"text"}
-                    isDisabled={settings.isReadOnly}
-                    placeholder={"Enter a date..."}
-                    value={parseBpmn20Drools10MetaData(process).get("customSLADueDate")}
-                    onChange={(newSlaDueDate) =>
-                      bpmnEditorStoreApi.setState((s) => {
-                        const { process } = addOrGetProcessAndDiagramElements({
-                          definitions: s.bpmn.model.definitions,
-                        });
-                        setBpmn20Drools10MetaData(process, "customSLADueDate", newSlaDueDate);
-                      })
-                    }
-                  />
-                </FormGroup>
+                <SlaDueDateInput element={process} />
               </FormSection>
             </>
           )}
@@ -238,6 +220,7 @@ export function GlobalProperties() {
               expands={"modal"}
               icon={<PeopleCarryIcon width={16} height={36} style={{ marginLeft: "12px" }} />}
               title={"Collaboration" + (correlationCount > 0 ? ` (${correlationCount})` : "")}
+              toogleSectionExpanded={() => setShowCorrelationsModal(true)}
               action={
                 <Button
                   title={"Manage"}
