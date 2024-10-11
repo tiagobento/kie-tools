@@ -39,7 +39,7 @@ export function IntermediateThrowEventProperties({
   return (
     <>
       <PropertiesPanelHeaderFormSection
-        title={intermediateThrowEvent["@_name"] ?? "Intermediate throw event"}
+        title={intermediateThrowEvent["@_name"] || "Intermediate throw event"}
         icon={<IntermediateThrowEventIcon variant={intermediateThrowEvent.eventDefinition?.[0]?.__$$element} />}
       >
         <NameDocumentationAndId element={intermediateThrowEvent} />

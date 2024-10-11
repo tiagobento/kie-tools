@@ -38,7 +38,7 @@ export function AdHocSubProcessProperties({
   return (
     <>
       <PropertiesPanelHeaderFormSection
-        title={adHocSubProcess["@_name"] ?? "Ad-hoc sub-process"}
+        title={adHocSubProcess["@_name"] || "Ad-hoc sub-process"}
         icon={<SubProcessIcon />}
       >
         <NameDocumentationAndId element={adHocSubProcess} />

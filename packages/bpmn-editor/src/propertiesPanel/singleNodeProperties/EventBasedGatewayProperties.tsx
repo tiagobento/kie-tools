@@ -36,7 +36,7 @@ export function EventBasedGatewayProperties({
 
   return (
     <PropertiesPanelHeaderFormSection
-      title={eventBasedGateway["@_name"] ?? "Event-based gateway"}
+      title={eventBasedGateway["@_name"] || "Event-based gateway"}
       icon={<GatewayIcon variant={eventBasedGateway.__$$element} />}
     >
       <NameDocumentationAndId element={eventBasedGateway} />

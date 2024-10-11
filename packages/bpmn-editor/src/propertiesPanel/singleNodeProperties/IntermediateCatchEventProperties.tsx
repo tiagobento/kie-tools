@@ -41,7 +41,7 @@ export function IntermediateCatchEventProperties({
   return (
     <>
       <PropertiesPanelHeaderFormSection
-        title={intermediateCatchEvent["@_name"] ?? "Intermediate catch event"}
+        title={intermediateCatchEvent["@_name"] || "Intermediate catch event"}
         icon={<IntermediateCatchEventIcon variant={intermediateCatchEvent.eventDefinition?.[0]?.__$$element} />}
       >
         <NameDocumentationAndId element={intermediateCatchEvent} />

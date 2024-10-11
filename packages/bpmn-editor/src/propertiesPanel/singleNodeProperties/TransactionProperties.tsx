@@ -38,7 +38,7 @@ export function TransactionProperties({
   return (
     <>
       <PropertiesPanelHeaderFormSection
-        title={transaction["@_name"] ?? "Transaction"}
+        title={transaction["@_name"] || "Transaction"}
         icon={<SubProcessIcon variant={"transaction"} />}
       >
         <NameDocumentationAndId element={transaction} />

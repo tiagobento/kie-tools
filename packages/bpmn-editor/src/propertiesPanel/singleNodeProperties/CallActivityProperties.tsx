@@ -37,7 +37,7 @@ export function CallActivityProperties({
 
   return (
     <>
-      <PropertiesPanelHeaderFormSection title={callActivity["@_name"] ?? "Call activity"} icon={<CallActivityIcon />}>
+      <PropertiesPanelHeaderFormSection title={callActivity["@_name"] || "Call activity"} icon={<CallActivityIcon />}>
         <NameDocumentationAndId element={callActivity} />
       </PropertiesPanelHeaderFormSection>
 

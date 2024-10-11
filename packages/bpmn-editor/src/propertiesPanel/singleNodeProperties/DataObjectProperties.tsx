@@ -36,7 +36,7 @@ export function DataObjectProperties({
   const bpmnEditorStoreApi = useBpmnEditorStoreApi();
 
   return (
-    <PropertiesPanelHeaderFormSection title={dataObject["@_name"] ?? "Data object"} icon={<DataObjectIcon />}>
+    <PropertiesPanelHeaderFormSection title={dataObject["@_name"] || "Data object"} icon={<DataObjectIcon />}>
       <NameDocumentationAndId element={dataObject} />
 
       <DataTypeSelector element={dataObject} />

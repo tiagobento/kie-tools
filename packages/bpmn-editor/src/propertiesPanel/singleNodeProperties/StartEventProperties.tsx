@@ -35,7 +35,7 @@ export function StartEventProperties({
   return (
     <>
       <PropertiesPanelHeaderFormSection
-        title={startEvent["@_name"] ?? "Start event"}
+        title={startEvent["@_name"] || "Start event"}
         icon={<StartEventIcon variant={startEvent.eventDefinition?.[0]?.__$$element} />}
       >
         <NameDocumentationAndId element={startEvent} />

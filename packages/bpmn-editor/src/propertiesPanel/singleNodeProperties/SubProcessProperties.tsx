@@ -38,7 +38,7 @@ export function SubProcessProperties({
   return (
     <>
       <PropertiesPanelHeaderFormSection
-        title={subProcess["@_name"] ?? "Sub-process"}
+        title={subProcess["@_name"] || "Sub-process"}
         icon={<SubProcessIcon variant={"other"} />}
       >
         <NameDocumentationAndId element={subProcess} />
