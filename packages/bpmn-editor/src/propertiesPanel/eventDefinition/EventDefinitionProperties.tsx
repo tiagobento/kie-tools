@@ -96,7 +96,7 @@ export function EventDefinitionProperties({ event }: { event: Event }) {
               label={"Condition"}
               languages={["Drools"]}
               value={""}
-              onChange={(newScript) => {
+              onChange={(newCode) => {
                 // TODO: Tiago
               }}
             />

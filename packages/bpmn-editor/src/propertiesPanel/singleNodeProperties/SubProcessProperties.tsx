@@ -18,24 +18,22 @@
  */
 
 import { BPMN20__tSubProcess } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
-import { FormSection } from "@patternfly/react-core/dist/js/components/Form";
 import * as React from "react";
-import { updateFlowElement } from "../../mutations/renameNode";
 import { Normalized } from "../../normalization/normalize";
-import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
 import { OnEntryAndExitScriptsFormSection } from "../onEntryAndExitScripts/OnEntryAndExitScriptsFormSection";
 import { SubProcessIcon } from "../../diagram/nodes/NodeIcons";
 import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
 import { VariablesFormSection } from "../variables/VariablesFormSection";
+import { MultipleInstanceProperties } from "../multipleInstance/MultipleInstanceProperties";
+import { Divider } from "@patternfly/react-core/dist/js/components/Divider";
+import { SubProcessProperties as __SubProcessProperties } from "../subProcess/SubProcessProperties";
 
 export function SubProcessProperties({
   subProcess,
 }: {
   subProcess: Normalized<BPMN20__tSubProcess> & { __$$element: "subProcess" };
 }) {
-  const bpmnEditorStoreApi = useBpmnEditorStoreApi();
-
   return (
     <>
       <PropertiesPanelHeaderFormSection
@@ -43,6 +41,17 @@ export function SubProcessProperties({
         icon={<SubProcessIcon variant={"other"} />}
       >
         <NameDocumentationAndId element={subProcess} />
+
+        <Divider inset={{ default: "insetXs" }} />
+
+        <__SubProcessProperties p={subProcess} />
+
+        {subProcess.loopCharacteristics?.__$$element === "multiInstanceLoopCharacteristics" && (
+          <>
+            <Divider inset={{ default: "insetXs" }} />
+            <MultipleInstanceProperties element={subProcess} />
+          </>
+        )}
       </PropertiesPanelHeaderFormSection>
 
       <VariablesFormSection p={subProcess} />

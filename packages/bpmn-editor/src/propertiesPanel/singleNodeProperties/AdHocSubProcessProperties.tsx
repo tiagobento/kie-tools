@@ -18,16 +18,27 @@
  */
 
 import { BPMN20__tAdHocSubProcess } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
-import { FormSection } from "@patternfly/react-core/dist/js/components/Form";
 import * as React from "react";
-import { updateFlowElement } from "../../mutations/renameNode";
 import { Normalized } from "../../normalization/normalize";
-import { useBpmnEditorStoreApi } from "../../store/StoreContext";
+import { useBpmnEditorStore, useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
 import { OnEntryAndExitScriptsFormSection } from "../onEntryAndExitScripts/OnEntryAndExitScriptsFormSection";
 import { SubProcessIcon } from "../../diagram/nodes/NodeIcons";
 import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
 import { VariablesFormSection } from "../variables/VariablesFormSection";
+import { Divider } from "@patternfly/react-core/dist/js/components/Divider";
+import { SubProcessProperties } from "../subProcess/SubProcessProperties";
+import { FormGroup } from "@patternfly/react-core/dist/js/components/Form";
+import { CodeInput } from "../codeInput/CodeInput";
+import { FormSelect, FormSelectOption } from "@patternfly/react-core/dist/js/components/FormSelect";
+import { Checkbox } from "@patternfly/react-core/dist/js/components/Checkbox/Checkbox";
+import { visitFlowElementsAndArtifacts } from "../../mutations/_elementVisitor";
+import { addOrGetProcessAndDiagramElements } from "../../mutations/addOrGetProcessAndDiagramElements";
+import {
+  parseBpmn20Drools10MetaData,
+  setBpmn20Drools10MetaData,
+} from "@kie-tools/bpmn-marshaller/dist/drools-extension-metaData";
+import { AdhocAutostartCheckbox } from "../adhocAutostart/AdhocAutostartCheckbox";
 
 export function AdHocSubProcessProperties({
   adHocSubProcess,
@@ -36,6 +47,8 @@ export function AdHocSubProcessProperties({
 }) {
   const bpmnEditorStoreApi = useBpmnEditorStoreApi();
 
+  const isReadOnly = useBpmnEditorStore((s) => s.settings.isReadOnly);
+
   return (
     <>
       <PropertiesPanelHeaderFormSection
@@ -43,6 +56,50 @@ export function AdHocSubProcessProperties({
         icon={<SubProcessIcon />}
       >
         <NameDocumentationAndId element={adHocSubProcess} />
+
+        <Divider inset={{ default: "insetXs" }} />
+
+        <SubProcessProperties p={adHocSubProcess} />
+
+        <Divider inset={{ default: "insetXs" }} />
+
+        <CodeInput
+          label={"Ad-hoc activation condition"}
+          languages={["Drools"]}
+          value={parseBpmn20Drools10MetaData(adHocSubProcess).get("customActivationCondition") ?? ""}
+          onChange={(newCode) => {
+            bpmnEditorStoreApi((s) => {
+              const { process } = addOrGetProcessAndDiagramElements({
+                definitions: s.bpmn.model.definitions,
+              });
+              visitFlowElementsAndArtifacts(process, ({ element }) => {
+                if (
+                  element["@_id"] === adHocSubProcess["@_id"] &&
+                  element.__$$element === adHocSubProcess.__$$element
+                ) {
+                  setBpmn20Drools10MetaData(element, "customActivationCondition", newCode);
+                }
+              });
+            });
+          }}
+        />
+
+        <CodeInput
+          label={"Ad-hoc completion condition"}
+          languages={["MVEL", "Drools"]}
+          value={""} // FIXME: Tiago
+          onChange={(newCode) => {
+            // FIXME: Tiago
+          }}
+        />
+
+        <FormGroup label="Ad-hoc ordering">
+          <FormSelect value={undefined} isDisabled={isReadOnly}>
+            <FormSelectOption isPlaceholder={true} label={"-- None --"} />
+          </FormSelect>
+        </FormGroup>
+
+        <AdhocAutostartCheckbox element={adHocSubProcess} />
       </PropertiesPanelHeaderFormSection>
 
       <VariablesFormSection p={adHocSubProcess} />

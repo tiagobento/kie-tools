@@ -18,14 +18,9 @@
  */
 
 import { BPMN20__tIntermediateCatchEvent } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
-import { FormSection } from "@patternfly/react-core/dist/js/components/Form";
 import * as React from "react";
-import { updateFlowElement } from "../../mutations/renameNode";
 import { Normalized } from "../../normalization/normalize";
-import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
-import { SlaDueDateInput } from "../slaDueDate/SlaDueDateInput";
-import { CodeInput } from "../codeInput/CodeInput";
 import { OutputOnlyAssociationFormSection } from "../assignments/AssignmentsFormSection";
 import { EventDefinitionProperties } from "../eventDefinition/EventDefinitionProperties";
 import { IntermediateCatchEventIcon } from "../../diagram/nodes/NodeIcons";
@@ -36,8 +31,6 @@ export function IntermediateCatchEventProperties({
 }: {
   intermediateCatchEvent: Normalized<BPMN20__tIntermediateCatchEvent> & { __$$element: "intermediateCatchEvent" };
 }) {
-  const bpmnEditorStoreApi = useBpmnEditorStoreApi();
-
   return (
     <>
       <PropertiesPanelHeaderFormSection

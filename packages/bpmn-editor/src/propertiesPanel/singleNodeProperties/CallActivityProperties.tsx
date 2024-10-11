@@ -18,7 +18,7 @@
  */
 
 import { BPMN20__tCallActivity } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
-import { FormSection } from "@patternfly/react-core/dist/js/components/Form";
+import { FormGroup } from "@patternfly/react-core/dist/js/components/Form";
 import * as React from "react";
 import { Normalized } from "../../normalization/normalize";
 import { useBpmnEditorStoreApi } from "../../store/StoreContext";
@@ -27,6 +27,18 @@ import { BidirectionalAssignmentsFormSection } from "../assignments/AssignmentsF
 import { OnEntryAndExitScriptsFormSection } from "../onEntryAndExitScripts/OnEntryAndExitScriptsFormSection";
 import { CallActivityIcon } from "../../diagram/nodes/NodeIcons";
 import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
+import { CalledElementSelector } from "../calledElementSelector/CalledElementSelector";
+import { MultipleInstanceProperties } from "../multipleInstance/MultipleInstanceProperties";
+import { Checkbox } from "@patternfly/react-core/dist/js/components/Checkbox";
+import { visitFlowElementsAndArtifacts } from "../../mutations/_elementVisitor";
+import { addOrGetProcessAndDiagramElements } from "../../mutations/addOrGetProcessAndDiagramElements";
+import { generateUuid } from "@kie-tools/xyflow-react-kie-diagram/dist/uuid/uuid";
+import {
+  parseBpmn20Drools10MetaData,
+  setBpmn20Drools10MetaData,
+} from "@kie-tools/bpmn-marshaller/dist/drools-extension-metaData";
+import { SubProcessProperties } from "../subProcess/SubProcessProperties";
+import { Divider } from "@patternfly/react-core/dist/js/components/Divider";
 
 export function CallActivityProperties({
   callActivity,
@@ -39,6 +51,129 @@ export function CallActivityProperties({
     <>
       <PropertiesPanelHeaderFormSection title={callActivity["@_name"] || "Call activity"} icon={<CallActivityIcon />}>
         <NameDocumentationAndId element={callActivity} />
+
+        <Divider inset={{ default: "insetXs" }} />
+
+        <SubProcessProperties p={callActivity} />
+
+        <Divider inset={{ default: "insetXs" }} />
+
+        <CalledElementSelector element={callActivity} />
+
+        <FormGroup
+          fieldId="kie-bpmn-editor--properties-panel--call-activity--independent"
+          // helperText={"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod."} // FIXME: Tiago -> Description
+        >
+          <Checkbox
+            label="Independent"
+            id="kie-bpmn-editor--properties-panel--call-activity--independent"
+            name="is-independent"
+            aria-label="Independent"
+            isChecked={callActivity["@_drools:independent"] ?? false}
+            onChange={(checked) => {
+              bpmnEditorStoreApi.setState((s) => {
+                const { process } = addOrGetProcessAndDiagramElements({
+                  definitions: s.bpmn.model.definitions,
+                });
+                visitFlowElementsAndArtifacts(process, ({ element }) => {
+                  if (element["@_id"] === callActivity["@_id"] && element.__$$element === callActivity.__$$element) {
+                    element["@_drools:independent"] = checked;
+                  }
+                });
+              });
+            }}
+          />
+        </FormGroup>
+
+        {!(callActivity["@_drools:independent"] === true) && (
+          <FormGroup
+            fieldId="kie-bpmn-editor--properties-panel--call-activity--abort-parent"
+            // helperText={"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod."} // FIXME: Tiago -> Description
+          >
+            <Checkbox
+              label="Abort parent"
+              id="kie-bpmn-editor--properties-panel--call-activity--abort-parent"
+              name="should-abort-parent"
+              aria-label="Abort parent"
+              isChecked={(parseBpmn20Drools10MetaData(callActivity).get("customAbortParent") ?? "true") === "true"}
+              onChange={(checked) => {
+                bpmnEditorStoreApi.setState((s) => {
+                  const { process } = addOrGetProcessAndDiagramElements({
+                    definitions: s.bpmn.model.definitions,
+                  });
+                  visitFlowElementsAndArtifacts(process, ({ element }) => {
+                    if (element["@_id"] === callActivity["@_id"] && element.__$$element === callActivity.__$$element) {
+                      setBpmn20Drools10MetaData(element, "customAbortParent", `${checked}`);
+                    }
+                  });
+                });
+              }}
+            />
+          </FormGroup>
+        )}
+
+        <FormGroup
+          fieldId="kie-bpmn-editor--properties-panel--call-activity--wait-for-completion"
+          // helperText={"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod."} // FIXME: Tiago -> Description
+        >
+          <Checkbox
+            label="Wait for completion"
+            id="kie-bpmn-editor--properties-panel--call-activity--wait-for-completion"
+            name="should-wait-for-completion"
+            aria-label="Wait for completion"
+            isChecked={callActivity["@_drools:waitForCompletion"] ?? true}
+            onChange={(checked) => {
+              bpmnEditorStoreApi.setState((s) => {
+                const { process } = addOrGetProcessAndDiagramElements({
+                  definitions: s.bpmn.model.definitions,
+                });
+                visitFlowElementsAndArtifacts(process, ({ element }) => {
+                  if (element["@_id"] === callActivity["@_id"] && element.__$$element === callActivity.__$$element) {
+                    element["@_drools:waitForCompletion"] = checked;
+                  }
+                });
+              });
+            }}
+          />
+        </FormGroup>
+
+        <Divider inset={{ default: "insetXs" }} />
+
+        <FormGroup
+          fieldId="kie-bpmn-editor--properties-panel--call-activity--multiple-instance"
+          // helperText={"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod."} // FIXME: Tiago -> Description
+        >
+          <Checkbox
+            label="Multiple instance"
+            id="kie-bpmn-editor--properties-panel--call-activity--multiple-instance"
+            name="is-multiple-instance"
+            aria-label="Multiple instance"
+            isChecked={callActivity.loopCharacteristics?.__$$element === "multiInstanceLoopCharacteristics"}
+            onChange={(checked) => {
+              bpmnEditorStoreApi.setState((s) => {
+                const { process } = addOrGetProcessAndDiagramElements({
+                  definitions: s.bpmn.model.definitions,
+                });
+                visitFlowElementsAndArtifacts(process, ({ element }) => {
+                  if (element["@_id"] === callActivity["@_id"] && element.__$$element === callActivity.__$$element) {
+                    if (checked) {
+                      element.loopCharacteristics = {
+                        "@_id": generateUuid(),
+                        __$$element: "multiInstanceLoopCharacteristics",
+                      };
+                    } else {
+                      element.loopCharacteristics = undefined;
+                    }
+                  }
+                });
+              });
+            }}
+          />
+        </FormGroup>
+
+        {callActivity.loopCharacteristics?.__$$element === "multiInstanceLoopCharacteristics" && (
+          <MultipleInstanceProperties element={callActivity} />
+        )}
       </PropertiesPanelHeaderFormSection>
 
       <BidirectionalAssignmentsFormSection element={callActivity} />

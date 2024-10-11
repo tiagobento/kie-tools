@@ -18,11 +18,8 @@
  */
 
 import { BPMN20__tComplexGateway } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
-import { FormSection } from "@patternfly/react-core/dist/js/components/Form";
 import * as React from "react";
-import { updateFlowElement } from "../../mutations/renameNode";
 import { Normalized } from "../../normalization/normalize";
-import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
 import { GatewayIcon } from "../../diagram/nodes/NodeIcons";
 import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
@@ -32,8 +29,6 @@ export function ComplexGatewayProperties({
 }: {
   complexGateway: Normalized<BPMN20__tComplexGateway> & { __$$element: "complexGateway" };
 }) {
-  const bpmnEditorStoreApi = useBpmnEditorStoreApi();
-
   return (
     <PropertiesPanelHeaderFormSection
       title={complexGateway["@_name"] || "Complex gateway"}

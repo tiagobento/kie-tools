@@ -18,7 +18,7 @@
  */
 
 import { BPMN20__tTextAnnotation } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
-import { FormGroup, FormSection } from "@patternfly/react-core/dist/js/components/Form";
+import { FormGroup } from "@patternfly/react-core/dist/js/components/Form";
 import * as React from "react";
 import { updateTextAnnotation } from "../../mutations/renameNode";
 import { Normalized } from "../../normalization/normalize";

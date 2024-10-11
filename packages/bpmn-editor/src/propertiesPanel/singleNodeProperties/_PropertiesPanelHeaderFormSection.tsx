@@ -58,7 +58,16 @@ export function PropertiesPanelHeaderFormSection({
         />
       }
     >
-      {isSectionExpanded && children}
+      {isSectionExpanded && (
+        <FormSection
+          style={{
+            paddingLeft: "20px",
+            marginTop: "20px",
+          }}
+        >
+          {children}
+        </FormSection>
+      )}
     </FormSection>
   );
 }

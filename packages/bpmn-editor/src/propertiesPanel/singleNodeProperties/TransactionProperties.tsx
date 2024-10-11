@@ -18,24 +18,21 @@
  */
 
 import { BPMN20__tTransaction } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
-import { FormSection } from "@patternfly/react-core/dist/js/components/Form";
 import * as React from "react";
-import { updateFlowElement } from "../../mutations/renameNode";
 import { Normalized } from "../../normalization/normalize";
-import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
 import { OnEntryAndExitScriptsFormSection } from "../onEntryAndExitScripts/OnEntryAndExitScriptsFormSection";
 import { SubProcessIcon } from "../../diagram/nodes/NodeIcons";
 import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
 import { VariablesFormSection } from "../variables/VariablesFormSection";
+import { SubProcessProperties } from "../subProcess/SubProcessProperties";
+import { Divider } from "@patternfly/react-core/dist/js/components/Divider";
 
 export function TransactionProperties({
   transaction,
 }: {
   transaction: Normalized<BPMN20__tTransaction> & { __$$element: "transaction" };
 }) {
-  const bpmnEditorStoreApi = useBpmnEditorStoreApi();
-
   return (
     <>
       <PropertiesPanelHeaderFormSection
@@ -43,6 +40,10 @@ export function TransactionProperties({
         icon={<SubProcessIcon variant={"transaction"} />}
       >
         <NameDocumentationAndId element={transaction} />
+
+        <Divider inset={{ default: "insetXs" }} />
+
+        <SubProcessProperties p={transaction} />
       </PropertiesPanelHeaderFormSection>
 
       <VariablesFormSection p={transaction} />
