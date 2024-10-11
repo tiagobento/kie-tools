@@ -18,7 +18,6 @@
  */
 
 import { BPMN20__tStartEvent } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
-import { FormSection } from "@patternfly/react-core/dist/js/components/Form";
 import * as React from "react";
 import { Normalized } from "../../normalization/normalize";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";

@@ -24,7 +24,11 @@ export type Bpmn20KnownMetaDataKey =
   | "elementname" // Used for any Flow Element.
   | "customTags" // Used for Process Variables.
   | "customDescription" // Used for "Process Instance Description" as a global property.
-  | "customSLADueDate"; // Used for "SLA Due date" as a global property.
+  | "customSLADueDate" // Used for "SLA Due date" as a global property.
+  | "customAbortParent" // Used for "Abort parent" flag on Call Activities.
+  | "customAsync" // Used for "Async" flag on Call Activities.
+  | "customActivationCondition" // Used for "Activation condition" expression on Ad-hoc sub-processes.
+  | "customAutoStart"; // Used for "Ad-hoc auto-start" flag on Ad-hoc sub-processes.
 
 export type Bpmn20ProcessVariableTags =
   | "internal" // TODO: Used for?
@@ -148,7 +152,13 @@ export function renameBpmn20Drools10MetaDataEntry(
  */
 export function deleteBpmn20Drools10MetaDataEntry(
   obj: undefined | { extensionElements?: WithMetaData },
-  index: number
+  keyOrIndex: string | number
 ): void {
-  obj?.extensionElements?.["drools:metaData"]?.splice(index, 1);
+  if (typeof keyOrIndex === "number") {
+    obj?.extensionElements?.["drools:metaData"]?.splice(keyOrIndex, 1);
+  } else if (obj?.extensionElements?.["drools:metaData"]) {
+    obj.extensionElements!["drools:metaData"] = obj.extensionElements["drools:metaData"].filter(
+      (m) => m["@_name"] !== keyOrIndex
+    );
+  }
 }

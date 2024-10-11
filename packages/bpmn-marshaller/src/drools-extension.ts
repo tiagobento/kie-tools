@@ -49,7 +49,7 @@ declare module "./schemas/bpmn-2_0/ts-gen/types" {
   export interface BPMN20__tProcess {
     "@_drools:packageName"?: Namespaced<DROOLS, string>;
     "@_drools:version"?: Namespaced<DROOLS, string>;
-    "@_drools:adHoc"?: Namespaced<DROOLS, string>;
+    "@_drools:adHoc"?: Namespaced<DROOLS, boolean>;
   }
 
   export interface BPMN20__tProcess__extensionElements extends WithMetaData {
@@ -111,6 +111,12 @@ declare module "./schemas/bpmn-2_0/ts-gen/types" {
   // Other
   export interface BPMN20__tProperty__extensionElements extends WithMetaData {}
   export interface BPMN20__tLane__extensionElements extends WithMetaData {}
+
+  // Call activity
+  export interface BPMN20__tCallActivity {
+    "@_drools:independent"?: Namespaced<DROOLS, boolean>;
+    "@_drools:waitForCompletion"?: Namespaced<DROOLS, boolean>;
+  }
 }
 
 bpmn20ns.set(DROOLS_NS, drools10ns.get("")!);
@@ -132,9 +138,9 @@ mergeMetas(bpmn20meta, [[DROOLS_NS, drools10meta]]);
   fromType: "BPMN20__tProcess",
 };
 (bpmn20meta["BPMN20__tProcess"] as any)["@_drools:adHoc"] = {
-  type: "string",
+  type: "boolean",
   isArray: false,
-  xsdType: "xsd:string",
+  xsdType: "xsd:boolean",
   fromType: "BPMN20__tProcess",
 };
 
@@ -158,6 +164,20 @@ mergeMetas(bpmn20meta, [[DROOLS_NS, drools10meta]]);
   isArray: false,
   xsdType: "xsd:string",
   fromType: "BPMN20__tBusinessRuleTask",
+};
+
+// Call Activity attrs
+(bpmn20meta["BPMN20__tCallActivity"] as any)["@_drools:independent"] = {
+  type: "boolean",
+  isArray: false,
+  xsdType: "xsd:boolean",
+  fromType: "BPMN20__tCallActivity",
+};
+(bpmn20meta["BPMN20__tCallActivity"] as any)["@_drools:waitForCompletion"] = {
+  type: "boolean",
+  isArray: false,
+  xsdType: "xsd:boolean",
+  fromType: "BPMN20__tCallActivity",
 };
 
 class MetaType {

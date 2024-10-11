@@ -71,18 +71,18 @@ export function OnEntryAndExitScriptsFormSection({ element }: { element: WithOnE
             <FormSection style={{ paddingLeft: "20px", marginTop: "20px", gap: 0 }}>
               <CodeInput
                 label={"onEntry"}
-                languages={["java"]}
+                languages={["Java"]}
                 value={""}
-                onChange={(newScript) => {
+                onChange={(newCode) => {
                   // TODO: Tiago
                 }}
               />
               <br />
               <CodeInput
                 label={"onExit"}
-                languages={["java"]}
+                languages={["Java"]}
                 value={""}
-                onChange={(newScript) => {
+                onChange={(newCode) => {
                   // TODO: Tiago
                 }}
               />

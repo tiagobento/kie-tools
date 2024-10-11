@@ -18,11 +18,8 @@
  */
 
 import { BPMN20__tInclusiveGateway } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
-import { FormGroup, FormSection } from "@patternfly/react-core/dist/js/components/Form";
 import * as React from "react";
-import { updateFlowElement } from "../../mutations/renameNode";
 import { Normalized } from "../../normalization/normalize";
-import { useBpmnEditorStore, useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
 import { DefaultRouteSelector } from "../defaultRouteSelector/DefaultRouteSelector";
 import { GatewayIcon } from "../../diagram/nodes/NodeIcons";
@@ -33,10 +30,6 @@ export function InclusiveGatewayProperties({
 }: {
   inclusiveGateway: Normalized<BPMN20__tInclusiveGateway> & { __$$element: "inclusiveGateway" };
 }) {
-  const bpmnEditorStoreApi = useBpmnEditorStoreApi();
-
-  const isReadOnly = useBpmnEditorStore((s) => s.settings.isReadOnly);
-
   return (
     <PropertiesPanelHeaderFormSection
       title={inclusiveGateway["@_name"] || "Inclusive gateway"}

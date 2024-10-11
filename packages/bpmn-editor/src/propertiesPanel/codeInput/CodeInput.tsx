@@ -33,7 +33,7 @@ export function CodeInput({
   label: string;
   languages: string[];
   value: string;
-  onChange: (newScript: string) => void;
+  onChange: (newCode: string) => void;
 }) {
   const isReadOnly = useBpmnEditorStore((s) => s.settings.isReadOnly);
 
@@ -61,7 +61,7 @@ export function CodeInput({
         isDisabled={isReadOnly}
         value={value}
         onChange={onChange}
-        placeholder={`Enter ${label} script...`}
+        placeholder={`Enter code...`}
         style={{ resize: "vertical", minHeight: "40px", fontFamily: "monospace" }}
         rows={3}
       />

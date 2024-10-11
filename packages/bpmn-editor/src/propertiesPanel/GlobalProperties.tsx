@@ -155,13 +155,13 @@ export function GlobalProperties() {
                     id="kie-bpmn-editor--global-properties-panel--adhoc"
                     name="is-adhoc"
                     aria-label="Adhoc"
-                    isChecked={(process?.["@_drools:adHoc"] ?? false) === "true"}
+                    isChecked={process?.["@_drools:adHoc"] ?? false}
                     onChange={(checked) => {
                       bpmnEditorStoreApi.setState((s) => {
                         const { process } = addOrGetProcessAndDiagramElements({
                           definitions: s.bpmn.model.definitions,
                         });
-                        process["@_drools:adHoc"] = `${checked}`;
+                        process["@_drools:adHoc"] = checked;
                       });
                     }}
                   />

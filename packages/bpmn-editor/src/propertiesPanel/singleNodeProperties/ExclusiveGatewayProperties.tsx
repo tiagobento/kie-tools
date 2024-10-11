@@ -18,11 +18,8 @@
  */
 
 import { BPMN20__tExclusiveGateway } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
-import { FormSection } from "@patternfly/react-core/dist/js/components/Form";
 import * as React from "react";
-import { updateFlowElement } from "../../mutations/renameNode";
 import { Normalized } from "../../normalization/normalize";
-import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
 import { DefaultRouteSelector } from "../defaultRouteSelector/DefaultRouteSelector";
 import { GatewayIcon } from "../../diagram/nodes/NodeIcons";
@@ -33,8 +30,6 @@ export function ExclusiveGatewayProperties({
 }: {
   exclusiveGateway: Normalized<BPMN20__tExclusiveGateway> & { __$$element: "exclusiveGateway" };
 }) {
-  const bpmnEditorStoreApi = useBpmnEditorStoreApi();
-
   return (
     <PropertiesPanelHeaderFormSection
       title={exclusiveGateway["@_name"] || "Exclusive gateway"}

@@ -18,11 +18,8 @@
  */
 
 import { BPMN20__tScriptTask } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
-import { FormSection } from "@patternfly/react-core/dist/js/components/Form";
 import * as React from "react";
-import { updateFlowElement } from "../../mutations/renameNode";
 import { Normalized } from "../../normalization/normalize";
-import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
 import { BidirectionalAssignmentsFormSection } from "../assignments/AssignmentsFormSection";
 import { OnEntryAndExitScriptsFormSection } from "../onEntryAndExitScripts/OnEntryAndExitScriptsFormSection";
@@ -34,8 +31,6 @@ export function ScriptTaskProperties({
 }: {
   scriptTask: Normalized<BPMN20__tScriptTask> & { __$$element: "scriptTask" };
 }) {
-  const bpmnEditorStoreApi = useBpmnEditorStoreApi();
-
   return (
     <>
       <PropertiesPanelHeaderFormSection

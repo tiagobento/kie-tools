@@ -18,9 +18,7 @@
  */
 
 import { BPMN20__tEventBasedGateway } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
-import { FormSection } from "@patternfly/react-core/dist/js/components/Form";
 import * as React from "react";
-import { updateFlowElement } from "../../mutations/renameNode";
 import { Normalized } from "../../normalization/normalize";
 import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
@@ -32,8 +30,6 @@ export function EventBasedGatewayProperties({
 }: {
   eventBasedGateway: Normalized<BPMN20__tEventBasedGateway> & { __$$element: "eventBasedGateway" };
 }) {
-  const bpmnEditorStoreApi = useBpmnEditorStoreApi();
-
   return (
     <PropertiesPanelHeaderFormSection
       title={eventBasedGateway["@_name"] || "Event-based gateway"}

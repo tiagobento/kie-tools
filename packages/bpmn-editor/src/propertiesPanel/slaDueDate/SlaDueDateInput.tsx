@@ -38,7 +38,13 @@ export type WithSlaDueDate =
       | ElementFilter<Unpacked<NonNullable<BPMN20__tDefinitions["rootElement"]>>, "process">
       | ElementFilter<
           Unpacked<NonNullable<BPMN20__tProcess["flowElement"]>>,
-          "startEvent" | "intermediateCatchEvent" | "boundaryEvent"
+          | "startEvent"
+          | "intermediateCatchEvent"
+          | "boundaryEvent"
+          | "callActivity"
+          | "subProcess"
+          | "adHocSubProcess"
+          | "transaction"
         >
     >;
 
