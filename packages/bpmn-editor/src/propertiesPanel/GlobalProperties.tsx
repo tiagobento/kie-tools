@@ -53,6 +53,7 @@ import { Variables } from "./variables/Variables";
 import { Imports } from "./imports/Imports";
 import { Correlations } from "./correlations/Correlations";
 import { SlaDueDateInput } from "./slaDueDate/SlaDueDateInput";
+import { VariablesFormSection } from "./variables/VariablesFormSection";
 
 export function GlobalProperties() {
   const thisBpmn = useBpmnEditorStore((s) => s.bpmn);
@@ -64,12 +65,10 @@ export function GlobalProperties() {
 
   const correlationCount = process?.correlationSubscription?.length ?? 0;
   const importsCount = process?.extensionElements?.["drools:import"]?.length ?? 0;
-  const variablesCount = process?.property?.length ?? 0;
   const metadataEntriesCount = process?.extensionElements?.["drools:metaData"]?.length ?? 0;
 
   const [isGlobalSectionExpanded, setGlobalSectionExpanded] = useState<boolean>(true);
   const [isImportsSectionExpanded, setImportsSectionExpanded] = useState<boolean>(false);
-  const [isVariablesSectionExpanded, setVariablesSectionExpanded] = useState<boolean>(true);
   const [isMetadataSectionExpanded, setMetadataSectionExpanded] = useState<boolean>(false);
   const [isIdNamespaceSectionExpanded, setIdNamespaceSectionExpanded] = useState<boolean>(false);
   const [isMiscSectionExpanded, setMiscSectionExpanded] = useState<boolean>(false);
@@ -156,7 +155,7 @@ export function GlobalProperties() {
                     id="kie-bpmn-editor--global-properties-panel--adhoc"
                     name="is-adhoc"
                     aria-label="Adhoc"
-                    isChecked={process?.["@_drools:adHoc"] === "true" ?? false}
+                    isChecked={(process?.["@_drools:adHoc"] ?? false) === "true"}
                     onChange={(checked) => {
                       bpmnEditorStoreApi.setState((s) => {
                         const { process } = addOrGetProcessAndDiagramElements({
@@ -194,25 +193,7 @@ export function GlobalProperties() {
           )}
         </FormSection>
 
-        <FormSection
-          title={
-            <SectionHeader
-              expands={true}
-              isSectionExpanded={isVariablesSectionExpanded}
-              toogleSectionExpanded={() => setVariablesSectionExpanded((prev) => !prev)}
-              icon={<DomainIcon width={16} height={36} style={{ marginLeft: "12px" }} />}
-              title={"Variables" + (variablesCount > 0 ? ` (${variablesCount})` : "")}
-            />
-          }
-        >
-          {isVariablesSectionExpanded && (
-            <>
-              <FormSection style={{ paddingLeft: "20px", marginTop: "20px", gap: 0 }}>
-                <Variables p={process} />
-              </FormSection>
-            </>
-          )}
-        </FormSection>
+        <VariablesFormSection p={process} />
 
         <FormSection
           title={

@@ -27,6 +27,7 @@ import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentat
 import { OnEntryAndExitScriptsFormSection } from "../onEntryAndExitScripts/OnEntryAndExitScriptsFormSection";
 import { SubProcessIcon } from "../../diagram/nodes/NodeIcons";
 import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
+import { VariablesFormSection } from "../variables/VariablesFormSection";
 
 export function SubProcessProperties({
   subProcess,
@@ -43,6 +44,8 @@ export function SubProcessProperties({
       >
         <NameDocumentationAndId element={subProcess} />
       </PropertiesPanelHeaderFormSection>
+
+      <VariablesFormSection p={subProcess} />
 
       <OnEntryAndExitScriptsFormSection element={subProcess} />
     </>

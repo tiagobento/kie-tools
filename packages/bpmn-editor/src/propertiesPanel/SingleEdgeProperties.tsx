@@ -31,7 +31,7 @@ import { useBpmnEditorStore, useBpmnEditorStoreApi } from "../store/StoreContext
 import { assertUnreachable } from "../ts-ext/assertUnreachable";
 import { AssociationProperties } from "./singleEdgeProperties/AssociationProperties";
 import { SequenceFlowProperties } from "./singleEdgeProperties/SequenceFlowProperties";
-import ColumnsIcon from "@patternfly/react-icons/dist/js/icons/columns-icon";
+import { ColumnsIcon } from "@patternfly/react-icons/dist/js/icons/columns-icon";
 import { Metadata } from "./metadata/Metadata";
 
 const handleButtonSize = 34; // That's the size of the button. This is a "magic number", as it was obtained from the rendered page.

@@ -26,6 +26,7 @@ import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
 import { SubProcessIcon } from "../../diagram/nodes/NodeIcons";
 import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
+import { VariablesFormSection } from "../variables/VariablesFormSection";
 
 export function EventSubProcessProperties({
   eventSubProcess,
@@ -33,11 +34,15 @@ export function EventSubProcessProperties({
   eventSubProcess: Normalized<BPMN20__tSubProcess> & { __$$element: "subProcess" };
 }) {
   return (
-    <PropertiesPanelHeaderFormSection
-      title={eventSubProcess["@_name"] || "Event sub-process"}
-      icon={<SubProcessIcon variant={"event"} />}
-    >
-      <NameDocumentationAndId element={eventSubProcess} />
-    </PropertiesPanelHeaderFormSection>
+    <>
+      <PropertiesPanelHeaderFormSection
+        title={eventSubProcess["@_name"] || "Event sub-process"}
+        icon={<SubProcessIcon variant={"event"} />}
+      >
+        <NameDocumentationAndId element={eventSubProcess} />
+      </PropertiesPanelHeaderFormSection>
+
+      <VariablesFormSection p={eventSubProcess} />
+    </>
   );
 }

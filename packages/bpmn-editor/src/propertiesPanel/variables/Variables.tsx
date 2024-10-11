@@ -32,11 +32,22 @@ import { addOrGetProcessAndDiagramElements } from "../../mutations/addOrGetProce
 import { useBpmnEditorStore, useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { PropertiesPanelListEmptyState } from "../emptyState/PropertiesPanelListEmptyState";
 import { Normalized } from "../../normalization/normalize";
-import { BPMN20__tProcess } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
+import { BPMN20__tDefinitions, BPMN20__tProcess } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
 import { generateUuid } from "@kie-tools/xyflow-react-kie-diagram/dist/uuid/uuid";
 import "./Variables.css";
+import { ElementFilter } from "@kie-tools/xml-parser-ts/dist/elementFilter";
+import { Unpacked } from "@kie-tools/xyflow-react-kie-diagram/dist/tsExt/tsExt";
+import { visitFlowElementsAndArtifacts } from "../../mutations/_elementVisitor";
 
-export function Variables({ p }: { p: undefined | Normalized<BPMN20__tProcess> }) {
+export type WithVariables = Normalized<
+  | ElementFilter<Unpacked<NonNullable<BPMN20__tDefinitions["rootElement"]>>, "process">
+  | ElementFilter<
+      Unpacked<NonNullable<BPMN20__tProcess["flowElement"]>>,
+      "subProcess" | "adHocSubProcess" | "transaction"
+    >
+>;
+
+export function Variables({ p }: { p: undefined | WithVariables }) {
   const bpmnEditorStoreApi = useBpmnEditorStoreApi();
 
   const isReadOnly = useBpmnEditorStore((s) => s.settings.isReadOnly);
@@ -49,19 +60,32 @@ export function Variables({ p }: { p: undefined | Normalized<BPMN20__tProcess> }
         onClick={() => {
           bpmnEditorStoreApi.setState((s) => {
             const { process } = addOrGetProcessAndDiagramElements({ definitions: s.bpmn.model.definitions });
-            process.property ??= [];
-            process.property?.push({
-              "@_id": generateUuid(),
-              "@_name": "",
-              "@_itemSubjectRef": "",
-            });
+            if (!p || p["@_id"] === process["@_id"]) {
+              process.property ??= [];
+              process.property?.push({
+                "@_id": generateUuid(),
+                "@_name": "",
+                "@_itemSubjectRef": "",
+              });
+            } else {
+              visitFlowElementsAndArtifacts(process, ({ element }) => {
+                if (element["@_id"] === p["@_id"] && element.__$$element === p.__$$element) {
+                  element.property ??= [];
+                  element.property?.push({
+                    "@_id": generateUuid(),
+                    "@_name": "",
+                    "@_itemSubjectRef": "",
+                  });
+                }
+              });
+            }
           });
         }}
       >
         <PlusCircleIcon />
       </Button>
     ),
-    [bpmnEditorStoreApi]
+    [bpmnEditorStoreApi, p]
   );
 
   const entryColumnStyle = {
@@ -118,9 +142,18 @@ export function Variables({ p }: { p: undefined | Normalized<BPMN20__tProcess> }
                         const { process } = addOrGetProcessAndDiagramElements({
                           definitions: s.bpmn.model.definitions,
                         });
-
-                        if (process.property?.[i]) {
-                          process.property[i]["@_name"] = e.target.value;
+                        if (!p || p["@_id"] === process["@_id"]) {
+                          if (process.property?.[i]) {
+                            process.property[i]["@_name"] = e.target.value;
+                          }
+                        } else {
+                          visitFlowElementsAndArtifacts(process, ({ element }) => {
+                            if (element["@_id"] === p["@_id"] && element.__$$element === p.__$$element) {
+                              if (element.property?.[i]) {
+                                element.property[i]["@_name"] = e.target.value;
+                              }
+                            }
+                          });
                         }
                       })
                     }
@@ -137,9 +170,18 @@ export function Variables({ p }: { p: undefined | Normalized<BPMN20__tProcess> }
                         const { process } = addOrGetProcessAndDiagramElements({
                           definitions: s.bpmn.model.definitions,
                         });
-
-                        if (process.property?.[i]) {
-                          process.property[i]["@_itemSubjectRef"] = e.target.value;
+                        if (!p || p["@_id"] === process["@_id"]) {
+                          if (process.property?.[i]) {
+                            process.property[i]["@_itemSubjectRef"] = e.target.value;
+                          }
+                        } else {
+                          visitFlowElementsAndArtifacts(process, ({ element }) => {
+                            if (element["@_id"] === p["@_id"] && element.__$$element === p.__$$element) {
+                              if (element.property?.[i]) {
+                                element.property[i]["@_itemSubjectRef"] = e.target.value;
+                              }
+                            }
+                          });
                         }
                       })
                     }
@@ -156,11 +198,22 @@ export function Variables({ p }: { p: undefined | Normalized<BPMN20__tProcess> }
                         const { process } = addOrGetProcessAndDiagramElements({
                           definitions: s.bpmn.model.definitions,
                         });
-
-                        if (process.property?.[i]) {
-                          process.property[i].extensionElements ??= {};
-                          process.property[i].extensionElements["drools:metaData"] ??= [];
-                          setBpmn20Drools10MetaData(process.property[i], "customTags", e.target.value);
+                        if (!p || p["@_id"] === process["@_id"]) {
+                          if (process.property?.[i]) {
+                            process.property[i].extensionElements ??= {};
+                            process.property[i].extensionElements["drools:metaData"] ??= [];
+                            setBpmn20Drools10MetaData(process.property[i], "customTags", e.target.value);
+                          }
+                        } else {
+                          visitFlowElementsAndArtifacts(process, ({ element }) => {
+                            if (element["@_id"] === p["@_id"] && element.__$$element === p.__$$element) {
+                              if (element.property?.[i]) {
+                                element.property[i].extensionElements ??= {};
+                                element.property[i].extensionElements["drools:metaData"] ??= [];
+                                setBpmn20Drools10MetaData(element.property[i], "customTags", e.target.value);
+                              }
+                            }
+                          });
                         }
                       })
                     }
@@ -177,7 +230,15 @@ export function Variables({ p }: { p: undefined | Normalized<BPMN20__tProcess> }
                           const { process } = addOrGetProcessAndDiagramElements({
                             definitions: s.bpmn.model.definitions,
                           });
-                          process.property?.splice(i, 1);
+                          if (!p || p["@_id"] === process["@_id"]) {
+                            process.property?.splice(i, 1);
+                          } else {
+                            visitFlowElementsAndArtifacts(process, ({ element }) => {
+                              if (element["@_id"] === p["@_id"] && element.__$$element === p.__$$element) {
+                                element.property?.splice(i, 1);
+                              }
+                            });
+                          }
                         });
                       }}
                     >

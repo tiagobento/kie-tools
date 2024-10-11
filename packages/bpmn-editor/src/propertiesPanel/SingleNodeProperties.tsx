@@ -66,7 +66,7 @@ import { TaskProperties } from "./singleNodeProperties/TaskProperties";
 import { TextAnnotationProperties } from "./singleNodeProperties/TextAnnotationProperties";
 import { TransactionProperties } from "./singleNodeProperties/TransactionProperties";
 import { UserTaskProperties } from "./singleNodeProperties/UserTaskProperties";
-import ColumnsIcon from "@patternfly/react-icons/dist/js/icons/columns-icon";
+import { ColumnsIcon } from "@patternfly/react-icons/dist/js/icons/columns-icon";
 import { Metadata } from "./metadata/Metadata";
 
 export function SingleNodeProperties() {
