@@ -39,7 +39,7 @@ export function BoundaryEventProperties({
   return (
     <>
       <PropertiesPanelHeaderFormSection
-        title={boundaryEvent["@_name"] ?? "Boundary event"}
+        title={boundaryEvent["@_name"] || "Boundary event"}
         icon={<IntermediateCatchEventIcon variant={boundaryEvent.eventDefinition?.[0]?.__$$element} />}
       >
         <NameDocumentationAndId element={boundaryEvent} />

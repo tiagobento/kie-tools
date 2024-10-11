@@ -34,7 +34,7 @@ export function EventSubProcessProperties({
 }) {
   return (
     <PropertiesPanelHeaderFormSection
-      title={eventSubProcess["@_name"] ?? "Event sub-process"}
+      title={eventSubProcess["@_name"] || "Event sub-process"}
       icon={<SubProcessIcon variant={"event"} />}
     >
       <NameDocumentationAndId element={eventSubProcess} />

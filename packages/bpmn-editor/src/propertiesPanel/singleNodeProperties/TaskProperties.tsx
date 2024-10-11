@@ -32,7 +32,7 @@ export function TaskProperties({ task }: { task: Normalized<BPMN20__tTask> & { _
 
   return (
     <>
-      <PropertiesPanelHeaderFormSection title={task["@_name"] ?? "Task"} icon={<TaskIcon />}>
+      <PropertiesPanelHeaderFormSection title={task["@_name"] || "Task"} icon={<TaskIcon />}>
         <NameDocumentationAndId element={task} />
       </PropertiesPanelHeaderFormSection>
     </>

@@ -36,7 +36,7 @@ export function ComplexGatewayProperties({
 
   return (
     <PropertiesPanelHeaderFormSection
-      title={complexGateway["@_name"] ?? "Complex gateway"}
+      title={complexGateway["@_name"] || "Complex gateway"}
       icon={<GatewayIcon variant={"complexGateway"} />}
     >
       <NameDocumentationAndId element={complexGateway} />

@@ -37,7 +37,7 @@ export function ExclusiveGatewayProperties({
 
   return (
     <PropertiesPanelHeaderFormSection
-      title={exclusiveGateway["@_name"] ?? "Exclusive gateway"}
+      title={exclusiveGateway["@_name"] || "Exclusive gateway"}
       icon={<GatewayIcon variant={exclusiveGateway.__$$element} />}
     >
       <NameDocumentationAndId element={exclusiveGateway} />

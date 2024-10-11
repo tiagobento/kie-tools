@@ -30,7 +30,7 @@ export function LaneProperties({ lane }: { lane: Normalized<BPMN20__tLane> & { _
   const bpmnEditorStoreApi = useBpmnEditorStoreApi();
 
   return (
-    <PropertiesPanelHeaderFormSection title={lane["@_name"] ?? "Lane"} icon={<LaneIcon />}>
+    <PropertiesPanelHeaderFormSection title={lane["@_name"] || "Lane"} icon={<LaneIcon />}>
       <NameDocumentationAndId element={lane} />
     </PropertiesPanelHeaderFormSection>
   );

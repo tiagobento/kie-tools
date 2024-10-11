@@ -38,7 +38,7 @@ export function BusinessRuleTaskProperties({
 
   return (
     <>
-      <PropertiesPanelHeaderFormSection title={businessRuleTask["@_name"] ?? "Business rule task"} icon={<TaskIcon />}>
+      <PropertiesPanelHeaderFormSection title={businessRuleTask["@_name"] || "Business rule task"} icon={<TaskIcon />}>
         <NameDocumentationAndId element={businessRuleTask} />
       </PropertiesPanelHeaderFormSection>
 

@@ -39,7 +39,7 @@ export function ScriptTaskProperties({
   return (
     <>
       <PropertiesPanelHeaderFormSection
-        title={scriptTask["@_name"] ?? "Script task"}
+        title={scriptTask["@_name"] || "Script task"}
         icon={<TaskIcon variant={scriptTask.__$$element} />}
       >
         <NameDocumentationAndId element={scriptTask} />

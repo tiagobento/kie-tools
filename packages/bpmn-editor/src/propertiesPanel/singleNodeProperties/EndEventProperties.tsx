@@ -39,7 +39,7 @@ export function EndEventProperties({
   return (
     <>
       <PropertiesPanelHeaderFormSection
-        title={endEvent["@_name"] ?? "End event"}
+        title={endEvent["@_name"] || "End event"}
         icon={<EndEventIcon variant={endEvent.eventDefinition?.[0]?.__$$element} />}
       >
         <NameDocumentationAndId element={endEvent} />
