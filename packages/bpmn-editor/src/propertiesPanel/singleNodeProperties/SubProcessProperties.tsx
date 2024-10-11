@@ -24,6 +24,7 @@ import { updateFlowElement } from "../../mutations/renameNode";
 import { Normalized } from "../../normalization/normalize";
 import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
+import { OnEntryAndExitScriptsFormSection } from "../onEntryAndExitScripts/OnEntryAndExitScriptsFormSection";
 
 export function SubProcessProperties({
   subProcess,
@@ -33,8 +34,12 @@ export function SubProcessProperties({
   const bpmnEditorStoreApi = useBpmnEditorStoreApi();
 
   return (
-    <FormSection>
-      <NameDocumentationAndId element={subProcess} />
-    </FormSection>
+    <>
+      <FormSection>
+        <NameDocumentationAndId element={subProcess} />
+      </FormSection>
+
+      <OnEntryAndExitScriptsFormSection element={subProcess} />
+    </>
   );
 }

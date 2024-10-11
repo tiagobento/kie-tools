@@ -20,10 +20,11 @@
 import { BPMN20__tCallActivity } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
 import { FormSection } from "@patternfly/react-core/dist/js/components/Form";
 import * as React from "react";
-import { updateFlowElement } from "../../mutations/renameNode";
 import { Normalized } from "../../normalization/normalize";
 import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
+import { AssignmentsFormSection } from "../assignments/AssignmentsFormSection";
+import { OnEntryAndExitScriptsFormSection } from "../onEntryAndExitScripts/OnEntryAndExitScriptsFormSection";
 
 export function CallActivityProperties({
   callActivity,
@@ -33,8 +34,14 @@ export function CallActivityProperties({
   const bpmnEditorStoreApi = useBpmnEditorStoreApi();
 
   return (
-    <FormSection>
-      <NameDocumentationAndId element={callActivity} />
-    </FormSection>
+    <>
+      <FormSection>
+        <NameDocumentationAndId element={callActivity} />
+      </FormSection>
+
+      <AssignmentsFormSection element={callActivity} />
+
+      <OnEntryAndExitScriptsFormSection element={callActivity} />
+    </>
   );
 }

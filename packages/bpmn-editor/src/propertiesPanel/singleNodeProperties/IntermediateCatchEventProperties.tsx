@@ -24,6 +24,8 @@ import { updateFlowElement } from "../../mutations/renameNode";
 import { Normalized } from "../../normalization/normalize";
 import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
+import { SlaDueDateInput } from "../slaDueDate/SlaDueDateInput";
+import { CodeInput } from "../codeInput/CodeInput";
 
 export function IntermediateCatchEventProperties({
   intermediateCatchEvent,
@@ -33,8 +35,25 @@ export function IntermediateCatchEventProperties({
   const bpmnEditorStoreApi = useBpmnEditorStoreApi();
 
   return (
-    <FormSection>
-      <NameDocumentationAndId element={intermediateCatchEvent} />
-    </FormSection>
+    <>
+      <FormSection>
+        <NameDocumentationAndId element={intermediateCatchEvent} />
+      </FormSection>
+
+      {intermediateCatchEvent.eventDefinition?.[0].__$$element !== "linkEventDefinition" && (
+        <SlaDueDateInput element={intermediateCatchEvent} />
+      )}
+
+      {intermediateCatchEvent.eventDefinition?.[0].__$$element === "conditionalEventDefinition" && (
+        <CodeInput
+          label={"Condition"}
+          languages={["Drools"]}
+          value={""}
+          onChange={(newScript) => {
+            // TODO: Tiago
+          }}
+        />
+      )}
+    </>
   );
 }

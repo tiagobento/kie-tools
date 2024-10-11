@@ -24,6 +24,7 @@ import { updateFlowElement } from "../../mutations/renameNode";
 import { Normalized } from "../../normalization/normalize";
 import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
+import { DataTypeSelector } from "../dataTypeSelector/DataTypeSelector";
 
 export function DataObjectProperties({
   dataObject,
@@ -35,6 +36,8 @@ export function DataObjectProperties({
   return (
     <FormSection>
       <NameDocumentationAndId element={dataObject} />
+
+      <DataTypeSelector element={dataObject} />
     </FormSection>
   );
 }

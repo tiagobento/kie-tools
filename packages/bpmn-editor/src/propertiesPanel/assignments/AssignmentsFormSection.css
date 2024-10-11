@@ -17,34 +17,43 @@
  * under the License.
  */
 
-.kie-bpmn-editor--correlations--modal {
+.kie-bpmn-editor--assignments--modal {
   height: 100%;
   width: 80%;
   position: relative;
 }
 
-.kie-bpmn-editor--correlations--empty-state {
-  padding: 10px;
+.kie-bpmn-editor--assignments--modal-section {
+  padding-bottom: 16px;
+  height: 50%;
+  overflow-y: scroll;
+  display: flex;
+  flex-direction: column;
+}
+
+.kie-bpmn-editor--assignments--empty-state {
+  padding: 4px;
+  margin-top: 8px;
   background: #eee;
   border-radius: 10px;
   text-align: center;
-  height: 100%;
+  flex-grow: 1;
 }
 
-.kie-bpmn-editor--properties-panel--correlation-entry {
+.kie-bpmn-editor--properties-panel--assignment-entry {
   align-items: center;
   border-radius: 10px;
 }
 
-.kie-bpmn-editor--properties-panel--correlation-entry:hover,
-.kie-bpmn-editor--properties-panel--correlation-entry:focus-within {
+.kie-bpmn-editor--properties-panel--assignment-entry:hover,
+.kie-bpmn-editor--properties-panel--assignment-entry:focus-within {
   background: #eee;
 }
 
-.kie-bpmn-editor--properties-panel--correlation-entry div > input {
+.kie-bpmn-editor--properties-panel--assignment-entry div > input {
   border: 0;
 }
 
-.kie-bpmn-editor--properties-panel--correlation-entry div:not(:nth-last-child(2)) > input {
+.kie-bpmn-editor--properties-panel--assignment-entry div:not(:nth-last-child(2)) > input {
   border-right: 1px dotted black;
 }

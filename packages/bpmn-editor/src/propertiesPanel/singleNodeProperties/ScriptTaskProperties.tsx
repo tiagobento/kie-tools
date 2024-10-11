@@ -24,6 +24,8 @@ import { updateFlowElement } from "../../mutations/renameNode";
 import { Normalized } from "../../normalization/normalize";
 import { useBpmnEditorStoreApi } from "../../store/StoreContext";
 import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentationAndId";
+import { AssignmentsFormSection } from "../assignments/AssignmentsFormSection";
+import { OnEntryAndExitScriptsFormSection } from "../onEntryAndExitScripts/OnEntryAndExitScriptsFormSection";
 
 export function ScriptTaskProperties({
   scriptTask,
@@ -33,8 +35,14 @@ export function ScriptTaskProperties({
   const bpmnEditorStoreApi = useBpmnEditorStoreApi();
 
   return (
-    <FormSection>
-      <NameDocumentationAndId element={scriptTask} />
-    </FormSection>
+    <>
+      <FormSection>
+        <NameDocumentationAndId element={scriptTask} />
+      </FormSection>
+
+      <AssignmentsFormSection element={scriptTask} />
+
+      <OnEntryAndExitScriptsFormSection element={scriptTask} />
+    </>
   );
 }
