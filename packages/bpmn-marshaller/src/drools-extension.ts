@@ -41,6 +41,7 @@ export const BUSINESS_RULE_TASK_IMPLEMENTATIONS = {
   drools: "http://www.jboss.org/drools/rule",
   dmn: "http://www.jboss.org/drools/dmn",
 };
+
 export const SERVICE_TASK_IMPLEMENTATIONS = {
   java: "Java",
   webService: "WebService",
@@ -64,10 +65,6 @@ declare module "./schemas/bpmn-2_0/ts-gen/types" {
   export interface BPMN20__tProcess__extensionElements extends WithMetaData {
     "drools:import"?: Namespaced<DROOLS, drools__GLOBAL__import>[];
     "drools:global"?: Namespaced<DROOLS, drools__GLOBAL__global>[];
-  }
-
-  export interface BPMN20__tBusinessRuleTask {
-    "@_drools:ruleFlowGroup"?: Namespaced<DROOLS, string>;
   }
 
   type WithEntryAndExitScripts = {
@@ -132,6 +129,21 @@ declare module "./schemas/bpmn-2_0/ts-gen/types" {
     "@_drools:serviceimplementation"?: Namespaced<DROOLS, string>;
     "@_drools:serviceinterface"?: Namespaced<DROOLS, string>;
     "@_drools:serviceoperation"?: Namespaced<DROOLS, string>;
+  }
+
+  // Business Rule task
+  export interface BPMN20__tBusinessRuleTask {
+    "@_drools:ruleFlowGroup"?: Namespaced<DROOLS, string>;
+  }
+
+  // Data Input
+  export interface BPMN20__tDataInput {
+    "@_drools:dtype"?: Namespaced<DROOLS, string>;
+  }
+
+  // Data Output
+  export interface BPMN20__tDataOutput {
+    "@_drools:dtype"?: Namespaced<DROOLS, string>;
   }
 }
 
@@ -214,6 +226,21 @@ mergeMetas(bpmn20meta, [[DROOLS_NS, drools10meta]]);
   isArray: false,
   xsdType: "xsd:string",
   fromType: "BPMN20__tServiceTask",
+};
+
+// Data Input
+(bpmn20meta["BPMN20__tDataInput"] as any)["@_drools:dtype"] = {
+  type: "string",
+  isArray: false,
+  xsdType: "xsd:string",
+  fromType: "BPMN20__tDataInput",
+};
+// Data Output
+(bpmn20meta["BPMN20__tDataOutput"] as any)["@_drools:dtype"] = {
+  type: "string",
+  isArray: false,
+  xsdType: "xsd:string",
+  fromType: "BPMN20__tDataOutput",
 };
 
 class MetaType {
