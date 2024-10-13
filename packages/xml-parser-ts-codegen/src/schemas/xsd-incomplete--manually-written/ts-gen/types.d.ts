@@ -80,6 +80,7 @@ export interface XsdExtension {
 export interface XsdComplexType {
   "@_name"?: string;
   "@_abstract"?: boolean;
+  "@_mixed"?: boolean;
   "xsd:attribute"?: XsdAttribute[];
   "xsd:attributeGroup"?: Array<{ "@_ref": string }>;
   "xsd:sequence"?: XsdSequence;

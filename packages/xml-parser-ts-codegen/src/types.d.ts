@@ -54,6 +54,7 @@ export type XptcComplexTypeBase = {
 
 export type XptcComplexTypeAnonymous = XptcComplexTypeBase & {
   isAnonymous: true; // Declared directly inside elements.
+  isMixed: boolean;
   forElementWithName: string;
   parentIdentifierForExtensionType: string;
 };
@@ -61,6 +62,7 @@ export type XptcComplexTypeAnonymous = XptcComplexTypeBase & {
 export type XptcComplexTypeNamed = XptcComplexTypeBase & {
   name: string;
   isAbstract: boolean;
+  isMixed: boolean;
   isAnonymous: false;
 };
 

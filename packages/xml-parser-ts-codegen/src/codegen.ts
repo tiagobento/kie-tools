@@ -208,6 +208,7 @@ async function main() {
       __COMPLEX_TYPES.push({
         type: "complex",
         comment: isAbstract ? "abstract" : "",
+        isMixed: xsdCt["@_mixed"] ?? false,
         isAbstract,
         isAnonymous: false,
         name: xsdCt["@_name"]!,
@@ -681,6 +682,8 @@ function getMetaProperties(
 
   let needsExtensionType = ct.needsExtensionType;
 
+  let isMixed = ct.isMixed;
+
   while (curParentCt) {
     const curParentCtMetaProperties: XptcMetaTypeProperty[] = [];
     if (curParentCt?.type === "complex") {
@@ -692,6 +695,8 @@ function getMetaProperties(
       if (curParentCt.isAnonymous) {
         throw new Error("Anonymous types are never parent types.");
       }
+
+      isMixed ||= curParentCt.isMixed;
 
       for (const a of curParentCt.attributes) {
         const attributeType = getTsTypeFromQName(
@@ -954,6 +959,21 @@ function getMetaProperties(
       },
       isArray: false,
       isOptional: false,
+    });
+  }
+
+  if (isMixed) {
+    ctMetaProperties.push({
+      declaredAt: ct.declaredAtRelativeLocation,
+      fromType: metaTypeName,
+      name: `__$$text`,
+      elem: undefined,
+      metaType: {
+        name: "string",
+        xsdType: "xsd:string",
+      },
+      isArray: false,
+      isOptional: true,
     });
   }
 
@@ -1223,6 +1243,7 @@ function xsdComplexTypeToAnonymousXptcComplexType(
   return {
     type: "complex",
     comment: "",
+    isMixed: xsdCt["@_mixed"] ?? false,
     isSimpleContent: false, // No reason why an anonymous type couldn't be simpleContent... Could be implemented.
     isAnonymous: true,
     parentIdentifierForExtensionType,

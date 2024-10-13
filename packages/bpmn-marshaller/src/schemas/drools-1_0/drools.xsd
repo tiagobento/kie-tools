@@ -101,10 +101,10 @@
   <!-- Manually written to reflect what's actually happening on BPMN Editor (classic) -->
   <xsd:element name="metaData">
     <xsd:complexType>
-      <xsd:attribute name="name" type="xsd:string" required="true" />
       <xsd:sequence>
-        <xsd:element name="metaValue" minOccurs="1" maxOccurs="1" type="xsd:string" mixed="true" />
+        <xsd:element name="metaValue" minOccurs="1" maxOccurs="1" type="xsd:string" />
       </xsd:sequence>
+      <xsd:attribute name="name" type="xsd:string" use="required" />
     </xsd:complexType>
   </xsd:element>
 
