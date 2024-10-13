@@ -260,9 +260,32 @@ async function main() {
         }
       );
 
+      let isAbstract = e["@_abstract"];
+      if (a.kind === "ofNamedType") {
+        const split = a.typeName?.split(":") ?? [];
+        const qNamePrefix = split.length === 2 ? split[0] : undefined;
+        const typeName = split.length === 2 ? split[1] : split[0];
+        const namespace = xsd["xsd:schema"][`@_xmlns:${qNamePrefix}`];
+        const [typeXsdLocation, typeXsd] =
+          [...__XSDS.entries()].find(([location, xsd]) => xsd["xsd:schema"]["@_targetNamespace"] === namespace) ?? [];
+
+        const type = __COMPLEX_TYPES
+          .filter((s) => !s.isAnonymous)
+          .filter((s) => (qNamePrefix ? s.declaredAtRelativeLocation === typeXsdLocation : true))
+          .find((s) => s.name === typeName);
+
+        if (!type) {
+          throw new Error(`Can't find type '${typeName}' for element ${e["@_name"]}`);
+        }
+
+        isAbstract ??= type?.isAbstract;
+      }
+
+      isAbstract ??= false;
+
       __GLOBAL_ELEMENTS.set(`${location}__${e["@_name"]}`, {
         name: e["@_name"],
-        isAbstract: e["@_abstract"] ?? false,
+        isAbstract,
         substitutionGroup: e["@_substitutionGroup"],
         type: e["@_type"],
         declaredAtRelativeLocation: location,
@@ -282,7 +305,7 @@ async function main() {
       __SUBSTITUTIONS.set(xLocation, localizedSubstitutions);
       for (const e of xsd["xsd:schema"]["xsd:element"] || []) {
         if (e["@_substitutionGroup"]) {
-          const subsGroup = getXptcElementFromLocalElementRef(
+          const subsGroup = getXptcElementFromElementQName(
             __XSDS,
             __GLOBAL_ELEMENTS,
             xLocation,
@@ -291,7 +314,7 @@ async function main() {
           if (!subsGroup) {
             throw new Error(`Invalid subsitution group for element '${e["@_name"]}'`);
           }
-          const elem = getXptcElementFromLocalElementRef(__XSDS, __GLOBAL_ELEMENTS, xLocation, e["@_name"]);
+          const elem = getXptcElementFromElementQName(__XSDS, __GLOBAL_ELEMENTS, xLocation, e["@_name"]);
           if (!elem) {
             throw new Error(`Invalid element '${e["@_name"]}'`);
           }
@@ -302,6 +325,7 @@ async function main() {
           const accumulatedSubstitutionElements = new Set([
             ...(localizedSubstitutions.get(localizedElementName) ?? []),
             `${xLocation}__${elem.name}`,
+            ...(subsGroup.isAbstract ? [] : [localizedElementName]), // Include itself if not abstract
           ]);
 
           localizedSubstitutions.set(localizedElementName, [...accumulatedSubstitutionElements]);
@@ -475,10 +499,14 @@ ${Array.from(subs.entries())
   .map(
     ([head, elements]) =>
       `${elements
-        .map((e) => {
+        .flatMap((e) => {
           const elementName = `${getRealtiveLocationNs(__RELATIVE_LOCATION, e.split("__")[0]) + e.split("__")[1]}`;
           const headName = `${getRealtiveLocationNs(__RELATIVE_LOCATION, head.split("__")[0]) + head.split("__")[1]}`;
-          return `    "${elementName}": "${headName}",`;
+          if (elementName === headName) {
+            return []; // Do not serialize itself as a substitution.
+          } else {
+            return `    "${elementName}": "${headName}",`;
+          }
         })
         .join("\n")}`
   )
@@ -550,12 +578,36 @@ function resolveElementRef(
     return [referencedElement];
   }
 
-  return substitutionNamesForReferencedElement.flatMap((substitutionElementName) => {
+  const substitutionsWithoutSelfReferences = new Map(
+    [...substitutions.entries()].map(([key, value]) => [key, value.filter((v) => v !== key)] as const)
+  );
+
+  const resolved = substitutionNamesForReferencedElement.flatMap((substitutionElementName) => {
     const substitutionElement = __GLOBAL_ELEMENTS.get(substitutionElementName);
     if (!substitutionElement) {
       throw new Error(`Can't find element '${substitutionElementName}' for substitution ${key}`);
     }
-    return resolveElementRef(__GLOBAL_ELEMENTS, __XSDS, substitutions, substitutionElement);
+
+    if (substitutionElement.isAbstract) {
+      return resolveElementRef(__GLOBAL_ELEMENTS, __XSDS, substitutionsWithoutSelfReferences, substitutionElement);
+    }
+
+    // Include itself if not abstract.
+    return [
+      substitutionElement,
+      ...resolveElementRef(__GLOBAL_ELEMENTS, __XSDS, substitutionsWithoutSelfReferences, substitutionElement),
+    ];
+  });
+
+  const seen = new Set<string>();
+  return resolved.filter((s) => {
+    const key = `${s.declaredAtRelativeLocation}__${s.name}`;
+    if (seen.has(key)) {
+      return false;
+    } else {
+      seen.add(key);
+      return true;
+    }
   });
 }
 
@@ -592,7 +644,7 @@ ${resolutions
     const elementName = `${elementNs}${element.name}`;
     return [
       `        ({ __$$element: "${elementName}" } & ${
-        getTsTypeFromLocalRef(
+        getTsTypeFromQName(
           __XSDS,
           __NAMED_TYPES_BY_TS_NAME,
           ct.declaredAtRelativeLocation,
@@ -622,7 +674,7 @@ function getMetaProperties(
   const anonymousTypes: XptcMetaType[] = [];
 
   const immediateParentType = ct.childOf
-    ? getTsTypeFromLocalRef(__XSDS, __NAMED_TYPES_BY_TS_NAME, ct.declaredAtRelativeLocation, ct.childOf)
+    ? getTsTypeFromQName(__XSDS, __NAMED_TYPES_BY_TS_NAME, ct.declaredAtRelativeLocation, ct.childOf)
     : undefined;
 
   let curParentCt = immediateParentType ? __NAMED_TYPES_BY_TS_NAME.get(immediateParentType.name) : undefined;
@@ -642,7 +694,7 @@ function getMetaProperties(
       }
 
       for (const a of curParentCt.attributes) {
-        const attributeType = getTsTypeFromLocalRef(
+        const attributeType = getTsTypeFromQName(
           __XSDS,
           __NAMED_TYPES_BY_TS_NAME,
           curParentCt.declaredAtRelativeLocation,
@@ -692,7 +744,7 @@ function getMetaProperties(
             isOptional: e.isOptional,
           });
         } else if (e.kind === "ofNamedType") {
-          const tsType = getTsTypeFromLocalRef(
+          const tsType = getTsTypeFromQName(
             __XSDS,
             __NAMED_TYPES_BY_TS_NAME,
             ct.declaredAtRelativeLocation,
@@ -710,7 +762,7 @@ function getMetaProperties(
             isOptional: e.isOptional,
           });
         } else if (e.kind === "ofRef") {
-          const referencedElement = getXptcElementFromLocalElementRef(
+          const referencedElement = getXptcElementFromElementQName(
             __XSDS,
             __GLOBAL_ELEMENTS,
             ct.declaredAtRelativeLocation,
@@ -722,7 +774,7 @@ function getMetaProperties(
           }
 
           const tsType = referencedElement.type
-            ? getTsTypeFromLocalRef(
+            ? getTsTypeFromQName(
                 __XSDS,
                 __NAMED_TYPES_BY_TS_NAME,
                 ct.declaredAtRelativeLocation,
@@ -762,7 +814,7 @@ function getMetaProperties(
       }
 
       const nextParentType = curParentCt.childOf
-        ? getTsTypeFromLocalRef(
+        ? getTsTypeFromQName(
             __XSDS,
             __NAMED_TYPES_BY_TS_NAME,
             curParentCt.declaredAtRelativeLocation,
@@ -784,7 +836,7 @@ function getMetaProperties(
   // Own properties are parsed later to ensure xsd:sequence order.
 
   for (const a of ct.attributes) {
-    const attributeType = getTsTypeFromLocalRef(
+    const attributeType = getTsTypeFromQName(
       __XSDS,
       __NAMED_TYPES_BY_TS_NAME,
       ct.declaredAtRelativeLocation,
@@ -804,7 +856,7 @@ function getMetaProperties(
 
   for (const e of ct.elements) {
     if (e.kind === "ofRef") {
-      const referencedElement = getXptcElementFromLocalElementRef(
+      const referencedElement = getXptcElementFromElementQName(
         __XSDS,
         __GLOBAL_ELEMENTS,
         ct.declaredAtRelativeLocation,
@@ -816,7 +868,7 @@ function getMetaProperties(
       }
 
       const tsType = referencedElement.type
-        ? getTsTypeFromLocalRef(__XSDS, __NAMED_TYPES_BY_TS_NAME, ct.declaredAtRelativeLocation, referencedElement.type)
+        ? getTsTypeFromQName(__XSDS, __NAMED_TYPES_BY_TS_NAME, ct.declaredAtRelativeLocation, referencedElement.type)
         : {
             name: getTsNameFromNamedType(
               ct.declaredAtRelativeLocation,
@@ -846,7 +898,7 @@ function getMetaProperties(
         isOptional: e.isOptional,
       });
     } else if (e.kind === "ofNamedType") {
-      const tsType = getTsTypeFromLocalRef(__XSDS, __NAMED_TYPES_BY_TS_NAME, ct.declaredAtRelativeLocation, e.typeName);
+      const tsType = getTsTypeFromQName(__XSDS, __NAMED_TYPES_BY_TS_NAME, ct.declaredAtRelativeLocation, e.typeName);
       ctMetaProperties.push({
         declaredAt: ct.declaredAtRelativeLocation,
         fromType: metaTypeName,
@@ -890,7 +942,7 @@ function getMetaProperties(
   }
 
   if (ct.isSimpleContent && ct.childOf) {
-    const t = getTsTypeFromLocalRef(__XSDS, __NAMED_TYPES_BY_TS_NAME, ct.declaredAtRelativeLocation, ct.childOf);
+    const t = getTsTypeFromQName(__XSDS, __NAMED_TYPES_BY_TS_NAME, ct.declaredAtRelativeLocation, ct.childOf);
     ctMetaProperties.push({
       declaredAt: ct.declaredAtRelativeLocation,
       fromType: metaTypeName,
@@ -924,23 +976,23 @@ function getTsNameFromNamedType(relativeLocation: string, namedTypeName: string)
   return `${filenameWithoutExtension}__${namedTypeName}`.replaceAll(/[ -.]/g, "_");
 }
 
-function getTsTypeFromLocalRef(
+function getTsTypeFromQName(
   __XSDS: Map<string, XsdSchema>,
   __NAMED_TYPES_BY_TS_NAME: Map<string, XptcComplexType | XptcSimpleType>,
   relativeLocation: string,
-  namedTypeLocalRef: string
+  namedTypeQName: string
 ): { name: string; annotation: string } {
   // check if it's a local ref to another namespace
-  if (namedTypeLocalRef.includes(":") && namedTypeLocalRef.split(":").length === 2) {
-    const [localNsName, namedTypeName] = namedTypeLocalRef.split(":");
+  if (namedTypeQName.includes(":") && namedTypeQName.split(":").length === 2) {
+    const [localNsName, namedTypeName] = namedTypeQName.split(":");
     const xmlnsKey = `@_xmlns:${localNsName}`;
     const namespace = (__XSDS.get(relativeLocation)?.["xsd:schema"] as any)[xmlnsKey];
 
     // short circuit here. we don't parse XSD's XSD.
     if (namespace === "http://www.w3.org/2001/XMLSchema") {
-      const xsdType = XSD__TYPES.get(namedTypeLocalRef);
+      const xsdType = XSD__TYPES.get(namedTypeQName);
       if (!xsdType) {
-        throw new Error(`Unknown XSD type '${namedTypeLocalRef}'`);
+        throw new Error(`Unknown XSD type '${namedTypeQName}'`);
       }
       return { name: xsdType.tsEquivalent, annotation: xsdType.annotation };
     }
@@ -962,7 +1014,7 @@ function getTsTypeFromLocalRef(
 
     // some simple types are declared just because of the restrictions it has, they're not interesting for the generated structure.
     if (namedType.type === "simple" && namedType.kind === "int" && namedType.restrictionBase) {
-      return getTsTypeFromLocalRef(__XSDS, __NAMED_TYPES_BY_TS_NAME, relativeLocation, namedType.restrictionBase);
+      return getTsTypeFromQName(__XSDS, __NAMED_TYPES_BY_TS_NAME, relativeLocation, namedType.restrictionBase);
     }
 
     // found it!
@@ -971,7 +1023,7 @@ function getTsTypeFromLocalRef(
 
   // not a reference to a type in another namespace. simply local name.
   return {
-    name: getTsNameFromNamedType(relativeLocation, namedTypeLocalRef),
+    name: getTsNameFromNamedType(relativeLocation, namedTypeQName),
     annotation: "// local type",
   };
 }
@@ -1022,15 +1074,15 @@ function xsdSimpleTypeToXptcSimpleType(
   }
 }
 
-function getXptcElementFromLocalElementRef(
+function getXptcElementFromElementQName(
   __XSDS: Map<string, XsdSchema>,
   __GLOBAL_ELEMENTS: Map<string, XptcElement>,
   relativeLocation: string,
-  localElementRef: string
+  elementQName: string
 ): XptcElement | undefined {
   // check if it's a QName to another namespace
-  if (localElementRef.includes(":") && localElementRef.split(":").length === 2) {
-    const [localNsName, referencedElementName] = localElementRef.split(":");
+  if (elementQName.includes(":") && elementQName.split(":").length === 2) {
+    const [localNsName, referencedElementName] = elementQName.split(":");
     const xmlnsKey = `@_xmlns:${localNsName}`;
     const namespace = (__XSDS.get(relativeLocation)?.["xsd:schema"] as any)[xmlnsKey];
 
@@ -1045,7 +1097,7 @@ function getXptcElementFromLocalElementRef(
     return __GLOBAL_ELEMENTS.get(`${referencedXsdRelativeLocation}__${referencedElementName}`);
   }
 
-  return __GLOBAL_ELEMENTS.get(`${relativeLocation}__${localElementRef}`);
+  return __GLOBAL_ELEMENTS.get(`${relativeLocation}__${elementQName}`);
 }
 
 function xsdElementToXptcElement(
