@@ -56,7 +56,12 @@ export function BpmnDiagramSvg({
 
       const { height, width, strokeWidth, strokeDasharray, ...style } = node.style!;
 
-      const label = "BPMN Node"; // FIXME: Tiago: Node label
+      const label =
+        node.data.bpmnElement.__$$element !== "group"
+          ? node.data.bpmnElement.__$$element === "textAnnotation"
+            ? ""
+            : node.data.bpmnElement["@_name"] ?? ""
+          : "";
 
       return (
         <g data-kie-bpmn-node-id={node.id} key={node.id}>
@@ -99,22 +104,24 @@ export function BpmnDiagramSvg({
               {...style}
             />
           )}
-          <>
-            {label.split("\n").map((labelLine, i) => (
-              <Text
-                key={i}
-                lineHeight={fontStyle.lineHeight}
-                style={{ ...fontStyle }}
-                dy={`calc(1.5em * ${i})`}
-                {...getNodeLabelSvgTextAlignmentProps(
-                  node,
-                  getNodeLabelPosition({ nodeType: node.type as BpmnNodeType })
-                )}
-              >
-                {labelLine}
-              </Text>
-            ))}
-          </>
+          {label.trim() && (
+            <>
+              {label.split("\n").map((labelLine, i) => (
+                <Text
+                  key={i}
+                  lineHeight={fontStyle.lineHeight}
+                  style={{ ...fontStyle }}
+                  dy={`calc(1.5em * ${i})`}
+                  {...getNodeLabelSvgTextAlignmentProps(
+                    node,
+                    getNodeLabelPosition({ nodeType: node.type as BpmnNodeType })
+                  )}
+                >
+                  {labelLine}
+                </Text>
+              ))}
+            </>
+          )}
         </g>
       );
     });

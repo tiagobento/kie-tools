@@ -71,12 +71,9 @@ export function BusinessRuleTaskProperties({
                   const { process } = addOrGetProcessAndDiagramElements({
                     definitions: s.bpmn.model.definitions,
                   });
-                  visitFlowElementsAndArtifacts(process, ({ element }) => {
-                    if (
-                      element["@_id"] === businessRuleTask["@_id"] &&
-                      element.__$$element === businessRuleTask.__$$element
-                    ) {
-                      element["@_implementation"] = BUSINESS_RULE_TASK_IMPLEMENTATIONS.drools;
+                  visitFlowElementsAndArtifacts(process, ({ element: e }) => {
+                    if (e["@_id"] === businessRuleTask["@_id"] && e.__$$element === businessRuleTask.__$$element) {
+                      e["@_implementation"] = BUSINESS_RULE_TASK_IMPLEMENTATIONS.drools;
                     }
                   });
                 });
@@ -91,12 +88,9 @@ export function BusinessRuleTaskProperties({
                   const { process } = addOrGetProcessAndDiagramElements({
                     definitions: s.bpmn.model.definitions,
                   });
-                  visitFlowElementsAndArtifacts(process, ({ element }) => {
-                    if (
-                      element["@_id"] === businessRuleTask["@_id"] &&
-                      element.__$$element === businessRuleTask.__$$element
-                    ) {
-                      element["@_implementation"] = BUSINESS_RULE_TASK_IMPLEMENTATIONS.dmn;
+                  visitFlowElementsAndArtifacts(process, ({ element: e }) => {
+                    if (e["@_id"] === businessRuleTask["@_id"] && e.__$$element === businessRuleTask.__$$element) {
+                      e["@_implementation"] = BUSINESS_RULE_TASK_IMPLEMENTATIONS.dmn;
                     }
                   });
                 });

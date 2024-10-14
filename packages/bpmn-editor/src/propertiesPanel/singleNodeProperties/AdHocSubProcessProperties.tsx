@@ -74,12 +74,9 @@ export function AdHocSubProcessProperties({
               const { process } = addOrGetProcessAndDiagramElements({
                 definitions: s.bpmn.model.definitions,
               });
-              visitFlowElementsAndArtifacts(process, ({ element }) => {
-                if (
-                  element["@_id"] === adHocSubProcess["@_id"] &&
-                  element.__$$element === adHocSubProcess.__$$element
-                ) {
-                  setBpmn20Drools10MetaData(element, "customActivationCondition", newCode);
+              visitFlowElementsAndArtifacts(process, ({ element: e }) => {
+                if (e["@_id"] === adHocSubProcess["@_id"] && e.__$$element === adHocSubProcess.__$$element) {
+                  setBpmn20Drools10MetaData(e, "customActivationCondition", newCode);
                 }
               });
             });
