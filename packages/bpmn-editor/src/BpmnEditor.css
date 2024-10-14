@@ -244,3 +244,10 @@
   border-bottom: 1px solid lightgray;
 }
 /* (end) misc */
+
+/* (begin) node-morphing-panel on container nodes */
+.react-flow__node.xyflow-react-kie-diagram--containerNode--inside .kie-bpmn-editor--node-morphing-panel-toggle,
+.react-flow__node.xyflow-react-kie-diagram--containerNode--inside .kie-bpmn-editor--node-morphing-panel {
+  pointer-events: all !important;
+}
+/* (end) node-morphing-panel on container nodes */

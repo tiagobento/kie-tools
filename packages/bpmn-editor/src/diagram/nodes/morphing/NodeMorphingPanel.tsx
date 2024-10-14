@@ -59,8 +59,8 @@ export function NodeMorphingPanel<
     <>
       {isToggleVisible && (
         <>
-          <div className={`kie-bpmn-editor--node-morphing-panel-toggle`} onClick={toggle}>
-            <div className={`${isExpanded ? "expanded" : ""}`}>
+          <div className={`kie-bpmn-editor--node-morphing-panel-toggle`}>
+            <div className={`${isExpanded ? "expanded" : ""}`} onClick={toggle}>
               <>{isExpanded ? <TimesIcon /> : <WrenchIcon />}</>
             </div>
           </div>
