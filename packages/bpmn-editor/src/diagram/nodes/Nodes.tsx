@@ -919,7 +919,7 @@ export const SubProcessNode = React.memo(
 
             <NodeMorphingPanel
               disabledActionIds={disabledMorphingActionIds}
-              isToggleVisible={!isTargeted && shouldActLikeHovered}
+              isToggleVisible={!isTargeted && isOnlySelectedNode && !dragging}
               isExpanded={isMorphingPanelExpanded}
               setExpanded={setMorphingPanelExpanded}
               actions={morphingActions}
