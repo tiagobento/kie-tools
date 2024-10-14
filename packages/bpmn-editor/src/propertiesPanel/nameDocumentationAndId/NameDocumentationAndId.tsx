@@ -28,6 +28,9 @@ import { useBpmnEditorStore, useBpmnEditorStoreApi } from "../../store/StoreCont
 import { BPMN20__tLane, BPMN20__tProcess } from "@kie-tools/bpmn-marshaller/dist/schemas/bpmn-2_0/ts-gen/types";
 import { ElementExclusion } from "@kie-tools/xml-parser-ts/dist/elementFilter";
 import { Unpacked } from "@kie-tools/xyflow-react-kie-diagram/dist/tsExt/tsExt";
+import { visitFlowElementsAndArtifacts } from "../../mutations/_elementVisitor";
+import { generateUuid } from "@kie-tools/xyflow-react-kie-diagram/dist/uuid/uuid";
+import { addOrGetProcessAndDiagramElements } from "../../mutations/addOrGetProcessAndDiagramElements";
 
 export function NameDocumentationAndId({
   element,
@@ -71,18 +74,23 @@ export function NameDocumentationAndId({
           aria-label={"Documentation"}
           type={"text"}
           isDisabled={settings.isReadOnly}
-          value={""} // FIXME: Tiago
-          onChange={(newDocumentation) => {
-            bpmnEditorStoreApi.setState((state) => {
-              updateFlowElement({
-                definitions: state.bpmn.model.definitions,
-                id: element["@_id"],
-                newFlowElement: {
-                  /** FIXME: Tiago */
-                },
+          value={element?.documentation?.[0].__$$text}
+          onChange={(newDocumentation) =>
+            bpmnEditorStoreApi.setState((s) => {
+              const { process } = addOrGetProcessAndDiagramElements({
+                definitions: s.bpmn.model.definitions,
               });
-            });
-          }}
+              visitFlowElementsAndArtifacts(process, ({ element: e }) => {
+                if (e["@_id"] === element["@_id"] && e.__$$element === element.__$$element) {
+                  e.documentation ??= [];
+                  e.documentation[0] = {
+                    "@_id": generateUuid(),
+                    __$$text: newDocumentation,
+                  };
+                }
+              });
+            })
+          }
           placeholder={"Enter documentation..."}
           style={{ resize: "vertical", minHeight: "40px" }}
           rows={3}

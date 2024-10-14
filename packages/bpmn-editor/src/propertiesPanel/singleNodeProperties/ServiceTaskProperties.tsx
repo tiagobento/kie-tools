@@ -79,10 +79,10 @@ export function ServiceTaskProperties({
                   const { process } = addOrGetProcessAndDiagramElements({
                     definitions: s.bpmn.model.definitions,
                   });
-                  visitFlowElementsAndArtifacts(process, ({ element }) => {
-                    if (element["@_id"] === serviceTask["@_id"] && element.__$$element === serviceTask.__$$element) {
-                      element["@_implementation"] = SERVICE_TASK_IMPLEMENTATIONS.java;
-                      element["@_drools:serviceimplementation"] = SERVICE_TASK_IMPLEMENTATIONS.java;
+                  visitFlowElementsAndArtifacts(process, ({ element: e }) => {
+                    if (e["@_id"] === serviceTask["@_id"] && e.__$$element === serviceTask.__$$element) {
+                      e["@_implementation"] = SERVICE_TASK_IMPLEMENTATIONS.java;
+                      e["@_drools:serviceimplementation"] = SERVICE_TASK_IMPLEMENTATIONS.java;
                     }
                   });
                 });
@@ -100,10 +100,10 @@ export function ServiceTaskProperties({
                   const { process } = addOrGetProcessAndDiagramElements({
                     definitions: s.bpmn.model.definitions,
                   });
-                  visitFlowElementsAndArtifacts(process, ({ element }) => {
-                    if (element["@_id"] === serviceTask["@_id"] && element.__$$element === serviceTask.__$$element) {
-                      element["@_implementation"] = SERVICE_TASK_IMPLEMENTATIONS.webService;
-                      element["@_drools:serviceimplementation"] = SERVICE_TASK_IMPLEMENTATIONS.webService;
+                  visitFlowElementsAndArtifacts(process, ({ element: e }) => {
+                    if (e["@_id"] === serviceTask["@_id"] && e.__$$element === serviceTask.__$$element) {
+                      e["@_implementation"] = SERVICE_TASK_IMPLEMENTATIONS.webService;
+                      e["@_drools:serviceimplementation"] = SERVICE_TASK_IMPLEMENTATIONS.webService;
                     }
                   });
                 });

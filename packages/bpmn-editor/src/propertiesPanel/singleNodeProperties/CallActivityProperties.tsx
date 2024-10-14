@@ -99,9 +99,9 @@ export function CallActivityProperties({
                   const { process } = addOrGetProcessAndDiagramElements({
                     definitions: s.bpmn.model.definitions,
                   });
-                  visitFlowElementsAndArtifacts(process, ({ element }) => {
-                    if (element["@_id"] === callActivity["@_id"] && element.__$$element === callActivity.__$$element) {
-                      setBpmn20Drools10MetaData(element, "customAbortParent", `${checked}`);
+                  visitFlowElementsAndArtifacts(process, ({ element: e }) => {
+                    if (e["@_id"] === callActivity["@_id"] && e.__$$element === callActivity.__$$element) {
+                      setBpmn20Drools10MetaData(e, "customAbortParent", `${checked}`);
                     }
                   });
                 });
@@ -125,9 +125,9 @@ export function CallActivityProperties({
                 const { process } = addOrGetProcessAndDiagramElements({
                   definitions: s.bpmn.model.definitions,
                 });
-                visitFlowElementsAndArtifacts(process, ({ element }) => {
-                  if (element["@_id"] === callActivity["@_id"] && element.__$$element === callActivity.__$$element) {
-                    element["@_drools:waitForCompletion"] = checked;
+                visitFlowElementsAndArtifacts(process, ({ element: e }) => {
+                  if (e["@_id"] === callActivity["@_id"] && e.__$$element === callActivity.__$$element) {
+                    e["@_drools:waitForCompletion"] = checked;
                   }
                 });
               });

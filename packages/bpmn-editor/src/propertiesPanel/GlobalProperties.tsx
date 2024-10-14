@@ -132,10 +132,17 @@ export function GlobalProperties() {
                     style={{ resize: "vertical", minHeight: "40px" }}
                     rows={3}
                     placeholder={"Enter documentation..."}
-                    value={""} // FIXME: Tiago
+                    value={process?.documentation?.[0].__$$text}
                     onChange={(newDocumentation) =>
-                      bpmnEditorStoreApi.setState((state) => {
-                        // FIXME: Tiago
+                      bpmnEditorStoreApi.setState((s) => {
+                        const { process } = addOrGetProcessAndDiagramElements({
+                          definitions: s.bpmn.model.definitions,
+                        });
+                        process.documentation ??= [];
+                        process.documentation[0] = {
+                          "@_id": generateUuid(),
+                          __$$text: newDocumentation,
+                        };
                       })
                     }
                   />
