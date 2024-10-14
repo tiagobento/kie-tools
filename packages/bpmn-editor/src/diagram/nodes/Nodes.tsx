@@ -19,6 +19,7 @@
 
 import { parseBpmn20Drools10MetaData } from "@kie-tools/bpmn-marshaller/dist/drools-extension-metaData";
 import {
+  BPMN20__tBoundaryEvent,
   BPMN20__tComplexGateway,
   BPMN20__tDataObject,
   BPMN20__tEndEvent,
@@ -30,6 +31,7 @@ import {
   BPMN20__tIntermediateThrowEvent,
   BPMN20__tLane,
   BPMN20__tParallelGateway,
+  BPMN20__tProcess,
   BPMN20__tStartEvent,
   BPMN20__tSubProcess,
   BPMN20__tTask,
@@ -55,7 +57,7 @@ import { OutgoingStuffNodePanel } from "@kie-tools/xyflow-react-kie-diagram/dist
 import { PositionalNodeHandles } from "@kie-tools/xyflow-react-kie-diagram/dist/nodes/PositionalNodeHandles";
 import { useIsHovered } from "@kie-tools/xyflow-react-kie-diagram/dist/reactExt/useIsHovered";
 import * as React from "react";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as RF from "reactflow";
 import { updateFlowElement, updateLane, updateTextAnnotation } from "../../mutations/renameNode";
 import { Normalized } from "../../normalization/normalize";
@@ -81,12 +83,20 @@ import {
   IntermediateCatchEventNodeSvg,
   IntermediateThrowEventNodeSvg,
   LaneNodeSvg,
+  NODE_COLORS,
   StartEventNodeSvg,
   SubProcessNodeSvg,
   TaskNodeSvg,
   TextAnnotationNodeSvg,
   UnknownNodeSvg,
 } from "./NodeSvgs";
+import { NodeMorphingPanel } from "./morphing/NodeMorphingPanel";
+import { useEventNodeMorphingActions } from "./morphing/useEventNodeMorphingActions";
+import { Unpacked } from "@kie-tools/xyflow-react-kie-diagram/dist/tsExt/tsExt";
+import { useGatewayNodeMorphingActions } from "./morphing/useGatewayNodeMorphingActions";
+import { ElementFilter } from "@kie-tools/xml-parser-ts/dist/elementFilter";
+import { useTaskNodeMorphingActions } from "./morphing/useTaskNodeMorphingActions";
+import { useSubProcessNodeMorphingActions } from "./morphing/useSubProcessNodeMorphingActions";
 
 export const StartEventNode = React.memo(
   ({
@@ -130,6 +140,14 @@ export const StartEventNode = React.memo(
       [bpmnEditorStoreApi, id]
     );
 
+    const [isMorphingPanelExpanded, setMorphingPanelExpanded] = useState(false);
+    useEffect(() => setMorphingPanelExpanded(false), [isHovered]);
+    const morphingActions = useEventNodeMorphingActions(startEvent);
+    const disabledMorphingActionIds = useMemo<Set<Unpacked<typeof morphingActions>["id"]>>(
+      () => new Set(["errorEventDefinition", "cancelEventDefinition", "terminateEventDefinition"]),
+      []
+    );
+
     return (
       <>
         <svg className={`xyflow-react-kie-diagram--node-shape ${className} ${selected ? "selected" : ""}`}>
@@ -154,7 +172,7 @@ export const StartEventNode = React.memo(
           <br /> */}
           <div className={"xyflow-react-kie-diagram--node"}>
             <InfoNodePanel
-              isVisible={!isTargeted && shouldActLikeHovered}
+              isVisible={!isMorphingPanelExpanded && !isTargeted && shouldActLikeHovered}
               onClick={useCallback(() => {
                 bpmnEditorStoreApi.setState((state) => {
                   state.propertiesPanel.isOpen = true;
@@ -166,14 +184,25 @@ export const StartEventNode = React.memo(
               nodeMapping={bpmnNodesOutgoingStuffNodePanelMapping}
               edgeMapping={bpmnEdgesOutgoingStuffNodePanelMapping}
               nodeHref={id}
-              isVisible={!isTargeted && shouldActLikeHovered}
+              isVisible={!isMorphingPanelExpanded && !isTargeted && shouldActLikeHovered}
               nodeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.startEvent].nodes}
               edgeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.startEvent].edges}
+            />
+
+            <NodeMorphingPanel
+              disabledActionIds={disabledMorphingActionIds}
+              isToggleVisible={!isTargeted && shouldActLikeHovered}
+              isExpanded={isMorphingPanelExpanded}
+              setExpanded={setMorphingPanelExpanded}
+              actions={morphingActions}
+              primaryColor={NODE_COLORS.startEvent.foreground}
+              secondaryColor={NODE_COLORS.startEvent.background}
+              selectedActionId={startEvent.eventDefinition?.[0].__$$element ?? "none"}
             />
           </div>
           {/* Creates a div element with the node size to push down the <EditableNodeLabel /> */}
           {<div style={{ height: nodeDimensions.height, flexShrink: 0 }} />}
-          {(startEvent["@_name"] || isEditingLabel) && (
+          {(startEvent["@_name"] || isEditingLabel) && !isMorphingPanelExpanded && (
             <NodeLabelAtTheBottom>
               <EditableNodeLabel
                 id={id}
@@ -206,7 +235,10 @@ export const IntermediateCatchEventNode = React.memo(
     type,
     id,
   }: RF.NodeProps<
-    BpmnDiagramNodeData<Normalized<BPMN20__tIntermediateCatchEvent> & { __$$element: "intermediateCatchEvent" }>
+    BpmnDiagramNodeData<
+      | (Normalized<BPMN20__tIntermediateCatchEvent> & { __$$element: "intermediateCatchEvent" })
+      | (Normalized<BPMN20__tBoundaryEvent> & { __$$element: "boundaryEvent" })
+    >
   >) => {
     const renderCount = useRef<number>(0);
     renderCount.current++;
@@ -241,6 +273,26 @@ export const IntermediateCatchEventNode = React.memo(
       [bpmnEditorStoreApi, id]
     );
 
+    const [isMorphingPanelExpanded, setMorphingPanelExpanded] = useState(false);
+    useEffect(() => setMorphingPanelExpanded(false), [isHovered]);
+    const morphingActions = useEventNodeMorphingActions(intermediateCatchEvent);
+    const disabledMorphingActionIds = useMemo<Set<Unpacked<typeof morphingActions>["id"]>>(
+      () =>
+        intermediateCatchEvent.__$$element === "intermediateCatchEvent"
+          ? new Set([
+              "none",
+              "errorEventDefinition",
+              "escalationEventDefinition",
+              "compensateEventDefinition",
+              "cancelEventDefinition",
+              "terminateEventDefinition",
+            ])
+          : intermediateCatchEvent.__$$element === "boundaryEvent"
+            ? new Set(["none", "linkEventDefinition", "terminateEventDefinition"])
+            : new Set([]),
+      [intermediateCatchEvent.__$$element]
+    );
+
     return (
       <>
         <svg className={`xyflow-react-kie-diagram--node-shape ${className} ${selected ? "selected" : ""}`}>
@@ -265,7 +317,7 @@ export const IntermediateCatchEventNode = React.memo(
           <br /> */}
           <div className={"xyflow-react-kie-diagram--node"}>
             <InfoNodePanel
-              isVisible={!isTargeted && shouldActLikeHovered}
+              isVisible={!isMorphingPanelExpanded && !isTargeted && shouldActLikeHovered}
               onClick={useCallback(() => {
                 bpmnEditorStoreApi.setState((state) => {
                   state.propertiesPanel.isOpen = true;
@@ -277,14 +329,25 @@ export const IntermediateCatchEventNode = React.memo(
               nodeMapping={bpmnNodesOutgoingStuffNodePanelMapping}
               edgeMapping={bpmnEdgesOutgoingStuffNodePanelMapping}
               nodeHref={id}
-              isVisible={!isTargeted && shouldActLikeHovered}
+              isVisible={!isMorphingPanelExpanded && !isTargeted && shouldActLikeHovered}
               nodeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.intermediateCatchEvent].nodes}
               edgeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.intermediateCatchEvent].edges}
+            />
+
+            <NodeMorphingPanel
+              disabledActionIds={disabledMorphingActionIds}
+              isToggleVisible={!isTargeted && shouldActLikeHovered}
+              isExpanded={isMorphingPanelExpanded}
+              setExpanded={setMorphingPanelExpanded}
+              actions={morphingActions}
+              primaryColor={NODE_COLORS.intermediateCatchEvent.foreground}
+              secondaryColor={NODE_COLORS.intermediateCatchEvent.background}
+              selectedActionId={intermediateCatchEvent.eventDefinition?.[0].__$$element ?? "none"}
             />
           </div>
           {/* Creates a div element with the node size to push down the <EditableNodeLabel /> */}
           {<div style={{ height: nodeDimensions.height, flexShrink: 0 }} />}
-          {(intermediateCatchEvent["@_name"] || isEditingLabel) && (
+          {(intermediateCatchEvent["@_name"] || isEditingLabel) && !isMorphingPanelExpanded && (
             <NodeLabelAtTheBottom>
               <EditableNodeLabel
                 id={id}
@@ -352,6 +415,21 @@ export const IntermediateThrowEventNode = React.memo(
       [bpmnEditorStoreApi, id]
     );
 
+    const [isMorphingPanelExpanded, setMorphingPanelExpanded] = useState(false);
+    useEffect(() => setMorphingPanelExpanded(false), [isHovered]);
+    const morphingActions = useEventNodeMorphingActions(intermediateThrowEvent);
+    const disabledMorphingActionIds = useMemo<Set<Unpacked<typeof morphingActions>["id"]>>(
+      () =>
+        new Set([
+          "timerEventDefinition",
+          "errorEventDefinition",
+          "cancelEventDefinition",
+          "conditionalEventDefinition",
+          "terminateEventDefinition",
+        ]),
+      []
+    );
+
     return (
       <>
         <svg className={`xyflow-react-kie-diagram--node-shape ${className} ${selected ? "selected" : ""}`}>
@@ -376,7 +454,7 @@ export const IntermediateThrowEventNode = React.memo(
           <br /> */}
           <div className={"xyflow-react-kie-diagram--node"}>
             <InfoNodePanel
-              isVisible={!isTargeted && shouldActLikeHovered}
+              isVisible={!isMorphingPanelExpanded && !isTargeted && shouldActLikeHovered}
               onClick={useCallback(() => {
                 bpmnEditorStoreApi.setState((state) => {
                   state.propertiesPanel.isOpen = true;
@@ -388,14 +466,25 @@ export const IntermediateThrowEventNode = React.memo(
               nodeMapping={bpmnNodesOutgoingStuffNodePanelMapping}
               edgeMapping={bpmnEdgesOutgoingStuffNodePanelMapping}
               nodeHref={id}
-              isVisible={!isTargeted && shouldActLikeHovered}
+              isVisible={!isMorphingPanelExpanded && !isTargeted && shouldActLikeHovered}
               nodeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.intermediateThrowEvent].nodes}
               edgeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.intermediateThrowEvent].edges}
+            />
+
+            <NodeMorphingPanel
+              disabledActionIds={disabledMorphingActionIds}
+              isToggleVisible={!isTargeted && shouldActLikeHovered}
+              isExpanded={isMorphingPanelExpanded}
+              setExpanded={setMorphingPanelExpanded}
+              actions={morphingActions}
+              primaryColor={NODE_COLORS.intermediateThrowEvent.foreground}
+              secondaryColor={NODE_COLORS.intermediateThrowEvent.background}
+              selectedActionId={intermediateThrowEvent.eventDefinition?.[0].__$$element ?? "none"}
             />
           </div>
           {/* Creates a div element with the node size to push down the <EditableNodeLabel /> */}
           {<div style={{ height: nodeDimensions.height, flexShrink: 0 }} />}
-          {(intermediateThrowEvent["@_name"] || isEditingLabel) && (
+          {(intermediateThrowEvent["@_name"] || isEditingLabel) && !isMorphingPanelExpanded && (
             <NodeLabelAtTheBottom>
               <EditableNodeLabel
                 id={id}
@@ -461,6 +550,14 @@ export const EndEventNode = React.memo(
       [bpmnEditorStoreApi, id]
     );
 
+    const [isMorphingPanelExpanded, setMorphingPanelExpanded] = useState(false);
+    useEffect(() => setMorphingPanelExpanded(false), [isHovered]);
+    const morphingActions = useEventNodeMorphingActions(endEvent);
+    const disabledMorphingActionIds = useMemo<Set<Unpacked<typeof morphingActions>["id"]>>(
+      () => new Set(["timerEventDefinition", "conditionalEventDefinition", "linkEventDefinition"]),
+      []
+    );
+
     return (
       <>
         <svg className={`xyflow-react-kie-diagram--node-shape ${className} ${selected ? "selected" : ""}`}>
@@ -486,7 +583,7 @@ export const EndEventNode = React.memo(
           <br /> */}
           <div className={"xyflow-react-kie-diagram--node"}>
             <InfoNodePanel
-              isVisible={!isTargeted && shouldActLikeHovered}
+              isVisible={!isMorphingPanelExpanded && !isTargeted && shouldActLikeHovered}
               onClick={useCallback(() => {
                 bpmnEditorStoreApi.setState((state) => {
                   state.propertiesPanel.isOpen = true;
@@ -498,14 +595,25 @@ export const EndEventNode = React.memo(
               nodeMapping={bpmnNodesOutgoingStuffNodePanelMapping}
               edgeMapping={bpmnEdgesOutgoingStuffNodePanelMapping}
               nodeHref={id}
-              isVisible={!isTargeted && shouldActLikeHovered}
+              isVisible={!isMorphingPanelExpanded && !isTargeted && shouldActLikeHovered}
               nodeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.endEvent].nodes}
               edgeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.endEvent].edges}
+            />
+
+            <NodeMorphingPanel
+              disabledActionIds={disabledMorphingActionIds}
+              isToggleVisible={!isTargeted && shouldActLikeHovered}
+              isExpanded={isMorphingPanelExpanded}
+              setExpanded={setMorphingPanelExpanded}
+              actions={morphingActions}
+              primaryColor={NODE_COLORS.endEvent.foreground}
+              secondaryColor={NODE_COLORS.endEvent.background}
+              selectedActionId={endEvent.eventDefinition?.[0].__$$element ?? "none"}
             />
           </div>
           {/* Creates a div element with the node size to push down the <EditableNodeLabel /> */}
           {<div style={{ height: nodeDimensions.height, flexShrink: 0 }} />}
-          {(endEvent["@_name"] || isEditingLabel) && (
+          {(endEvent["@_name"] || isEditingLabel) && !isMorphingPanelExpanded && (
             <NodeLabelAtTheBottom>
               <EditableNodeLabel
                 id={id}
@@ -539,9 +647,12 @@ export const TaskNode = React.memo(
     id,
   }: RF.NodeProps<
     BpmnDiagramNodeData<
-      Normalized<BPMN20__tTask> & {
-        __$$element: "task" | "serviceTask" | "userTask" | "businessRuleTask" | "scriptTask" | "callActivity";
-      }
+      Normalized<
+        ElementFilter<
+          Unpacked<NonNullable<BPMN20__tProcess["flowElement"]>>,
+          "task" | "scriptTask" | "serviceTask" | "businessRuleTask" | "userTask" | "callActivity"
+        >
+      >
     >
   >) => {
     const renderCount = useRef<number>(0);
@@ -585,6 +696,11 @@ export const TaskNode = React.memo(
 
     const icons = useActivityIcons(task);
 
+    const [isMorphingPanelExpanded, setMorphingPanelExpanded] = useState(false);
+    useEffect(() => setMorphingPanelExpanded(false), [isHovered]);
+    const morphingActions = useTaskNodeMorphingActions(task);
+    const disabledMorphingActionIds = useMemo<Set<Unpacked<typeof morphingActions>["id"]>>(() => new Set([]), []);
+
     return (
       <>
         <svg className={`xyflow-react-kie-diagram--node-shape ${className} ${selected ? "selected" : ""}`}>
@@ -610,7 +726,7 @@ export const TaskNode = React.memo(
           <br /> */}
           <div className={"xyflow-react-kie-diagram--node"}>
             <InfoNodePanel
-              isVisible={!isTargeted && shouldActLikeHovered}
+              isVisible={!isMorphingPanelExpanded && !isTargeted && shouldActLikeHovered}
               onClick={useCallback(() => {
                 bpmnEditorStoreApi.setState((state) => {
                   state.propertiesPanel.isOpen = true;
@@ -645,9 +761,20 @@ export const TaskNode = React.memo(
               nodeMapping={bpmnNodesOutgoingStuffNodePanelMapping}
               edgeMapping={bpmnEdgesOutgoingStuffNodePanelMapping}
               nodeHref={id}
-              isVisible={!isTargeted && shouldActLikeHovered}
+              isVisible={!isMorphingPanelExpanded && !isTargeted && shouldActLikeHovered}
               nodeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.task].nodes}
               edgeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.task].edges}
+            />
+
+            <NodeMorphingPanel
+              disabledActionIds={disabledMorphingActionIds}
+              isToggleVisible={!isTargeted && shouldActLikeHovered}
+              isExpanded={isMorphingPanelExpanded}
+              setExpanded={setMorphingPanelExpanded}
+              actions={morphingActions}
+              primaryColor={NODE_COLORS.task.foreground}
+              secondaryColor={NODE_COLORS.task.background}
+              selectedActionId={task.__$$element}
             />
           </div>
         </div>
@@ -714,6 +841,11 @@ export const SubProcessNode = React.memo(
 
     const icons = useActivityIcons(subProcess);
 
+    const [isMorphingPanelExpanded, setMorphingPanelExpanded] = useState(false);
+    useEffect(() => setMorphingPanelExpanded(false), [isHovered]);
+    const morphingActions = useSubProcessNodeMorphingActions(subProcess);
+    const disabledMorphingActionIds = useMemo<Set<Unpacked<typeof morphingActions>["id"]>>(() => new Set([]), []);
+
     return (
       <>
         <svg className={`xyflow-react-kie-diagram--node-shape ${className} ${selected ? "selected" : ""}`}>
@@ -745,7 +877,7 @@ export const SubProcessNode = React.memo(
           <br /> */}
           <div className={"xyflow-react-kie-diagram--node"}>
             <InfoNodePanel
-              isVisible={!isTargeted && isOnlySelectedNode && !dragging}
+              isVisible={!isMorphingPanelExpanded && !isTargeted && isOnlySelectedNode && !dragging}
               onClick={useCallback(() => {
                 bpmnEditorStoreApi.setState((state) => {
                   state.propertiesPanel.isOpen = true;
@@ -780,9 +912,20 @@ export const SubProcessNode = React.memo(
               nodeMapping={bpmnNodesOutgoingStuffNodePanelMapping}
               edgeMapping={bpmnEdgesOutgoingStuffNodePanelMapping}
               nodeHref={id}
-              isVisible={!isTargeted && isOnlySelectedNode && !dragging}
+              isVisible={!isMorphingPanelExpanded && !isTargeted && isOnlySelectedNode && !dragging}
               nodeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.subProcess].nodes}
               edgeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.subProcess].edges}
+            />
+
+            <NodeMorphingPanel
+              disabledActionIds={disabledMorphingActionIds}
+              isToggleVisible={!isTargeted && shouldActLikeHovered}
+              isExpanded={isMorphingPanelExpanded}
+              setExpanded={setMorphingPanelExpanded}
+              actions={morphingActions}
+              primaryColor={NODE_COLORS.subProcess.foreground}
+              secondaryColor={NODE_COLORS.subProcess.background}
+              selectedActionId={subProcess["@_triggeredByEvent"] === true ? "eventSubProcess" : subProcess.__$$element}
             />
           </div>
         </div>
@@ -803,19 +946,11 @@ export const GatewayNode = React.memo(
   }: RF.NodeProps<
     BpmnDiagramNodeData<
       Normalized<
-        | BPMN20__tComplexGateway
-        | BPMN20__tEventBasedGateway
-        | BPMN20__tExclusiveGateway
-        | BPMN20__tInclusiveGateway
-        | BPMN20__tParallelGateway
-      > & {
-        __$$element:
-          | "complexGateway"
-          | "eventBasedGateway"
-          | "exclusiveGateway"
-          | "inclusiveGateway"
-          | "parallelGateway";
-      }
+        ElementFilter<
+          Unpacked<NonNullable<BPMN20__tProcess["flowElement"]>>,
+          "exclusiveGateway" | "inclusiveGateway" | "parallelGateway" | "eventBasedGateway" | "complexGateway"
+        >
+      >
     >
   >) => {
     const renderCount = useRef<number>(0);
@@ -851,6 +986,11 @@ export const GatewayNode = React.memo(
       [bpmnEditorStoreApi, id]
     );
 
+    const [isMorphingPanelExpanded, setMorphingPanelExpanded] = useState(false);
+    useEffect(() => setMorphingPanelExpanded(false), [isHovered]);
+    const morphingActions = useGatewayNodeMorphingActions(gateway);
+    const disabledMorphingActionIds = useMemo<Set<Unpacked<typeof morphingActions>["id"]>>(() => new Set([]), []);
+
     return (
       <>
         <svg className={`xyflow-react-kie-diagram--node-shape ${className} ${selected ? "selected" : ""}`}>
@@ -870,7 +1010,7 @@ export const GatewayNode = React.memo(
           <br /> */}
           <div className={"xyflow-react-kie-diagram--node"}>
             <InfoNodePanel
-              isVisible={!isTargeted && shouldActLikeHovered}
+              isVisible={!isMorphingPanelExpanded && !isTargeted && shouldActLikeHovered}
               onClick={useCallback(() => {
                 bpmnEditorStoreApi.setState((state) => {
                   state.propertiesPanel.isOpen = true;
@@ -882,14 +1022,25 @@ export const GatewayNode = React.memo(
               nodeMapping={bpmnNodesOutgoingStuffNodePanelMapping}
               edgeMapping={bpmnEdgesOutgoingStuffNodePanelMapping}
               nodeHref={id}
-              isVisible={!isTargeted && shouldActLikeHovered}
+              isVisible={!isMorphingPanelExpanded && !isTargeted && shouldActLikeHovered}
               nodeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.gateway].nodes}
               edgeTypes={BPMN_OUTGOING_STRUCTURE[NODE_TYPES.gateway].edges}
+            />
+
+            <NodeMorphingPanel
+              disabledActionIds={disabledMorphingActionIds}
+              isToggleVisible={!isTargeted && shouldActLikeHovered}
+              isExpanded={isMorphingPanelExpanded}
+              setExpanded={setMorphingPanelExpanded}
+              actions={morphingActions}
+              primaryColor={NODE_COLORS.gateway.foreground}
+              secondaryColor={NODE_COLORS.gateway.background}
+              selectedActionId={gateway.__$$element}
             />
           </div>
           {/* Creates a div element with the node size to push down the <EditableNodeLabel /> */}
           {<div style={{ height: nodeDimensions.height, flexShrink: 0 }} />}
-          {(gateway["@_name"] || isEditingLabel) && (
+          {(gateway["@_name"] || isEditingLabel) && !isMorphingPanelExpanded && (
             <NodeLabelAtTheBottom>
               <EditableNodeLabel
                 id={id}

@@ -21,14 +21,7 @@ import "@patternfly/react-core/dist/styles/base.css";
 import "reactflow/dist/style.css";
 
 import { AllBpmnMarshallers, BpmnLatestModel } from "@kie-tools/bpmn-marshaller";
-import {
-  Drawer,
-  DrawerPanelContent,
-  DrawerHead,
-  DrawerContent,
-  DrawerContentBody,
-  DrawerPanelBody,
-} from "@patternfly/react-core/dist/js/components/Drawer";
+import { Drawer, DrawerContent, DrawerContentBody } from "@patternfly/react-core/dist/js/components/Drawer";
 import { original } from "immer";
 import * as React from "react";
 import { useCallback, useImperativeHandle, useMemo, useRef } from "react";
@@ -56,22 +49,13 @@ import { useStateAsItWasBeforeConditionBecameTrue } from "@kie-tools/xyflow-reac
 import { useEffectAfterFirstRender } from "@kie-tools/xyflow-react-kie-diagram/dist/reactExt/useEffectAfterFirstRender";
 import { Commands, CommandsContextProvider, useCommands } from "./commands/CommandsContextProvider";
 import { DiagramRef } from "@kie-tools/xyflow-react-kie-diagram/dist/diagram/XyFlowReactKieDiagram";
-import { Button, ButtonVariant } from "@patternfly/react-core/dist/js/components/Button";
-import { Form, FormSection } from "@patternfly/react-core/dist/js/components/Form";
-import { TimesIcon } from "@patternfly/react-icons/dist/js/icons/times-icon";
 import { BpmnDiagramEdgeData, BpmnDiagramNodeData, BpmnNodeElement, BpmnNodeType } from "./diagram/BpmnDiagramDomain";
+import { PropertiesPanel } from "./propertiesPanel/PropertiesPanel";
 
 // Leave custom CSS always for last.
 import "@kie-tools/xyflow-react-kie-diagram/dist/patternfly-customizations.css";
 import "@kie-tools/xyflow-react-kie-diagram/dist/xyflow-customizations.css";
 import "./BpmnEditor.css";
-import { GlobalProperties } from "./propertiesPanel/GlobalProperties";
-import { SingleNodeProperties } from "./propertiesPanel/SingleNodeProperties";
-import { MultipleNodeProperties } from "./propertiesPanel/MultipleNodesProperties";
-import { SingleEdgeProperties } from "./propertiesPanel/SingleEdgeProperties";
-import { MultipleEdgesProperties } from "./propertiesPanel/MultipleEdgesProperties";
-import { MixedNodesAndEdgesProperties } from "./propertiesPanel/MixedNodesAndEdgesProperties";
-import { PropertiesPanel } from "./propertiesPanel/PropertiesPanel";
 
 const ON_MODEL_CHANGE_DEBOUNCE_TIME_IN_MS = 500;
 

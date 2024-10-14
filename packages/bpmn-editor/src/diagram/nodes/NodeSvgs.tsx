@@ -91,6 +91,41 @@ const deg30 = Math.PI / 6;
 const cos30 = Math.cos(deg30);
 const sin30 = Math.sin(deg30);
 
+export const NODE_COLORS = {
+  startEvent: {
+    foreground: "#4aa241",
+    background: "#e8fae6",
+  },
+  intermediateCatchEvent: {
+    foreground: "#e6a000",
+    background: "#fbefcf",
+  },
+  boundaryEvent: {
+    foreground: "#e6a000",
+    background: "#fbefcf",
+  },
+  intermediateThrowEvent: {
+    foreground: "#007a87",
+    background: "#bddee1",
+  },
+  endEvent: {
+    foreground: "#a30000",
+    background: "#fce7e7",
+  },
+  gateway: {
+    background: "#fef5ea",
+    foreground: "#ec7b08",
+  },
+  task: {
+    foreground: "black",
+    background: "#efefef",
+  },
+  subProcess: {
+    foreground: "black",
+    background: "#efefef",
+  },
+} as const;
+
 export function StartEventNodeSvg(__props: NodeSvgProps & { variant: EventVariant | "none" }) {
   const {
     x,
@@ -116,8 +151,8 @@ export function StartEventNodeSvg(__props: NodeSvgProps & { variant: EventVarian
         strokeWidth={strokeWidth}
         width={width}
         height={height}
-        fill={"#e8fae6"}
-        stroke={"#4aa241"}
+        fill={NODE_COLORS.startEvent.background}
+        stroke={NODE_COLORS.startEvent.foreground}
         strokeLinejoin={"round"}
         r={r}
         {...props}
@@ -125,7 +160,7 @@ export function StartEventNodeSvg(__props: NodeSvgProps & { variant: EventVarian
       <EventVariantSymbolSvg
         variant={variant}
         fill={false}
-        stroke={"#4aa241"}
+        stroke={NODE_COLORS.startEvent.foreground}
         x={x}
         y={y}
         cx={cx}
@@ -164,8 +199,8 @@ export function IntermediateCatchEventNodeSvg(
         strokeWidth={strokeWidth}
         width={width}
         height={height}
-        fill={"#fbefcf"}
-        stroke={"#e6a000"}
+        fill={NODE_COLORS.intermediateCatchEvent.background}
+        stroke={NODE_COLORS.intermediateCatchEvent.foreground}
         strokeLinejoin={"round"}
         r={outerCirculeRadius}
         {...props}
@@ -176,8 +211,8 @@ export function IntermediateCatchEventNodeSvg(
         strokeWidth={strokeWidth}
         width={width}
         height={height}
-        fill={"#fbefcf"}
-        stroke={"#e6a000"}
+        fill={NODE_COLORS.intermediateCatchEvent.background}
+        stroke={NODE_COLORS.intermediateCatchEvent.foreground}
         strokeLinejoin={"round"}
         r={innerCircleRadius}
         {...props}
@@ -185,7 +220,7 @@ export function IntermediateCatchEventNodeSvg(
       <EventVariantSymbolSvg
         variant={variant}
         fill={false}
-        stroke={"#e6a000"}
+        stroke={NODE_COLORS.intermediateCatchEvent.foreground}
         x={x}
         y={y}
         cx={cx}
@@ -224,8 +259,8 @@ export function IntermediateThrowEventNodeSvg(
         strokeWidth={strokeWidth}
         width={width}
         height={height}
-        fill={"#bddee1"}
-        stroke={"#007a87"}
+        fill={NODE_COLORS.intermediateThrowEvent.background}
+        stroke={NODE_COLORS.intermediateThrowEvent.foreground}
         strokeLinejoin={"round"}
         r={outerCirculeRadius}
         {...props}
@@ -236,8 +271,8 @@ export function IntermediateThrowEventNodeSvg(
         strokeWidth={strokeWidth}
         width={width}
         height={height}
-        fill={"#bddee1"}
-        stroke={"#007a87"}
+        fill={NODE_COLORS.intermediateThrowEvent.background}
+        stroke={NODE_COLORS.intermediateThrowEvent.foreground}
         strokeLinejoin={"round"}
         r={innerCircleRadius}
         {...props}
@@ -245,7 +280,7 @@ export function IntermediateThrowEventNodeSvg(
       <EventVariantSymbolSvg
         variant={variant}
         fill={true}
-        stroke={"#007a87"}
+        stroke={NODE_COLORS.intermediateThrowEvent.foreground}
         x={x}
         y={y}
         cx={cx}
@@ -256,7 +291,6 @@ export function IntermediateThrowEventNodeSvg(
     </>
   );
 }
-
 export function EndEventNodeSvg(__props: NodeSvgProps & { variant: EventVariant | "none" }) {
   const {
     x,
@@ -282,8 +316,8 @@ export function EndEventNodeSvg(__props: NodeSvgProps & { variant: EventVariant 
         strokeWidth={strokeWidth}
         width={width}
         height={height}
-        fill={"#fce7e7"}
-        stroke={"#a30000"}
+        fill={NODE_COLORS.endEvent.background}
+        stroke={NODE_COLORS.endEvent.foreground}
         strokeLinejoin={"round"}
         r={r}
         {...props}
@@ -291,7 +325,7 @@ export function EndEventNodeSvg(__props: NodeSvgProps & { variant: EventVariant 
       <EventVariantSymbolSvg
         variant={variant}
         fill={true}
-        stroke={"#a30000"}
+        stroke={NODE_COLORS.endEvent.foreground}
         x={x}
         y={y}
         cx={cx}
@@ -302,7 +336,6 @@ export function EndEventNodeSvg(__props: NodeSvgProps & { variant: EventVariant 
     </>
   );
 }
-
 export function TaskNodeSvg(
   __props: NodeSvgProps & {
     markers?: (ActivityNodeMarker | "CallActivityPaletteIcon")[];
@@ -357,7 +390,6 @@ export function TaskNodeSvg(
     </>
   );
 }
-
 export function GatewayNodeSvg(__props: NodeSvgProps & { variant: GatewayVariant | "none" }) {
   const {
     x,
@@ -379,8 +411,8 @@ export function GatewayNodeSvg(__props: NodeSvgProps & { variant: GatewayVariant
         strokeWidth={strokeWidth}
         width={width / 1.4} // sqrt(2)
         height={height / 1.4} // sqrt(2)
-        fill={"#fef5ea"}
-        stroke={"#ec7b08"}
+        fill={NODE_COLORS.gateway.background}
+        stroke={NODE_COLORS.gateway.foreground}
         strokeLinejoin={"round"}
         rx="5"
         ry="5"
@@ -394,7 +426,7 @@ export function GatewayNodeSvg(__props: NodeSvgProps & { variant: GatewayVariant
             y1={1 + height / 2}
             x2={width - 16}
             y2={1 + height / 2}
-            stroke="#ec7b08"
+            stroke={NODE_COLORS.gateway.foreground}
             strokeWidth="6"
           />
           <line
@@ -403,7 +435,7 @@ export function GatewayNodeSvg(__props: NodeSvgProps & { variant: GatewayVariant
             y1="18"
             x2={1 + width / 2}
             y2={height - 16}
-            stroke="#ec7b08"
+            stroke={NODE_COLORS.gateway.foreground}
             strokeWidth="6"
           />
         </>
@@ -417,7 +449,7 @@ export function GatewayNodeSvg(__props: NodeSvgProps & { variant: GatewayVariant
               y1={1 + height / 2}
               x2={width - 16}
               y2={1 + height / 2}
-              stroke="#ec7b08"
+              stroke={NODE_COLORS.gateway.foreground}
               strokeWidth="6"
             />
             <line
@@ -426,7 +458,7 @@ export function GatewayNodeSvg(__props: NodeSvgProps & { variant: GatewayVariant
               y1="18"
               x2={1 + width / 2}
               y2={height - 16}
-              stroke="#ec7b08"
+              stroke={NODE_COLORS.gateway.foreground}
               strokeWidth="6"
             />
           </g>
@@ -440,7 +472,7 @@ export function GatewayNodeSvg(__props: NodeSvgProps & { variant: GatewayVariant
             strokeWidth={6}
             width={width / 2}
             height={height / 2}
-            stroke={"#ec7b08"}
+            stroke={NODE_COLORS.gateway.foreground}
             strokeLinejoin={"round"}
             fill="transparent"
             r={width / 5}
@@ -711,6 +743,7 @@ export function UnknownNodeSvg(_props: NodeSvgProps & { strokeDasharray?: string
 export function EventVariantSymbolSvg({
   variant,
   stroke,
+  strokeWidth,
   cx,
   cy,
   x,
@@ -721,6 +754,7 @@ export function EventVariantSymbolSvg({
 }: {
   variant: EventVariant | "none";
   stroke: string;
+  strokeWidth?: number;
   cx: number;
   cy: number;
   x: number;
@@ -734,7 +768,12 @@ export function EventVariantSymbolSvg({
       {/* FIXME: Tiago: tmp icon */}
       {variant === "messageEventDefinition" && (
         <>
-          <text transform={`translate(${cx},${cy})`} textAnchor="middle" dominantBaseline={"middle"}>
+          <text
+            fontSize={(strokeWidth ?? 2) * 15}
+            transform={`translate(${cx},${cy})`}
+            textAnchor="middle"
+            dominantBaseline={"middle"}
+          >
             ✉️
           </text>
         </>
@@ -742,7 +781,12 @@ export function EventVariantSymbolSvg({
       {/* FIXME: Tiago: tmp icon */}
       {variant === "timerEventDefinition" && (
         <>
-          <text transform={`translate(${cx},${cy})`} textAnchor="middle" dominantBaseline={"middle"}>
+          <text
+            fontSize={(strokeWidth ?? 2) * 15}
+            transform={`translate(${cx},${cy})`}
+            textAnchor="middle"
+            dominantBaseline={"middle"}
+          >
             🕑
           </text>
         </>
@@ -750,7 +794,12 @@ export function EventVariantSymbolSvg({
       {/* FIXME: Tiago: tmp icon */}
       {variant === "errorEventDefinition" && (
         <>
-          <text transform={`translate(${cx},${cy})`} textAnchor="middle" dominantBaseline={"middle"}>
+          <text
+            fontSize={(strokeWidth ?? 2) * 15}
+            transform={`translate(${cx},${cy})`}
+            textAnchor="middle"
+            dominantBaseline={"middle"}
+          >
             ⚡️
           </text>
         </>
@@ -758,15 +807,25 @@ export function EventVariantSymbolSvg({
       {/* FIXME: Tiago: tmp icon */}
       {variant === "escalationEventDefinition" && (
         <>
-          <text transform={`translate(${cx},${cy})`} textAnchor="middle" dominantBaseline={"middle"}>
-            ♦︎
+          <text
+            fontSize={(strokeWidth ?? 2) * 15}
+            transform={`translate(${cx},${cy})`}
+            textAnchor="middle"
+            dominantBaseline={"middle"}
+          >
+            ☝️
           </text>
         </>
       )}
       {/* FIXME: Tiago: tmp icon */}
       {variant === "cancelEventDefinition" && (
         <>
-          <text transform={`translate(${cx},${cy})`} textAnchor="middle" dominantBaseline={"middle"}>
+          <text
+            fontSize={(strokeWidth ?? 2) * 15}
+            transform={`translate(${cx},${cy})`}
+            textAnchor="middle"
+            dominantBaseline={"middle"}
+          >
             ❌
           </text>
         </>
@@ -774,7 +833,12 @@ export function EventVariantSymbolSvg({
       {/* FIXME: Tiago: tmp icon */}
       {variant === "compensateEventDefinition" && (
         <>
-          <text transform={`translate(${cx},${cy})`} textAnchor="middle" dominantBaseline={"middle"}>
+          <text
+            fontSize={(strokeWidth ?? 2) * 15}
+            transform={`translate(${cx},${cy})`}
+            textAnchor="middle"
+            dominantBaseline={"middle"}
+          >
             ⏪
           </text>
         </>
@@ -782,7 +846,12 @@ export function EventVariantSymbolSvg({
       {/* FIXME: Tiago: tmp icon */}
       {variant === "conditionalEventDefinition" && (
         <>
-          <text transform={`translate(${cx},${cy})`} textAnchor="middle" dominantBaseline={"middle"}>
+          <text
+            fontSize={(strokeWidth ?? 2) * 25}
+            transform={`translate(${cx},${cy})`}
+            textAnchor="middle"
+            dominantBaseline={"middle"}
+          >
             ≣
           </text>
         </>
@@ -790,7 +859,12 @@ export function EventVariantSymbolSvg({
       {/* FIXME: Tiago: tmp icon */}
       {variant === "linkEventDefinition" && (
         <>
-          <text transform={`translate(${cx},${cy})`} textAnchor="middle" dominantBaseline={"middle"}>
+          <text
+            fontSize={(strokeWidth ?? 2) * 15}
+            transform={`translate(${cx},${cy})`}
+            textAnchor="middle"
+            dominantBaseline={"middle"}
+          >
             ⇨
           </text>
         </>
@@ -799,6 +873,7 @@ export function EventVariantSymbolSvg({
         <SignalEventSymbolSvg
           fill={fill}
           stroke={stroke}
+          strokeWidth={strokeWidth}
           x={x}
           y={y}
           cx={cx}
@@ -813,9 +888,9 @@ export function EventVariantSymbolSvg({
           <circle
             cx={cx}
             cy={cy}
-            strokeWidth={1.5}
-            fill={"#a30000"}
-            stroke={"#a30000"}
+            strokeWidth={strokeWidth ?? 2.5}
+            fill={NODE_COLORS.endEvent.foreground}
+            stroke={NODE_COLORS.endEvent.foreground}
             strokeLinejoin={"round"}
             r={outerCirculeRadius / 2}
           />
@@ -829,6 +904,7 @@ export function EventVariantSymbolSvg({
 
 export function SignalEventSymbolSvg({
   stroke,
+  strokeWidth,
   cx,
   cy,
   x,
@@ -838,6 +914,7 @@ export function SignalEventSymbolSvg({
   fill,
 }: {
   stroke: string;
+  strokeWidth?: number;
   cx: number;
   cy: number;
   x: number;
@@ -859,7 +936,7 @@ export function SignalEventSymbolSvg({
     <>
       <polygon
         points={`${triangle[0].x},${triangle[0].y} ${triangle[1].x},${triangle[1].y} ${triangle[2].x},${triangle[2].y}`}
-        strokeWidth={1.5}
+        strokeWidth={strokeWidth ?? 2.5}
         strokeLinejoin={"round"}
         fill={fill ? stroke : "transparent"}
         stroke={stroke}

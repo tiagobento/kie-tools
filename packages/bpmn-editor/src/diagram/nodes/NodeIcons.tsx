@@ -30,6 +30,8 @@ import {
   TaskNodeSvg,
   TextAnnotationNodeSvg,
   SubProcessNodeSvg,
+  EventVariantSymbolSvg,
+  NODE_COLORS,
 } from "./NodeSvgs";
 import { switchExpression } from "@kie-tools-core/switch-expression-ts";
 import { BpmnNodeType, EventVariant, GatewayVariant, SubProcessVariant, TaskVariant } from "../BpmnDiagramDomain";
@@ -46,6 +48,38 @@ export function NodeIcon({ nodeType }: { nodeType: BpmnNodeType }) {
     [NODE_TYPES.unknown]: UnknownIcon,
     default: () => <div>?</div>,
   });
+}
+
+export function EventDefitnitionIcon({
+  variant,
+  fill,
+  stroke,
+}: {
+  variant?: EventVariant;
+  fill: boolean;
+  stroke: string;
+}) {
+  const cx = nodeSvgProps.x + nodeSvgProps.width / 2;
+  const cy = nodeSvgProps.y + nodeSvgProps.width / 2;
+
+  const r = nodeSvgProps.width / 2;
+
+  return (
+    <RoundSvg>
+      <EventVariantSymbolSvg
+        variant={variant ?? "none"}
+        strokeWidth={16}
+        fill={fill}
+        stroke={stroke}
+        x={nodeSvgProps.x}
+        y={nodeSvgProps.x}
+        cx={cx}
+        cy={cy}
+        innerCircleRadius={r - 5}
+        outerCirculeRadius={r}
+      />
+    </RoundSvg>
+  );
 }
 
 export function StartEventIcon({ variant }: { variant?: EventVariant }) {

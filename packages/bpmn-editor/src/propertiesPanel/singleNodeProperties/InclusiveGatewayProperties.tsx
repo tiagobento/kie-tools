@@ -24,6 +24,7 @@ import { NameDocumentationAndId } from "../nameDocumentationAndId/NameDocumentat
 import { DefaultRouteSelector } from "../defaultRouteSelector/DefaultRouteSelector";
 import { GatewayIcon } from "../../diagram/nodes/NodeIcons";
 import { PropertiesPanelHeaderFormSection } from "./_PropertiesPanelHeaderFormSection";
+import { Divider } from "@patternfly/react-core/dist/js/components/Divider";
 
 export function InclusiveGatewayProperties({
   inclusiveGateway,
@@ -36,6 +37,8 @@ export function InclusiveGatewayProperties({
       icon={<GatewayIcon variant={inclusiveGateway.__$$element} />}
     >
       <NameDocumentationAndId element={inclusiveGateway} />
+
+      <Divider inset={{ default: "insetXs" }} />
 
       <DefaultRouteSelector gateway={inclusiveGateway} />
     </PropertiesPanelHeaderFormSection>
