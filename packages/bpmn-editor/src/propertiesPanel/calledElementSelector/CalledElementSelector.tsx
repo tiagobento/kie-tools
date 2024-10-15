@@ -36,8 +36,8 @@ export function CalledElementSelector({ element }: { element: WithCalledElement 
 
   return (
     <FormGroup label="Called element">
-      <FormSelect value={undefined} isDisabled={isReadOnly}>
-        <FormSelectOption isPlaceholder={true} label={"-- None --"} />
+      <FormSelect id={"select"} value={undefined} isDisabled={isReadOnly}>
+        <FormSelectOption id={"none"} isPlaceholder={true} label={"-- None --"} />
       </FormSelect>
     </FormGroup>
   );

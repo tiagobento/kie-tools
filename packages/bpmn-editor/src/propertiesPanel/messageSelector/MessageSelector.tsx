@@ -41,8 +41,8 @@ export function MessageSelector({ element }: { element: WithMessage }) {
 
   return (
     <FormGroup label="Message">
-      <FormSelect value={undefined} isDisabled={isReadOnly}>
-        <FormSelectOption isPlaceholder={true} label={"-- None --"} />
+      <FormSelect id={"select"} value={undefined} isDisabled={isReadOnly}>
+        <FormSelectOption id={"none"} isPlaceholder={true} label={"-- None --"} />
       </FormSelect>
     </FormGroup>
   );

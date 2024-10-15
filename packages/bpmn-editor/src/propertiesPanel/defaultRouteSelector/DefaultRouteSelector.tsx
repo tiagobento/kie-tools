@@ -29,7 +29,7 @@ export function DefaultRouteSelector({ gateway }: { gateway: any }) {
   return (
     <FormGroup label="Default route">
       <FormSelect value={undefined}>
-        <FormSelectOption isPlaceholder={true} label={"-- None --"} />
+        <FormSelectOption id={"none"} isPlaceholder={true} label={"-- None --"} />
       </FormSelect>
     </FormGroup>
   );

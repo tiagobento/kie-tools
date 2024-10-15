@@ -29,7 +29,7 @@ export function DataTypeSelector({ element }: { element: any }) {
   return (
     <FormGroup label="Data Type">
       <FormSelect value={undefined}>
-        <FormSelectOption isPlaceholder={true} label={"-- None --"} />
+        <FormSelectOption id={"none"} isPlaceholder={true} label={"-- None --"} />
       </FormSelect>
     </FormGroup>
   );

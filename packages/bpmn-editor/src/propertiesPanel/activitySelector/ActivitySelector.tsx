@@ -38,8 +38,8 @@ export function ActivitySelector({ element }: { element: WithActivity }) {
 
   return (
     <FormGroup label="Activity">
-      <FormSelect value={undefined} isDisabled={isReadOnly}>
-        <FormSelectOption isPlaceholder={true} label={"-- None --"} />
+      <FormSelect id={"select"} value={undefined} isDisabled={isReadOnly}>
+        <FormSelectOption id={"none"} isPlaceholder={true} label={"-- None --"} />
       </FormSelect>
     </FormGroup>
   );

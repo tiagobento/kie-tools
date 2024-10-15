@@ -52,9 +52,7 @@ export function BusinessRuleTaskProperties({
     <>
       <PropertiesPanelHeaderFormSection title={businessRuleTask["@_name"] || "Business rule task"} icon={<TaskIcon />}>
         <NameDocumentationAndId element={businessRuleTask} />
-
         <Divider inset={{ default: "insetXs" }} />
-
         <FormGroup
           label="Implementation"
           // helperText={
@@ -98,23 +96,22 @@ export function BusinessRuleTaskProperties({
             />
           </ToggleGroup>
         </FormGroup>
-
         {businessRuleTask["@_implementation"] === BUSINESS_RULE_TASK_IMPLEMENTATIONS.drools && (
           <>
             <FormGroup label="Rule flow group">
-              <FormSelect value={undefined} isDisabled={isReadOnly}>
-                <FormSelectOption isPlaceholder={true} label={"-- None --"} />
+              <FormSelect id={"select"} value={undefined} isDisabled={isReadOnly}>
+                <FormSelectOption id={"none"} isPlaceholder={true} label={"-- None --"} />
                 {/* FIXME: Tiago */}
               </FormSelect>
             </FormGroup>
           </>
-        )}
-
+        )}{" "}
+        <FormSelectOption id={"none"} isPlaceholder={true} label={"-- None --"} />
         {businessRuleTask["@_implementation"] === BUSINESS_RULE_TASK_IMPLEMENTATIONS.dmn && (
           <>
             <FormGroup label="DMN File">
-              <FormSelect value={undefined} isDisabled={isReadOnly}>
-                <FormSelectOption isPlaceholder={true} label={"-- None --"} />
+              <FormSelect id={"select"} value={undefined} isDisabled={isReadOnly}>
+                <FormSelectOption id={"none"} isPlaceholder={true} label={"-- None --"} />
                 {/* FIXME: Tiago */}
               </FormSelect>
             </FormGroup>
@@ -166,15 +163,10 @@ export function BusinessRuleTaskProperties({
             </FormGroup>
           </>
         )}
-
         <Divider inset={{ default: "insetXs" }} />
-
         <SlaDueDateInput element={businessRuleTask} />
-
         <AsyncCheckbox element={businessRuleTask} />
-
         <AdhocAutostartCheckbox element={businessRuleTask} />
-
         <Divider inset={{ default: "insetXs" }} />
       </PropertiesPanelHeaderFormSection>
 
