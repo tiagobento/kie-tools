@@ -88,35 +88,33 @@
   width: 34px;
   height: 34px;
   padding: 0px;
-  border: 2px solid rgba(0, 0, 0, 0.02);
   margin: 2px;
   position: relative;
 }
 
-.kie-bpmn-editor--node-morphing-panel > div > div:hover::before {
+.kie-bpmn-editor--node-morphing-panel > div > div:active::after {
   content: "";
   position: absolute;
   border-radius: 9999px;
-  top: -2px;
-  left: -2px;
-  width: calc(100% + 4px);
-  height: calc(100% + 4px);
-  border: 2px solid currentColor;
-}
-
-.kie-bpmn-editor--node-morphing-panel > div > div:active::before {
-  content: "";
-  position: absolute;
-  border-radius: 9999px;
-  top: -3px;
-  left: -3px;
-  width: calc(100% + 6px);
-  height: calc(100% + 6px);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   border: 3px solid currentColor;
+  z-index: 1000;
 }
 
-.kie-bpmn-editor--node-morphing-panel > div > div.selected {
+.kie-bpmn-editor--node-morphing-panel > div > div:hover::before,
+.kie-bpmn-editor--node-morphing-panel > div > div.selected::before {
+  content: "";
+  position: absolute;
+  border-radius: 9999px;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   border: 2px solid currentColor;
+  z-index: 1000;
 }
 
 .kie-bpmn-editor--node-morphing-panel > div > div:not(.selected).disabled {
@@ -135,8 +133,8 @@
 }
 
 .kie-bpmn-editor--node-morphing-panel > div > div > div {
-  top: -4px;
-  right: -4px;
+  top: -2px;
+  right: -2px;
   position: absolute;
   color: white;
   font-size: 0.6em;
@@ -144,7 +142,7 @@
   height: 12px;
   background: white;
   padding: 2px;
-  /* border: 0.5px dotted black; */
+  z-index: 2000;
   line-height: calc(0.6em + 3px);
   border-radius: 9999px;
 }
