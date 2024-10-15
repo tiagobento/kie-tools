@@ -25,7 +25,7 @@
   padding: 0;
   padding-right: 21px;
   padding-top: 6px;
-  padding-bottom: 3px;
+  padding-bottom: 4px;
 }
 .kie-bpmn-editor--node-morphing-panel-toggle > div {
   cursor: pointer;
@@ -44,7 +44,6 @@
   padding: 4px;
 }
 .kie-bpmn-editor--node-morphing-panel-toggle > div.expanded {
-  background-color: rgba(0, 0, 0, 0.02);
   border: 1px solid rgba(0, 0, 0, 0.2);
   box-shadow: rgba(0, 0, 0, 0.4) 2px 2px 6px;
 }
@@ -65,7 +64,7 @@
   position: absolute;
   top: calc(100% + 0px);
   left: -23px;
-  padding-top: 9px;
+  padding-top: 10px;
 }
 .kie-bpmn-editor--node-morphing-panel > div {
   padding: 8px;
@@ -94,18 +93,29 @@
   position: relative;
 }
 
-.kie-bpmn-editor--node-morphing-panel > div > div:hover {
+.kie-bpmn-editor--node-morphing-panel > div > div:hover::before {
+  content: "";
+  position: absolute;
+  border-radius: 9999px;
+  top: -2px;
+  left: -2px;
+  width: calc(100% + 4px);
+  height: calc(100% + 4px);
   border: 2px solid currentColor;
-  opacity: 0.7;
 }
 
-.kie-bpmn-editor--node-morphing-panel > div > div:active {
-  border: 2px solid currentColor;
-  opacity: 0.5;
+.kie-bpmn-editor--node-morphing-panel > div > div:active::before {
+  content: "";
+  position: absolute;
+  border-radius: 9999px;
+  top: -3px;
+  left: -3px;
+  width: calc(100% + 6px);
+  height: calc(100% + 6px);
+  border: 3px solid currentColor;
 }
 
 .kie-bpmn-editor--node-morphing-panel > div > div.selected {
-  background: auto;
   border: 2px solid currentColor;
 }
 
@@ -114,6 +124,8 @@
   border: 2px solid currentColor;
   filter: contrast(0) sepia(100%) saturate(2000%) brightness(100%) grayscale(1);
   opacity: 0.2;
+  cursor: default;
+  pointer-events: none;
 }
 
 /* key badge */
