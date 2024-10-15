@@ -41,8 +41,8 @@ export function SignalSelector({ element }: { element: WithSignal }) {
 
   return (
     <FormGroup label="Signal">
-      <FormSelect value={undefined} isDisabled={isReadOnly}>
-        <FormSelectOption isPlaceholder={true} label={"-- None --"} />
+      <FormSelect id={"select"} value={undefined} isDisabled={isReadOnly}>
+        <FormSelectOption id={"none"} isPlaceholder={true} label={"-- None --"} />
         {/* FIXME: Tiago */}
       </FormSelect>
     </FormGroup>

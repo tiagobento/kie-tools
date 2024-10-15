@@ -41,8 +41,8 @@ export function TimerOptions({ element }: { element: WithTimer }) {
 
   return (
     <FormGroup label="Timer options">
-      <FormSelect value={undefined} isDisabled={isReadOnly}>
-        <FormSelectOption isPlaceholder={true} label={"-- None --"} />
+      <FormSelect id={"select"} value={undefined} isDisabled={isReadOnly}>
+        <FormSelectOption id={"none"} isPlaceholder={true} label={"-- None --"} />
       </FormSelect>
     </FormGroup>
   );
