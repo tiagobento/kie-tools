@@ -18,14 +18,15 @@
  */
 
 import * as React from "react";
-import { useMemo } from "react";
-import { WrenchIcon } from "@patternfly/react-icons/dist/js/icons/wrench-icon";
+import { useMemo, useRef } from "react";
+import { ProcessAutomationIcon } from "@patternfly/react-icons/dist/js/icons/process-automation-icon";
 import { TimesIcon } from "@patternfly/react-icons/dist/js/icons/times-icon";
 import "./NodeMorphingPanel.css";
+import { MorphingAction } from "./MorphingAction";
+import { useBpmnEditorStore } from "../../../store/StoreContext";
+import { useKeyboardShortcutsForMorphingActions } from "./useKeyboardShortcutsForMorphingActions";
 
-export function NodeMorphingPanel<
-  X extends { id: string; key: string; title: string; action: () => void; icon: React.ReactElement },
->({
+export function NodeMorphingPanel<A extends MorphingAction>({
   isToggleVisible,
   isExpanded,
   setExpanded,
@@ -41,9 +42,13 @@ export function NodeMorphingPanel<
   primaryColor: string;
   secondaryColor: string;
   disabledActionIds: Set<string>;
-  actions: X[];
-  selectedActionId: X["id"];
+  actions: A[];
+  selectedActionId: A["id"];
 }) {
+  const isReadOnly = useBpmnEditorStore((s) => s.settings.isReadOnly);
+
+  const ref = useRef<HTMLDivElement>(null);
+
   const buttonStyle = useMemo(
     () => ({ background: secondaryColor, color: primaryColor }),
     [primaryColor, secondaryColor]
@@ -52,38 +57,36 @@ export function NodeMorphingPanel<
   const badgeStyle = useMemo(() => ({ background: primaryColor }), [primaryColor]);
 
   const toggle = React.useCallback(() => {
-    setExpanded((s) => !s);
+    setExpanded((prev) => !prev);
   }, [setExpanded]);
 
   return (
     <>
-      {isToggleVisible && (
+      {!isReadOnly && isToggleVisible && (
         <>
           <div className={`kie-bpmn-editor--node-morphing-panel-toggle`}>
             <div className={`${isExpanded ? "expanded" : ""}`} onClick={toggle}>
-              <>{isExpanded ? <TimesIcon /> : <WrenchIcon />}</>
+              <>{isExpanded ? <TimesIcon /> : <ProcessAutomationIcon />}</>
             </div>
           </div>
         </>
       )}
-      {isToggleVisible && isExpanded && (
-        <div className={"kie-bpmn-editor--node-morphing-panel"}>
+      {!isReadOnly && isToggleVisible && isExpanded && (
+        <div ref={ref} className={"kie-bpmn-editor--node-morphing-panel"}>
           <div>
             {actions.map(({ id, key, action, icon, title }) => {
               const disabled = disabledActionIds.has(id) || selectedActionId === id;
               return (
-                <button
+                <div
                   key={id}
-                  value={key}
-                  onClick={action}
-                  disabled={disabled}
+                  onClickCapture={action}
                   title={title}
                   style={buttonStyle}
-                  className={selectedActionId === id ? "selected" : ""}
+                  className={`${selectedActionId === id ? "selected" : ""} ${disabled ? "disabled" : ""}`}
                 >
                   {icon}
                   {!disabled && <div style={badgeStyle}>{key}</div>}
-                </button>
+                </div>
               );
             })}
           </div>

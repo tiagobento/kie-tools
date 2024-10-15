@@ -70,7 +70,7 @@
 .kie-bpmn-editor--node-morphing-panel > div {
   padding: 8px;
   align-content: flex-start;
-  min-width: 162px;
+  min-width: 170px;
   display: flex;
   z-index: 3000;
   background-color: rgba(0, 0, 0, 0.02);
@@ -83,42 +83,33 @@
 }
 /* (end) panel */
 
-.kie-bpmn-editor--node-morphing-panel button {
+.kie-bpmn-editor--node-morphing-panel > div > div {
   pointer-events: all;
   border-radius: 20px;
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   padding: 0px;
   border: 2px solid rgba(0, 0, 0, 0.02);
   margin: 2px;
   position: relative;
-  opacity: 1;
 }
 
-.kie-bpmn-editor--node-morphing-panel button:hover {
+.kie-bpmn-editor--node-morphing-panel > div > div:hover {
   border: 2px solid currentColor;
   opacity: 0.7;
 }
 
-.kie-bpmn-editor--node-morphing-panel button:active {
+.kie-bpmn-editor--node-morphing-panel > div > div:active {
   border: 2px solid currentColor;
   opacity: 0.5;
 }
 
-.kie-bpmn-editor--node-morphing-panel button.selected {
+.kie-bpmn-editor--node-morphing-panel > div > div.selected {
   background: auto;
-  pointer-events: all;
-  border-radius: 20px;
-  width: 32px;
-  height: 32px;
-  padding: 0px;
   border: 2px solid currentColor;
-  margin: 2px;
-  position: relative;
-  opacity: 1;
 }
 
-.kie-bpmn-editor--node-morphing-panel button:not(.selected):disabled {
+.kie-bpmn-editor--node-morphing-panel > div > div:not(.selected).disabled {
   background: unset !important;
   border: 2px solid currentColor;
   filter: contrast(0) sepia(100%) saturate(2000%) brightness(100%) grayscale(1);
@@ -127,11 +118,11 @@
 
 /* key badge */
 
-.kie-bpmn-editor--node-morphing-panel button.selected div {
+.kie-bpmn-editor--node-morphing-panel > div > div.selected > div {
   background: #c7ebff;
 }
 
-.kie-bpmn-editor--node-morphing-panel button div {
+.kie-bpmn-editor--node-morphing-panel > div > div > div {
   top: -4px;
   right: -4px;
   position: absolute;

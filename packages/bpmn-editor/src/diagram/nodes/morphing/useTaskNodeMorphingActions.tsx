@@ -26,8 +26,7 @@ import { visitFlowElementsAndArtifacts } from "../../../mutations/_elementVisito
 import { addOrGetProcessAndDiagramElements } from "../../../mutations/addOrGetProcessAndDiagramElements";
 import { Normalized } from "../../../normalization/normalize";
 import { useBpmnEditorStoreApi } from "../../../store/StoreContext";
-import { CallActivityIcon, GatewayIcon, TaskIcon } from "../NodeIcons";
-import { ActivityNodeIcons } from "../NodeSvgs";
+import { CallActivityIcon, TaskIcon } from "../NodeIcons";
 
 export type Task = Normalized<
   ElementFilter<
@@ -47,7 +46,6 @@ export function useTaskNodeMorphingActions(task: Task) {
       // 4 - Script
       // 5 - Call activity
       // 6 - Task
-
       bpmnEditorStoreApi.setState((s) => {
         const { process } = addOrGetProcessAndDiagramElements({
           definitions: s.bpmn.model.definitions,
