@@ -26,37 +26,47 @@ import { visitFlowElementsAndArtifacts } from "../../../mutations/_elementVisito
 import { addOrGetProcessAndDiagramElements } from "../../../mutations/addOrGetProcessAndDiagramElements";
 import { Normalized } from "../../../normalization/normalize";
 import { useBpmnEditorStoreApi } from "../../../store/StoreContext";
-import { CallActivityIcon, GatewayIcon, SubProcessIcon, TaskIcon } from "../NodeIcons";
+import { SubProcessIcon } from "../NodeIcons";
+import { generateUuid } from "@kie-tools/xyflow-react-kie-diagram/dist/uuid/uuid";
 
-export type Activity = Normalized<
+export type SubProcess = Normalized<
   ElementFilter<
     Unpacked<NonNullable<BPMN20__tProcess["flowElement"]>>,
     "adHocSubProcess" | "subProcess" | "transaction"
   >
 >;
 
-export function useSubProcessNodeMorphingActions(gateway: Activity) {
+export function useSubProcessNodeMorphingActions(subProcess: SubProcess) {
   const bpmnEditorStoreApi = useBpmnEditorStoreApi();
 
   const morphSubProcess = useCallback(
-    (subProcessElement: Activity["__$$element"] | "eventSubProcess") => {
+    (subProcessElement: SubProcess["__$$element"] | "eventSubProcess" | "multiInstanceSubProcess") => {
       // 1 - Sub process
       // 2 - Event sub process
       // 3 - Ad-hoc sub-process
       // 4 - Transaction
-
       bpmnEditorStoreApi.setState((s) => {
         const { process } = addOrGetProcessAndDiagramElements({
           definitions: s.bpmn.model.definitions,
         });
         visitFlowElementsAndArtifacts(process, ({ array, index, owner, element }) => {
-          if (element["@_id"] === gateway["@_id"] && element.__$$element === gateway.__$$element) {
+          if (element["@_id"] === subProcess["@_id"] && element.__$$element === subProcess.__$$element) {
             if (subProcessElement === "eventSubProcess") {
               array[index] = {
                 "@_id": element["@_id"], // keeps old ID
                 "@_name": element["@_name"], // keeps old Name
                 __$$element: "subProcess",
                 "@_triggeredByEvent": true,
+              };
+            } else if (subProcessElement === "multiInstanceSubProcess") {
+              array[index] = {
+                "@_id": element["@_id"], // keeps old ID
+                "@_name": element["@_name"], // keeps old Name
+                __$$element: "subProcess",
+                loopCharacteristics: {
+                  "@_id": generateUuid(),
+                  __$$element: "multiInstanceLoopCharacteristics",
+                },
               };
             } else {
               array[index] = {
@@ -70,7 +80,7 @@ export function useSubProcessNodeMorphingActions(gateway: Activity) {
         });
       });
     },
-    [bpmnEditorStoreApi, gateway]
+    [bpmnEditorStoreApi, subProcess]
   );
 
   const morphingActions = useMemo(() => {
@@ -90,15 +100,22 @@ export function useSubProcessNodeMorphingActions(gateway: Activity) {
         action: () => morphSubProcess("eventSubProcess"),
       } as const,
       {
-        icon: <>~</>,
+        icon: <>|||</>,
         key: "3",
+        title: "Multi-instance",
+        id: "multiInstanceSubProcess",
+        action: () => morphSubProcess("multiInstanceSubProcess"),
+      } as const,
+      {
+        icon: <>~</>,
+        key: "4",
         title: "Ad-hoc",
         id: "adHocSubProcess",
         action: () => morphSubProcess("adHocSubProcess"),
       } as const,
       {
         icon: <SubProcessIcon variant={"transaction"} />,
-        key: "4",
+        key: "5",
         title: "Transaction",
         id: "transaction",
         action: () => morphSubProcess("transaction"),

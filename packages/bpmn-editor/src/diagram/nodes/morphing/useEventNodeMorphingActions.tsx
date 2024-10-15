@@ -56,7 +56,6 @@ export function useEventNodeMorphingActions(event: Event) {
       // 9 - Link
       // 0 - Signal
       // ! - Terminate
-
       bpmnEditorStoreApi.setState((s) => {
         const { process } = addOrGetProcessAndDiagramElements({
           definitions: s.bpmn.model.definitions,

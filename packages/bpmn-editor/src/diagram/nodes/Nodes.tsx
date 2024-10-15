@@ -97,10 +97,11 @@ import { useGatewayNodeMorphingActions } from "./morphing/useGatewayNodeMorphing
 import { ElementFilter } from "@kie-tools/xml-parser-ts/dist/elementFilter";
 import { useTaskNodeMorphingActions } from "./morphing/useTaskNodeMorphingActions";
 import { useSubProcessNodeMorphingActions } from "./morphing/useSubProcessNodeMorphingActions";
+import { useKeyboardShortcutsForMorphingActions } from "./morphing/useKeyboardShortcutsForMorphingActions";
 
 export const StartEventNode = React.memo(
   ({
-    data: { bpmnElement: startEvent, shape, shapeIndex },
+    data: { bpmnElement: startEvent, shape, shapeIndex, parentXyFlowNode },
     selected,
     dragging,
     zIndex,
@@ -144,9 +145,20 @@ export const StartEventNode = React.memo(
     useEffect(() => setMorphingPanelExpanded(false), [isHovered]);
     const morphingActions = useEventNodeMorphingActions(startEvent);
     const disabledMorphingActionIds = useMemo<Set<Unpacked<typeof morphingActions>["id"]>>(
-      () => new Set(["errorEventDefinition", "cancelEventDefinition", "terminateEventDefinition"]),
-      []
+      () =>
+        parentXyFlowNode?.type === NODE_TYPES.subProcess
+          ? new Set(["none", "cancelEventDefinition", "linkEventDefinition", "terminateEventDefinition"])
+          : new Set([
+              "errorEventDefinition",
+              "escalationEventDefinition",
+              "cancelEventDefinition",
+              "compensateEventDefinition",
+              "linkEventDefinition",
+              "terminateEventDefinition",
+            ]),
+      [parentXyFlowNode?.type]
     );
+    useKeyboardShortcutsForMorphingActions(ref, morphingActions, disabledMorphingActionIds);
 
     return (
       <>
@@ -289,9 +301,10 @@ export const IntermediateCatchEventNode = React.memo(
             ])
           : intermediateCatchEvent.__$$element === "boundaryEvent"
             ? new Set(["none", "linkEventDefinition", "terminateEventDefinition"])
-            : new Set([]),
+            : new Set(),
       [intermediateCatchEvent.__$$element]
     );
+    useKeyboardShortcutsForMorphingActions(ref, morphingActions, disabledMorphingActionIds);
 
     return (
       <>
@@ -429,6 +442,7 @@ export const IntermediateThrowEventNode = React.memo(
         ]),
       []
     );
+    useKeyboardShortcutsForMorphingActions(ref, morphingActions, disabledMorphingActionIds);
 
     return (
       <>
@@ -557,6 +571,7 @@ export const EndEventNode = React.memo(
       () => new Set(["timerEventDefinition", "conditionalEventDefinition", "linkEventDefinition"]),
       []
     );
+    useKeyboardShortcutsForMorphingActions(ref, morphingActions, disabledMorphingActionIds);
 
     return (
       <>
@@ -699,7 +714,8 @@ export const TaskNode = React.memo(
     const [isMorphingPanelExpanded, setMorphingPanelExpanded] = useState(false);
     useEffect(() => setMorphingPanelExpanded(false), [isHovered]);
     const morphingActions = useTaskNodeMorphingActions(task);
-    const disabledMorphingActionIds = useMemo<Set<Unpacked<typeof morphingActions>["id"]>>(() => new Set([]), []);
+    const disabledMorphingActionIds = useMemo<Set<Unpacked<typeof morphingActions>["id"]>>(() => new Set(), []);
+    useKeyboardShortcutsForMorphingActions(ref, morphingActions, disabledMorphingActionIds);
 
     return (
       <>
@@ -844,7 +860,8 @@ export const SubProcessNode = React.memo(
     const [isMorphingPanelExpanded, setMorphingPanelExpanded] = useState(false);
     useEffect(() => setMorphingPanelExpanded(false), [isHovered]);
     const morphingActions = useSubProcessNodeMorphingActions(subProcess);
-    const disabledMorphingActionIds = useMemo<Set<Unpacked<typeof morphingActions>["id"]>>(() => new Set([]), []);
+    const disabledMorphingActionIds = useMemo<Set<Unpacked<typeof morphingActions>["id"]>>(() => new Set(), []);
+    useKeyboardShortcutsForMorphingActions(ref, morphingActions, disabledMorphingActionIds);
 
     return (
       <>
@@ -860,7 +877,9 @@ export const SubProcessNode = React.memo(
                 ? "transaction"
                 : subProcess["@_triggeredByEvent"]
                   ? "event"
-                  : "other"
+                  : subProcess.loopCharacteristics?.__$$element === "multiInstanceLoopCharacteristics"
+                    ? "multi-instance"
+                    : "other"
             }
           />
         </svg>
@@ -925,7 +944,13 @@ export const SubProcessNode = React.memo(
               actions={morphingActions}
               primaryColor={NODE_COLORS.subProcess.foreground}
               secondaryColor={NODE_COLORS.subProcess.background}
-              selectedActionId={subProcess["@_triggeredByEvent"] === true ? "eventSubProcess" : subProcess.__$$element}
+              selectedActionId={
+                subProcess["@_triggeredByEvent"] === true
+                  ? "eventSubProcess"
+                  : subProcess.loopCharacteristics?.__$$element === "multiInstanceLoopCharacteristics"
+                    ? "multiInstanceSubProcess"
+                    : subProcess.__$$element
+              }
             />
           </div>
         </div>
@@ -989,7 +1014,8 @@ export const GatewayNode = React.memo(
     const [isMorphingPanelExpanded, setMorphingPanelExpanded] = useState(false);
     useEffect(() => setMorphingPanelExpanded(false), [isHovered]);
     const morphingActions = useGatewayNodeMorphingActions(gateway);
-    const disabledMorphingActionIds = useMemo<Set<Unpacked<typeof morphingActions>["id"]>>(() => new Set([]), []);
+    const disabledMorphingActionIds = useMemo<Set<Unpacked<typeof morphingActions>["id"]>>(() => new Set(), []);
+    useKeyboardShortcutsForMorphingActions(ref, morphingActions, disabledMorphingActionIds);
 
     return (
       <>

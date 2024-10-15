@@ -45,7 +45,6 @@ export function useGatewayNodeMorphingActions(gateway: Gateway) {
       // 3 - Inclusive
       // 4 - Event
       // 5 - Complex
-
       bpmnEditorStoreApi.setState((s) => {
         const { process } = addOrGetProcessAndDiagramElements({
           definitions: s.bpmn.model.definitions,

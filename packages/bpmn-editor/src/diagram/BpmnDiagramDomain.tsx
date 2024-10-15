@@ -751,7 +751,7 @@ export type TaskVariant = ElementFilter<
   "businessRuleTask" | "scriptTask" | "serviceTask" | "userTask"
 >["__$$element"];
 
-export type SubProcessVariant = "transaction" | "event" | "other";
+export type SubProcessVariant = "transaction" | "event" | "multi-instance" | "other";
 
 export const elementToNodeType: Record<NonNullable<BpmnNodeElement>["__$$element"], BpmnNodeType> = {
   // lane
