@@ -28,7 +28,7 @@ export function DataTypeSelector({ element }: { element: any }) {
 
   return (
     <FormGroup label="Data Type">
-      <FormSelect value={undefined}>
+      <FormSelect id={"selected"} value={undefined} isDisabled={isReadOnly}>
         <FormSelectOption id={"none"} isPlaceholder={true} label={"-- None --"} />
       </FormSelect>
     </FormGroup>
