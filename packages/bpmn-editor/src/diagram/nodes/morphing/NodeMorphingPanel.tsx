@@ -79,7 +79,7 @@ export function NodeMorphingPanel<A extends MorphingAction>({
               return (
                 <div
                   key={id}
-                  onClickCapture={action}
+                  onClick={disabled ? undefined : action}
                   title={title}
                   style={buttonStyle}
                   className={`${selectedActionId === id ? "selected" : ""} ${disabled ? "disabled" : ""}`}
