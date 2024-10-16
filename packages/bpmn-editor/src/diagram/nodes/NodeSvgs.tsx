@@ -766,14 +766,14 @@ export function EventVariantSymbolSvg({
   y: number;
   innerCircleRadius: number;
   outerCircleRadius: number;
-  fill: string;
+  fill?: string;
   filled: boolean;
 }) {
   return (
     <>
       {variant === "messageEventDefinition" && (
         <MessageEventSymbolSvg
-          fill={fill}
+          fill={fill ?? "none"}
           filled={filled}
           stroke={stroke}
           cx={cx}
@@ -827,7 +827,6 @@ export function EventVariantSymbolSvg({
       )}
       {variant === "conditionalEventDefinition" && (
         <ConditionalEventSymbolSvg
-          fill={fill}
           filled={filled}
           stroke={stroke}
           cx={cx}
@@ -1213,14 +1212,12 @@ export function ConditionalEventSymbolSvg({
   cx,
   cy,
   outerCircleRadius,
-  fill,
   filled,
 }: {
   stroke: string;
   cx: number;
   cy: number;
   outerCircleRadius: number;
-  fill: string;
   filled: boolean;
 }) {
   const squareSize = outerCircleRadius * 1.1;
@@ -1234,7 +1231,7 @@ export function ConditionalEventSymbolSvg({
         y={cy - squareSize / 2}
         width={squareSize}
         height={squareSize}
-        fill={filled ? fill : "transparent"}
+        fill={filled ? stroke : "transparent"}
         stroke={stroke}
         strokeWidth={1.5}
       />

@@ -53,12 +53,10 @@ export function NodeIcon({ nodeType }: { nodeType: BpmnNodeType }) {
 export function EventDefitnitionIcon({
   variant,
   filled,
-  fill,
   stroke,
 }: {
   variant?: EventVariant;
   filled: boolean;
-  fill?: string;
   stroke: string;
 }) {
   const cx = nodeSvgProps.x + nodeSvgProps.width / 2;
@@ -71,7 +69,6 @@ export function EventDefitnitionIcon({
       <EventVariantSymbolSvg
         variant={variant ?? "none"}
         strokeWidth={16}
-        fill={fill ?? "none"}
         filled={filled}
         stroke={stroke}
         x={nodeSvgProps.x}
