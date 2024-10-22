@@ -394,7 +394,9 @@ export function TaskNodeSvg(
     </>
   );
 }
-export function GatewayNodeSvg(__props: NodeSvgProps & { variant: GatewayVariant | "none" }) {
+export function GatewayNodeSvg(
+  __props: NodeSvgProps & { variant: GatewayVariant | "none"; isMorphingPanel?: boolean }
+) {
   const {
     x,
     y,
@@ -404,88 +406,226 @@ export function GatewayNodeSvg(__props: NodeSvgProps & { variant: GatewayVariant
     props: { ..._props },
   } = normalize(__props);
 
-  const { variant, ...props } = { ..._props };
+  const { variant, isMorphingPanel, ...props } = { ..._props };
+  const morphingPanelOffset = isMorphingPanel ? 25 : 0;
 
   return (
     <>
-      <rect
-        x={8 + x}
-        y={8 + y}
-        transform={`rotate(45,${x + width / 2},${y + height / 2})`}
-        strokeWidth={strokeWidth}
-        width={width / 1.4} // sqrt(2)
-        height={height / 1.4} // sqrt(2)
-        fill={NODE_COLORS.gateway.background}
-        stroke={NODE_COLORS.gateway.foreground}
-        strokeLinejoin={"round"}
-        rx="5"
-        ry="5"
-        {...props}
-      />
+      {!isMorphingPanel && (
+        <rect
+          x={8 + x}
+          y={8 + y}
+          transform={`rotate(45,${x + width / 2},${y + height / 2})`}
+          strokeWidth={strokeWidth}
+          width={width / 1.4} // sqrt(2)
+          height={height / 1.4} // sqrt(2)
+          fill={NODE_COLORS.gateway.background}
+          stroke={NODE_COLORS.gateway.foreground}
+          strokeLinejoin={"round"}
+          rx="5"
+          ry="5"
+          {...props}
+        />
+      )}
       {variant === "parallelGateway" && (
-        <>
-          <line
-            strokeLinecap={"round"}
-            x1="18"
-            y1={1 + height / 2}
-            x2={width - 16}
-            y2={1 + height / 2}
-            stroke={NODE_COLORS.gateway.foreground}
-            strokeWidth="6"
-          />
-          <line
-            strokeLinecap={"round"}
-            x1={1 + width / 2}
-            y1="18"
-            x2={1 + width / 2}
-            y2={height - 16}
-            stroke={NODE_COLORS.gateway.foreground}
-            strokeWidth="6"
-          />
-        </>
+        <ParallelGatewaySvg
+          stroke={NODE_COLORS.gateway.foreground}
+          strokeWidth={isMorphingPanel ? 30 : 4.5}
+          cx={x + width / 2}
+          cy={y + height / 2 - morphingPanelOffset}
+          size={isMorphingPanel ? 210 : 30}
+        />
       )}
       {variant === "exclusiveGateway" && (
-        <>
-          <g transform={`rotate(45,${x + width / 2},${y + height / 2})`}>
-            <line
-              strokeLinecap={"round"}
-              x1="18"
-              y1={1 + height / 2}
-              x2={width - 16}
-              y2={1 + height / 2}
-              stroke={NODE_COLORS.gateway.foreground}
-              strokeWidth="6"
-            />
-            <line
-              strokeLinecap={"round"}
-              x1={1 + width / 2}
-              y1="18"
-              x2={1 + width / 2}
-              y2={height - 16}
-              stroke={NODE_COLORS.gateway.foreground}
-              strokeWidth="6"
-            />
-          </g>
-        </>
+        <ExclusiveGatewaySvg
+          stroke={NODE_COLORS.gateway.foreground}
+          strokeWidth={isMorphingPanel ? 30 : 4.5}
+          cx={x + width / 2}
+          cy={y + height / 2 - morphingPanelOffset}
+          size={isMorphingPanel ? 210 : 30}
+        />
       )}
       {variant === "inclusiveGateway" && (
-        <>
-          <circle
-            cx={x + width / 2}
-            cy={y + height / 2}
-            strokeWidth={6}
-            width={width / 2}
-            height={height / 2}
-            stroke={NODE_COLORS.gateway.foreground}
-            strokeLinejoin={"round"}
-            fill="transparent"
-            r={width / 5}
-            {...props}
-          />
-        </>
+        <InclusiveGatewaySvg
+          stroke={NODE_COLORS.gateway.foreground}
+          strokeWidth={isMorphingPanel ? 30 : 4.5}
+          cx={x + width / 2}
+          cy={y + height / 2 - morphingPanelOffset}
+          size={isMorphingPanel ? 275 : 40}
+        />
       )}
-      {variant === "eventBasedGateway" && <>{/* TODO: Tiago */}</>}
-      {variant === "complexGateway" && <>{/* TODO: Tiago */}</>}
+      {variant === "eventBasedGateway" && (
+        <EventBasedGatewaySvg
+          stroke={NODE_COLORS.gateway.foreground}
+          circleStrokeWidth={isMorphingPanel ? 10 : 1.5}
+          strokeWidth={isMorphingPanel ? 30 : 2}
+          cx={x + width / 2}
+          cy={y + height / 2 - morphingPanelOffset}
+          size={isMorphingPanel ? 275 : 40}
+        />
+      )}
+      {variant === "complexGateway" && (
+        <ComplexGatewaySvg
+          stroke={NODE_COLORS.gateway.foreground}
+          strokeWidth={isMorphingPanel ? 30 : 4.5}
+          cx={x + width / 2}
+          cy={y + height / 2 - morphingPanelOffset}
+          size={isMorphingPanel ? 300 : 50}
+        />
+      )}
+    </>
+  );
+}
+
+export function ParallelGatewaySvg({
+  stroke,
+  strokeWidth,
+  cx,
+  cy,
+  size,
+}: {
+  stroke: string;
+  strokeWidth?: number;
+  cx: number;
+  cy: number;
+  size: number;
+}) {
+  return (
+    <>
+      <line x1={cx} y1={cy - size / 2} x2={cx} y2={cy + size / 2} stroke={stroke} strokeWidth={strokeWidth ?? 1.5} />
+      <line x1={cx - size / 2} y1={cy} x2={cx + size / 2} y2={cy} stroke={stroke} strokeWidth={strokeWidth ?? 1.5} />
+    </>
+  );
+}
+
+export function ExclusiveGatewaySvg({
+  stroke,
+  strokeWidth,
+  cx,
+  cy,
+  size,
+}: {
+  stroke: string;
+  strokeWidth?: number;
+  cx: number;
+  cy: number;
+  size: number;
+}) {
+  return (
+    <>
+      <line
+        x1={cx - size / 3}
+        y1={cy - size / 3}
+        x2={cx + size / 3}
+        y2={cy + size / 3}
+        stroke={stroke}
+        strokeWidth={strokeWidth ?? 2}
+      />
+      <line
+        x1={cx + size / 3}
+        y1={cy - size / 3}
+        x2={cx - size / 3}
+        y2={cy + size / 3}
+        stroke={stroke}
+        strokeWidth={strokeWidth ?? 2}
+      />
+    </>
+  );
+}
+
+export function InclusiveGatewaySvg({
+  stroke,
+  strokeWidth,
+  cx,
+  cy,
+  size,
+}: {
+  stroke: string;
+  strokeWidth?: number;
+  cx: number;
+  cy: number;
+  size: number;
+}) {
+  return (
+    <>
+      <circle cx={cx} cy={cy} r={size / 3} stroke={stroke} strokeWidth={strokeWidth ?? 1.5} fill="none" />
+    </>
+  );
+}
+
+export function EventBasedGatewaySvg({
+  stroke,
+  strokeWidth,
+  circleStrokeWidth,
+  cx,
+  cy,
+  size,
+}: {
+  stroke: string;
+  strokeWidth?: number;
+  circleStrokeWidth?: number;
+  cx: number;
+  cy: number;
+  size: number;
+}) {
+  const pentagonPoints = Array.from({ length: 5 }, (_, i) => {
+    const angle = (i * 2 * Math.PI) / 5 - Math.PI / 2;
+    return {
+      x: cx + (size / 4) * Math.cos(angle),
+      y: cy + (size / 4) * Math.sin(angle),
+    };
+  });
+
+  return (
+    <>
+      <circle cx={cx} cy={cy} r={size / 3} stroke={stroke} strokeWidth={circleStrokeWidth} fill="none" />
+      <circle cx={cx} cy={cy} r={size / 2.5} stroke={stroke} strokeWidth={circleStrokeWidth} fill="none" />
+      <polygon
+        points={pentagonPoints.map((point) => `${point.x},${point.y}`).join(" ")}
+        stroke={stroke}
+        strokeWidth={strokeWidth}
+        fill="none"
+      />
+    </>
+  );
+}
+
+export function ComplexGatewaySvg({
+  stroke,
+  strokeWidth,
+  cx,
+  cy,
+  size,
+}: {
+  stroke: string;
+  strokeWidth?: number;
+  cx: number;
+  cy: number;
+  size: number;
+}) {
+  const lineLength = size / 3;
+  const diagonalLength = lineLength / Math.sqrt(2);
+
+  return (
+    <>
+      <line x1={cx} y1={cy - lineLength} x2={cx} y2={cy + lineLength} stroke={stroke} strokeWidth={strokeWidth ?? 2} />
+      <line x1={cx - lineLength} y1={cy} x2={cx + lineLength} y2={cy} stroke={stroke} strokeWidth={strokeWidth ?? 2} />
+      <line
+        x1={cx - diagonalLength}
+        y1={cy - diagonalLength}
+        x2={cx + diagonalLength}
+        y2={cy + diagonalLength}
+        stroke={stroke}
+        strokeWidth={strokeWidth ?? 2}
+      />
+      <line
+        x1={cx + diagonalLength}
+        y1={cy - diagonalLength}
+        x2={cx - diagonalLength}
+        y2={cy + diagonalLength}
+        stroke={stroke}
+        strokeWidth={strokeWidth ?? 2}
+      />
     </>
   );
 }
@@ -748,6 +888,7 @@ export function EventVariantSymbolSvg({
   variant,
   stroke,
   strokeWidth,
+  isMorphingPanel,
   cx,
   cy,
   x,
@@ -760,6 +901,7 @@ export function EventVariantSymbolSvg({
   variant: EventVariant | "none";
   stroke: string;
   strokeWidth?: number;
+  isMorphingPanel?: boolean;
   cx: number;
   cy: number;
   x: number;
@@ -776,6 +918,8 @@ export function EventVariantSymbolSvg({
           fill={fill ?? "none"}
           filled={filled}
           stroke={stroke}
+          strokeWidth={strokeWidth}
+          isMorphingPanel={isMorphingPanel}
           cx={cx}
           cy={cy}
           innerCircleRadius={innerCircleRadius}
@@ -785,6 +929,8 @@ export function EventVariantSymbolSvg({
         <TimerEventSymbolSvg
           filled={filled}
           stroke={stroke}
+          strokeWidth={strokeWidth}
+          isMorphingPanel={isMorphingPanel}
           cx={cx}
           cy={cy}
           innerCircleRadius={innerCircleRadius}
@@ -795,6 +941,7 @@ export function EventVariantSymbolSvg({
         <ErrorEventSymbolSvg
           filled={filled}
           stroke={stroke}
+          strokeWidth={strokeWidth}
           cx={cx}
           cy={cy}
           innerCircleRadius={innerCircleRadius}
@@ -805,18 +952,28 @@ export function EventVariantSymbolSvg({
         <EscalationEventSymbolSvg
           filled={filled}
           stroke={stroke}
+          strokeWidth={strokeWidth}
+          isMorphingPanel={isMorphingPanel}
           cx={cx}
           cy={cy}
           innerCircleRadius={innerCircleRadius}
         />
       )}
       {variant === "cancelEventDefinition" && (
-        <CancelEventSymbolSvg filled={filled} stroke={stroke} cx={cx} cy={cy} innerCircleRadius={innerCircleRadius} />
+        <CancelEventSymbolSvg
+          filled={filled}
+          stroke={stroke}
+          strokeWidth={strokeWidth}
+          cx={cx}
+          cy={cy}
+          innerCircleRadius={innerCircleRadius}
+        />
       )}
       {variant === "compensateEventDefinition" && (
         <CompensationEventSymbolSvg
           filled={filled}
           stroke={stroke}
+          strokeWidth={strokeWidth}
           x={x}
           y={y}
           cx={cx}
@@ -829,19 +986,30 @@ export function EventVariantSymbolSvg({
         <ConditionalEventSymbolSvg
           filled={filled}
           stroke={stroke}
+          strokeWidth={strokeWidth}
+          isMorphingPanel={isMorphingPanel}
           cx={cx}
           cy={cy}
           outerCircleRadius={outerCircleRadius}
         />
       )}
       {variant === "linkEventDefinition" && (
-        <LinkEventSymbolSvg filled={filled} stroke={stroke} cx={cx} cy={cy} innerCircleRadius={innerCircleRadius} />
+        <LinkEventSymbolSvg
+          filled={filled}
+          stroke={stroke}
+          strokeWidth={strokeWidth}
+          isMorphingPanel={isMorphingPanel}
+          cx={cx}
+          cy={cy}
+          innerCircleRadius={innerCircleRadius}
+        />
       )}
       {variant === "signalEventDefinition" && (
         <SignalEventSymbolSvg
           filled={filled}
           stroke={stroke}
           strokeWidth={strokeWidth}
+          isMorphingPanel={isMorphingPanel}
           x={x}
           y={y}
           cx={cx}
@@ -850,7 +1018,6 @@ export function EventVariantSymbolSvg({
           outerCircleRadius={outerCircleRadius}
         />
       )}
-
       {variant === "terminateEventDefinition" && (
         <>
           <circle
@@ -872,6 +1039,8 @@ export function EventVariantSymbolSvg({
 
 export function MessageEventSymbolSvg({
   stroke,
+  strokeWidth,
+  isMorphingPanel,
   cx,
   cy,
   innerCircleRadius,
@@ -879,25 +1048,29 @@ export function MessageEventSymbolSvg({
   filled,
 }: {
   stroke: string;
+  strokeWidth?: number;
+  isMorphingPanel?: boolean;
   cx: number;
   cy: number;
   innerCircleRadius: number;
   fill: string;
   filled: boolean;
 }) {
-  const bodyWidth = innerCircleRadius * 1.2;
-  const bodyHeight = innerCircleRadius * 0.8;
+  const scaleFactor = isMorphingPanel ? 1.9 : 1;
+
+  const scaledBodyWidth = innerCircleRadius * 1.2 * scaleFactor;
+  const scaledBodyHeight = innerCircleRadius * 0.8 * scaleFactor;
 
   const envelopeBody = {
-    topLeft: { x: cx - bodyWidth / 2, y: cy - bodyHeight / 2 },
-    bottomRight: { x: cx + bodyWidth / 2, y: cy + bodyHeight / 2 },
+    topLeft: { x: cx - scaledBodyWidth / 2, y: cy - scaledBodyHeight / 2 },
+    bottomRight: { x: cx + scaledBodyWidth / 2, y: cy + scaledBodyHeight / 2 },
   };
 
-  const flapHeight = bodyHeight * 0.5;
+  const scaledFlapHeight = scaledBodyHeight * 0.5;
   const envelopeFlap = [
-    { x: envelopeBody.topLeft.x, y: envelopeBody.topLeft.y },
-    { x: envelopeBody.bottomRight.x, y: envelopeBody.topLeft.y },
-    { x: cx, y: envelopeBody.topLeft.y + flapHeight },
+    { x: envelopeBody.topLeft.x, y: envelopeBody.topLeft.y }, // top-left
+    { x: envelopeBody.bottomRight.x, y: envelopeBody.topLeft.y }, // top-right
+    { x: cx, y: envelopeBody.topLeft.y + scaledFlapHeight }, // center flap
   ];
 
   return (
@@ -905,9 +1078,9 @@ export function MessageEventSymbolSvg({
       <rect
         x={envelopeBody.topLeft.x}
         y={envelopeBody.topLeft.y}
-        width={bodyWidth}
-        height={bodyHeight}
-        strokeWidth={1.5}
+        width={scaledBodyWidth}
+        height={scaledBodyHeight}
+        strokeWidth={strokeWidth ?? 1.5}
         strokeLinejoin={"round"}
         fill={filled ? stroke : fill}
         stroke={stroke}
@@ -915,7 +1088,7 @@ export function MessageEventSymbolSvg({
 
       <polygon
         points={envelopeFlap.map((point) => `${point.x},${point.y}`).join(" ")}
-        strokeWidth={1.5}
+        strokeWidth={strokeWidth ?? 1.5}
         strokeLinejoin={"round"}
         fill={filled ? stroke : fill}
         stroke={stroke}
@@ -929,7 +1102,7 @@ export function MessageEventSymbolSvg({
             x2={envelopeFlap[2].x}
             y2={envelopeFlap[2].y}
             stroke={fill}
-            strokeWidth={1.5}
+            strokeWidth={strokeWidth ?? 1.5}
           />
           <line
             x1={envelopeFlap[1].x}
@@ -937,7 +1110,7 @@ export function MessageEventSymbolSvg({
             x2={envelopeFlap[2].x}
             y2={envelopeFlap[2].y}
             stroke={fill}
-            strokeWidth={1.5}
+            strokeWidth={strokeWidth ?? 1.5}
           />
         </>
       )}
@@ -947,6 +1120,8 @@ export function MessageEventSymbolSvg({
 
 export function TimerEventSymbolSvg({
   stroke,
+  strokeWidth,
+  isMorphingPanel,
   cx,
   cy,
   innerCircleRadius,
@@ -954,29 +1129,33 @@ export function TimerEventSymbolSvg({
   filled,
 }: {
   stroke: string;
+  strokeWidth?: number;
+  isMorphingPanel?: boolean;
   cx: number;
   cy: number;
   innerCircleRadius: number;
   outerCircleRadius: number;
   filled: boolean;
 }) {
-  const padding = 1.2 * (outerCircleRadius - innerCircleRadius);
-  const clockRadius = innerCircleRadius - padding;
+  const scaleFactor = isMorphingPanel ? 1.4 : 1;
 
-  const shortHandLength = clockRadius * 0.5;
-  const longHandLength = clockRadius * 0.9;
+  const scaledPadding = 1.2 * (outerCircleRadius - innerCircleRadius) * scaleFactor;
+  const scaledClockRadius = (innerCircleRadius - scaledPadding) * scaleFactor;
+
+  const scaledShortHandLength = scaledClockRadius * 0.5;
+  const scaledLongHandLength = scaledClockRadius * 0.9;
 
   const hourHandAngle = Math.PI / 12;
   const minuteHandAngle = (-5 * Math.PI) / 12;
 
   const hourHand = {
-    x: cx + shortHandLength * Math.cos(hourHandAngle),
-    y: cy + shortHandLength * Math.sin(hourHandAngle),
+    x: cx + scaledShortHandLength * Math.cos(hourHandAngle),
+    y: cy + scaledShortHandLength * Math.sin(hourHandAngle),
   };
 
   const minuteHand = {
-    x: cx + longHandLength * Math.cos(minuteHandAngle),
-    y: cy + longHandLength * Math.sin(minuteHandAngle),
+    x: cx + scaledLongHandLength * Math.cos(minuteHandAngle),
+    y: cy + scaledLongHandLength * Math.sin(minuteHandAngle),
   };
 
   return (
@@ -984,9 +1163,9 @@ export function TimerEventSymbolSvg({
       <circle
         cx={cx}
         cy={cy}
-        r={clockRadius}
+        r={scaledClockRadius}
         stroke={stroke}
-        strokeWidth={1.5}
+        strokeWidth={strokeWidth ?? 1.5}
         fill={filled ? stroke : "transparent"}
       />
 
@@ -996,7 +1175,7 @@ export function TimerEventSymbolSvg({
         x2={hourHand.x}
         y2={hourHand.y}
         stroke={filled ? "transparent" : stroke}
-        strokeWidth={1.5}
+        strokeWidth={strokeWidth ?? 1.5}
       />
 
       <line
@@ -1005,15 +1184,15 @@ export function TimerEventSymbolSvg({
         x2={minuteHand.x}
         y2={minuteHand.y}
         stroke={filled ? "transparent" : stroke}
-        strokeWidth={1.5}
+        strokeWidth={strokeWidth ?? 1.5}
       />
 
       {Array.from({ length: 12 }, (_, index) => {
         const angle = (index / 12) * 2 * Math.PI;
-        const x1 = cx + clockRadius * Math.cos(angle);
-        const y1 = cy + clockRadius * Math.sin(angle);
-        const x2 = cx + (clockRadius - padding * 0.5) * Math.cos(angle);
-        const y2 = cy + (clockRadius - padding * 0.5) * Math.sin(angle);
+        const x1 = cx + scaledClockRadius * Math.cos(angle);
+        const y1 = cy + scaledClockRadius * Math.sin(angle);
+        const x2 = cx + (scaledClockRadius - scaledPadding * 0.5) * Math.cos(angle);
+        const y2 = cy + (scaledClockRadius - scaledPadding * 0.5) * Math.sin(angle);
 
         return <line key={index} x1={x1} y1={y1} x2={x2} y2={y2} stroke={stroke} strokeWidth={1.5} />;
       })}
@@ -1023,6 +1202,7 @@ export function TimerEventSymbolSvg({
 
 export function ErrorEventSymbolSvg({
   stroke,
+  strokeWidth,
   cx,
   cy,
   innerCircleRadius,
@@ -1030,6 +1210,8 @@ export function ErrorEventSymbolSvg({
   filled,
 }: {
   stroke: string;
+  strokeWidth?: number;
+  isMorphingPanel?: boolean;
   cx: number;
   cy: number;
   innerCircleRadius: number;
@@ -1058,7 +1240,7 @@ export function ErrorEventSymbolSvg({
     <>
       <polygon
         points={points.map((point) => `${point.x},${point.y}`).join(" ")}
-        strokeWidth={1.5}
+        strokeWidth={strokeWidth ?? 1.5}
         strokeLinejoin={"round"}
         fill={filled ? stroke : "transparent"}
         stroke={stroke}
@@ -1069,32 +1251,38 @@ export function ErrorEventSymbolSvg({
 
 export function EscalationEventSymbolSvg({
   stroke,
+  strokeWidth,
+  isMorphingPanel,
   cx,
   cy,
   innerCircleRadius,
   filled,
 }: {
   stroke: string;
+  strokeWidth?: number;
+  isMorphingPanel?: boolean;
   cx: number;
   cy: number;
   innerCircleRadius: number;
   filled: boolean;
 }) {
-  const arrowHeight = innerCircleRadius * 1.2;
-  const arrowBaseWidth = innerCircleRadius * 1;
+  const scaleFactor = isMorphingPanel ? 1.8 : 1;
+  const scaledArrowHeight = innerCircleRadius * 1.2 * scaleFactor;
+  const scaledArrowBaseWidth = innerCircleRadius * scaleFactor;
+  const midCenterYOffset = ((innerCircleRadius * 1.2) / 20) * scaleFactor;
 
   const arrow = [
-    { x: cx - arrowBaseWidth / 2, y: cy + arrowHeight / 2 }, // left
-    { x: cx, y: cy - arrowHeight / 2 }, // top center
-    { x: cx + arrowBaseWidth / 2, y: cy + arrowHeight / 2 }, // right
-    { x: cx, y: cy + arrowHeight / 20 }, // mid center
+    { x: cx - scaledArrowBaseWidth / 2, y: cy + scaledArrowHeight / 2 }, // left
+    { x: cx, y: cy - scaledArrowHeight / 2 }, // top center
+    { x: cx + scaledArrowBaseWidth / 2, y: cy + scaledArrowHeight / 2 }, // right
+    { x: cx, y: cy + midCenterYOffset }, // mid center
   ] as const;
 
   return (
     <>
       <polygon
         points={arrow.map((point) => `${point.x},${point.y}`).join(" ")}
-        strokeWidth={1.5}
+        strokeWidth={strokeWidth ?? 1.5}
         strokeLinejoin={"round"}
         fill={filled ? stroke : "transparent"}
         stroke={stroke}
@@ -1105,12 +1293,14 @@ export function EscalationEventSymbolSvg({
 
 export function CancelEventSymbolSvg({
   stroke,
+  strokeWidth,
   cx,
   cy,
   innerCircleRadius,
   filled,
 }: {
   stroke: string;
+  strokeWidth?: number;
   cx: number;
   cy: number;
   innerCircleRadius: number;
@@ -1140,7 +1330,7 @@ export function CancelEventSymbolSvg({
     <>
       <polygon
         points={cross.map((point) => `${point.x},${point.y}`).join(" ")}
-        strokeWidth={1.5}
+        strokeWidth={strokeWidth ?? 1.5}
         strokeLinejoin={"round"}
         fill={filled ? stroke : "transparent"}
         stroke={stroke}
@@ -1151,6 +1341,7 @@ export function CancelEventSymbolSvg({
 
 export function CompensationEventSymbolSvg({
   stroke,
+  strokeWidth,
   cx,
   cy,
   x,
@@ -1160,6 +1351,7 @@ export function CompensationEventSymbolSvg({
   filled,
 }: {
   stroke: string;
+  strokeWidth?: number;
   cx: number;
   cy: number;
   x: number;
@@ -1191,14 +1383,14 @@ export function CompensationEventSymbolSvg({
     <>
       <polygon
         points={firstTriangle.map((point) => `${point.x},${point.y}`).join(" ")}
-        strokeWidth={1.5}
+        strokeWidth={strokeWidth ?? 1.5}
         strokeLinejoin={"round"}
         fill={filled ? stroke : "transparent"}
         stroke={stroke}
       />
       <polygon
         points={secondTriangle.map((point) => `${point.x},${point.y}`).join(" ")}
-        strokeWidth={1.5}
+        strokeWidth={strokeWidth ?? 1.5}
         strokeLinejoin={"round"}
         fill={filled ? stroke : "transparent"}
         stroke={stroke}
@@ -1209,74 +1401,86 @@ export function CompensationEventSymbolSvg({
 
 export function ConditionalEventSymbolSvg({
   stroke,
+  strokeWidth,
+  isMorphingPanel,
   cx,
   cy,
   outerCircleRadius,
   filled,
 }: {
   stroke: string;
+  strokeWidth?: number;
+  isMorphingPanel?: boolean;
   cx: number;
   cy: number;
   outerCircleRadius: number;
   filled: boolean;
 }) {
-  const squareSize = outerCircleRadius * 1.1;
+  const scaleFactor = isMorphingPanel ? 1.8 : 1;
+
+  const squareSize = outerCircleRadius * 1.1 * scaleFactor;
+  const halfSquareSize = squareSize / 2;
   const lineSpacing = squareSize / 5;
-  const lineThickness = 2;
+  const lineBuffer = isMorphingPanel ? 50 : 5;
+  const x1 = cx - halfSquareSize + lineBuffer;
+  const x2 = cx + halfSquareSize - lineBuffer;
+
+  const squareX = cx - halfSquareSize;
+  const squareY = cy - halfSquareSize;
 
   return (
     <>
       <rect
-        x={cx - squareSize / 2}
-        y={cy - squareSize / 2}
+        x={squareX}
+        y={squareY}
         width={squareSize}
         height={squareSize}
         fill={filled ? stroke : "transparent"}
         stroke={stroke}
-        strokeWidth={1.5}
+        strokeWidth={strokeWidth ?? 1.5}
       />
 
-      {[...Array(4)].map((_, index) => (
-        <line
-          key={index}
-          x1={cx - squareSize / 2 + 5}
-          y1={cy - squareSize / 2 + lineSpacing * (index + 1)}
-          x2={cx + squareSize / 2 - 5}
-          y2={cy - squareSize / 2 + lineSpacing * (index + 1)}
-          stroke={stroke}
-          strokeWidth={lineThickness}
-        />
-      ))}
+      {[...Array(4)].map((_, index) => {
+        const lineY = squareY + lineSpacing * (index + 1);
+        return (
+          <line key={index} x1={x1} y1={lineY} x2={x2} y2={lineY} stroke={stroke} strokeWidth={strokeWidth ?? 2} />
+        );
+      })}
     </>
   );
 }
-
 export function LinkEventSymbolSvg({
   stroke,
+  strokeWidth,
+  isMorphingPanel,
   cx,
   cy,
   innerCircleRadius,
   filled,
 }: {
   stroke: string;
+  strokeWidth?: number;
+  isMorphingPanel?: boolean;
   cx: number;
   cy: number;
   innerCircleRadius: number;
   filled: boolean;
 }) {
+  const scaleFactor = isMorphingPanel ? 50 : 1;
+
   const arrowHeight = innerCircleRadius * 1.2;
   const arrowBaseWidth = innerCircleRadius * 1;
-  const shiftLeft = 7;
+  const shiftLeft = 6;
   const rectangleHeight = 5;
-  const arrowPadding = 2;
+  const arrowPadding = 1;
 
   const arrow = [
-    { x: cx - arrowBaseWidth / 2 - shiftLeft, y: cy + arrowHeight / 2 - rectangleHeight }, // bottom left rectangle
-    { x: cx - arrowBaseWidth / 2 - shiftLeft, y: cy - arrowHeight / 2 + rectangleHeight }, // top left rectangle
+    { x: cx - arrowBaseWidth / 2 - shiftLeft - scaleFactor, y: cy + arrowHeight / 2 - rectangleHeight }, // bottom left rectangle
+    { x: cx - arrowBaseWidth / 2 - shiftLeft - scaleFactor, y: cy - arrowHeight / 2 + rectangleHeight }, // top left rectangle
     { x: cx + arrowBaseWidth / 2, y: cy - arrowHeight / 2 + rectangleHeight }, // top right rectangle
-    { x: cx + arrowBaseWidth / 2, y: cy - arrowHeight / 2 - arrowPadding }, // upper arrow start
-    { x: cx + arrowBaseWidth / 2 + 8, y: cy }, // arrow point
-    { x: cx + arrowBaseWidth / 2, y: cy + arrowHeight / 2 + arrowPadding }, // lower arrow start
+    { x: cx + arrowBaseWidth / 2, y: cy - arrowHeight / 2 - arrowPadding - scaleFactor }, // upper arrow start
+    { x: cx + arrowBaseWidth / 2 + 7 + scaleFactor, y: cy }, // arrow point
+    { x: cx + arrowBaseWidth / 2, y: cy + arrowHeight / 2 + arrowPadding + scaleFactor }, // lower arrow start
     { x: cx + arrowBaseWidth / 2, y: cy + arrowHeight / 2 - rectangleHeight }, // bottom right rectangle
   ] as const;
 
@@ -1284,7 +1488,7 @@ export function LinkEventSymbolSvg({
     <>
       <polygon
         points={arrow.map((point) => `${point.x},${point.y}`).join(" ")}
-        strokeWidth={1.5}
+        strokeWidth={strokeWidth ?? 1.5}
         strokeLinejoin={"round"}
         fill={filled ? stroke : "transparent"}
         stroke={stroke}
@@ -1296,6 +1500,7 @@ export function LinkEventSymbolSvg({
 export function SignalEventSymbolSvg({
   stroke,
   strokeWidth,
+  isMorphingPanel,
   cx,
   cy,
   x,
@@ -1306,6 +1511,7 @@ export function SignalEventSymbolSvg({
 }: {
   stroke: string;
   strokeWidth?: number;
+  isMorphingPanel?: boolean;
   cx: number;
   cy: number;
   x: number;
@@ -1314,13 +1520,16 @@ export function SignalEventSymbolSvg({
   outerCircleRadius: number;
   filled: boolean;
 }) {
+  const scaleFactor = isMorphingPanel ? 1.2 : 1;
+
   const padding = 1.5 * (outerCircleRadius - innerCircleRadius);
-  const hx = x + innerCircleRadius - padding;
-  const hy = y + innerCircleRadius - padding;
+  const hx = (x + innerCircleRadius - padding) * scaleFactor;
+  const hy = (y + innerCircleRadius - padding) * scaleFactor;
+
   const triangle = [
-    { x: cx + cos30 * hx, y: padding / 4 + cy + sin30 * hy }, // right
-    { x: cx - cos30 * hx, y: padding / 4 + cy + sin30 * hy }, // left
-    { x: cx, y: padding / 4 + cy - hy }, // top
+    { x: cx + cos30 * hx, y: (padding / 4) * scaleFactor + cy + sin30 * hy }, // right
+    { x: cx - cos30 * hx, y: (padding / 4) * scaleFactor + cy + sin30 * hy }, // left
+    { x: cx, y: (padding / 4) * scaleFactor + cy - hy }, // top
   ] as const;
 
   return (

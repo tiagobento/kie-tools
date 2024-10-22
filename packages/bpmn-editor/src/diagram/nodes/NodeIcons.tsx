@@ -50,7 +50,7 @@ export function NodeIcon({ nodeType }: { nodeType: BpmnNodeType }) {
   });
 }
 
-export function EventDefitnitionIcon({
+export function EventDefinitionIcon({
   variant,
   filled,
   stroke,
@@ -60,7 +60,7 @@ export function EventDefitnitionIcon({
   stroke: string;
 }) {
   const cx = nodeSvgProps.x + nodeSvgProps.width / 2;
-  const cy = nodeSvgProps.y + nodeSvgProps.width / 2;
+  const cy = nodeSvgProps.y + nodeSvgProps.height / 2;
 
   const r = nodeSvgProps.width / 2;
 
@@ -69,13 +69,15 @@ export function EventDefitnitionIcon({
       <EventVariantSymbolSvg
         variant={variant ?? "none"}
         strokeWidth={16}
+        isMorphingPanel={true}
         filled={filled}
         stroke={stroke}
+        fill={fill}
         x={nodeSvgProps.x}
         y={nodeSvgProps.x}
         cx={cx}
         cy={cy}
-        innerCircleRadius={r - 5}
+        innerCircleRadius={r - 10}
         outerCircleRadius={r}
       />
     </RoundSvg>
@@ -130,10 +132,16 @@ export function CallActivityIcon() {
   );
 }
 
-export function GatewayIcon({ variant }: { variant?: GatewayVariant }) {
+export function GatewayIcon({ variant, isMorphingPanel }: { variant?: GatewayVariant; isMorphingPanel?: boolean }) {
   return (
     <RoundSvg>
-      <GatewayNodeSvg {...nodeSvgProps} width={200} height={200} variant={variant ?? "none"} />
+      <GatewayNodeSvg
+        {...nodeSvgProps}
+        width={200}
+        height={200}
+        variant={variant ?? "none"}
+        isMorphingPanel={isMorphingPanel ?? false}
+      />
     </RoundSvg>
   );
 }
