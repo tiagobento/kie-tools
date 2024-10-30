@@ -56,7 +56,8 @@ export class VsCodeKieEditorCustomDocument implements CustomDocument {
     public readonly editorStore: VsCodeKieEditorStore,
     private readonly vsCodeI18n: I18n<VsCodeI18n>,
     private readonly vscodeNotifications: VsCodeNotificationsChannelApiImpl,
-    private readonly editorEnvelopeLocator: EditorEnvelopeLocator
+    private readonly editorEnvelopeLocator: EditorEnvelopeLocator,
+    private readonly settingsEntriesPrefix: string
   ) {}
 
   public dispose() {
@@ -112,7 +113,7 @@ export class VsCodeKieEditorCustomDocument implements CustomDocument {
       }
 
       await vscode.workspace.fs.writeFile(destination, this.encoder.encode(content));
-      executeOnSaveHook(this.fileType);
+      executeOnSaveHook(this.settingsEntriesPrefix, this.fileType);
       vscode.window.setStatusBarMessage(i18n.savedSuccessfully, 3000);
     } catch (e) {
       this.vsCodeLogger.error(`Error saving. ${e}`);

@@ -35,6 +35,7 @@ startExtension({
   name: "Kogito Base64 PNG React Editor",
   extensionIconUrl: chrome.extension.getURL("/resources/kie_icon_rgb_fullcolor_default.svg"),
   githubAuthTokenCookieName: "github-oauth-token-base64-editors",
+  settingsEntriesPrefix: "kogito",
   editorEnvelopeLocator: new EditorEnvelopeLocator(window.location.origin, [
     new EnvelopeMapping({
       type: "base64png",

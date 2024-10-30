@@ -18,19 +18,20 @@
  */
 
 import { EditorEnvelopeLocator, EnvelopeContentType, EnvelopeMapping } from "@kie-tools-core/editor/dist/api";
-import * as KogitoVsCode from "@kie-tools-core/vscode-extension";
+import { startExtension } from "@kie-tools-core/vscode-extension";
 import * as vscode from "vscode";
 import { generateFormsCommand } from "@kie-tools/form-code-generator-vscode-command/dist/generateFormCodeCommand";
 
 export async function activate(context: vscode.ExtensionContext) {
   console.info("Extension is alive.");
 
-  KogitoVsCode.startExtension({
+  startExtension({
     extensionName: "kie-group.kie-editors-dev-vscode-extension",
     context: context,
     viewType: "kieKogitoWebviewEditors",
     generateSvgCommandId: "extension.kogito.getPreviewSvg",
     silentlyGenerateSvgCommandId: "extension.kogito.silentlyGenerateSvg",
+    settingsEntriesPrefix: "kogito",
     editorEnvelopeLocator: new EditorEnvelopeLocator("vscode", [
       new EnvelopeMapping({
         type: "bpmn",

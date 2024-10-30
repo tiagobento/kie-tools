@@ -18,18 +18,20 @@
  */
 
 import { EditorEnvelopeLocator, EnvelopeContentType, EnvelopeMapping } from "@kie-tools-core/editor/dist/api";
-import * as KogitoVsCode from "@kie-tools-core/vscode-extension";
+import { startExtension } from "@kie-tools-core/vscode-extension";
+import { VsCodeRecommendation } from "@kie-tools-core/vscode-extension";
 import * as vscode from "vscode";
 
 export function activate(context: vscode.ExtensionContext) {
   console.info("Extension is alive.");
 
-  KogitoVsCode.startExtension({
+  startExtension({
     extensionName: "kie-group.dmn-vscode-extension",
     context: context,
     viewType: "kieKogitoWebviewEditorsDmn",
     generateSvgCommandId: "extension.kogito.getPreviewSvgDmn",
     silentlyGenerateSvgCommandId: "extension.kogito.silentlyGenerateSvgDmn",
+    settingsEntriesPrefix: "kogito",
     editorEnvelopeLocator: new EditorEnvelopeLocator("vscode", [
       new EnvelopeMapping({
         type: "dmn",
@@ -46,12 +48,13 @@ export function activate(context: vscode.ExtensionContext) {
     ]),
   });
 
-  KogitoVsCode.startExtension({
+  startExtension({
     extensionName: "kie-group.dmn-vscode-extension",
     context: context,
     viewType: "kieToolsDmnEditor",
     generateSvgCommandId: "extension.kie.tools.generatePreviewSvgDmn",
     silentlyGenerateSvgCommandId: "extension.kie.tools.silentlyGenerateSvgDmn",
+    settingsEntriesPrefix: "kogito",
     editorEnvelopeLocator: new EditorEnvelopeLocator("vscode", [
       new EnvelopeMapping({
         type: "dmn",
@@ -62,7 +65,7 @@ export function activate(context: vscode.ExtensionContext) {
     ]),
   });
 
-  KogitoVsCode.VsCodeRecommendation.showExtendedServicesRecommendation(context);
+  VsCodeRecommendation.showExtendedServicesRecommendation(context);
 
   console.info("Extension is successfully setup.");
 }

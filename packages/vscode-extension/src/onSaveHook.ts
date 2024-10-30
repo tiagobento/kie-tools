@@ -19,12 +19,12 @@
 
 import * as vscode from "vscode";
 
-export function executeOnSaveHook(fileType: string | undefined) {
+export function executeOnSaveHook(settingsEntriesPrefix: string, fileType: string | undefined) {
   if (!fileType) {
     return;
   }
 
-  const hookId = `kogito.${fileType}.runOnSave`;
+  const hookId = `${settingsEntriesPrefix}.${fileType}.runOnSave`;
   const hook = vscode.workspace.getConfiguration().get(hookId, "");
 
   if (hook) {

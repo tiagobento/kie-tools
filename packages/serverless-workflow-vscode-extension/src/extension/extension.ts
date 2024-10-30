@@ -18,7 +18,7 @@
  */
 
 import { EditorEnvelopeLocator, EnvelopeContentType, EnvelopeMapping } from "@kie-tools-core/editor/dist/api";
-import * as KieToolsVsCodeExtensions from "@kie-tools-core/vscode-extension";
+import { startExtension } from "@kie-tools-core/vscode-extension";
 import * as vscode from "vscode";
 import { ServerlessWorkflowDiagramEditorChannelApiProducer } from "./ServerlessWorkflowDiagramEditorChannelApiProducer";
 import { SwfVsCodeExtensionConfiguration, WEBVIEW_EDITOR_VIEW_TYPE } from "./configuration";
@@ -67,13 +67,14 @@ export async function activate(context: vscode.ExtensionContext) {
   const swEnvelopeType = "swf";
   const baseEnvelopePath = "dist/webview/editors/serverless-workflow";
 
-  const kieEditorsStore = await KieToolsVsCodeExtensions.startExtension({
+  const kieEditorsStore = await startExtension({
     editorDocumentType: "text",
     extensionName: "kie-group.swf-vscode-extension",
     context: context,
     viewType: WEBVIEW_EDITOR_VIEW_TYPE,
     generateSvgCommandId: COMMAND_IDS.getPreviewSvg,
     silentlyGenerateSvgCommandId: COMMAND_IDS.silentlyGetPreviewSvg,
+    settingsEntriesPrefix: "kogito",
     editorEnvelopeLocator: new EditorEnvelopeLocator("vscode", [
       new EnvelopeMapping({
         type: swEnvelopeType,

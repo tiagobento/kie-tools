@@ -49,7 +49,8 @@ export class VsCodeKieEditorsCustomEditorProvider implements CustomEditorProvide
     private readonly editorFactory: VsCodeKieEditorControllerFactory,
     private readonly vsCodeI18n: I18n<VsCodeI18n>,
     private readonly vscodeNotifications: VsCodeNotificationsChannelApiImpl,
-    private readonly editorEnvelopeLocator: EditorEnvelopeLocator
+    private readonly editorEnvelopeLocator: EditorEnvelopeLocator,
+    private readonly settingsEntriesPrefix: string
   ) {}
 
   public register() {
@@ -76,7 +77,8 @@ export class VsCodeKieEditorsCustomEditorProvider implements CustomEditorProvide
       this.editorStore,
       this.vsCodeI18n,
       this.vscodeNotifications,
-      this.editorEnvelopeLocator
+      this.editorEnvelopeLocator,
+      this.settingsEntriesPrefix
     );
     this.setupListeners(document);
     return document;

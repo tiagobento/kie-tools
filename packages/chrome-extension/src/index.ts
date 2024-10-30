@@ -34,7 +34,7 @@ import { renderOpenRepoInExternalEditorApp } from "./app/components/openRepoInEx
 import { StateControl } from "@kie-tools-core/editor/dist/channel";
 
 /**
- * Starts a Kogito extension.
+ * Starts a Chrome Extension with the configured EditorEnvelopeLocator, allowing for easily creating a microfrontend-based visual editor that will render direcly on GitHub's page.
  *
  *  @param args.name The extension name. Used to differentiate logs from other extensions.
  *  @param args.extensionIconUrl The relative path to search for an image that will be the icon used for your extension.

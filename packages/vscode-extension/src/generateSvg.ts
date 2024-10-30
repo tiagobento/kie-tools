@@ -38,6 +38,7 @@ export async function generateSvg(args: {
   vsCodeI18n: I18n<VsCodeI18n>;
   displayNotification: boolean;
   editorEnvelopeLocator: EditorEnvelopeLocator;
+  settingsEntriesPrefix: string;
 }) {
   const i18n = args.vsCodeI18n.getCurrent();
 
@@ -61,15 +62,15 @@ export async function generateSvg(args: {
   const fileType = args.editorEnvelopeLocator.getEnvelopeMapping(
     __path.parse(editor.document.document.uri.path).base
   )?.type;
-  const svgFilenameTemplateId = `kogito.${fileType}.svgFilenameTemplate`;
-  const svgFilePathTemplateId = `kogito.${fileType}.svgFilePath`;
+  const svgFilenameTemplateId = `${args.settingsEntriesPrefix}.${fileType}.svgFilenameTemplate`;
+  const svgFilePathTemplateId = `${args.settingsEntriesPrefix}.${fileType}.svgFilePath`;
 
   const svgFilenameTemplate = vscode.workspace.getConfiguration().get(svgFilenameTemplateId, "");
   const svgFilePathTemplate = vscode.workspace.getConfiguration().get(svgFilePathTemplateId, "");
 
   if (__path.parse(svgFilenameTemplate).dir) {
     vscode.window.showErrorMessage(
-      `The kogito.${fileType}.svgFilenameTemplate setting should be a valid filename, without a path prefix. Current value: ${svgFilenameTemplate}`
+      `The ${args.settingsEntriesPrefix}.${fileType}.svgFilenameTemplate setting should be a valid filename, without a path prefix. Current value: ${svgFilenameTemplate}`
     );
     return;
   }

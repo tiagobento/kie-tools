@@ -18,7 +18,7 @@
  */
 
 import { EditorEnvelopeLocator, EnvelopeContentType, EnvelopeMapping } from "@kie-tools-core/editor/dist/api";
-import * as KieToolsVsCodeExtensions from "@kie-tools-core/vscode-extension";
+import { startExtension } from "@kie-tools-core/vscode-extension";
 import * as vscode from "vscode";
 import { YardVsCodeExtensionConfiguration, WEBVIEW_EDITOR_VIEW_TYPE } from "./configuration";
 import { setupDiagramEditorControls } from "./setupDiagramEditorControls";
@@ -28,11 +28,12 @@ export async function activate(context: vscode.ExtensionContext) {
 
   const configuration = new YardVsCodeExtensionConfiguration();
 
-  const kieEditorsStore = await KieToolsVsCodeExtensions.startExtension({
+  const kieEditorsStore = await startExtension({
     editorDocumentType: "text",
     extensionName: "kie-group.yard-vscode-extension",
     context: context,
     viewType: WEBVIEW_EDITOR_VIEW_TYPE,
+    settingsEntriesPrefix: "kogito",
     editorEnvelopeLocator: new EditorEnvelopeLocator("vscode", [
       new EnvelopeMapping({
         type: "yard",

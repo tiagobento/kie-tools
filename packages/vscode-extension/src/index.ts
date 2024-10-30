@@ -32,16 +32,19 @@ import { vsCodeI18nDefaults, vsCodeI18nDictionaries } from "./i18n";
 import { VsCodeNotificationsChannelApiImpl } from "./notifications/VsCodeNotificationsChannelApiImpl";
 import { executeOnSaveHook } from "./onSaveHook";
 import { VsCodeWorkspaceChannelApiImpl } from "./workspace/VsCodeWorkspaceChannelApiImpl";
-import { VsCodeRecommendation } from "./VsCodeRecommendation";
 
 /**
- * Starts a Kogito extension.
+ * Starts a VS Code Extension with the configured EditorEnvelopeLocator, allowing for easily creating a Webview-based editor.
  *
  *  @param args.extensionName The extension name. Used to fetch the extension configuration for supported languages.
- *  @param args.webviewLocation The relative path to search for an "index.js" file for the WebView panel.
  *  @param args.context The vscode.ExtensionContext provided on the activate method of the extension.
- *  @param args.routes The routes to be used to find resources for each language.
+ *  @param args.viewType "viewType" attribute of the "customEditor" mapped on package.json of the extension.
+ *  @param args.generateSvgCommandId Identifier of the command that will generate an SVG from the open Webview-based editor. A toast notification will appear when it runs.
+ *  @param args.silentlyGenerateSvgCommandId Identifier of the command that will generate an SVG from the open Webview-based editor, without any notification appearing.
+ *  @param args.settingsEntriesPrefix Prefix os Settings entries registered by this extension. Should match what is defined on `package.json` for `runOnSave`, `svgFilenameTemplate`, and `svgFilePath`.
+ *  @param args.editorEnvelopeLocator Mapping of Webviews based on file extensions. Webviews will load content based on this parameter.
  *  @param args.channelApiProducer Optional producer of custom KogitoEditorChannelApi instances.
+ *  @param args.editorDocumentType Type of Editor being registered. "custom" (default) for binary files. "text" for Text-based files.
  */
 export async function startExtension(args: {
   extensionName: string;
@@ -49,6 +52,7 @@ export async function startExtension(args: {
   viewType: string;
   generateSvgCommandId?: string;
   silentlyGenerateSvgCommandId?: string;
+  settingsEntriesPrefix: string;
   editorEnvelopeLocator: EditorEnvelopeLocator;
   channelApiProducer?: VsCodeKieEditorChannelApiProducer;
   editorDocumentType?: "text" | "custom";
@@ -84,7 +88,8 @@ export async function startExtension(args: {
           editorFactory,
           i18n,
           vscodeNotifications,
-          args.editorEnvelopeLocator
+          args.editorEnvelopeLocator,
+          args.settingsEntriesPrefix
         ),
         {
           webviewOptions: { retainContextWhenHidden: true },
@@ -106,7 +111,7 @@ export async function startExtension(args: {
       vscode.workspace.onDidSaveTextDocument((document: vscode.TextDocument) => {
         const envelopeMapping = args.editorEnvelopeLocator.getEnvelopeMapping(document.uri.fsPath);
         if (envelopeMapping) {
-          executeOnSaveHook(envelopeMapping.type);
+          executeOnSaveHook(args.settingsEntriesPrefix, envelopeMapping.type);
         }
       })
     );
@@ -123,6 +128,7 @@ export async function startExtension(args: {
           vsCodeI18n: i18n,
           displayNotification: true,
           editorEnvelopeLocator: args.editorEnvelopeLocator,
+          settingsEntriesPrefix: args.settingsEntriesPrefix,
         })
       )
     );
@@ -137,6 +143,7 @@ export async function startExtension(args: {
           vsCodeI18n: i18n,
           displayNotification: false,
           editorEnvelopeLocator: args.editorEnvelopeLocator,
+          settingsEntriesPrefix: args.settingsEntriesPrefix,
         })
       )
     );

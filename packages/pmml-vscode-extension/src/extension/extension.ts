@@ -18,16 +18,17 @@
  */
 
 import { EditorEnvelopeLocator, EnvelopeContentType, EnvelopeMapping } from "@kie-tools-core/editor/dist/api";
-import * as KogitoVsCode from "@kie-tools-core/vscode-extension";
+import { startExtension } from "@kie-tools-core/vscode-extension";
 import * as vscode from "vscode";
 
 export function activate(context: vscode.ExtensionContext) {
   console.info("Extension is alive.");
 
-  KogitoVsCode.startExtension({
+  startExtension({
     extensionName: "kie-group.pmml-vscode-extension",
     context: context,
     viewType: "kieKogitoWebviewEditorsPmml",
+    settingsEntriesPrefix: "kogito",
     editorEnvelopeLocator: new EditorEnvelopeLocator("vscode", [
       new EnvelopeMapping({
         type: "pmml",

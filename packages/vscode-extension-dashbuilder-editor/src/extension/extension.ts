@@ -18,7 +18,7 @@
  */
 
 import { EditorEnvelopeLocator, EnvelopeContentType, EnvelopeMapping } from "@kie-tools-core/editor/dist/api";
-import * as KogitoVsCode from "@kie-tools-core/vscode-extension";
+import { startExtension } from "@kie-tools-core/vscode-extension";
 import * as vscode from "vscode";
 import * as path from "path";
 import { ComponentServer } from "./ComponentsHttpServer";
@@ -41,11 +41,12 @@ export async function activate(context: vscode.ExtensionContext) {
     })
   );
 
-  const kieEditorsStore = await KogitoVsCode.startExtension({
+  const kieEditorsStore = await startExtension({
     extensionName: "kie-group.vscode-extension-dashbuilder-editor",
     context: context,
     editorDocumentType: "text",
     viewType: "kieKogitoWebviewEditorsDashbuilder",
+    settingsEntriesPrefix: "kogito",
     editorEnvelopeLocator: new EditorEnvelopeLocator("vscode", [
       new EnvelopeMapping({
         type: "dashbuilder",
