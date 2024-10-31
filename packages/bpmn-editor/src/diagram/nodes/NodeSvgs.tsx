@@ -361,11 +361,12 @@ export function TaskNodeSvg(
 
   const markers = useMemo(() => new Set(_markers), [_markers]);
 
+  const defaultOffset = { cx: x + 3, cy: y + 3 };
   const iconOffsets = {
-    scriptTask: isMorphingPanel ? { cx: x - 2, cy: y - 25 } : { cx: x + 3, cy: y + 3 },
-    businessRuleTask: isMorphingPanel ? { cx: x - 10, cy: y - 10 } : { cx: x + 3, cy: y + 3 },
-    serviceTask: isMorphingPanel ? { cx: x - 5, cy: y - 35 } : { cx: x + 3, cy: y + 3 },
-    userTask: isMorphingPanel ? { cx: x - 5, cy: y - 45 } : { cx: x + 3, cy: y + 3 },
+    scriptTask: isMorphingPanel ? { cx: x - 2, cy: y - 25 } : defaultOffset,
+    businessRuleTask: isMorphingPanel ? { cx: x - 10, cy: y - 10 } : defaultOffset,
+    serviceTask: isMorphingPanel ? { cx: x - 5, cy: y - 35 } : defaultOffset,
+    userTask: isMorphingPanel ? { cx: x - 5, cy: y - 45 } : defaultOffset,
   };
 
   return (
