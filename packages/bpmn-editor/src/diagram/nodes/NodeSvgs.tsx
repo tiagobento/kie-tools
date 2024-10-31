@@ -1874,12 +1874,12 @@ export function ActivityNodeIcons({
             <CollapsedIconSvg stroke={stroke} strokeWidth={strokeWidth} size={iconSize} />
           </g>
         ) : icon === ActivityNodeMarker.MultiInstanceParallel ? (
-          <g key={icon} transform={`translate(${iconX}, ${bottomY - iconSize + 3})`}>
-            <MultiInstanceParallelIconSvg stroke={stroke} strokeWidth={strokeWidth} size={25} />
+          <g key={icon} transform={`translate(${iconX}, ${bottomY - iconSize + 2})`}>
+            <MultiInstanceParallelIconSvg stroke={stroke} strokeWidth={strokeWidth} size={28} />
           </g>
         ) : icon === ActivityNodeMarker.MultiInstanceSequential ? (
-          <g key={icon} transform={`translate(${iconX - 3}, ${bottomY - iconSize + 1})`}>
-            <MultiInstanceSequentialIconSvg stroke={stroke} strokeWidth={strokeWidth} size={25} />
+          <g key={icon} transform={`translate(${iconX - 3}, ${bottomY - iconSize - 2})`}>
+            <MultiInstanceSequentialIconSvg stroke={stroke} strokeWidth={strokeWidth} size={28} />
           </g>
         ) : icon === ActivityNodeMarker.Loop ? (
           <g key={icon} transform={`translate(${iconX}, ${bottomY - iconSize})`}>
@@ -2022,7 +2022,7 @@ export function MultiInstanceSequentialIconSvg({
   strokeWidth: number;
   size: number;
 }) {
-  const lineSpacing = size / 6;
+  const lineSpacing = size / 5;
   const lineWidth = size * 0.5;
 
   return (
@@ -2067,7 +2067,7 @@ export function MultiInstanceParallelIconSvg({
   strokeWidth: number;
   size: number;
 }) {
-  const lineSpacing = size / 6;
+  const lineSpacing = size / 5;
   const lineHeight = size * 0.5;
 
   return (
