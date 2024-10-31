@@ -116,10 +116,10 @@ export function EndEventIcon({ variant }: { variant?: EventVariant }) {
   );
 }
 
-export function TaskIcon({ variant }: { variant?: TaskVariant }) {
+export function TaskIcon({ variant, isMorphingPanel }: { variant?: TaskVariant; isMorphingPanel?: boolean }) {
   return (
     <RoundSvg>
-      <TaskNodeSvg {...nodeSvgProps} variant={variant ?? "none"} />
+      <TaskNodeSvg {...nodeSvgProps} variant={variant ?? "none"} isMorphingPanel={isMorphingPanel ?? false} />
     </RoundSvg>
   );
 }

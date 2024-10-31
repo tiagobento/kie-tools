@@ -726,6 +726,7 @@ export const TaskNode = React.memo(
             y={0}
             strokeWidth={task.__$$element === "callActivity" ? 5 : undefined}
             markers={icons}
+            variant={task.__$$element}
           />
         </svg>
         <PositionalNodeHandles isTargeted={isTargeted && isValidConnectionTarget} nodeId={id} />
