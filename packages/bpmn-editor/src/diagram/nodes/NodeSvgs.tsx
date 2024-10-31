@@ -1878,7 +1878,7 @@ export function ActivityNodeIcons({
             <MultiInstanceParallelIconSvg stroke={stroke} strokeWidth={strokeWidth} size={25} />
           </g>
         ) : icon === ActivityNodeMarker.MultiInstanceSequential ? (
-          <g key={icon} transform={`translate(${iconX}, ${bottomY - iconSize + 3})`}>
+          <g key={icon} transform={`translate(${iconX - 3}, ${bottomY - iconSize + 1})`}>
             <MultiInstanceSequentialIconSvg stroke={stroke} strokeWidth={strokeWidth} size={25} />
           </g>
         ) : icon === ActivityNodeMarker.Loop ? (
