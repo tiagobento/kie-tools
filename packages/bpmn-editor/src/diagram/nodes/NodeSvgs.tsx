@@ -22,7 +22,6 @@ import { DEFAULT_INTRACTION_WIDTH } from "@kie-tools/xyflow-react-kie-diagram/di
 import { DEFAULT_NODE_FILL, DEFAULT_NODE_STROKE_COLOR } from "./NodeStyle";
 import {
   containerNodeInteractionRectCssClassName,
-  DEFAULT_NODE_STROKE_WIDTH,
   NodeSvgProps,
   normalize,
 } from "@kie-tools/xyflow-react-kie-diagram/dist/nodes/NodeSvgs";
@@ -360,7 +359,8 @@ export function TaskNodeSvg(
   const { markers: _markers, variant: _variant, ...props } = { ..._props };
 
   const markers = useMemo(() => new Set(_markers), [_markers]);
-
+  const iconSize = 200;
+  const defaultSize = 25;
   const defaultOffset = { cx: x + 3, cy: y + 3 };
   const iconOffsets = {
     scriptTask: isIcon ? { cx: x - 2, cy: y - 25 } : defaultOffset,
@@ -389,7 +389,7 @@ export function TaskNodeSvg(
 
       {variant === "scriptTask" && (
         <g transform={`translate(${iconOffsets.scriptTask.cx}, ${iconOffsets.scriptTask.cy})`}>
-          <ScriptTaskSvg stroke={NODE_COLORS.task.foreground} size={isIcon ? 200 : 25} />
+          <ScriptTaskSvg stroke={NODE_COLORS.task.foreground} size={isIcon ? iconSize : defaultSize} />
         </g>
       )}
 
@@ -397,7 +397,7 @@ export function TaskNodeSvg(
         <g transform={`translate(${iconOffsets.businessRuleTask.cx}, ${iconOffsets.businessRuleTask.cy})`}>
           <BusinessRuleTaskSvg
             stroke={NODE_COLORS.task.foreground}
-            size={isIcon ? 200 : 25}
+            size={isIcon ? iconSize : defaultSize}
             strokeWidth={isIcon ? 10 : 1}
           />
         </g>
@@ -405,13 +405,13 @@ export function TaskNodeSvg(
 
       {variant === "serviceTask" && (
         <g transform={`translate(${iconOffsets.serviceTask.cx}, ${iconOffsets.serviceTask.cy})`}>
-          <ServiceTaskSvg stroke={NODE_COLORS.task.foreground} size={isIcon ? 200 : 30} />
+          <ServiceTaskSvg stroke={NODE_COLORS.task.foreground} size={isIcon ? iconSize : defaultSize * 1.2} />
         </g>
       )}
 
       {variant === "userTask" && (
         <g transform={`translate(${iconOffsets.userTask.cx}, ${iconOffsets.userTask.cy})`}>
-          <UserTaskSvg stroke={NODE_COLORS.task.foreground} size={isIcon ? 200 : 25} />
+          <UserTaskSvg stroke={NODE_COLORS.task.foreground} size={isIcon ? iconSize : defaultSize} />
         </g>
       )}
 
@@ -701,7 +701,7 @@ export function GatewayNodeSvg(__props: NodeSvgProps & { variant: GatewayVariant
   } = normalize(__props);
 
   const { variant, isIcon, ...props } = { ..._props };
-  const morphingPanelOffset = isIcon ? 25 : 0;
+  const iconOffset = isIcon ? 25 : 0;
 
   return (
     <>
@@ -726,7 +726,7 @@ export function GatewayNodeSvg(__props: NodeSvgProps & { variant: GatewayVariant
           stroke={NODE_COLORS.gateway.foreground}
           strokeWidth={isIcon ? 30 : 4.5}
           cx={x + width / 2}
-          cy={y + height / 2 - morphingPanelOffset}
+          cy={y + height / 2 - iconOffset}
           size={isIcon ? 210 : 30}
         />
       )}
@@ -735,7 +735,7 @@ export function GatewayNodeSvg(__props: NodeSvgProps & { variant: GatewayVariant
           stroke={NODE_COLORS.gateway.foreground}
           strokeWidth={isIcon ? 30 : 4.5}
           cx={x + width / 2}
-          cy={y + height / 2 - morphingPanelOffset}
+          cy={y + height / 2 - iconOffset}
           size={isIcon ? 210 : 30}
         />
       )}
@@ -744,7 +744,7 @@ export function GatewayNodeSvg(__props: NodeSvgProps & { variant: GatewayVariant
           stroke={NODE_COLORS.gateway.foreground}
           strokeWidth={isIcon ? 30 : 4.5}
           cx={x + width / 2}
-          cy={y + height / 2 - morphingPanelOffset}
+          cy={y + height / 2 - iconOffset}
           size={isIcon ? 275 : 40}
         />
       )}
@@ -754,7 +754,7 @@ export function GatewayNodeSvg(__props: NodeSvgProps & { variant: GatewayVariant
           circleStrokeWidth={isIcon ? 10 : 1.5}
           strokeWidth={isIcon ? 30 : 2}
           cx={x + width / 2}
-          cy={y + height / 2 - morphingPanelOffset}
+          cy={y + height / 2 - iconOffset}
           size={isIcon ? 275 : 40}
         />
       )}
@@ -763,7 +763,7 @@ export function GatewayNodeSvg(__props: NodeSvgProps & { variant: GatewayVariant
           stroke={NODE_COLORS.gateway.foreground}
           strokeWidth={isIcon ? 30 : 4.5}
           cx={x + width / 2}
-          cy={y + height / 2 - morphingPanelOffset}
+          cy={y + height / 2 - iconOffset}
           size={isIcon ? 300 : 50}
         />
       )}
