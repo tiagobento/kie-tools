@@ -84,7 +84,7 @@ export function EventDefinitionIcon({
   );
 }
 
-export function StartEventIcon({ variant, isIcon }: { variant?: EventVariant; isIcon?: boolean }) {
+export function StartEventIcon({ variant }: { variant?: EventVariant }) {
   return (
     <RoundSvg>
       <StartEventNodeSvg {...nodeSvgProps} variant={variant ?? "none"} />
@@ -92,7 +92,7 @@ export function StartEventIcon({ variant, isIcon }: { variant?: EventVariant; is
   );
 }
 
-export function IntermediateCatchEventIcon({ variant, isIcon }: { variant?: EventVariant; isIcon?: boolean }) {
+export function IntermediateCatchEventIcon({ variant }: { variant?: EventVariant }) {
   return (
     <RoundSvg>
       <IntermediateCatchEventNodeSvg {...nodeSvgProps} rimWidth={40} variant={variant ?? "none"} />
@@ -100,7 +100,7 @@ export function IntermediateCatchEventIcon({ variant, isIcon }: { variant?: Even
   );
 }
 
-export function IntermediateThrowEventIcon({ variant, isIcon }: { variant?: EventVariant; isIcon?: boolean }) {
+export function IntermediateThrowEventIcon({ variant }: { variant?: EventVariant }) {
   return (
     <RoundSvg>
       <IntermediateThrowEventNodeSvg {...nodeSvgProps} rimWidth={40} variant={variant ?? "none"} />
@@ -108,7 +108,7 @@ export function IntermediateThrowEventIcon({ variant, isIcon }: { variant?: Even
   );
 }
 
-export function EndEventIcon({ variant, isIcon }: { variant?: EventVariant; isIcon?: boolean }) {
+export function EndEventIcon({ variant }: { variant?: EventVariant }) {
   return (
     <RoundSvg>
       <EndEventNodeSvg {...nodeSvgProps} variant={variant ?? "none"} />
