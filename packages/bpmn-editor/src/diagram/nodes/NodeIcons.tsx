@@ -69,7 +69,7 @@ export function EventDefinitionIcon({
       <EventVariantSymbolSvg
         variant={variant ?? "none"}
         strokeWidth={16}
-        isMorphingPanel={true}
+        isIcon={true}
         filled={filled}
         stroke={stroke}
         fill={fill}
@@ -84,7 +84,7 @@ export function EventDefinitionIcon({
   );
 }
 
-export function StartEventIcon({ variant }: { variant?: EventVariant }) {
+export function StartEventIcon({ variant, isIcon }: { variant?: EventVariant; isIcon?: boolean }) {
   return (
     <RoundSvg>
       <StartEventNodeSvg {...nodeSvgProps} variant={variant ?? "none"} />
@@ -92,7 +92,7 @@ export function StartEventIcon({ variant }: { variant?: EventVariant }) {
   );
 }
 
-export function IntermediateCatchEventIcon({ variant }: { variant?: EventVariant }) {
+export function IntermediateCatchEventIcon({ variant, isIcon }: { variant?: EventVariant; isIcon?: boolean }) {
   return (
     <RoundSvg>
       <IntermediateCatchEventNodeSvg {...nodeSvgProps} rimWidth={40} variant={variant ?? "none"} />
@@ -100,7 +100,7 @@ export function IntermediateCatchEventIcon({ variant }: { variant?: EventVariant
   );
 }
 
-export function IntermediateThrowEventIcon({ variant }: { variant?: EventVariant }) {
+export function IntermediateThrowEventIcon({ variant, isIcon }: { variant?: EventVariant; isIcon?: boolean }) {
   return (
     <RoundSvg>
       <IntermediateThrowEventNodeSvg {...nodeSvgProps} rimWidth={40} variant={variant ?? "none"} />
@@ -108,7 +108,7 @@ export function IntermediateThrowEventIcon({ variant }: { variant?: EventVariant
   );
 }
 
-export function EndEventIcon({ variant }: { variant?: EventVariant }) {
+export function EndEventIcon({ variant, isIcon }: { variant?: EventVariant; isIcon?: boolean }) {
   return (
     <RoundSvg>
       <EndEventNodeSvg {...nodeSvgProps} variant={variant ?? "none"} />
@@ -116,10 +116,10 @@ export function EndEventIcon({ variant }: { variant?: EventVariant }) {
   );
 }
 
-export function TaskIcon({ variant, isMorphingPanel }: { variant?: TaskVariant; isMorphingPanel?: boolean }) {
+export function TaskIcon({ variant, isIcon }: { variant?: TaskVariant; isIcon?: boolean }) {
   return (
     <RoundSvg>
-      <TaskNodeSvg {...nodeSvgProps} variant={variant ?? "none"} isMorphingPanel={isMorphingPanel ?? false} />
+      <TaskNodeSvg {...nodeSvgProps} variant={variant ?? "none"} isIcon={isIcon ?? false} />
     </RoundSvg>
   );
 }
@@ -132,16 +132,10 @@ export function CallActivityIcon() {
   );
 }
 
-export function GatewayIcon({ variant, isMorphingPanel }: { variant?: GatewayVariant; isMorphingPanel?: boolean }) {
+export function GatewayIcon({ variant, isIcon }: { variant?: GatewayVariant; isIcon?: boolean }) {
   return (
     <RoundSvg>
-      <GatewayNodeSvg
-        {...nodeSvgProps}
-        width={200}
-        height={200}
-        variant={variant ?? "none"}
-        isMorphingPanel={isMorphingPanel ?? false}
-      />
+      <GatewayNodeSvg {...nodeSvgProps} width={200} height={200} variant={variant ?? "none"} isIcon={isIcon ?? false} />
     </RoundSvg>
   );
 }

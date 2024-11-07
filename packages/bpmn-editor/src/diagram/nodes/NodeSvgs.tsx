@@ -344,7 +344,7 @@ export function TaskNodeSvg(
   __props: NodeSvgProps & {
     markers?: (ActivityNodeMarker | "CallActivityPaletteIcon")[];
     variant?: TaskVariant | "task" | "callActivity" | "none";
-    isMorphingPanel?: boolean;
+    isIcon?: boolean;
   }
 ) {
   const {
@@ -356,22 +356,22 @@ export function TaskNodeSvg(
     props: { ..._props },
   } = normalize(__props);
 
-  const { variant, isMorphingPanel } = { ..._props };
+  const { variant, isIcon } = { ..._props };
   const { markers: _markers, variant: _variant, ...props } = { ..._props };
 
   const markers = useMemo(() => new Set(_markers), [_markers]);
 
   const defaultOffset = { cx: x + 3, cy: y + 3 };
   const iconOffsets = {
-    scriptTask: isMorphingPanel ? { cx: x - 2, cy: y - 25 } : defaultOffset,
-    businessRuleTask: isMorphingPanel ? { cx: x - 10, cy: y - 10 } : defaultOffset,
-    serviceTask: isMorphingPanel ? { cx: x - 5, cy: y - 35 } : defaultOffset,
-    userTask: isMorphingPanel ? { cx: x - 5, cy: y - 45 } : defaultOffset,
+    scriptTask: isIcon ? { cx: x - 2, cy: y - 25 } : defaultOffset,
+    businessRuleTask: isIcon ? { cx: x - 10, cy: y - 10 } : defaultOffset,
+    serviceTask: isIcon ? { cx: x - 5, cy: y - 35 } : defaultOffset,
+    userTask: isIcon ? { cx: x - 5, cy: y - 45 } : defaultOffset,
   };
 
   return (
     <>
-      {!isMorphingPanel && (
+      {!isIcon && (
         <rect
           x={x}
           y={y}
@@ -389,7 +389,7 @@ export function TaskNodeSvg(
 
       {variant === "scriptTask" && (
         <g transform={`translate(${iconOffsets.scriptTask.cx}, ${iconOffsets.scriptTask.cy})`}>
-          <ScriptTaskSvg stroke={NODE_COLORS.task.foreground} size={isMorphingPanel ? 200 : 25} />
+          <ScriptTaskSvg stroke={NODE_COLORS.task.foreground} size={isIcon ? 200 : 25} />
         </g>
       )}
 
@@ -397,21 +397,21 @@ export function TaskNodeSvg(
         <g transform={`translate(${iconOffsets.businessRuleTask.cx}, ${iconOffsets.businessRuleTask.cy})`}>
           <BusinessRuleTaskSvg
             stroke={NODE_COLORS.task.foreground}
-            size={isMorphingPanel ? 200 : 25}
-            strokeWidth={isMorphingPanel ? 10 : 1}
+            size={isIcon ? 200 : 25}
+            strokeWidth={isIcon ? 10 : 1}
           />
         </g>
       )}
 
       {variant === "serviceTask" && (
         <g transform={`translate(${iconOffsets.serviceTask.cx}, ${iconOffsets.serviceTask.cy})`}>
-          <ServiceTaskSvg stroke={NODE_COLORS.task.foreground} size={isMorphingPanel ? 200 : 30} />
+          <ServiceTaskSvg stroke={NODE_COLORS.task.foreground} size={isIcon ? 200 : 30} />
         </g>
       )}
 
       {variant === "userTask" && (
         <g transform={`translate(${iconOffsets.userTask.cx}, ${iconOffsets.userTask.cy})`}>
-          <UserTaskSvg stroke={NODE_COLORS.task.foreground} size={isMorphingPanel ? 200 : 25} />
+          <UserTaskSvg stroke={NODE_COLORS.task.foreground} size={isIcon ? 200 : 25} />
         </g>
       )}
 
@@ -690,9 +690,7 @@ export function UserTaskSvg({ stroke, size }: { stroke: string; size: number }) 
     </svg>
   );
 }
-export function GatewayNodeSvg(
-  __props: NodeSvgProps & { variant: GatewayVariant | "none"; isMorphingPanel?: boolean }
-) {
+export function GatewayNodeSvg(__props: NodeSvgProps & { variant: GatewayVariant | "none"; isIcon?: boolean }) {
   const {
     x,
     y,
@@ -702,12 +700,12 @@ export function GatewayNodeSvg(
     props: { ..._props },
   } = normalize(__props);
 
-  const { variant, isMorphingPanel, ...props } = { ..._props };
-  const morphingPanelOffset = isMorphingPanel ? 25 : 0;
+  const { variant, isIcon, ...props } = { ..._props };
+  const morphingPanelOffset = isIcon ? 25 : 0;
 
   return (
     <>
-      {!isMorphingPanel && (
+      {!isIcon && (
         <rect
           x={8 + x}
           y={8 + y}
@@ -726,47 +724,47 @@ export function GatewayNodeSvg(
       {variant === "parallelGateway" && (
         <ParallelGatewaySvg
           stroke={NODE_COLORS.gateway.foreground}
-          strokeWidth={isMorphingPanel ? 30 : 4.5}
+          strokeWidth={isIcon ? 30 : 4.5}
           cx={x + width / 2}
           cy={y + height / 2 - morphingPanelOffset}
-          size={isMorphingPanel ? 210 : 30}
+          size={isIcon ? 210 : 30}
         />
       )}
       {variant === "exclusiveGateway" && (
         <ExclusiveGatewaySvg
           stroke={NODE_COLORS.gateway.foreground}
-          strokeWidth={isMorphingPanel ? 30 : 4.5}
+          strokeWidth={isIcon ? 30 : 4.5}
           cx={x + width / 2}
           cy={y + height / 2 - morphingPanelOffset}
-          size={isMorphingPanel ? 210 : 30}
+          size={isIcon ? 210 : 30}
         />
       )}
       {variant === "inclusiveGateway" && (
         <InclusiveGatewaySvg
           stroke={NODE_COLORS.gateway.foreground}
-          strokeWidth={isMorphingPanel ? 30 : 4.5}
+          strokeWidth={isIcon ? 30 : 4.5}
           cx={x + width / 2}
           cy={y + height / 2 - morphingPanelOffset}
-          size={isMorphingPanel ? 275 : 40}
+          size={isIcon ? 275 : 40}
         />
       )}
       {variant === "eventBasedGateway" && (
         <EventBasedGatewaySvg
           stroke={NODE_COLORS.gateway.foreground}
-          circleStrokeWidth={isMorphingPanel ? 10 : 1.5}
-          strokeWidth={isMorphingPanel ? 30 : 2}
+          circleStrokeWidth={isIcon ? 10 : 1.5}
+          strokeWidth={isIcon ? 30 : 2}
           cx={x + width / 2}
           cy={y + height / 2 - morphingPanelOffset}
-          size={isMorphingPanel ? 275 : 40}
+          size={isIcon ? 275 : 40}
         />
       )}
       {variant === "complexGateway" && (
         <ComplexGatewaySvg
           stroke={NODE_COLORS.gateway.foreground}
-          strokeWidth={isMorphingPanel ? 30 : 4.5}
+          strokeWidth={isIcon ? 30 : 4.5}
           cx={x + width / 2}
           cy={y + height / 2 - morphingPanelOffset}
-          size={isMorphingPanel ? 300 : 50}
+          size={isIcon ? 300 : 50}
         />
       )}
     </>
@@ -1184,7 +1182,7 @@ export function EventVariantSymbolSvg({
   variant,
   stroke,
   strokeWidth,
-  isMorphingPanel,
+  isIcon,
   cx,
   cy,
   x,
@@ -1197,7 +1195,7 @@ export function EventVariantSymbolSvg({
   variant: EventVariant | "none";
   stroke: string;
   strokeWidth?: number;
-  isMorphingPanel?: boolean;
+  isIcon?: boolean;
   cx: number;
   cy: number;
   x: number;
@@ -1215,7 +1213,7 @@ export function EventVariantSymbolSvg({
           filled={filled}
           stroke={stroke}
           strokeWidth={strokeWidth}
-          isMorphingPanel={isMorphingPanel}
+          isIcon={isIcon}
           cx={cx}
           cy={cy}
           innerCircleRadius={innerCircleRadius}
@@ -1226,7 +1224,7 @@ export function EventVariantSymbolSvg({
           filled={filled}
           stroke={stroke}
           strokeWidth={strokeWidth}
-          isMorphingPanel={isMorphingPanel}
+          isIcon={isIcon}
           cx={cx}
           cy={cy}
           innerCircleRadius={innerCircleRadius}
@@ -1249,7 +1247,7 @@ export function EventVariantSymbolSvg({
           filled={filled}
           stroke={stroke}
           strokeWidth={strokeWidth}
-          isMorphingPanel={isMorphingPanel}
+          isIcon={isIcon}
           cx={cx}
           cy={cy}
           innerCircleRadius={innerCircleRadius}
@@ -1283,7 +1281,7 @@ export function EventVariantSymbolSvg({
           filled={filled}
           stroke={stroke}
           strokeWidth={strokeWidth}
-          isMorphingPanel={isMorphingPanel}
+          isIcon={isIcon}
           cx={cx}
           cy={cy}
           outerCircleRadius={outerCircleRadius}
@@ -1294,7 +1292,7 @@ export function EventVariantSymbolSvg({
           filled={filled}
           stroke={stroke}
           strokeWidth={strokeWidth}
-          isMorphingPanel={isMorphingPanel}
+          isIcon={isIcon}
           cx={cx}
           cy={cy}
           innerCircleRadius={innerCircleRadius}
@@ -1305,7 +1303,7 @@ export function EventVariantSymbolSvg({
           filled={filled}
           stroke={stroke}
           strokeWidth={strokeWidth}
-          isMorphingPanel={isMorphingPanel}
+          isIcon={isIcon}
           x={x}
           y={y}
           cx={cx}
@@ -1336,7 +1334,7 @@ export function EventVariantSymbolSvg({
 export function MessageEventSymbolSvg({
   stroke,
   strokeWidth,
-  isMorphingPanel,
+  isIcon,
   cx,
   cy,
   innerCircleRadius,
@@ -1345,14 +1343,14 @@ export function MessageEventSymbolSvg({
 }: {
   stroke: string;
   strokeWidth?: number;
-  isMorphingPanel?: boolean;
+  isIcon?: boolean;
   cx: number;
   cy: number;
   innerCircleRadius: number;
   fill: string;
   filled: boolean;
 }) {
-  const scaleFactor = isMorphingPanel ? 1.9 : 1;
+  const scaleFactor = isIcon ? 1.9 : 1;
 
   const scaledBodyWidth = innerCircleRadius * 1.2 * scaleFactor;
   const scaledBodyHeight = innerCircleRadius * 0.8 * scaleFactor;
@@ -1417,7 +1415,7 @@ export function MessageEventSymbolSvg({
 export function TimerEventSymbolSvg({
   stroke,
   strokeWidth,
-  isMorphingPanel,
+  isIcon,
   cx,
   cy,
   innerCircleRadius,
@@ -1426,14 +1424,14 @@ export function TimerEventSymbolSvg({
 }: {
   stroke: string;
   strokeWidth?: number;
-  isMorphingPanel?: boolean;
+  isIcon?: boolean;
   cx: number;
   cy: number;
   innerCircleRadius: number;
   outerCircleRadius: number;
   filled: boolean;
 }) {
-  const scaleFactor = isMorphingPanel ? 1.4 : 1;
+  const scaleFactor = isIcon ? 1.4 : 1;
 
   const scaledPadding = 1.2 * (outerCircleRadius - innerCircleRadius) * scaleFactor;
   const scaledClockRadius = (innerCircleRadius - scaledPadding) * scaleFactor;
@@ -1507,7 +1505,7 @@ export function ErrorEventSymbolSvg({
 }: {
   stroke: string;
   strokeWidth?: number;
-  isMorphingPanel?: boolean;
+  isIcon?: boolean;
   cx: number;
   cy: number;
   innerCircleRadius: number;
@@ -1548,7 +1546,7 @@ export function ErrorEventSymbolSvg({
 export function EscalationEventSymbolSvg({
   stroke,
   strokeWidth,
-  isMorphingPanel,
+  isIcon,
   cx,
   cy,
   innerCircleRadius,
@@ -1556,13 +1554,13 @@ export function EscalationEventSymbolSvg({
 }: {
   stroke: string;
   strokeWidth?: number;
-  isMorphingPanel?: boolean;
+  isIcon?: boolean;
   cx: number;
   cy: number;
   innerCircleRadius: number;
   filled: boolean;
 }) {
-  const scaleFactor = isMorphingPanel ? 1.8 : 1;
+  const scaleFactor = isIcon ? 1.8 : 1;
   const scaledArrowHeight = innerCircleRadius * 1.2 * scaleFactor;
   const scaledArrowBaseWidth = innerCircleRadius * scaleFactor;
   const midCenterYOffset = ((innerCircleRadius * 1.2) / 20) * scaleFactor;
@@ -1698,7 +1696,7 @@ export function CompensationEventSymbolSvg({
 export function ConditionalEventSymbolSvg({
   stroke,
   strokeWidth,
-  isMorphingPanel,
+  isIcon,
   cx,
   cy,
   outerCircleRadius,
@@ -1706,18 +1704,18 @@ export function ConditionalEventSymbolSvg({
 }: {
   stroke: string;
   strokeWidth?: number;
-  isMorphingPanel?: boolean;
+  isIcon?: boolean;
   cx: number;
   cy: number;
   outerCircleRadius: number;
   filled: boolean;
 }) {
-  const scaleFactor = isMorphingPanel ? 1.8 : 1;
+  const scaleFactor = isIcon ? 1.8 : 1;
 
   const squareSize = outerCircleRadius * 1.1 * scaleFactor;
   const halfSquareSize = squareSize / 2;
   const lineSpacing = squareSize / 5;
-  const lineBuffer = isMorphingPanel ? 50 : 5;
+  const lineBuffer = isIcon ? 50 : 5;
   const x1 = cx - halfSquareSize + lineBuffer;
   const x2 = cx + halfSquareSize - lineBuffer;
 
@@ -1748,7 +1746,7 @@ export function ConditionalEventSymbolSvg({
 export function LinkEventSymbolSvg({
   stroke,
   strokeWidth,
-  isMorphingPanel,
+  isIcon,
   cx,
   cy,
   innerCircleRadius,
@@ -1756,13 +1754,13 @@ export function LinkEventSymbolSvg({
 }: {
   stroke: string;
   strokeWidth?: number;
-  isMorphingPanel?: boolean;
+  isIcon?: boolean;
   cx: number;
   cy: number;
   innerCircleRadius: number;
   filled: boolean;
 }) {
-  const scaleFactor = isMorphingPanel ? 50 : 1;
+  const scaleFactor = isIcon ? 50 : 1;
 
   const arrowHeight = innerCircleRadius * 1.2;
   const arrowBaseWidth = innerCircleRadius * 1;
@@ -1796,7 +1794,7 @@ export function LinkEventSymbolSvg({
 export function SignalEventSymbolSvg({
   stroke,
   strokeWidth,
-  isMorphingPanel,
+  isIcon,
   cx,
   cy,
   x,
@@ -1807,7 +1805,7 @@ export function SignalEventSymbolSvg({
 }: {
   stroke: string;
   strokeWidth?: number;
-  isMorphingPanel?: boolean;
+  isIcon?: boolean;
   cx: number;
   cy: number;
   x: number;
@@ -1816,7 +1814,7 @@ export function SignalEventSymbolSvg({
   outerCircleRadius: number;
   filled: boolean;
 }) {
-  const scaleFactor = isMorphingPanel ? 1.2 : 1;
+  const scaleFactor = isIcon ? 1.2 : 1;
 
   const padding = 1.5 * (outerCircleRadius - innerCircleRadius);
   const hx = (x + innerCircleRadius - padding) * scaleFactor;
