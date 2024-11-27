@@ -53,10 +53,12 @@ export function NodeIcon({ nodeType }: { nodeType: BpmnNodeType }) {
 export function EventDefinitionIcon({
   variant,
   filled,
+  fill,
   stroke,
 }: {
   variant?: EventVariant;
   filled: boolean;
+  fill?: string;
   stroke: string;
 }) {
   const cx = nodeSvgProps.x + nodeSvgProps.width / 2;
