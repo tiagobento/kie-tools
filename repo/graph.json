@@ -64,14 +64,18 @@
       { "id": "@kie-tools-core/monaco-editor" },
       { "id": "@kie-tools/dmn-language-service" },
       { "id": "@kie-tools/i18n-common-dictionary" },
+      { "id": "@kie-tools/bpmn-editor" },
+      { "id": "@kie-tools-core/react-hooks" },
       { "id": "@kie-tools/bpmn-marshaller" },
+      { "id": "@kie-tools/pmml-editor-marshaller" },
+      { "id": "@kie-tools/xyflow-react-kie-diagram" },
       { "id": "@kie-tools/xml-parser-ts-codegen" },
+      { "id": "@kie-tools-core/switch-expression-ts" },
       { "id": "@kie-tools/xml-parser-ts" },
       { "id": "bpmn-vscode-extension" },
       { "id": "@kie-tools/form-code-generator-vscode-command" },
       { "id": "@kie-tools/vscode-java-code-completion-extension-plugin" },
       { "id": "@kie-tools/jbpm-form-code-generator-themes" },
-      { "id": "@kie-tools/pmml-editor-marshaller" },
       { "id": "@kie-tools/stunner-editors-dmn-loader" },
       { "id": "chrome-extension-pack-kogito-kie-editors" },
       { "id": "@kie-tools/chrome-extension-test-helper" },
@@ -102,7 +106,6 @@
       { "id": "@kie-tools/dashbuilder-viewer" },
       { "id": "@kie-tools/dashbuilder-viewer-deployment-webapp" },
       { "id": "@kie-tools-core/workspaces-git-fs" },
-      { "id": "@kie-tools-core/react-hooks" },
       { "id": "@kie-tools-core/workspace" },
       { "id": "@kie-tools/kie-sandbox-fs" },
       { "id": "@kie-tools-core/i18n" },
@@ -123,7 +126,6 @@
       { "id": "@kie-tools/dmn-marshaller" },
       { "id": "@kie-tools/dmn-marshaller-backend-compatibility-tester" },
       { "id": "@kie-tools/dmn-testing-models" },
-      { "id": "@kie-tools-core/switch-expression-ts" },
       { "id": "@kie-tools/dmn-runner" },
       { "id": "@kie-tools/extended-services-api" },
       { "id": "dmn-vscode-extension" },
@@ -801,13 +803,93 @@
         "weight": 1
       },
       {
+        "source": "@kie-tools/bpmn-editor",
+        "target": "@kie-tools-core/react-hooks",
+        "weight": 1
+      },
+      {
+        "source": "@kie-tools/bpmn-editor",
+        "target": "@kie-tools/boxed-expression-component",
+        "weight": 1
+      },
+      {
+        "source": "@kie-tools/bpmn-editor",
+        "target": "@kie-tools/bpmn-marshaller",
+        "weight": 1
+      },
+      {
+        "source": "@kie-tools/bpmn-editor",
+        "target": "@kie-tools/pmml-editor-marshaller",
+        "weight": 1
+      },
+      {
+        "source": "@kie-tools/bpmn-editor",
+        "target": "@kie-tools/xyflow-react-kie-diagram",
+        "weight": 1
+      },
+      {
+        "source": "@kie-tools-core/react-hooks",
+        "target": "@kie-tools/eslint",
+        "weight": 1
+      },
+      {
+        "source": "@kie-tools-core/react-hooks",
+        "target": "@kie-tools/root-env",
+        "weight": 1
+      },
+      {
+        "source": "@kie-tools-core/react-hooks",
+        "target": "@kie-tools/tsconfig",
+        "weight": 1
+      },
+      {
         "source": "@kie-tools/bpmn-marshaller",
         "target": "@kie-tools/xml-parser-ts-codegen",
         "weight": 1
       },
       {
+        "source": "@kie-tools/pmml-editor-marshaller",
+        "target": "@kie-tools/eslint",
+        "weight": 1
+      },
+      {
+        "source": "@kie-tools/pmml-editor-marshaller",
+        "target": "@kie-tools/jest-base",
+        "weight": 1
+      },
+      {
+        "source": "@kie-tools/pmml-editor-marshaller",
+        "target": "@kie-tools/tsconfig",
+        "weight": 1
+      },
+      {
+        "source": "@kie-tools/xyflow-react-kie-diagram",
+        "target": "@kie-tools-core/switch-expression-ts",
+        "weight": 1
+      },
+      {
+        "source": "@kie-tools/xyflow-react-kie-diagram",
+        "target": "@kie-tools/xml-parser-ts",
+        "weight": 1
+      },
+      {
         "source": "@kie-tools/xml-parser-ts-codegen",
         "target": "@kie-tools/xml-parser-ts",
+        "weight": 1
+      },
+      {
+        "source": "@kie-tools-core/switch-expression-ts",
+        "target": "@kie-tools/eslint",
+        "weight": 1
+      },
+      {
+        "source": "@kie-tools-core/switch-expression-ts",
+        "target": "@kie-tools/jest-base",
+        "weight": 1
+      },
+      {
+        "source": "@kie-tools-core/switch-expression-ts",
+        "target": "@kie-tools/tsconfig",
         "weight": 1
       },
       {
@@ -868,21 +950,6 @@
       {
         "source": "@kie-tools/jbpm-form-code-generator-themes",
         "target": "@kie-tools/form-code-generator-patternfly-theme",
-        "weight": 1
-      },
-      {
-        "source": "@kie-tools/pmml-editor-marshaller",
-        "target": "@kie-tools/eslint",
-        "weight": 1
-      },
-      {
-        "source": "@kie-tools/pmml-editor-marshaller",
-        "target": "@kie-tools/jest-base",
-        "weight": 1
-      },
-      {
-        "source": "@kie-tools/pmml-editor-marshaller",
-        "target": "@kie-tools/tsconfig",
         "weight": 1
       },
       {
@@ -1301,21 +1368,6 @@
         "weight": 1
       },
       {
-        "source": "@kie-tools-core/react-hooks",
-        "target": "@kie-tools/eslint",
-        "weight": 1
-      },
-      {
-        "source": "@kie-tools-core/react-hooks",
-        "target": "@kie-tools/root-env",
-        "weight": 1
-      },
-      {
-        "source": "@kie-tools-core/react-hooks",
-        "target": "@kie-tools/tsconfig",
-        "weight": 1
-      },
-      {
         "source": "@kie-tools-core/workspace",
         "target": "@kie-tools-core/operating-system",
         "weight": 1
@@ -1508,21 +1560,6 @@
       {
         "source": "@kie-tools/dmn-testing-models",
         "target": "@kie-tools/maven-base",
-        "weight": 1
-      },
-      {
-        "source": "@kie-tools-core/switch-expression-ts",
-        "target": "@kie-tools/eslint",
-        "weight": 1
-      },
-      {
-        "source": "@kie-tools-core/switch-expression-ts",
-        "target": "@kie-tools/jest-base",
-        "weight": 1
-      },
-      {
-        "source": "@kie-tools-core/switch-expression-ts",
-        "target": "@kie-tools/tsconfig",
         "weight": 1
       },
       {
@@ -2598,6 +2635,7 @@
     ["@kie-tools-examples/uniforms-patternfly", "examples/uniforms-patternfly"],
     ["@kie-tools-examples/webapp", "examples/webapp"],
     ["@kie-tools/boxed-expression-component", "packages/boxed-expression-component"],
+    ["@kie-tools/bpmn-editor", "packages/bpmn-editor"],
     ["@kie-tools/bpmn-marshaller", "packages/bpmn-marshaller"],
     ["bpmn-vscode-extension", "packages/bpmn-vscode-extension"],
     ["@kie-tools-core/chrome-extension", "packages/chrome-extension"],
@@ -2801,6 +2839,7 @@
     ["@kie-tools-core/workspaces-git-fs", "packages/workspaces-git-fs"],
     ["@kie-tools/xml-parser-ts", "packages/xml-parser-ts"],
     ["@kie-tools/xml-parser-ts-codegen", "packages/xml-parser-ts-codegen"],
+    ["@kie-tools/xyflow-react-kie-diagram", "packages/xyflow-react-kie-diagram"],
     ["@kie-tools/yaml-language-server", "packages/yaml-language-server"],
     ["@kie-tools/yard-editor", "packages/yard-editor"],
     ["@kie-tools/yard-language-service", "packages/yard-language-service"],
