@@ -1253,16 +1253,6 @@ export function EventVariantSymbolSvg({
           innerCircleRadius={innerCircleRadius}
         />
       )}
-      {variant === "cancelEventDefinition" && (
-        <CancelEventSymbolSvg
-          filled={filled}
-          stroke={stroke}
-          strokeWidth={strokeWidth}
-          cx={cx}
-          cy={cy}
-          innerCircleRadius={innerCircleRadius}
-        />
-      )}
       {variant === "compensateEventDefinition" && (
         <CompensationEventSymbolSvg
           filled={filled}
@@ -1585,54 +1575,6 @@ export function EscalationEventSymbolSvg({
   );
 }
 
-export function CancelEventSymbolSvg({
-  stroke,
-  strokeWidth,
-  cx,
-  cy,
-  innerCircleRadius,
-  filled,
-}: {
-  stroke: string;
-  strokeWidth?: number;
-  cx: number;
-  cy: number;
-  innerCircleRadius: number;
-  filled: boolean;
-}) {
-  const farXPoint = 1.3;
-  const closeXPoint = 1.7;
-  const lowYPoint = 9;
-  const highYPoint = 5;
-
-  const cross = [
-    { x: cx - innerCircleRadius / farXPoint, y: cy - innerCircleRadius + lowYPoint }, // upper left point 1
-    { x: cx - innerCircleRadius / closeXPoint, y: cy - innerCircleRadius + highYPoint }, // upper left point 2
-    { x: cx, y: cy - innerCircleRadius / highYPoint }, // upper joiner
-    { x: cx + innerCircleRadius / closeXPoint, y: cy - innerCircleRadius + highYPoint }, // upper right point 2
-    { x: cx + innerCircleRadius / farXPoint, y: cy - innerCircleRadius + lowYPoint }, // upper right point 1
-    { x: cx + innerCircleRadius / highYPoint, y: cy }, // right joiner
-    { x: cx + innerCircleRadius / farXPoint, y: cy + innerCircleRadius - lowYPoint }, // lower right point 2
-    { x: cx + innerCircleRadius / closeXPoint, y: cy + innerCircleRadius - highYPoint }, // lower right point 1
-    { x: cx, y: cy + innerCircleRadius / highYPoint }, // lower joiner
-    { x: cx - innerCircleRadius / closeXPoint, y: cy + innerCircleRadius - highYPoint }, // lower left point 1
-    { x: cx - innerCircleRadius / farXPoint, y: cy + innerCircleRadius - lowYPoint }, // lower left point 2
-    { x: cx - innerCircleRadius / highYPoint, y: cy }, // left joiner
-  ] as const;
-
-  return (
-    <>
-      <polygon
-        points={cross.map((point) => `${point.x},${point.y}`).join(" ")}
-        strokeWidth={strokeWidth ?? 1.5}
-        strokeLinejoin={"round"}
-        fill={filled ? stroke : "transparent"}
-        stroke={stroke}
-      />
-    </>
-  );
-}
-
 export function CompensationEventSymbolSvg({
   stroke,
   strokeWidth,
@@ -1923,7 +1865,7 @@ export function LoopIconSvg({ stroke, size }: { stroke: string; size: number }) 
   );
 }
 
-export function AdHocSubProcessIconSvg({ stroke, size }: { stroke: string; size: number }) {
+export function AdHocSubProcessIconSvg({ stroke, size, isIcon }: { stroke: string; size: number; isIcon?: boolean }) {
   return (
     <svg
       version="1.0"
@@ -1932,6 +1874,9 @@ export function AdHocSubProcessIconSvg({ stroke, size }: { stroke: string; size:
       height={(size * 44) / 110}
       viewBox="0 0 110.000000 44.000000"
       preserveAspectRatio="xMidYMid meet"
+      style={{
+        transform: isIcon ? "translate(1.5px, 3px)" : "none",
+      }}
     >
       <g transform="translate(0.000000,44.000000) scale(0.100000,-0.100000)" fill={stroke} stroke="none">
         <path
@@ -2060,43 +2005,47 @@ export function MultiInstanceParallelIconSvg({
   stroke,
   strokeWidth,
   size,
+  isIcon,
 }: {
   stroke: string;
   strokeWidth: number;
   size: number;
+  isIcon?: boolean;
 }) {
   const lineSpacing = size / 5;
   const lineHeight = size * 0.5;
 
+  const offsetX = isIcon ? 2.5 : 0;
+  const offsetY = isIcon ? 9 : 0;
   return (
-    <>
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} xmlns="http://www.w3.org/2000/svg">
       <line
-        x1={lineSpacing}
-        y1={0}
-        x2={lineSpacing}
-        y2={lineHeight}
+        x1={lineSpacing + offsetX}
+        y1={0 + offsetY}
+        x2={lineSpacing + offsetX}
+        y2={lineHeight + offsetY}
         stroke={stroke}
         strokeWidth={strokeWidth}
         strokeLinecap="round"
       />
       <line
-        x1={lineSpacing * 2}
-        y1={0}
-        x2={lineSpacing * 2}
-        y2={lineHeight}
+        x1={lineSpacing * 2 + offsetX}
+        y1={0 + offsetY}
+        x2={lineSpacing * 2 + offsetX}
+        y2={lineHeight + offsetY}
         stroke={stroke}
         strokeWidth={strokeWidth}
         strokeLinecap="round"
       />
       <line
-        x1={lineSpacing * 3}
-        y1={0}
-        x2={lineSpacing * 3}
-        y2={lineHeight}
+        x1={lineSpacing * 3 + offsetX}
+        y1={0 + offsetY}
+        x2={lineSpacing * 3 + offsetX}
+        y2={lineHeight + offsetY}
         stroke={stroke}
         strokeWidth={strokeWidth}
         strokeLinecap="round"
       />
-    </>
+    </svg>
   );
 }

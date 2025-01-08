@@ -52,12 +52,11 @@ export function useEventNodeMorphingActions(event: Event) {
       // 3 - Timer
       // 4 - Error
       // 5 - Escalation
-      // 6 - Cancel
-      // 7 - Compensation
-      // 8 - Conditional
-      // 9 - Link
-      // 0 - Signal
-      // ! - Terminate
+      // 6 - Compensation
+      // 7 - Conditional
+      // 8 - Link
+      // 9 - Signal
+      // 0 - Terminate
       bpmnEditorStoreApi.setState((s) => {
         const { process } = addOrGetProcessAndDiagramElements({
           definitions: s.bpmn.model.definitions,
@@ -71,12 +70,6 @@ export function useEventNodeMorphingActions(event: Event) {
 
             element.eventDefinition ??= [];
             switch (eventDefinitionElement) {
-              case "cancelEventDefinition":
-                element.eventDefinition[0] = {
-                  "@_id": generateUuid(),
-                  __$$element: "cancelEventDefinition",
-                };
-                break;
               case "compensateEventDefinition":
                 element.eventDefinition[0] = {
                   "@_id": generateUuid(),
